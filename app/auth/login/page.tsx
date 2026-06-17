@@ -16,39 +16,106 @@ function AuthForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) return;
+    console.log("[Auth] form submitted", { email: email.trim(), passwordLength: password.length });
+
+    if (!email || !password) {
+      console.log("[Auth] missing email or password");
+      return;
+    }
+
     setLoading(true);
     setError(null);
+    setDebugInfo(null);
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
+    // Check env vars
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    console.log("[Auth] env check", {
+      hasUrl: !!supabaseUrl && !supabaseUrl.includes("placeholder"),
+      hasKey: !!supabaseKey && !supabaseKey.includes("placeholder"),
+      url: supabaseUrl?.slice(0, 30),
     });
 
-    if (!signInError) {
-      router.push(redirectTo);
-      router.refresh();
+    if (!supabaseUrl || supabaseUrl.includes("placeholder")) {
+      setError("Ошибка конфигурации: NEXT_PUBLIC_SUPABASE_URL не задан.");
+      setDebugInfo(`URL: ${supabaseUrl}`);
+      setLoading(false);
       return;
     }
 
-    // User may not exist yet — try to sign up
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-    });
+    try {
+      // Step 1: try sign in
+      console.log("[Auth] trying signInWithPassword…");
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      console.log("[Auth] signIn result", { user: signInData?.user?.id, error: signInError?.message });
 
-    if (!signUpError && data.user) {
-      router.push(redirectTo);
-      router.refresh();
-      return;
+      if (!signInError && signInData?.session) {
+        console.log("[Auth] sign in success, redirecting to", redirectTo);
+        router.push("/dashboard");
+        router.refresh();
+        return;
+      }
+
+      // Step 2: user may not exist yet — try sign up
+      console.log("[Auth] sign in failed, trying signUp…", signInError?.message);
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+      });
+      console.log("[Auth] signUp result", {
+        user: signUpData?.user?.id,
+        session: !!signUpData?.session,
+        error: signUpError?.message,
+      });
+
+      if (!signUpError && signUpData?.user) {
+        if (signUpData.session) {
+          // Auto-confirmed — already have a session
+          console.log("[Auth] signUp with auto-confirm, redirecting…");
+          router.push("/dashboard");
+          router.refresh();
+          return;
+        }
+
+        // No session yet (email confirmation required in Supabase dashboard).
+        // Try signing in immediately in case it was just created.
+        console.log("[Auth] signUp succeeded but no session, retrying signIn…");
+        const { data: retryData, error: retryError } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+        console.log("[Auth] retry signIn result", { session: !!retryData?.session, error: retryError?.message });
+
+        if (!retryError && retryData?.session) {
+          router.push("/dashboard");
+          router.refresh();
+          return;
+        }
+
+        // Account created but email confirmation is required
+        setError("Аккаунт создан! Проверь почту и подтверди email, затем войди снова.");
+        setLoading(false);
+        return;
+      }
+
+      // Both failed — wrong password for existing account
+      const msg = signUpError?.message || signInError?.message || "unknown";
+      console.log("[Auth] both failed", { signInError: signInError?.message, signUpError: signUpError?.message });
+      setError("Неверный пароль. Попробуй ещё раз.");
+      setDebugInfo(`Debug: signIn="${signInError?.message}" signUp="${msg}"`);
+    } catch (err) {
+      console.error("[Auth] unexpected error", err);
+      setError(`Неожиданная ошибка: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setLoading(false);
     }
-
-    // Both failed → wrong password for an existing account
-    setError("Неверный пароль. Попробуй ещё раз.");
-    setLoading(false);
   };
 
   return (
@@ -79,10 +146,15 @@ function AuthForm() {
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-start gap-2.5 bg-[#EF4444]/10 border border-[#EF4444]/30 rounded-xl px-4 py-3 mb-6 text-sm text-[#EF4444]"
+          className="flex flex-col gap-1 bg-[#EF4444]/10 border border-[#EF4444]/30 rounded-xl px-4 py-3 mb-6 text-sm text-[#EF4444]"
         >
-          <span className="mt-0.5">⚠️</span>
-          {error}
+          <div className="flex items-start gap-2">
+            <span className="mt-0.5">⚠️</span>
+            <span>{error}</span>
+          </div>
+          {debugInfo && (
+            <p className="text-[#EF4444]/60 text-xs font-mono mt-1 break-all">{debugInfo}</p>
+          )}
         </motion.div>
       )}
 
