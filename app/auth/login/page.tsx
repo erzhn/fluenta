@@ -7,9 +7,9 @@ import { Loader2, Mail, CheckCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 // IMPORTANT: Go to Supabase → Authentication → URL Configuration
-// Add to Redirect URLs: https://fluentacademy-englishapp.vercel.app/auth/callback
+// Add to Redirect URLs: https://fluentacademy-englishapp.vercel.app/auth/confirm
 
-const REDIRECT_URL = "https://fluentacademy-englishapp.vercel.app/auth/callback";
+const REDIRECT_URL = "https://fluentacademy-englishapp.vercel.app/auth/confirm";
 const RESEND_COOLDOWN = 60;
 
 function AuthForm() {
