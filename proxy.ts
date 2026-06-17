@@ -12,7 +12,7 @@ const PROTECTED = [
   "/profile",
 ];
 
-const AUTH_PAGES = ["/auth/login", "/auth/register"];
+const AUTH_PAGES = ["/auth/login"];
 
 export async function proxy(request: NextRequest) {
   if (
@@ -52,6 +52,11 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
+
+  if (pathname === "/") {
+    return NextResponse.redirect(new URL("/auth/login", request.url));
+  }
+
   const isProtected = PROTECTED.some((p) => pathname.startsWith(p));
   const isAuthPage = AUTH_PAGES.some((p) => pathname.startsWith(p));
 
