@@ -18,8 +18,9 @@ function AuthForm() {
   const [error, setError] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
+    alert("Button clicked!");
     console.log("[Auth] form submitted", { email: email.trim(), passwordLength: password.length });
 
     if (!email || !password) {
@@ -142,22 +143,6 @@ function AuthForm() {
         Введи email чтобы войти или создать аккаунт
       </p>
 
-      {error && (
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col gap-1 bg-[#EF4444]/10 border border-[#EF4444]/30 rounded-xl px-4 py-3 mb-6 text-sm text-[#EF4444]"
-        >
-          <div className="flex items-start gap-2">
-            <span className="mt-0.5">⚠️</span>
-            <span>{error}</span>
-          </div>
-          {debugInfo && (
-            <p className="text-[#EF4444]/60 text-xs font-mono mt-1 break-all">{debugInfo}</p>
-          )}
-        </motion.div>
-      )}
-
       <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         <div>
           <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">
@@ -205,12 +190,25 @@ function AuthForm() {
 
         <button
           type="submit"
+          onClick={handleSubmit}
           disabled={loading || !email || !password}
           className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-semibold text-sm text-white bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] hover:from-[#5558E3] hover:to-[#7C3AED] disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-[1.01] hover:shadow-lg hover:shadow-indigo-500/25 active:scale-[0.99]"
         >
           {loading && <Loader2 className="w-4 h-4 animate-spin" />}
           {loading ? "Входим…" : "Войти / Зарегистрироваться"}
         </button>
+
+        {error && (
+          <div className="flex flex-col gap-1 bg-[#EF4444]/10 border border-[#EF4444]/30 rounded-xl px-4 py-3 text-sm text-[#EF4444]">
+            <div className="flex items-start gap-2">
+              <span className="mt-0.5">⚠️</span>
+              <span>{error}</span>
+            </div>
+            {debugInfo && (
+              <p className="text-[#EF4444]/60 text-xs font-mono mt-1 break-all">{debugInfo}</p>
+            )}
+          </div>
+        )}
       </form>
     </motion.div>
   );
