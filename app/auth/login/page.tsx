@@ -1,131 +1,67 @@
 "use client";
 
-import { useState, Suspense } from "react";
-import { motion } from "framer-motion";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { useState, useEffect, Suspense } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useSearchParams } from "next/navigation";
+import { Loader2, Mail, CheckCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
+// IMPORTANT: Go to Supabase → Authentication → URL Configuration
+// Add to Redirect URLs: https://fluentacademy-englishapp.vercel.app/auth/callback
+
+const REDIRECT_URL = "https://fluentacademy-englishapp.vercel.app/auth/callback";
+const RESEND_COOLDOWN = 60;
+
 function AuthForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") || "/dashboard";
+  const urlError = searchParams.get("error");
 
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [debugInfo, setDebugInfo] = useState<string | null>(null);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(urlError || null);
+  const [countdown, setCountdown] = useState(0);
 
-  const handleSubmit = async (e: React.SyntheticEvent) => {
-    e.preventDefault();
-    alert("Button clicked!");
-    console.log("[Auth] form submitted", { email: email.trim(), passwordLength: password.length });
+  useEffect(() => {
+    if (countdown <= 0) return;
+    const t = setTimeout(() => setCountdown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [countdown]);
 
-    if (!email || !password) {
-      console.log("[Auth] missing email or password");
-      return;
-    }
-
+  const sendLink = async (e?: React.SyntheticEvent) => {
+    e?.preventDefault();
+    if (!email.trim()) return;
     setLoading(true);
     setError(null);
-    setDebugInfo(null);
-
-    // Check env vars
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    console.log("[Auth] env check", {
-      hasUrl: !!supabaseUrl && !supabaseUrl.includes("placeholder"),
-      hasKey: !!supabaseKey && !supabaseKey.includes("placeholder"),
-      url: supabaseUrl?.slice(0, 30),
-    });
-
-    if (!supabaseUrl || supabaseUrl.includes("placeholder")) {
-      setError("Ошибка конфигурации: NEXT_PUBLIC_SUPABASE_URL не задан.");
-      setDebugInfo(`URL: ${supabaseUrl}`);
-      setLoading(false);
-      return;
-    }
 
     try {
-      // Step 1: try sign in
-      console.log("[Auth] trying signInWithPassword…");
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      const { error: otpError } = await supabase.auth.signInWithOtp({
         email: email.trim(),
-        password,
+        options: {
+          emailRedirectTo: REDIRECT_URL,
+        },
       });
-      console.log("[Auth] signIn result", { user: signInData?.user?.id, error: signInError?.message });
 
-      if (!signInError && signInData?.session) {
-        console.log("[Auth] sign in success, redirecting to", redirectTo);
-        router.push("/dashboard");
-        router.refresh();
-        return;
+      if (otpError) {
+        setError(otpError.message);
+      } else {
+        setSent(true);
+        setCountdown(RESEND_COOLDOWN);
       }
-
-      // Step 2: user may not exist yet — try sign up
-      console.log("[Auth] sign in failed, trying signUp…", signInError?.message);
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: email.trim(),
-        password,
-      });
-      console.log("[Auth] signUp result", {
-        user: signUpData?.user?.id,
-        session: !!signUpData?.session,
-        error: signUpError?.message,
-      });
-
-      if (!signUpError && signUpData?.user) {
-        if (signUpData.session) {
-          // Auto-confirmed — already have a session
-          console.log("[Auth] signUp with auto-confirm, redirecting…");
-          router.push("/dashboard");
-          router.refresh();
-          return;
-        }
-
-        // No session yet (email confirmation required in Supabase dashboard).
-        // Try signing in immediately in case it was just created.
-        console.log("[Auth] signUp succeeded but no session, retrying signIn…");
-        const { data: retryData, error: retryError } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
-          password,
-        });
-        console.log("[Auth] retry signIn result", { session: !!retryData?.session, error: retryError?.message });
-
-        if (!retryError && retryData?.session) {
-          router.push("/dashboard");
-          router.refresh();
-          return;
-        }
-
-        // Account created but email confirmation is required
-        setError("Аккаунт создан! Проверь почту и подтверди email, затем войди снова.");
-        setLoading(false);
-        return;
-      }
-
-      // Both failed — wrong password for existing account
-      const msg = signUpError?.message || signInError?.message || "unknown";
-      console.log("[Auth] both failed", { signInError: signInError?.message, signUpError: signUpError?.message });
-      setError("Неверный пароль. Попробуй ещё раз.");
-      setDebugInfo(`Debug: signIn="${signInError?.message}" signUp="${msg}"`);
     } catch (err) {
-      console.error("[Auth] unexpected error", err);
-      setError(`Неожиданная ошибка: ${err instanceof Error ? err.message : String(err)}`);
+      setError(err instanceof Error ? err.message : "Неизвестная ошибка");
     } finally {
       setLoading(false);
     }
   };
 
+  const resend = async () => {
+    if (countdown > 0) return;
+    await sendLink();
+  };
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.55, ease: "easeOut" }}
-      className="w-full max-w-sm mx-auto"
-    >
+    <div className="w-full max-w-sm mx-auto">
       {/* Logo */}
       <div className="flex items-center gap-2.5 mb-10">
         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center text-white font-extrabold text-base shadow-xl shadow-indigo-500/30">
@@ -136,81 +72,112 @@ function AuthForm() {
         </span>
       </div>
 
-      <h1 className="text-3xl font-extrabold text-white mb-2">
-        Добро пожаловать в Fluenta 👋
-      </h1>
-      <p className="text-[#64748B] mb-8 text-sm">
-        Введи email чтобы войти или создать аккаунт
-      </p>
+      <AnimatePresence mode="wait">
+        {!sent ? (
+          /* ── Email form ── */
+          <motion.div
+            key="form"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.35 }}
+          >
+            <h1 className="text-3xl font-extrabold text-white mb-2">
+              Войти в Fluenta ✨
+            </h1>
+            <p className="text-[#64748B] mb-8 text-sm">
+              Введи email — мы отправим тебе ссылку для входа
+            </p>
 
-      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-        <div>
-          <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">
-            Email
-          </label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="ты@example.com"
-            autoComplete="email"
-            required
-            className="w-full bg-[#1E293B] border border-[#334155] hover:border-[#475569] focus:border-[#6366F1] rounded-xl px-4 py-3.5 text-white placeholder-[#475569] text-sm transition-colors outline-none"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">
-            Пароль
-          </label>
-          <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Минимум 8 символов"
-              autoComplete="current-password"
-              required
-              className="w-full bg-[#1E293B] border border-[#334155] hover:border-[#475569] focus:border-[#6366F1] rounded-xl px-4 py-3.5 pr-12 text-white placeholder-[#475569] text-sm transition-colors outline-none"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-[#475569] hover:text-[#94A3B8] transition-colors"
-              aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"}
-            >
-              {showPassword ? (
-                <EyeOff className="w-4 h-4" />
-              ) : (
-                <Eye className="w-4 h-4" />
-              )}
-            </button>
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          onClick={handleSubmit}
-          disabled={loading || !email || !password}
-          className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-semibold text-sm text-white bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] hover:from-[#5558E3] hover:to-[#7C3AED] disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-[1.01] hover:shadow-lg hover:shadow-indigo-500/25 active:scale-[0.99]"
-        >
-          {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-          {loading ? "Входим…" : "Войти / Зарегистрироваться"}
-        </button>
-
-        {error && (
-          <div className="flex flex-col gap-1 bg-[#EF4444]/10 border border-[#EF4444]/30 rounded-xl px-4 py-3 text-sm text-[#EF4444]">
-            <div className="flex items-start gap-2">
-              <span className="mt-0.5">⚠️</span>
-              <span>{error}</span>
-            </div>
-            {debugInfo && (
-              <p className="text-[#EF4444]/60 text-xs font-mono mt-1 break-all">{debugInfo}</p>
+            {error && (
+              <div className="flex items-start gap-2 bg-[#EF4444]/10 border border-[#EF4444]/30 rounded-xl px-4 py-3 mb-6 text-sm text-[#EF4444]">
+                <span className="mt-0.5">⚠️</span>
+                <span>{error}</span>
+              </div>
             )}
-          </div>
+
+            <form onSubmit={sendLink} noValidate>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-[#94A3B8] mb-1.5">
+                  Email
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#475569]" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="ты@example.com"
+                    autoComplete="email"
+                    autoFocus
+                    required
+                    className="w-full bg-[#1E293B] border border-[#334155] hover:border-[#475569] focus:border-[#6366F1] rounded-xl pl-10 pr-4 py-3.5 text-white placeholder-[#475569] text-sm transition-colors outline-none"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                onClick={sendLink}
+                disabled={loading || !email.trim()}
+                className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-semibold text-sm text-white bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] hover:from-[#5558E3] hover:to-[#7C3AED] disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-[1.01] hover:shadow-lg hover:shadow-indigo-500/25 active:scale-[0.99]"
+              >
+                {loading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : null}
+                {loading ? "Отправляем…" : "Отправить ссылку →"}
+              </button>
+            </form>
+          </motion.div>
+        ) : (
+          /* ── Success screen ── */
+          <motion.div
+            key="success"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            className="text-center"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.1 }}
+              className="text-6xl mb-6"
+            >
+              ✅
+            </motion.div>
+
+            <h2 className="text-2xl font-extrabold text-white mb-2">
+              Письмо отправлено!
+            </h2>
+            <p className="text-[#94A3B8] text-sm mb-1">
+              Проверь почту{" "}
+              <span className="text-white font-medium">{email}</span>{" "}
+              и нажми на ссылку
+            </p>
+            <p className="text-[#475569] text-sm mb-8">
+              Письмо придёт в течение 1 минуты
+            </p>
+
+            <div className="bg-[#1E293B] border border-[#334155] rounded-2xl px-5 py-4 mb-6 text-sm text-[#64748B]">
+              Не видишь? Проверь папку{" "}
+              <span className="text-[#94A3B8] font-medium">Спам</span>
+            </div>
+
+            <button
+              onClick={resend}
+              disabled={countdown > 0}
+              className="w-full py-3.5 rounded-xl font-semibold text-sm border transition-all disabled:opacity-50 disabled:cursor-not-allowed border-[#334155] text-[#94A3B8] hover:border-[#475569] hover:text-white"
+            >
+              {countdown > 0
+                ? `Отправить снова (${countdown}с)`
+                : "Отправить снова"}
+            </button>
+          </motion.div>
         )}
-      </form>
-    </motion.div>
+      </AnimatePresence>
+    </div>
   );
 }
 
