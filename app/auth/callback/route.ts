@@ -5,9 +5,12 @@ import { NextResponse } from 'next/server'
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
-  const cookieStore = await cookies()
+
+  const response = NextResponse.redirect(new URL('/dashboard', requestUrl.origin))
 
   if (code) {
+    const cookieStore = await cookies()
+
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -18,7 +21,7 @@ export async function GET(request: Request) {
           },
           setAll(cookiesToSet) {
             cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options)
+              response.cookies.set(name, value, options)
             })
           },
         },
@@ -27,5 +30,5 @@ export async function GET(request: Request) {
     await supabase.auth.exchangeCodeForSession(code)
   }
 
-  return NextResponse.redirect(new URL('/dashboard', requestUrl.origin))
+  return response
 }
