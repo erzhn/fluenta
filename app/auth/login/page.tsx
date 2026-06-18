@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useState, useEffect, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams } from "next/navigation";
@@ -7,9 +9,9 @@ import { Loader2, Mail, CheckCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 // IMPORTANT: Go to Supabase → Authentication → URL Configuration
-// Add to Redirect URLs: https://fluentacademy-englishapp.vercel.app/auth/confirm
+// Add to Redirect URLs: https://fluentacademy-englishapp.vercel.app/auth/callback
 
-const REDIRECT_URL = "https://fluentacademy-englishapp.vercel.app/auth/confirm";
+const REDIRECT_URL = "https://fluentacademy-englishapp.vercel.app/auth/callback";
 const RESEND_COOLDOWN = 60;
 
 function AuthForm() {
@@ -39,6 +41,7 @@ function AuthForm() {
         email: email.trim(),
         options: {
           emailRedirectTo: REDIRECT_URL,
+          shouldCreateUser: true,
         },
       });
 
