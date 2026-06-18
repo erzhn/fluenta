@@ -21,7 +21,10 @@ export default function LoginPage() {
     setError('')
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
-      options: { shouldCreateUser: true },
+      options: {
+        shouldCreateUser: true,
+        emailRedirectTo: 'https://fluentacademy-englishapp.vercel.app/auth/confirm',
+      },
     })
     if (error) { setError(error.message); setLoading(false) }
     else { setStep('code'); setLoading(false) }
