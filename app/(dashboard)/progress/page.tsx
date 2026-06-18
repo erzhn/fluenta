@@ -1,671 +1,464 @@
-"use client";
+'use client'
 
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import Link from "next/link";
+import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import {
-  Chart as ChartJS,
-  RadialLinearScale, PointElement, LineElement, Filler,
-  CategoryScale, LinearScale, BarElement, ArcElement,
-  Title, Tooltip, Legend,
-} from "chart.js";
-import { Radar, Line, Bar, Doughnut } from "react-chartjs-2";
-import { Trophy, BookOpen, Layers, Award, TrendingUp, ChevronRight, Lock } from "lucide-react";
-import { AchievementBadge } from "@/components/gamification/AchievementBadge";
-import { XPBar } from "@/components/gamification/XPBar";
-import { getLevelFromXP, resolveAchievements, ACHIEVEMENTS } from "@/lib/gamification";
-import { LESSONS, LEVEL_COLORS } from "@/lib/lessons-data";
-import { supabase } from "@/lib/supabase";
-import type { CEFRLevel } from "@/lib/lessons-data";
+  Flame, Zap, BookOpen, MessageSquare,
+  Lock, Trophy, Calendar, ArrowRight, TrendingUp,
+} from 'lucide-react'
+import Link from 'next/link'
+import { supabase } from '@/lib/supabase'
 
-ChartJS.register(
-  RadialLinearScale, PointElement, LineElement, Filler,
-  CategoryScale, LinearScale, BarElement, ArcElement,
-  Title, Tooltip, Legend,
-);
+// ── Glassmorphism helper ───────────────────────────────────────────────────────
+const glass = 'bg-white/[0.04] backdrop-blur-xl border border-white/10'
 
-type TabId = "overview" | "lessons" | "vocabulary" | "achievements";
+// ── CEFR level config with XP thresholds ──────────────────────────────────────
+const CEFR = [
+  { level: 'A1', min: 0,    max: 500,      color: '#10b981', bg: '#10b98120' },
+  { level: 'A2', min: 500,  max: 1500,     color: '#3b82f6', bg: '#3b82f620' },
+  { level: 'B1', min: 1500, max: 3000,     color: '#8b5cf6', bg: '#8b5cf620' },
+  { level: 'B2', min: 3000, max: 5000,     color: '#f59e0b', bg: '#f59e0b20' },
+  { level: 'C1', min: 5000, max: 8000,     color: '#ef4444', bg: '#ef444420' },
+  { level: 'C2', min: 8000, max: Infinity, color: '#ec4899', bg: '#ec489920' },
+]
 
-const TABS: { id: TabId; label: string; icon: React.ElementType }[] = [
-  { id: "overview",      label: "Обзор",         icon: TrendingUp },
-  { id: "lessons",       label: "Уроки",          icon: BookOpen   },
-  { id: "vocabulary",    label: "Словарь",        icon: Layers     },
-  { id: "achievements",  label: "Достижения",     icon: Trophy     },
-];
-
-const CHART_COMMON = {
-  responsive: true,
-  maintainAspectRatio: false as const,
-  plugins: {
-    legend: { display: false },
-    tooltip: {
-      backgroundColor: "#1E293B",
-      borderColor: "#334155",
-      borderWidth: 1,
-      titleColor: "#F8FAFC",
-      bodyColor: "#94A3B8",
-    },
-  },
-};
-
-const CEFR_LEVELS: CEFRLevel[] = ["A1","A2","B1","B2","C1","C2"];
-const LESSONS_PER_LEVEL = 5;
-
-const RU_MONTHS = ["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"];
-
-interface ProgressData {
-  xp: number;
-  streak: number;
-  cefrLevel: CEFRLevel;
-  lessonsCompleted: number;
-  completedByLevel: Record<CEFRLevel, { count: number; dates: string[] }>;
-  weeklyVocab: number[];
-  totalVocab: number;
-  masteredVocab: number;
-  learningVocab: number;
-  dueVocab: number;
-  xpHistory: { date: string; xp: number }[];
-  lessonsHistory: { lesson_id: string; completed_at: string; score: number }[];
-  aiMessages: number;
+function cefrFromXP(xp: number) {
+  return CEFR.find((l) => xp >= l.min && xp < l.max) ?? CEFR[CEFR.length - 1]
 }
 
-// ─── Overview Tab ─────────────────────────────────────────────────────────────
-function OverviewTab({ data }: { data: ProgressData }) {
-  const levelInfo = getLevelFromXP(data.xp);
+function cefrProgress(xp: number) {
+  const lvl = cefrFromXP(xp)
+  if (!isFinite(lvl.max)) return { pct: 100, earned: xp - lvl.min, needed: 0 }
+  const earned = xp - lvl.min
+  const needed = lvl.max - lvl.min
+  return { pct: Math.min(100, Math.round((earned / needed) * 100)), earned, needed }
+}
 
-  // Derive skill levels from available data
-  const cefrIdx = CEFR_LEVELS.indexOf(data.cefrLevel);
-  const baseSkill = Math.round(30 + cefrIdx * 12);
-  const lessonBonus = Math.min(20, data.lessonsCompleted * 2);
+function cefrNext(level: string) {
+  const idx = CEFR.findIndex((l) => l.level === level)
+  return idx >= 0 && idx < CEFR.length - 1 ? CEFR[idx + 1] : null
+}
 
-  const radarValues = [
-    Math.min(99, baseSkill + lessonBonus),     // Чтение
-    Math.min(99, baseSkill + Math.min(15, data.aiMessages)),  // Письмо
-    Math.min(99, baseSkill + 5),               // Аудирование
-    Math.min(99, baseSkill - 5),               // Говорение
-    Math.min(99, baseSkill + lessonBonus + 5), // Грамматика
-    Math.min(99, baseSkill + Math.min(25, data.totalVocab / 8)), // Словарь
-    Math.min(99, baseSkill - 10),              // Произношение
-    Math.min(99, baseSkill - 8),               // Беглость
-  ];
+// ── Date helpers ───────────────────────────────────────────────────────────────
+function last7Days(): { date: string; label: string }[] {
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date()
+    d.setDate(d.getDate() - (6 - i))
+    return {
+      date: d.toISOString().split('T')[0],
+      label: d.toLocaleDateString('en-US', { weekday: 'short' }),
+    }
+  })
+}
 
-  // XP history: last 30 days from lessonsHistory
-  const today = new Date();
-  const xpByDay: number[] = Array(30).fill(0);
-  data.lessonsHistory.forEach((r) => {
-    if (r.completed_at) {
-      const d = new Date(r.completed_at);
-      const daysAgo = Math.floor((today.getTime() - d.getTime()) / 86400000);
-      if (daysAgo >= 0 && daysAgo < 30) {
-        xpByDay[29 - daysAgo] += 50 + (r.score === 5 ? 25 : 0);
+function relativeDate(iso: string): string {
+  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000)
+  if (diff === 0) return 'Today'
+  if (diff === 1) return 'Yesterday'
+  if (diff < 7) return `${diff} days ago`
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+// ── Animation ──────────────────────────────────────────────────────────────────
+const fadeUp = {
+  hidden: { opacity: 0, y: 18 },
+  visible: (i = 0) => ({
+    opacity: 1, y: 0,
+    transition: { duration: 0.45, delay: i * 0.07, ease: 'easeOut' as const },
+  }),
+}
+
+// ── Types ──────────────────────────────────────────────────────────────────────
+interface DayActivity { date: string; minutes: number; xp_earned: number }
+interface RecentConv   { id: string; title: string; updated_at: string }
+
+// ──────────────────────────────────────────────────────────────────────────────
+export default function ProgressPage() {
+  const [loading, setLoading] = useState(true)
+
+  // profile
+  const [xp, setXp]               = useState(0)
+  const [streak, setStreak]        = useState(0)
+  const [cefrLevel, setCefrLevel]  = useState('A1')
+
+  // counts
+  const [vocabCount, setVocabCount]       = useState(0)
+  const [convCount, setConvCount]         = useState(0)
+  const [lessonsCount, setLessonsCount]   = useState(0)
+
+  // chart + activity
+  const [weekData, setWeekData]       = useState<DayActivity[]>([])
+  const [recentConvs, setRecentConvs] = useState<RecentConv[]>([])
+
+  useEffect(() => {
+    ;(async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) { setLoading(false); return }
+      const uid = session.user.id
+
+      const weekAgo = new Date()
+      weekAgo.setDate(weekAgo.getDate() - 7)
+
+      const [profRes, vocabRes, convRes, lessonsRes, activityRes] = await Promise.allSettled([
+        supabase.from('profiles').select('xp,streak,current_level').eq('id', uid).single(),
+        supabase.from('vocabulary').select('id', { count: 'exact', head: true }).eq('user_id', uid),
+        supabase.from('ai_conversations').select('id,title,updated_at').eq('user_id', uid).order('updated_at', { ascending: false }).limit(10),
+        supabase.from('lessons_progress').select('id', { count: 'exact', head: true }).eq('user_id', uid).eq('completed', true),
+        supabase.from('daily_activity').select('date,minutes,xp_earned').eq('user_id', uid).gte('date', weekAgo.toISOString().split('T')[0]).order('date'),
+      ])
+
+      if (profRes.status === 'fulfilled' && profRes.value.data) {
+        const p = profRes.value.data
+        setXp(p.xp ?? 0)
+        setStreak(p.streak ?? 0)
+        setCefrLevel(p.current_level ?? 'A1')
       }
-    }
-  });
-  // Accumulate XP
-  const xpAccum: number[] = [];
-  let running = Math.max(0, data.xp - xpByDay.reduce((a, b) => a + b, 0));
-  xpByDay.forEach((v) => { running += v; xpAccum.push(running); });
+      if (vocabRes.status === 'fulfilled')   setVocabCount(vocabRes.value.count ?? 0)
+      if (convRes.status === 'fulfilled' && convRes.value.data) {
+        setConvCount(convRes.value.data.length)
+        setRecentConvs(convRes.value.data as RecentConv[])
+      }
+      if (lessonsRes.status === 'fulfilled') setLessonsCount(lessonsRes.value.count ?? 0)
+      if (activityRes.status === 'fulfilled' && activityRes.value.data) {
+        setWeekData(activityRes.value.data as DayActivity[])
+      }
 
-  const dayLabels = Array.from({ length: 30 }, (_, i) => {
-    const d = new Date(today);
-    d.setDate(today.getDate() - 29 + i);
-    return i % 5 === 0 ? `${d.getDate()} ${RU_MONTHS[d.getMonth()]}` : "";
-  });
+      setLoading(false)
+    })()
+  }, [])
 
-  // Time by type (approximate)
-  const lessonMins = data.lessonsCompleted * 8;
-  const aiMins = Math.floor(data.aiMessages * 0.5);
-  const vocabMins = data.totalVocab * 0.3;
-  const totalMins = lessonMins + aiMins + vocabMins + 5;
+  const lvlInfo   = cefrFromXP(xp)
+  const lvlProg   = cefrProgress(xp)
+  const nextLvl   = cefrNext(lvlInfo.level)
+  const days      = last7Days()
+  const maxMins   = Math.max(...weekData.map((d) => d.minutes), 1)
 
-  // Prediction
-  const weeklyXP = data.lessonsHistory.filter((r) => {
-    const d = new Date(r.completed_at ?? "");
-    return (today.getTime() - d.getTime()) < 7 * 86400000;
-  }).length * 50;
-  const xpPerDay = Math.max(1, weeklyXP / 7);
-  const xpForC1 = 7000;
-  const xpNeeded = Math.max(0, xpForC1 - data.xp);
-  const monthsToC1 = xpNeeded > 0 ? Math.ceil(xpNeeded / (xpPerDay * 30)) : 0;
+  const achievements = [
+    {
+      id: 'first_conv',
+      emoji: '💬',
+      title: 'First Conversation',
+      desc: 'Chat with Zhan at least once',
+      unlocked: convCount >= 1,
+      progress: Math.min(100, convCount * 100),
+    },
+    {
+      id: 'word_collector',
+      emoji: '📚',
+      title: 'Word Collector',
+      desc: 'Add 10 words to vocabulary',
+      unlocked: vocabCount >= 10,
+      progress: Math.min(100, Math.round((vocabCount / 10) * 100)),
+    },
+    {
+      id: 'week_warrior',
+      emoji: '🔥',
+      title: 'Week Warrior',
+      desc: '7 day streak',
+      unlocked: streak >= 7,
+      progress: Math.min(100, Math.round((streak / 7) * 100)),
+    },
+    {
+      id: 'grammar_master',
+      emoji: '✅',
+      title: 'Grammar Master',
+      desc: 'Complete 5 lessons',
+      unlocked: lessonsCount >= 5,
+      progress: Math.min(100, Math.round((lessonsCount / 5) * 100)),
+    },
+  ]
+
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto space-y-6 pb-8">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="h-28 bg-white/5 rounded-2xl animate-pulse" />
+        ))}
+      </div>
+    )
+  }
 
   return (
-    <div className="space-y-5">
-      {/* XP progress */}
-      <div className="bg-[#1E293B] border border-[#334155] rounded-2xl p-5">
-        <div className="flex items-center justify-between mb-3">
+    <div className="max-w-4xl mx-auto space-y-7 pb-8">
+
+      {/* ── 1. Header ──────────────────────────────────────────────────────── */}
+      <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <div className="text-white font-bold">{levelInfo.name}</div>
-            <div className="text-[#475569] text-sm">{data.xp.toLocaleString()} XP всего</div>
+            <h1 className="text-2xl sm:text-3xl font-black text-white">My Progress 📈</h1>
+            <p className="text-[#64748b] text-sm mt-1">Track your English learning journey</p>
           </div>
-          {monthsToC1 > 0 && (
-            <div className="text-right">
-              <div className="text-[#6366F1] text-xs font-medium">📈 Предсказание</div>
-              <div className="text-white text-xs mt-0.5">C1 через ~{monthsToC1} мес.</div>
-            </div>
-          )}
-        </div>
-        <XPBar xp={data.xp} />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        {/* Radar */}
-        <div className="bg-[#1E293B] border border-[#334155] rounded-2xl p-5">
-          <h3 className="text-white font-bold text-sm mb-4">Навыки</h3>
-          <div className="h-64">
-            <Radar
-              data={{
-                labels: ["Чтение","Письмо","Аудирование","Говорение","Грамматика","Словарь","Произношение","Беглость"],
-                datasets: [{
-                  data: radarValues,
-                  backgroundColor: "#6366F120",
-                  borderColor: "#6366F1",
-                  borderWidth: 2,
-                  pointBackgroundColor: "#6366F1",
-                  pointBorderColor: "#0F172A",
-                  pointBorderWidth: 2,
-                  pointRadius: 4,
-                }],
-              }}
-              options={{
-                ...CHART_COMMON,
-                scales: {
-                  r: {
-                    min: 0, max: 100,
-                    grid: { color: "#1E293B" },
-                    angleLines: { color: "#1E293B" },
-                    pointLabels: { color: "#64748B", font: { size: 10 } },
-                    ticks: { display: false, stepSize: 25 },
-                  },
-                },
-              }}
-            />
-          </div>
-        </div>
-
-        {/* XP Line chart */}
-        <div className="bg-[#1E293B] border border-[#334155] rounded-2xl p-5">
-          <h3 className="text-white font-bold text-sm mb-4">XP за 30 дней</h3>
-          <div className="h-64">
-            <Line
-              data={{
-                labels: dayLabels,
-                datasets: [{
-                  data: xpAccum,
-                  borderColor: "#6366F1",
-                  backgroundColor: "rgba(99,102,241,0.08)",
-                  fill: true,
-                  tension: 0.4,
-                  pointRadius: 0,
-                  borderWidth: 2,
-                }],
-              }}
-              options={{
-                ...CHART_COMMON,
-                scales: {
-                  x: { grid: { display: false }, ticks: { color: "#475569", font: { size: 10 }, maxRotation: 0 } },
-                  y: { grid: { color: "#1E293B" }, ticks: { color: "#475569", font: { size: 10 } }, border: { display: false } },
-                },
-              }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Time pie */}
-      <div className="bg-[#1E293B] border border-[#334155] rounded-2xl p-5">
-        <h3 className="text-white font-bold text-sm mb-5">Время по активностям</h3>
-        <div className="flex items-center gap-8">
-          <div className="w-40 h-40 shrink-0">
-            <Doughnut
-              data={{
-                labels: ["Уроки","AI чат","Словарь","Прочее"],
-                datasets: [{
-                  data: [lessonMins, aiMins, Math.round(vocabMins), 5],
-                  backgroundColor: ["#6366F1","#8B5CF6","#10B981","#334155"],
-                  borderWidth: 0,
-                }],
-              }}
-              options={{
-                cutout: "65%",
-                plugins: {
-                  legend: { display: false },
-                  tooltip: { ...CHART_COMMON.plugins.tooltip },
-                },
-              }}
-            />
-          </div>
-          <div className="space-y-3 flex-1">
-            {[
-              { label: "Уроки", mins: lessonMins, color: "#6366F1" },
-              { label: "AI чат", mins: aiMins, color: "#8B5CF6" },
-              { label: "Словарь", mins: Math.round(vocabMins), color: "#10B981" },
-            ].map((item) => (
-              <div key={item.label} className="flex items-center gap-3">
-                <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-                <div className="flex-1 text-sm text-[#94A3B8]">{item.label}</div>
-                <div className="text-white text-sm font-medium">{item.mins} мин</div>
-                <div className="text-[#475569] text-xs w-8 text-right">
-                  {Math.round((item.mins / Math.max(1, totalMins)) * 100)}%
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── Lessons Tab ──────────────────────────────────────────────────────────────
-function LessonsTab({ data }: { data: ProgressData }) {
-  const CATEGORY_SCORES: Record<string, number[]> = {};
-  data.lessonsHistory.forEach((r) => {
-    const lesson = LESSONS.find((l) => l.id === r.lesson_id);
-    if (lesson) {
-      if (!CATEGORY_SCORES[lesson.category]) CATEGORY_SCORES[lesson.category] = [];
-      CATEGORY_SCORES[lesson.category].push(r.score);
-    }
-  });
-
-  const weakCategories = Object.entries(CATEGORY_SCORES)
-    .map(([cat, scores]) => ({ cat, avg: scores.reduce((a, b) => a + b, 0) / scores.length }))
-    .sort((a, b) => a.avg - b.avg)
-    .slice(0, 3);
-
-  return (
-    <div className="space-y-5">
-      {/* Progress by CEFR level */}
-      <div className="bg-[#1E293B] border border-[#334155] rounded-2xl p-5">
-        <h3 className="text-white font-bold text-sm mb-5">Прогресс по уровням</h3>
-        <div className="space-y-4">
-          {CEFR_LEVELS.map((lvl) => {
-            const completed = data.completedByLevel[lvl]?.count ?? 0;
-            const pct = Math.round((completed / LESSONS_PER_LEVEL) * 100);
-            const color = LEVEL_COLORS[lvl];
-            return (
-              <div key={lvl} className="flex items-center gap-4">
-                <div
-                  className="w-10 h-6 rounded-lg flex items-center justify-center text-xs font-extrabold shrink-0"
-                  style={{ backgroundColor: `${color}20`, color }}
-                >{lvl}</div>
-                <div className="flex-1 h-2 bg-[#0F172A] rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${pct}%` }}
-                    transition={{ duration: 0.8, delay: 0.1 * CEFR_LEVELS.indexOf(lvl) }}
-                    className="h-full rounded-full"
-                    style={{ backgroundColor: color }}
-                  />
-                </div>
-                <div className="text-white text-xs w-10 text-right">{completed}/{LESSONS_PER_LEVEL}</div>
-                <div className="text-[#475569] text-xs w-8 text-right">{pct}%</div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Completed lessons list */}
-      <div className="bg-[#1E293B] border border-[#334155] rounded-2xl p-5">
-        <h3 className="text-white font-bold text-sm mb-4">Пройденные уроки</h3>
-        {data.lessonsHistory.length === 0 ? (
-          <div className="text-center py-8 text-[#475569]">
-            <div className="text-3xl mb-2">📖</div>
-            <div className="text-sm">Уроки ещё не завершены</div>
-          </div>
-        ) : (
-          <div className="space-y-2 max-h-72 overflow-y-auto">
-            {[...data.lessonsHistory].reverse().map((r, i) => {
-              const lesson = LESSONS.find((l) => l.id === r.lesson_id);
-              if (!lesson) return null;
-              const color = LEVEL_COLORS[lesson.level];
-              const date = r.completed_at ? new Date(r.completed_at).toLocaleDateString("ru-RU", { day: "numeric", month: "short" }) : "";
-              return (
-                <Link key={i} href={`/lessons/${lesson.id}`}>
-                  <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#0F172A] transition-all">
-                    <div className="w-1 h-8 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-white text-sm font-medium truncate">{lesson.titleRu}</div>
-                      <div className="text-[#475569] text-xs">{lesson.level} · {date}</div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: 5 }).map((_, si) => (
-                        <div
-                          key={si}
-                          className="w-2.5 h-2.5 rounded-full"
-                          style={{ backgroundColor: si < (r.score ?? 0) ? "#10B981" : "#1E293B" }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* Weak topics */}
-      {weakCategories.length > 0 && (
-        <div className="bg-[#1E293B] border border-[#EF4444]/20 rounded-2xl p-5">
-          <h3 className="text-white font-bold text-sm mb-3">⚠️ Слабые темы</h3>
-          <div className="space-y-2">
-            {weakCategories.map(({ cat, avg }) => (
-              <div key={cat} className="flex items-center gap-3">
-                <div className="text-[#94A3B8] text-sm flex-1">{cat}</div>
-                <div className="flex gap-1">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <div key={i} className="w-2.5 h-2.5 rounded-full"
-                      style={{ backgroundColor: i < Math.round(avg) ? "#F59E0B" : "#1E293B" }} />
-                  ))}
-                </div>
-                <div className="text-[#F59E0B] text-xs w-16 text-right">{avg.toFixed(1)}/5.0</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── Vocabulary Tab ───────────────────────────────────────────────────────────
-function VocabularyTab({ data }: { data: ProgressData }) {
-  const stats = [
-    { label: "Всего слов",    value: data.totalVocab,    color: "#6366F1", icon: "📚" },
-    { label: "Освоено",       value: data.masteredVocab, color: "#10B981", icon: "✅" },
-    { label: "Изучаю",        value: data.learningVocab, color: "#F59E0B", icon: "🔄" },
-    { label: "На повторение", value: data.dueVocab,      color: "#EF4444", icon: "⏰" },
-  ];
-
-  return (
-    <div className="space-y-5">
-      {/* Stats grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {stats.map((s) => (
-          <motion.div
-            key={s.label}
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-[#1E293B] border border-[#334155] rounded-2xl p-4"
+          <div
+            className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-black shrink-0 self-start sm:self-auto"
+            style={{ backgroundColor: lvlInfo.bg, color: lvlInfo.color, border: `1px solid ${lvlInfo.color}40` }}
           >
-            <div className="text-2xl mb-2">{s.icon}</div>
-            <div className="text-2xl font-extrabold text-white" style={{ color: s.color }}>{s.value}</div>
-            <div className="text-[#475569] text-xs mt-0.5">{s.label}</div>
+            <TrendingUp className="w-4 h-4" />
+            Level {cefrLevel}
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ── 2. Stats row ───────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {[
+          { icon: Flame,          label: 'Current Streak', value: streak,     unit: streak === 1 ? 'day' : 'days', color: '#f97316', bg: '#f9731620' },
+          { icon: Zap,            label: 'Total XP',       value: xp,         unit: 'xp',                          color: '#a855f7', bg: '#a855f720' },
+          { icon: BookOpen,       label: 'Words Learned',  value: vocabCount, unit: 'words',                       color: '#06b6d4', bg: '#06b6d420' },
+          { icon: MessageSquare,  label: 'Conversations',  value: convCount,  unit: 'chats',                       color: '#10b981', bg: '#10b98120' },
+        ].map((s, i) => (
+          <motion.div key={s.label} custom={i + 1} variants={fadeUp} initial="hidden" animate="visible">
+            <div className={`${glass} rounded-2xl p-4 sm:p-5`}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: s.bg }}>
+                  <s.icon style={{ color: s.color, width: 18, height: 18 }} />
+                </div>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#475569]">{s.unit}</span>
+              </div>
+              <div className="text-3xl font-black text-white leading-none mb-1">{s.value.toLocaleString()}</div>
+              <div className="text-xs text-[#64748b]">{s.label}</div>
+            </div>
           </motion.div>
         ))}
       </div>
 
-      {/* Mastery distribution */}
-      <div className="bg-[#1E293B] border border-[#334155] rounded-2xl p-5">
-        <h3 className="text-white font-bold text-sm mb-4">Распределение слов</h3>
-        {data.totalVocab === 0 ? (
-          <div className="text-center py-8 text-[#475569]">
-            <div className="text-3xl mb-2">📝</div>
-            <div className="text-sm">Слова ещё не добавлены</div>
-            <Link href="/vocabulary" className="text-[#6366F1] text-xs mt-2 inline-block hover:underline">
-              Начать изучение →
-            </Link>
-          </div>
-        ) : (
-          <>
-            <div className="flex h-4 rounded-full overflow-hidden gap-0.5 mb-3">
-              {[
-                { v: data.masteredVocab, c: "#10B981" },
-                { v: data.learningVocab, c: "#F59E0B" },
-                { v: data.dueVocab,      c: "#EF4444" },
-              ].map((seg, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ flex: 0 }}
-                  animate={{ flex: seg.v }}
-                  transition={{ duration: 0.8 }}
-                  style={{ backgroundColor: seg.c, minWidth: seg.v ? 4 : 0 }}
-                />
-              ))}
+      {/* ── 3. CEFR Level progress bar ─────────────────────────────────────── */}
+      <motion.div custom={5} variants={fadeUp} initial="hidden" animate="visible">
+        <div className={`${glass} rounded-2xl p-5 sm:p-6`}>
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="text-white font-bold text-sm">Level Progress</h2>
+              <p className="text-[#64748b] text-xs mt-0.5">
+                {nextLvl
+                  ? `${lvlProg.needed - lvlProg.earned} XP to reach ${nextLvl.level}`
+                  : 'Maximum level reached!'}
+              </p>
             </div>
-            <div className="flex gap-4 flex-wrap text-xs text-[#475569]">
-              {[["#10B981","Освоено"],["#F59E0B","Изучаю"],["#EF4444","К повторению"]].map(([c,l]) => (
-                <div key={l} className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: c }} />
-                  {l}
+            <div
+              className="text-2xl font-black px-3 py-1.5 rounded-xl"
+              style={{ backgroundColor: lvlInfo.bg, color: lvlInfo.color }}
+            >
+              {lvlInfo.level}
+            </div>
+          </div>
+
+          {/* Track with level markers */}
+          <div className="relative mb-3">
+            <div className="h-3 rounded-full bg-white/8 overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${lvlProg.pct}%` }}
+                transition={{ duration: 1.2, delay: 0.4, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
+                className="h-full rounded-full"
+                style={{ background: `linear-gradient(90deg, ${lvlInfo.color}cc, ${lvlInfo.color})` }}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between text-[10px] text-[#475569] mb-5">
+            <span className="font-semibold" style={{ color: lvlInfo.color }}>{lvlInfo.level} · {lvlInfo.min.toLocaleString()} XP</span>
+            <span className="font-semibold text-[#6366f1]">{xp.toLocaleString()} XP</span>
+            {nextLvl && (
+              <span>{nextLvl.level} · {lvlInfo.max.toLocaleString()} XP</span>
+            )}
+          </div>
+
+          {/* All CEFR levels overview */}
+          <div className="grid grid-cols-6 gap-1.5">
+            {CEFR.map((l) => {
+              const reached = xp >= l.min
+              const current = lvlInfo.level === l.level
+              return (
+                <div
+                  key={l.level}
+                  className="rounded-lg py-2 text-center text-xs font-bold transition-all"
+                  style={{
+                    backgroundColor: reached ? l.bg : 'rgba(255,255,255,0.02)',
+                    color: reached ? l.color : '#334155',
+                    border: current ? `1px solid ${l.color}60` : '1px solid rgba(255,255,255,0.04)',
+                  }}
+                >
+                  {l.level}
+                  {reached && !current && <div className="text-[8px] mt-0.5 opacity-60">✓</div>}
+                  {current && <div className="text-[8px] mt-0.5">you</div>}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ── 4. Weekly activity chart ────────────────────────────────────────── */}
+      <motion.div custom={6} variants={fadeUp} initial="hidden" animate="visible">
+        <div className={`${glass} rounded-2xl p-5 sm:p-6`}>
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="text-white font-bold text-sm">Weekly Activity</h2>
+              <p className="text-[#64748b] text-xs mt-0.5">Minutes studied per day</p>
+            </div>
+            <div className={`flex items-center gap-1.5 text-xs text-[#64748b] px-3 py-1.5 rounded-lg bg-white/[0.03]`}>
+              <Calendar className="w-3.5 h-3.5" />
+              Last 7 days
+            </div>
+          </div>
+
+          {/* Bar chart */}
+          <div className="flex items-end gap-2 h-28">
+            {days.map((day, i) => {
+              const entry = weekData.find((d) => d.date === day.date)
+              const mins = entry?.minutes ?? 0
+              const barPct = maxMins > 0 ? (mins / maxMins) * 100 : 0
+              const isToday = i === days.length - 1
+
+              return (
+                <div key={day.date} className="flex-1 flex flex-col items-center gap-1.5 group relative">
+                  {/* Tooltip */}
+                  {mins > 0 && (
+                    <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-[#1e293b] border border-white/10 text-white text-[10px] font-semibold px-2 py-0.5 rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                      {mins} min
+                    </div>
+                  )}
+                  {/* Bar */}
+                  <div className="w-full rounded-t-md relative overflow-hidden" style={{ height: `${Math.max(barPct, 4)}%` }}>
+                    <motion.div
+                      initial={{ scaleY: 0 }}
+                      animate={{ scaleY: 1 }}
+                      transition={{ duration: 0.6, delay: 0.3 + i * 0.06, ease: 'easeOut' }}
+                      className="absolute inset-0 rounded-t-md origin-bottom"
+                      style={{
+                        background: mins > 0
+                          ? (isToday ? 'linear-gradient(180deg, #818cf8, #6366f1)' : 'linear-gradient(180deg, #475569, #334155)')
+                          : 'rgba(255,255,255,0.04)',
+                      }}
+                    />
+                  </div>
+                  {/* Day label */}
+                  <span
+                    className="text-[10px] font-medium"
+                    style={{ color: isToday ? '#818cf8' : '#475569' }}
+                  >
+                    {day.label}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+
+          {weekData.length === 0 && (
+            <p className="text-center text-[#334155] text-xs mt-3">
+              No activity data yet · Start studying to see your chart!
+            </p>
+          )}
+        </div>
+      </motion.div>
+
+      {/* ── 5. Achievements ────────────────────────────────────────────────── */}
+      <motion.div custom={7} variants={fadeUp} initial="hidden" animate="visible">
+        <div className={`${glass} rounded-2xl p-5 sm:p-6`}>
+          <div className="flex items-center gap-2 mb-5">
+            <Trophy className="w-4 h-4 text-[#f59e0b]" />
+            <h2 className="text-white font-bold text-sm">Achievements</h2>
+            <span className="text-xs text-[#475569] ml-auto">
+              {achievements.filter((a) => a.unlocked).length}/{achievements.length} unlocked
+            </span>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-3">
+            {achievements.map((ach, i) => (
+              <motion.div
+                key={ach.id}
+                custom={i}
+                variants={fadeUp}
+                initial="hidden"
+                animate="visible"
+                className={`rounded-2xl p-4 border transition-all relative overflow-hidden ${
+                  ach.unlocked
+                    ? 'bg-gradient-to-r from-[#6366f1]/10 to-[#8b5cf6]/10 border-[#6366f1]/30'
+                    : 'bg-white/[0.02] border-white/[0.06]'
+                }`}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-2xl ${ach.unlocked ? '' : 'grayscale opacity-40'}`}>
+                    {ach.unlocked ? ach.emoji : <Lock className="w-5 h-5 text-[#334155]" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm font-bold leading-snug ${ach.unlocked ? 'text-white' : 'text-[#475569]'}`}>
+                      {ach.title}
+                    </p>
+                    <p className="text-[#64748b] text-xs mt-0.5">{ach.desc}</p>
+                  </div>
+                  {ach.unlocked && (
+                    <div className="w-6 h-6 rounded-full bg-[#10b981]/20 flex items-center justify-center shrink-0">
+                      <span className="text-[#10b981] text-xs">✓</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Progress bar */}
+                {!ach.unlocked && (
+                  <div>
+                    <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${ach.progress}%` }}
+                        transition={{ duration: 0.8, delay: 0.5 + i * 0.1 }}
+                        className="h-full rounded-full bg-gradient-to-r from-[#6366f1] to-[#8b5cf6]"
+                      />
+                    </div>
+                    <p className="text-[#334155] text-[10px] mt-1">{ach.progress}% complete</p>
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ── 6. Recent activity ─────────────────────────────────────────────── */}
+      <motion.div custom={8} variants={fadeUp} initial="hidden" animate="visible">
+        <div className={`${glass} rounded-2xl overflow-hidden`}>
+          <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
+            <h2 className="text-white font-bold text-sm">Recent Activity</h2>
+            {recentConvs.length > 0 && (
+              <Link href="/ai-tutor" className="text-xs text-[#6366f1] hover:text-[#818cf8] transition-colors font-medium flex items-center gap-1">
+                View all <ArrowRight className="w-3 h-3" />
+              </Link>
+            )}
+          </div>
+
+          {recentConvs.length === 0 ? (
+            <div className="py-12 flex flex-col items-center gap-3 text-center px-6">
+              <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-xl">💬</div>
+              <p className="text-white font-semibold text-sm">No activity yet</p>
+              <p className="text-[#475569] text-xs">Start your first lesson or chat with Zhan!</p>
+              <Link href="/ai-tutor">
+                <button className="mt-1 flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white text-sm font-bold hover:scale-[1.03] transition-transform shadow-lg shadow-indigo-500/20">
+                  <MessageSquare className="w-4 h-4" />
+                  Chat with Zhan
+                </button>
+              </Link>
+            </div>
+          ) : (
+            <div className="divide-y divide-white/[0.04]">
+              {recentConvs.map((conv) => (
+                <div key={conv.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-white/[0.02] transition-colors group">
+                  <div className="w-9 h-9 rounded-xl bg-[#6366f120] flex items-center justify-center shrink-0">
+                    <MessageSquare className="w-4 h-4 text-[#6366f1]" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-medium truncate">{conv.title || 'Conversation with Zhan'}</p>
+                    <p className="text-[#475569] text-xs mt-0.5">AI Conversation</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-[#475569] text-xs">{relativeDate(conv.updated_at)}</p>
+                    <p className="text-[#6366f1] text-[10px] font-semibold mt-0.5">+20 XP</p>
+                  </div>
                 </div>
               ))}
             </div>
-          </>
-        )}
-      </div>
-
-      {/* Weekly words bar */}
-      <div className="bg-[#1E293B] border border-[#334155] rounded-2xl p-5">
-        <h3 className="text-white font-bold text-sm mb-4">Слова за неделю</h3>
-        <div className="h-40">
-          <Bar
-            data={{
-              labels: ["Пн","Вт","Ср","Чт","Пт","Сб","Вс"],
-              datasets: [{
-                data: data.weeklyVocab,
-                backgroundColor: "#10B981",
-                borderRadius: 5,
-                borderSkipped: false,
-              }],
-            }}
-            options={{
-              ...CHART_COMMON,
-              scales: {
-                x: { grid: { display: false }, ticks: { color: "#475569", font: { size: 11 } } },
-                y: { grid: { color: "#1E293B" }, ticks: { color: "#475569", font: { size: 10 } }, border: { display: false } },
-              },
-            }}
-          />
+          )}
         </div>
-      </div>
+      </motion.div>
+
     </div>
-  );
-}
-
-// ─── Achievements Tab ─────────────────────────────────────────────────────────
-function AchievementsTab({ data }: { data: ProgressData }) {
-  const achievements = resolveAchievements({
-    lessons_completed: data.lessonsCompleted,
-    streak_days: data.streak,
-    ai_messages: data.aiMessages,
-    perfect_scores: data.lessonsHistory.filter((r) => r.score === 5).length,
-    goal_days: 0,
-    cefr_b1: ["B1","B2","C1","C2"].includes(data.cefrLevel),
-    pronunciation_exercises: 0,
-    writing_sessions: 0,
-    cefr_c1: ["C1","C2"].includes(data.cefrLevel),
-    level_complete: CEFR_LEVELS.some((lvl) => (data.completedByLevel[lvl]?.count ?? 0) >= LESSONS_PER_LEVEL),
-  });
-
-  const unlocked = achievements.filter((a) => a.unlocked);
-  const locked   = achievements.filter((a) => !a.unlocked);
-
-  return (
-    <div className="space-y-5">
-      <div className="flex items-center gap-3">
-        <div className="bg-[#F59E0B]/10 border border-[#F59E0B]/30 rounded-xl px-4 py-2">
-          <span className="text-[#F59E0B] font-bold">{unlocked.length}</span>
-          <span className="text-[#64748B] text-sm"> / {achievements.length} разблокировано</span>
-        </div>
-        <div className="flex-1 h-1.5 bg-[#1E293B] rounded-full overflow-hidden">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${Math.round((unlocked.length / achievements.length) * 100)}%` }}
-            transition={{ duration: 0.8 }}
-            className="h-full bg-[#F59E0B] rounded-full"
-          />
-        </div>
-      </div>
-
-      {unlocked.length > 0 && (
-        <div>
-          <h3 className="text-white font-bold text-sm mb-3">Разблокировано</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {unlocked.map((a) => (
-              <motion.div key={a.id} initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}>
-                <AchievementBadge achievement={a} />
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {locked.length > 0 && (
-        <div>
-          <h3 className="text-[#475569] font-bold text-sm mb-3 flex items-center gap-1.5">
-            <Lock className="w-3.5 h-3.5" /> Заблокировано
-          </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {locked.map((a) => (
-              <motion.div key={a.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <AchievementBadge achievement={a} />
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── Main Progress Page ───────────────────────────────────────────────────────
-export default function ProgressPage() {
-  const [tab, setTab] = useState<TabId>("overview");
-  const [data, setData] = useState<ProgressData | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) { setLoading(false); return; }
-
-        const [profileRes, progressRes, vocabRes, aiRes] = await Promise.all([
-          supabase.from("profiles").select("*").eq("id", user.id).single(),
-          supabase.from("lessons_progress").select("lesson_id, completed, completed_at, score").eq("user_id", user.id).eq("completed", true),
-          supabase.from("vocabulary").select("interval, next_review, created_at").eq("user_id", user.id),
-          supabase.from("ai_conversations").select("id", { count: "exact", head: true }).eq("user_id", user.id),
-        ]);
-
-        const profile = profileRes.data;
-        const lessons = progressRes.data ?? [];
-        const vocab = vocabRes.data ?? [];
-        const aiCount = (aiRes as { count?: number | null }).count ?? 0;
-
-        // Group lessons by CEFR
-        const completedByLevel = {} as Record<CEFRLevel, { count: number; dates: string[] }>;
-        CEFR_LEVELS.forEach((lvl) => { completedByLevel[lvl] = { count: 0, dates: [] }; });
-        lessons.forEach((r) => {
-          const lesson = LESSONS.find((l) => l.id === r.lesson_id);
-          if (lesson) {
-            completedByLevel[lesson.level].count++;
-            if (r.completed_at) completedByLevel[lesson.level].dates.push(r.completed_at);
-          }
-        });
-
-        // Vocab stats
-        const today = new Date();
-        const todayStr = today.toISOString().split("T")[0];
-        const mastered = vocab.filter((v) => (v.interval ?? 0) > 21).length;
-        const due = vocab.filter((v) => v.next_review && v.next_review <= todayStr).length;
-
-        // Weekly vocab (approximate from created_at)
-        const weeklyVocab = Array(7).fill(0);
-        const weekStart = new Date(today);
-        weekStart.setDate(today.getDate() - ((today.getDay() + 6) % 7));
-        weekStart.setHours(0, 0, 0, 0);
-        vocab.forEach((v) => {
-          if (v.created_at) {
-            const d = new Date(v.created_at);
-            if (d >= weekStart) {
-              const dow = (d.getDay() + 6) % 7;
-              weeklyVocab[dow]++;
-            }
-          }
-        });
-
-        setData({
-          xp: profile?.xp ?? 0,
-          streak: profile?.streak ?? 0,
-          cefrLevel: (profile?.current_level ?? "A1") as CEFRLevel,
-          lessonsCompleted: lessons.length,
-          completedByLevel,
-          weeklyVocab,
-          totalVocab: vocab.length,
-          masteredVocab: mastered,
-          learningVocab: vocab.length - mastered - due,
-          dueVocab: due,
-          xpHistory: [],
-          lessonsHistory: lessons.map((r) => ({ lesson_id: r.lesson_id, completed_at: r.completed_at ?? "", score: r.score ?? 0 })),
-          aiMessages: aiCount,
-        });
-      } catch {
-        setData({
-          xp: 0, streak: 0, cefrLevel: "A1", lessonsCompleted: 0,
-          completedByLevel: Object.fromEntries(CEFR_LEVELS.map((l) => [l, { count: 0, dates: [] }])) as unknown as Record<CEFRLevel, { count: number; dates: string[] }>,
-          weeklyVocab: Array(7).fill(0),
-          totalVocab: 0, masteredVocab: 0, learningVocab: 0, dueVocab: 0,
-          xpHistory: [], lessonsHistory: [], aiMessages: 0,
-        });
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="max-w-5xl mx-auto space-y-4 animate-pulse">
-        <div className="h-12 bg-[#1E293B] rounded-2xl w-48" />
-        {[...Array(3)].map((_, i) => <div key={i} className="h-40 bg-[#1E293B] rounded-2xl" />)}
-      </div>
-    );
-  }
-
-  const d = data!;
-
-  return (
-    <div className="max-w-5xl mx-auto pb-10">
-      <div className="mb-6">
-        <h1 className="text-2xl font-extrabold text-white">Прогресс</h1>
-        <p className="text-[#475569] text-sm mt-0.5">Твой путь к мастерству английского</p>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex gap-1 mb-6 bg-[#1E293B] p-1 rounded-2xl border border-[#334155]">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-              tab === t.id
-                ? "bg-[#6366F1] text-white shadow-lg"
-                : "text-[#475569] hover:text-white"
-            }`}
-          >
-            <t.icon className="w-3.5 h-3.5 hidden sm:block" />
-            <span>{t.label}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Tab content */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={tab}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-        >
-          {tab === "overview"     && <OverviewTab     data={d} />}
-          {tab === "lessons"      && <LessonsTab      data={d} />}
-          {tab === "vocabulary"   && <VocabularyTab   data={d} />}
-          {tab === "achievements" && <AchievementsTab data={d} />}
-        </motion.div>
-      </AnimatePresence>
-    </div>
-  );
+  )
 }
