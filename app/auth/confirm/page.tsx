@@ -10,32 +10,58 @@ export default function AuthConfirmPage() {
   useEffect(() => {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { auth: { detectSessionInUrl: true, persistSession: true } }
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        subscription.unsubscribe()
-        router.push('/dashboard')
+    const handleAuth = async () => {
+      // Method 1: Parse hash fragment manually (#access_token=...&refresh_token=...)
+      const hash = window.location.hash
+      if (hash && hash.includes('access_token')) {
+        const params = new URLSearchParams(hash.substring(1))
+        const access_token = params.get('access_token')
+        const refresh_token = params.get('refresh_token')
+        if (access_token && refresh_token) {
+          const { data, error } = await supabase.auth.setSession({ access_token, refresh_token })
+          if (data.session) {
+            router.push('/dashboard')
+            return
+          }
+          if (error) setStatus('Ошибка: ' + error.message)
+        }
       }
-    })
 
-    // Also check immediately
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) router.push('/dashboard')
-    })
+      // Method 2: PKCE code in query params (?code=...)
+      const params = new URLSearchParams(window.location.search)
+      const code = params.get('code')
+      if (code) {
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+        if (data.session) {
+          router.push('/dashboard')
+          return
+        }
+        if (error) setStatus('Ошибка: ' + error.message)
+      }
 
-    const timer = setTimeout(() => setStatus('Ошибка. Попробуй войти снова.'), 10000)
-    return () => { clearTimeout(timer); subscription.unsubscribe() }
+      // Method 3: Session already exists
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        router.push('/dashboard')
+        return
+      }
+
+      // Nothing worked
+      setStatus('Не удалось войти. Попробуй снова.')
+    }
+
+    handleAuth()
   }, [router])
 
   return (
     <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'#0f0f23', color:'white', fontFamily:'sans-serif', flexDirection:'column', gap:'16px' }}>
       <div style={{ fontSize:'48px' }}>✨</div>
-      <p>{status}</p>
-      {status.includes('Ошибка') && (
-        <a href="/auth/login" style={{ color:'#6366f1', textDecoration:'underline' }}>← Вернуться</a>
+      <p style={{ fontSize:'18px' }}>{status}</p>
+      {(status.includes('Ошибка') || status.includes('Не удалось')) && (
+        <a href="/auth/login" style={{ color:'#6366f1', textDecoration:'underline', marginTop:'8px' }}>← Попробовать снова</a>
       )}
     </div>
   )

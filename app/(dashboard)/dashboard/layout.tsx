@@ -11,9 +11,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) router.push('/auth/login')
-    })
+    setTimeout(() => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!session) router.push('/auth/login')
+      })
+    }, 2000)
   }, [router])
 
   return <>{children}</>
