@@ -1,40 +1,44 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { NextResponse } from 'next/server'
 
-const ZHAN_SYSTEM_PROMPT = `You are Zhan, a friendly and encouraging native English speaker and tutor. You help users improve their English through natural conversation. You correct mistakes gently, explain grammar when needed, teach vocabulary in context, and keep conversations engaging. Always respond in a way that helps the user learn. Keep responses concise but helpful. If the user writes in another language, respond in English but acknowledge what they said.`
-
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
     const { messages } = await request.json()
 
-    if (!Array.isArray(messages) || messages.length === 0) {
-      return NextResponse.json({ error: 'Messages required' }, { status: 400 })
-    }
+    const systemPrompt = `You are Zhan, a friendly and encouraging native English speaker and tutor. You help users improve their English through natural conversation. You correct mistakes gently, explain grammar when needed, teach vocabulary in context, and keep conversations engaging. Always respond in a way that helps the user learn. Keep responses concise but helpful. If the user writes in another language, respond in English but acknowledge what they said.`
 
-    const apiKey = process.env.GEMINI_API_KEY
-    if (!apiKey) {
-      return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 })
-    }
-
-    const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
-      systemInstruction: ZHAN_SYSTEM_PROMPT,
-    })
-
-    const history = messages.slice(0, -1).map((m: { role: string; content: string }) => ({
-      role: (m.role === 'assistant' ? 'model' : 'user') as 'user' | 'model',
+    const geminiMessages = messages.map((m: { role: string; content: string }) => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: m.content }],
     }))
 
-    const lastMessage = messages[messages.length - 1].content
-    const chat = model.startChat({ history })
-    const result = await chat.sendMessage(lastMessage)
-    const reply = result.response.text()
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: systemPrompt }] },
+          contents: geminiMessages,
+          generationConfig: {
+            maxOutputTokens: 500,
+            temperature: 0.7,
+          },
+        }),
+      }
+    )
+
+    if (!response.ok) {
+      const err = await response.text()
+      console.error('Gemini error:', err)
+      return NextResponse.json({ error: err }, { status: 500 })
+    }
+
+    const data = await response.json()
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response'
 
     return NextResponse.json({ reply })
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Internal server error'
-    return NextResponse.json({ error: message }, { status: 500 })
+  } catch (error) {
+    console.error('API error:', error)
+    return NextResponse.json({ error: 'Failed to get response' }, { status: 500 })
   }
 }
