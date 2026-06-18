@@ -124,7 +124,7 @@ export function ChatMessage({ message, userId, streaming }: ChatMessageProps) {
       <div className={`max-w-[78%] flex flex-col gap-1 ${isUser ? "items-end" : "items-start"}`}>
         {/* Sender label */}
         <div className={`text-[11px] font-medium ${isUser ? "text-[#475569]" : "text-[#6366F1]"}`}>
-          {isUser ? "Вы" : "Alex"}
+          {isUser ? "Вы" : "Zhan"}
         </div>
 
         {/* Bubble */}
