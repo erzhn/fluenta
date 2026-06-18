@@ -14,6 +14,9 @@ export default function AuthConfirmPage() {
     )
 
     const handleAuth = async () => {
+      // First sign out any existing broken session
+      await supabase.auth.signOut()
+
       // Method 1: Parse hash fragment manually (#access_token=...&refresh_token=...)
       const hash = window.location.hash
       if (hash && hash.includes('access_token')) {
@@ -49,7 +52,6 @@ export default function AuthConfirmPage() {
         return
       }
 
-      // Nothing worked
       setStatus('Не удалось войти. Попробуй снова.')
     }
 

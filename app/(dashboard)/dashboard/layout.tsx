@@ -15,7 +15,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (!session) router.push('/auth/login')
       })
-    }, 2000)
+    }, 3000)
   }, [router])
 
   return <>{children}</>
