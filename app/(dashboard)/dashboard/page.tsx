@@ -37,9 +37,17 @@ function todayLabel() {
   return new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
 }
 
-function displayName(profile: Profile | null, email: string | null) {
+function displayName(profile: Profile | null, email: string | null, fullName?: string | null) {
+  // 1. Profile name from DB
   if (profile?.name) return profile.name
-  if (email) return email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+  // 2. full_name from auth metadata
+  if (fullName) return fullName.split(' ')[0]
+  // 3. Email prefix — take first segment before dot/number, cap at 12 chars, capitalize
+  if (email) {
+    const prefix = email.split('@')[0].split(/[._\-0-9]/)[0]
+    const capped = prefix.slice(0, 12)
+    return capped.charAt(0).toUpperCase() + capped.slice(1)
+  }
   return 'there'
 }
 
@@ -57,6 +65,7 @@ const fadeUp = {
 // ──────────────────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const [email, setEmail] = useState<string | null>(null)
+  const [fullName, setFullName] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [vocabCount, setVocabCount] = useState(0)
@@ -69,6 +78,7 @@ export default function DashboardPage() {
       if (!user) { setLoading(false); return }
 
       setEmail(user.email ?? null)
+      setFullName((user.user_metadata?.full_name as string | null) ?? null)
       setUserId(user.id)
 
       const [profileRes, vocabRes, convRes] = await Promise.all([
@@ -85,7 +95,7 @@ export default function DashboardPage() {
     load()
   }, [])
 
-  const name = displayName(profile, email)
+  const name = displayName(profile, email, fullName)
   const streak = profile?.streak ?? 0
   const xp = profile?.xp ?? 0
   const level = profile?.current_level ?? 'A1'
