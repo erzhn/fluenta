@@ -3,16 +3,17 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 
+// SINGLETON - avoids multiple GoTrueClient instances
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key'
+)
+
 export default function AuthConfirmPage() {
   const router = useRouter()
   const [status, setStatus] = useState('Входим...')
 
   useEffect(() => {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-
     const handleAuth = async () => {
       const hash = window.location.hash
       if (hash && hash.includes('access_token')) {

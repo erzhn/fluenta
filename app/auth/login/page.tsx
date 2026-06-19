@@ -3,6 +3,12 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
 
+// SINGLETON - created once at module level, not on every render
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key'
+)
+
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
@@ -12,80 +18,122 @@ export default function LoginPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    // Clear any error/hash params Supabase may have added to the URL on failed auth
+    // Clear any error params from URL left by failed auth redirects
     window.history.replaceState({}, '', '/auth/login')
-  }, [])
-
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key'
-  )
+    // Check if already logged in
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) router.push('/dashboard')
+    })
+  }, [router])
 
   const sendCode = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
-      options: { shouldCreateUser: true },
-    })
-    if (error) { setError(error.message); setLoading(false) }
-    else { setStep('code'); setLoading(false) }
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email.trim(),
+        options: { shouldCreateUser: true },
+      })
+      if (error) {
+        setError('Не удалось отправить код. Проверь email и попробуй снова.')
+      } else {
+        setStep('code')
+      }
+    } catch {
+      setError('Ошибка соединения. Попробуй позже.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const verifyCode = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const { error } = await supabase.auth.verifyOtp({
-      email: email.trim(),
-      token: code.trim(),
-      type: 'email',
-    })
-    if (error) { setError('Неверный код. Попробуй снова.'); setLoading(false) }
-    else { router.push('/dashboard') }
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email: email.trim(),
+        token: code.trim(),
+        type: 'email',
+      })
+      if (error) {
+        setError('Неверный код. Попробуй снова.')
+      } else {
+        router.push('/dashboard')
+      }
+    } catch {
+      setError('Ошибка соединения. Попробуй позже.')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const box: React.CSSProperties = { width:'100%', maxWidth:'400px', padding:'40px 32px', background:'rgba(255,255,255,0.05)', borderRadius:'16px', border:'1px solid rgba(255,255,255,0.1)' }
-  const wrap: React.CSSProperties = { minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'#0f0f23', color:'white', fontFamily:'sans-serif' }
-  const inp: React.CSSProperties = { width:'100%', padding:'12px 16px', borderRadius:'8px', border:'1px solid #374151', background:'#1f2937', color:'white', fontSize:'16px', boxSizing:'border-box' }
-  const btn: React.CSSProperties = { width:'100%', padding:'14px', borderRadius:'8px', border:'none', background:'linear-gradient(135deg,#6366f1,#8b5cf6)', color:'white', fontSize:'16px', fontWeight:'bold', cursor:'pointer' }
-
   return (
-    <div style={wrap}>
-      <div style={box}>
-        <div style={{ textAlign:'center', marginBottom:'32px' }}>
-          <div style={{ fontSize:'48px', marginBottom:'12px' }}>✨</div>
-          <h1 style={{ fontSize:'26px', fontWeight:'bold', marginBottom:'8px' }}>Войти в Fluenta</h1>
-          {step === 'email' && <p style={{ color:'#9ca3af' }}>Введи email — отправим код для входа</p>}
-          {step === 'code' && <p style={{ color:'#9ca3af' }}>Введи 6-значный код из письма на<br/><strong style={{color:'white'}}>{email}</strong></p>}
+    <div className="min-h-screen bg-[#0f0f1a] flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-[#1a1a2e] rounded-2xl p-8 shadow-2xl border border-white/10">
+        <div className="text-center mb-8">
+          <div className="text-4xl mb-4">✨</div>
+          <h1 className="text-2xl font-bold text-white">Войти в Fluenta</h1>
+          <p className="text-gray-400 mt-2">
+            {step === 'email' ? 'Введи email — отправим код для входа' : `Введи код из письма на ${email}`}
+          </p>
         </div>
 
-        {typeof error === 'string' && error.trim() !== '' && <div style={{ background:'#7f1d1d', border:'1px solid #dc2626', borderRadius:'8px', padding:'12px', marginBottom:'16px', color:'#fca5a5', fontSize:'14px' }}>{error}</div>}
+        {error && error.trim() !== '' && (
+          <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-300 text-sm">
+            {error}
+          </div>
+        )}
 
-        {step === 'email' && (
-          <form onSubmit={sendCode}>
-            <div style={{ marginBottom:'16px' }}>
-              <label style={{ display:'block', marginBottom:'8px', color:'#d1d5db' }}>Email</label>
-              <input type="email" value={email} onChange={e=>setEmail(e.target.value)} required placeholder="your@email.com" style={inp} />
+        {step === 'email' ? (
+          <form onSubmit={sendCode} className="space-y-4">
+            <div>
+              <label className="block text-sm text-gray-400 mb-1">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                required
+                className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+              />
             </div>
-            <button type="submit" disabled={loading} style={{...btn, background: loading?'#4b5563':'linear-gradient(135deg,#6366f1,#8b5cf6)', cursor: loading?'not-allowed':'pointer'}}>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 rounded-xl font-semibold disabled:opacity-50"
+            >
               {loading ? 'Отправляем...' : 'Получить код →'}
             </button>
           </form>
-        )}
-
-        {step === 'code' && (
-          <form onSubmit={verifyCode}>
-            <div style={{ marginBottom:'16px' }}>
-              <label style={{ display:'block', marginBottom:'8px', color:'#d1d5db' }}>Код из письма</label>
-              <input type="text" value={code} onChange={e=>setCode(e.target.value)} required placeholder="123456" maxLength={6} style={{...inp, fontSize:'28px', textAlign:'center', letterSpacing:'10px'}} />
+        ) : (
+          <form onSubmit={verifyCode} className="space-y-4">
+            <div>
+              <label className="block text-sm text-gray-400 mb-1">Код из письма</label>
+              <input
+                type="text"
+                value={code}
+                onChange={e => setCode(e.target.value)}
+                placeholder="123456"
+                required
+                maxLength={6}
+                className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-center text-2xl tracking-widest"
+              />
             </div>
-            <button type="submit" disabled={loading} style={{...btn, cursor: loading?'not-allowed':'pointer', background: loading?'#4b5563':'linear-gradient(135deg,#6366f1,#8b5cf6)'}}>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 rounded-xl font-semibold disabled:opacity-50"
+            >
               {loading ? 'Проверяем...' : 'Войти →'}
             </button>
-            <button type="button" onClick={()=>{setStep('email');setCode('');setError('')}} style={{...btn, background:'transparent', border:'1px solid #374151', color:'#9ca3af', marginTop:'8px'}}>
-              ← Изменить email
+            <button
+              type="button"
+              onClick={() => { setStep('email'); setError('') }}
+              className="w-full text-gray-400 text-sm hover:text-white"
+            >
+              ← Назад
             </button>
           </form>
         )}
