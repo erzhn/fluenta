@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
 
@@ -10,6 +10,11 @@ export default function LoginPage() {
   const [step, setStep] = useState<'email' | 'code'>('email')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    // Clear any error/hash params Supabase may have added to the URL on failed auth
+    window.history.replaceState({}, '', '/auth/login')
+  }, [])
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
@@ -56,7 +61,7 @@ export default function LoginPage() {
           {step === 'code' && <p style={{ color:'#9ca3af' }}>Введи 6-значный код из письма на<br/><strong style={{color:'white'}}>{email}</strong></p>}
         </div>
 
-        {error && <div style={{ background:'#7f1d1d', border:'1px solid #dc2626', borderRadius:'8px', padding:'12px', marginBottom:'16px', color:'#fca5a5', fontSize:'14px' }}>{error}</div>}
+        {typeof error === 'string' && error.trim() !== '' && <div style={{ background:'#7f1d1d', border:'1px solid #dc2626', borderRadius:'8px', padding:'12px', marginBottom:'16px', color:'#fca5a5', fontSize:'14px' }}>{error}</div>}
 
         {step === 'email' && (
           <form onSubmit={sendCode}>

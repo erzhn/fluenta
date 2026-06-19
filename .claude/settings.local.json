@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add *)",
+      "Bash(git commit -m 'feat: progress page with stats, achievements and activity *)",
+      "Bash(git push *)",
+      "Bash(git commit -m 'feat: pronunciation practice page with Web Speech API *)",
+      "Bash(git commit -m 'fix: clear stale auth state before processing magic link *)",
+      "Bash(git commit -m 'fix: remove signOut\\(\\) and use consistent storageKey for auth *)",
+      "Bash(git commit -m 'fix: remove old middleware causing redirect loop *)",
+      "Bash(git commit -m 'feat: replace magic link with 6-digit OTP code auth *)",
+      "Bash(git commit -m 'fix: restore auth/confirm page and emailRedirectTo *)",
+      "Bash(git commit -m 'fix: magic link auth with retry session check *)",
+      "Bash(git commit -m 'fix: remove PKCE flow type causing redirectTo param *)",
+      "Bash(git commit -m 'feat: OTP code login flow *)"
+    ]
+  }
+}
