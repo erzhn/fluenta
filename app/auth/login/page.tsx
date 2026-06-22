@@ -51,7 +51,7 @@ export default function LoginPage() {
       setError('Неверный код. Попробуй снова.')
       setLoading(false)
     } else {
-      router.push('/dashboard')
+      window.location.href = '/dashboard'
     }
   }
 
