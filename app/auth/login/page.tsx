@@ -20,11 +20,7 @@ export default function LoginPage() {
   useEffect(() => {
     // Clear any error params from URL left by failed auth redirects
     window.history.replaceState({}, '', '/auth/login')
-    // Check if already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) router.push('/dashboard')
-    })
-  }, [router])
+  }, [])
 
   const sendCode = async (e: React.FormEvent) => {
     e.preventDefault()

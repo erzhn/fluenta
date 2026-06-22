@@ -12,7 +12,10 @@
       "Bash(git commit -m 'fix: restore auth/confirm page and emailRedirectTo *)",
       "Bash(git commit -m 'fix: magic link auth with retry session check *)",
       "Bash(git commit -m 'fix: remove PKCE flow type causing redirectTo param *)",
-      "Bash(git commit -m 'feat: OTP code login flow *)"
+      "Bash(git commit -m 'feat: OTP code login flow *)",
+      "Bash(git commit -m 'fix: clear URL params on login page load *)",
+      "Bash(rm -f .git/index.lock)",
+      "Bash(git commit -m 'fix: singleton supabase client, fix {} error display, better error messages *)"
     ]
   }
 }
