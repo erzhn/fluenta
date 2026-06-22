@@ -3,16 +3,22 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 
-// SINGLETON - avoids multiple GoTrueClient instances
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key'
-)
+// Singleton at module level — avoids import errors from supabase-client
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+const supabase = supabaseUrl && supabaseKey
+  ? createClient(supabaseUrl, supabaseKey)
+  : null
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
 
   useEffect(() => {
+    if (!supabase) {
+      router.push('/auth/login')
+      return
+    }
+
     let attempts = 0
     const checkSession = async () => {
       attempts++
