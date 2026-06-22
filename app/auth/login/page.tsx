@@ -101,26 +101,10 @@ export default function LoginPage() {
               onChange={e => setCode(e.target.value)}
               placeholder="123456"
               required
-              maxLength={6}
+              maxLength={8}
               style={{ width: '100%', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '0.75rem', padding: '0.875rem 1rem', color: 'white', fontSize: '2rem', fontWeight: 700, textAlign: 'center', letterSpacing: '0.5rem', outline: 'none', boxSizing: 'border-box' }}
             />
             <button
               type="submit"
               disabled={loading}
-              style={{ width: '100%', marginTop: '1rem', background: 'linear-gradient(135deg, #7c3aed, #2563eb)', color: 'white', border: 'none', borderRadius: '0.75rem', padding: '0.875rem', fontSize: '1rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1 }}
-            >
-              {loading ? 'Проверяем...' : 'Войти →'}
-            </button>
-            <button
-              type="button"
-              onClick={() => { setStep('email'); setError('') }}
-              style={{ width: '100%', marginTop: '0.75rem', background: 'transparent', border: 'none', color: '#6b7280', fontSize: '0.875rem', cursor: 'pointer', padding: '0.5rem' }}
-            >
-              ← Изменить email
-            </button>
-          </form>
-        )}
-      </div>
-    </div>
-  )
-}
+              style={{ width: '100%', marginTop: '1rem', background: 'linear-gradient(135deg, #7c3aed, #2563eb)', color: 'white', border
