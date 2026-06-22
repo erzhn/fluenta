@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 
-// Singleton at module level
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 const supabase = supabaseUrl && supabaseKey
@@ -20,7 +19,7 @@ export default function LoginPage() {
 
   const sendCode = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!supabase) { setError('Конфигурация не загружена'); return }
+    if (!supabase) { setError('Ошибка конфигурации'); return }
     setLoading(true)
     setError('')
     const { error } = await supabase.auth.signInWithOtp({
@@ -40,7 +39,7 @@ export default function LoginPage() {
 
   const verifyCode = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!supabase) { setError('Конфигурация не загружена'); return }
+    if (!supabase) { setError('Ошибка конфигурации'); return }
     setLoading(true)
     setError('')
     const { error } = await supabase.auth.verifyOtp({
@@ -56,6 +55,32 @@ export default function LoginPage() {
     }
   }
 
+  const inputStyle: React.CSSProperties = {
+    width: '100%',
+    background: 'rgba(255,255,255,0.08)',
+    border: '1px solid rgba(255,255,255,0.15)',
+    borderRadius: '0.75rem',
+    padding: '0.875rem 1rem',
+    color: 'white',
+    fontSize: '1rem',
+    outline: 'none',
+    boxSizing: 'border-box',
+  }
+
+  const btnStyle: React.CSSProperties = {
+    width: '100%',
+    marginTop: '1rem',
+    background: 'linear-gradient(135deg, #7c3aed, #2563eb)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '0.75rem',
+    padding: '0.875rem',
+    fontSize: '1rem',
+    fontWeight: 600,
+    cursor: loading ? 'not-allowed' : 'pointer',
+    opacity: loading ? 0.6 : 1,
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: '#0f0f1a', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
       <div style={{ width: '100%', maxWidth: '420px', background: '#1a1a2e', borderRadius: '1.5rem', padding: '2.5rem', border: '1px solid rgba(255,255,255,0.1)' }}>
@@ -63,7 +88,7 @@ export default function LoginPage() {
           <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✨</div>
           <h1 style={{ color: 'white', fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Войти в Fluenta</h1>
           <p style={{ color: '#9ca3af', marginTop: '0.5rem' }}>
-            {step === 'email' ? 'Введи email — отправим код для входа' : `Код отправлен на ${email}`}
+            {step === 'email' ? 'Введи email — отправим код для входа' : 'Код отправлен на ' + email}
           </p>
         </div>
 
@@ -82,13 +107,9 @@ export default function LoginPage() {
               onChange={e => setEmail(e.target.value)}
               placeholder="your@email.com"
               required
-              style={{ width: '100%', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '0.75rem', padding: '0.875rem 1rem', color: 'white', fontSize: '1rem', outline: 'none', boxSizing: 'border-box' }}
+              style={inputStyle}
             />
-            <button
-              type="submit"
-              disabled={loading}
-              style={{ width: '100%', marginTop: '1rem', background: 'linear-gradient(135deg, #7c3aed, #2563eb)', color: 'white', border: 'none', borderRadius: '0.75rem', padding: '0.875rem', fontSize: '1rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1 }}
-            >
+            <button type="submit" disabled={loading} style={btnStyle}>
               {loading ? 'Отправляем...' : 'Получить код →'}
             </button>
           </form>
@@ -99,12 +120,24 @@ export default function LoginPage() {
               type="text"
               value={code}
               onChange={e => setCode(e.target.value)}
-              placeholder="123456"
+              placeholder="12345678"
               required
               maxLength={8}
-              style={{ width: '100%', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '0.75rem', padding: '0.875rem 1rem', color: 'white', fontSize: '2rem', fontWeight: 700, textAlign: 'center', letterSpacing: '0.5rem', outline: 'none', boxSizing: 'border-box' }}
+              style={{ ...inputStyle, fontSize: '2rem', fontWeight: 700, textAlign: 'center', letterSpacing: '0.5rem' }}
             />
+            <button type="submit" disabled={loading} style={btnStyle}>
+              {loading ? 'Проверяем...' : 'Войти →'}
+            </button>
             <button
-              type="submit"
-              disabled={loading}
-              style={{ width: '100%', marginTop: '1rem', background: 'linear-gradient(135deg, #7c3aed, #2563eb)', color: 'white', border
+              type="button"
+              onClick={() => { setStep('email'); setError('') }}
+              style={{ width: '100%', marginTop: '0.75rem', background: 'transparent', border: 'none', color: '#6b7280', fontSize: '0.875rem', cursor: 'pointer', padding: '0.5rem' }}
+            >
+              ← Изменить email
+            </button>
+          </form>
+        )}
+      </div>
+    </div>
+  )
+}
