@@ -2,9 +2,26 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, RotateCcw } from 'lucide-react'
+import { Send, RotateCcw, Mic, MicOff } from 'lucide-react'
 import { ChatMessage } from '@/components/ai-tutor/ChatMessage'
 import type { Message } from '@/types'
+
+// ── Web Speech API types ───────────────────────────────────────────────────────
+declare global {
+  interface Window {
+    SpeechRecognition: new () => SpeechRecInst
+    webkitSpeechRecognition: new () => SpeechRecInst
+  }
+}
+interface SpeechRecInst {
+  lang: string; continuous: boolean; interimResults: boolean
+  onresult: ((e: { results: { [i: number]: { [i: number]: { transcript: string } }; length: number } }) => void) | null
+  onerror: ((e: Event) => void) | null
+  onend: (() => void) | null
+  start(): void; stop(): void; abort(): void
+}
+
+type ChatMode = 'tutor' | 'conversation'
 
 const WELCOME: Message = {
   id: 'welcome',
@@ -25,8 +42,11 @@ export default function AITutorPage() {
   const [messages, setMessages] = useState<Message[]>([WELCOME])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [mode, setMode] = useState<ChatMode>('tutor')
+  const [listening, setListening] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const srRef = useRef<SpeechRecInst | null>(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -64,6 +84,7 @@ export default function AITutorPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             messages: newHistory.map((m) => ({ role: m.role, content: m.content })),
+            mode,
           }),
         })
 
@@ -93,8 +114,44 @@ export default function AITutorPage() {
         setLoading(false)
       }
     },
-    [messages, loading]
+    [messages, loading, mode]
   )
+
+  const toggleMode = (next: ChatMode) => {
+    setMode(next)
+    const welcome: Message = next === 'conversation'
+      ? { id: 'welcome', role: 'assistant', content: "Hey! I'm Zhan 😊 Let's just chat — what's on your mind?", timestamp: new Date().toISOString() }
+      : { ...WELCOME, timestamp: new Date().toISOString() }
+    setMessages([welcome])
+    setInput('')
+  }
+
+  const startListening = () => {
+    const SR = typeof window !== 'undefined'
+      ? (window.SpeechRecognition || window.webkitSpeechRecognition)
+      : null
+    if (!SR) return
+    srRef.current?.abort()
+    const rec = new SR()
+    rec.lang = 'en-US'
+    rec.continuous = false
+    rec.interimResults = false
+    rec.onresult = (e) => {
+      const text = e.results[0][0].transcript
+      setListening(false)
+      sendMessage(text)
+    }
+    rec.onerror = () => setListening(false)
+    rec.onend   = () => setListening(false)
+    srRef.current = rec
+    rec.start()
+    setListening(true)
+  }
+
+  const stopListening = () => {
+    srRef.current?.stop()
+    setListening(false)
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -131,14 +188,40 @@ export default function AITutorPage() {
           </div>
         </div>
 
-        <button
-          onClick={handleReset}
-          title="Start new conversation"
-          className="flex items-center gap-1.5 text-xs text-[#475569] hover:text-[#94A3B8] transition-colors px-2.5 py-1.5 rounded-lg hover:bg-white/5"
-        >
-          <RotateCcw className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">New chat</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Mode toggle */}
+          <div className="flex bg-[#1E293B] rounded-xl p-1 gap-1">
+            <button
+              onClick={() => toggleMode('tutor')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                mode === 'tutor'
+                  ? 'bg-[#6366F1] text-white shadow-sm'
+                  : 'text-[#475569] hover:text-[#94A3B8]'
+              }`}
+            >
+              📚 Учёба
+            </button>
+            <button
+              onClick={() => toggleMode('conversation')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                mode === 'conversation'
+                  ? 'bg-[#6366F1] text-white shadow-sm'
+                  : 'text-[#475569] hover:text-[#94A3B8]'
+              }`}
+            >
+              💬 Разговор
+            </button>
+          </div>
+
+          <button
+            onClick={handleReset}
+            title="Start new conversation"
+            className="flex items-center gap-1.5 text-xs text-[#475569] hover:text-[#94A3B8] transition-colors px-2.5 py-1.5 rounded-lg hover:bg-white/5"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">New chat</span>
+          </button>
+        </div>
       </div>
 
       {/* ── Messages ───────────────────────────────────────────────────────── */}
@@ -253,6 +336,28 @@ export default function AITutorPage() {
             )}
           </div>
 
+          {/* Mic button */}
+          <motion.button
+            onClick={listening ? stopListening : startListening}
+            disabled={loading}
+            whileTap={{ scale: 0.92 }}
+            title={listening ? 'Stop listening' : 'Speak'}
+            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors shrink-0 ${
+              listening
+                ? 'bg-red-500/20 border border-red-500/60 text-red-400'
+                : 'bg-[#1E293B] border border-[#334155] text-[#475569] hover:text-[#94A3B8] hover:border-[#475569]'
+            } disabled:opacity-40 disabled:cursor-not-allowed`}
+          >
+            {listening ? (
+              <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.8 }}>
+                <MicOff className="w-4 h-4" />
+              </motion.div>
+            ) : (
+              <Mic className="w-4 h-4" />
+            )}
+          </motion.button>
+
+          {/* Send button */}
           <motion.button
             onClick={() => sendMessage(input)}
             disabled={!input.trim() || loading}
