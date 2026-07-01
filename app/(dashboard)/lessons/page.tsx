@@ -1,483 +1,603 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Clock, Zap, X, BookOpen, Sparkles, ArrowRight, Loader2 } from 'lucide-react'
-import Link from 'next/link'
+import { ChevronLeft, CheckCircle, Lock, Zap, RotateCcw, BookOpen, FlipHorizontal } from 'lucide-react'
+import { LESSONS } from '@/lib/lessons-data'
+import type { Lesson } from '@/lib/lessons-data'
 
-// ── Lesson data ────────────────────────────────────────────────────────────────
-const LEVELS_META: Record<string, { color: string; bg: string; desc: string }> = {
-  A1: { color: '#10b981', bg: '#10b98120', desc: 'Beginner' },
-  A2: { color: '#3b82f6', bg: '#3b82f620', desc: 'Elementary' },
-  B1: { color: '#8b5cf6', bg: '#8b5cf620', desc: 'Intermediate' },
-  B2: { color: '#f59e0b', bg: '#f59e0b20', desc: 'Upper-Intermediate' },
-  C1: { color: '#ef4444', bg: '#ef444420', desc: 'Advanced' },
-  C2: { color: '#ec4899', bg: '#ec489920', desc: 'Mastery' },
+// ─── Progress ─────────────────────────────────────────────────────────────────
+interface LessonResult { score: number; completedAt: string }
+interface Progress {
+  completedLessons: Record<string, LessonResult>
+  totalXP: number
+}
+const STORAGE_KEY = 'fluenta_lesson_progress'
+const PASS_THRESHOLD = 0.8
+
+function loadProgress(): Progress {
+  if (typeof window === 'undefined') return { completedLessons: {}, totalXP: 0 }
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null') || { completedLessons: {}, totalXP: 0 } }
+  catch { return { completedLessons: {}, totalXP: 0 } }
+}
+function saveProgress(p: Progress) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(p))
 }
 
-interface LessonItem {
-  id: number
-  title: string
-  description: string
-  duration: string
-  xp: number
-  icon: string
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+const LEVEL_COLORS: Record<string, string> = {
+  A1: '#10b981', A2: '#3b82f6', B1: '#8b5cf6', B2: '#f59e0b', C1: '#ef4444',
 }
-
-interface LevelGroup {
-  level: string
-  color: string
-  lessons: LessonItem[]
+const LEVEL_DESC: Record<string, string> = {
+  A1: 'Beginner', A2: 'Elementary', B1: 'Intermediate', B2: 'Upper-Int', C1: 'Advanced',
 }
+const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1'] as const
 
-const lessonsData: LevelGroup[] = [
-  {
-    level: 'A1',
-    color: '#10b981',
-    lessons: [
-      { id: 1,  title: 'Greetings & Introductions', description: 'Learn to say hello, introduce yourself, and basic phrases', duration: '10 min', xp: 50,  icon: '👋' },
-      { id: 2,  title: 'Numbers & Colors',           description: 'Count from 1-100 and name common colors',                                duration: '15 min', xp: 50,  icon: '🔢' },
-      { id: 3,  title: 'Family & Friends',            description: 'Talk about your family members and relationships',                        duration: '12 min', xp: 75,  icon: '👨‍👩‍👧' },
-      { id: 4,  title: 'Daily Routine',               description: 'Describe your everyday activities and schedule',                          duration: '15 min', xp: 75,  icon: '⏰' },
-    ],
-  },
-  {
-    level: 'A2',
-    color: '#3b82f6',
-    lessons: [
-      { id: 5,  title: 'Past Simple Tense',           description: 'Talk about things that happened in the past',                             duration: '20 min', xp: 100, icon: '📅' },
-      { id: 6,  title: 'Shopping & Money',            description: 'How to shop, ask prices, and handle money',                              duration: '18 min', xp: 100, icon: '🛍️' },
-      { id: 7,  title: 'Food & Restaurants',          description: 'Order food, describe tastes, restaurant phrases',                         duration: '20 min', xp: 100, icon: '🍽️' },
-    ],
-  },
-  {
-    level: 'B1',
-    color: '#8b5cf6',
-    lessons: [
-      { id: 8,  title: 'Present Perfect',             description: 'Connect past experiences to the present moment',                          duration: '25 min', xp: 150, icon: '✅' },
-      { id: 9,  title: 'Travel & Transport',          description: 'Navigate airports, hotels, and new cities',                               duration: '22 min', xp: 150, icon: '✈️' },
-      { id: 10, title: 'Opinions & Discussions',      description: 'Express your views and discuss topics confidently',                        duration: '25 min', xp: 150, icon: '💬' },
-    ],
-  },
-  {
-    level: 'B2',
-    color: '#f59e0b',
-    lessons: [
-      { id: 11, title: 'Conditional Sentences',       description: 'If clauses, hypothetical situations, wishes',                             duration: '30 min', xp: 200, icon: '🤔' },
-      { id: 12, title: 'Work & Career',               description: 'Professional vocabulary, job interviews, emails',                         duration: '28 min', xp: 200, icon: '💼' },
-    ],
-  },
-  {
-    level: 'C1',
-    color: '#ef4444',
-    lessons: [
-      { id: 13, title: 'Advanced Grammar',            description: 'Inversions, cleft sentences, complex structures',                         duration: '35 min', xp: 300, icon: '📚' },
-      { id: 14, title: 'Idiomatic English',           description: 'Master common idioms and natural expressions',                            duration: '30 min', xp: 300, icon: '🎯' },
-    ],
-  },
-]
-
-// ── Glassmorphism helper ───────────────────────────────────────────────────────
-const glass = 'bg-white/[0.04] backdrop-blur-xl border border-white/10'
-
-// ── Animation variants ─────────────────────────────────────────────────────────
-const cardVariants = {
-  hidden: { opacity: 0, y: 16 },
-  visible: (i: number) => ({
-    opacity: 1, y: 0,
-    transition: { duration: 0.4, delay: i * 0.06, ease: 'easeOut' as const },
-  }),
-}
-
-// ── Modal state ────────────────────────────────────────────────────────────────
-interface ActiveLesson extends LessonItem { level: string; levelColor: string }
-
-// ──────────────────────────────────────────────────────────────────────────────
-export default function LessonsPage() {
-  const [activeFilter, setActiveFilter] = useState<string>('All')
-  const [activeLesson, setActiveLesson] = useState<ActiveLesson | null>(null)
-  const [aiContent, setAiContent] = useState<string>('')
-  const [aiLoading, setAiLoading] = useState(false)
-
-  const filters = ['All', 'A1', 'A2', 'B1', 'B2', 'C1']
-  const filtered = activeFilter === 'All'
-    ? lessonsData
-    : lessonsData.filter((g) => g.level === activeFilter)
-
-  const totalLessons = lessonsData.reduce((s, g) => s + g.lessons.length, 0)
-
-  async function openLesson(lesson: LessonItem, level: string, levelColor: string) {
-    setActiveLesson({ ...lesson, level, levelColor })
-    setAiContent('')
-    setAiLoading(true)
-
-    try {
-      const res = await fetch('/api/ai/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [{
-            role: 'user',
-            content: `Please give me a concise English lesson on "${lesson.title}" for a ${level} level learner.
-
-Structure your response as:
-📖 **What you'll learn**
-(2-3 sentences explaining the topic clearly)
-
-🔑 **Key points**
-• Point 1
-• Point 2
-• Point 3
-
-💡 **Examples**
-1. [Example sentence] — [brief explanation]
-2. [Example sentence] — [brief explanation]
-3. [Example sentence] — [brief explanation]
-
-🚀 **Quick tip**
-(One practical tip for remembering or using this)
-
-Keep it encouraging and easy to understand!`,
-          }],
-        }),
-      })
-      const data = await res.json()
-      setAiContent(data.reply || 'Could not generate content. Please try again.')
-    } catch {
-      setAiContent('Could not connect. Please check your internet and try again.')
-    } finally {
-      setAiLoading(false)
-    }
+function lessonsByBlock(level: string) {
+  const map = new Map<number, { name: string; lessons: Lesson[] }>()
+  for (const l of LESSONS.filter(l => l.level === level)) {
+    if (!map.has(l.block)) map.set(l.block, { name: l.blockName, lessons: [] })
+    map.get(l.block)!.lessons.push(l)
   }
+  return [...map.entries()].sort((a, b) => a[0] - b[0])
+}
 
-  function closeModal() {
-    setActiveLesson(null)
-    setAiContent('')
-  }
+function isUnlocked(lesson: Lesson, progress: Progress): boolean {
+  if (lesson.id === LESSONS[0]?.id) return true
+  const idx = LESSONS.findIndex(l => l.id === lesson.id)
+  if (idx <= 0) return true
+  const prev = LESSONS[idx - 1]
+  const r = progress.completedLessons[prev.id]
+  if (!r) return false
+  return r.score / LESSONS[idx - 1].quiz.length >= PASS_THRESHOLD
+}
 
+function xpForLesson(lesson: Lesson): number {
+  return { A1: 50, A2: 75, B1: 100, B2: 150, C1: 200 }[lesson.level] ?? 50
+}
+
+// ─── Step 1: Theory ───────────────────────────────────────────────────────────
+function TheoryStep({ lesson, onNext }: { lesson: Lesson; onNext: () => void }) {
+  const c = LEVEL_COLORS[lesson.level]
   return (
-    <div className="max-w-5xl mx-auto space-y-8 pb-8">
-
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white">Lessons 📚</h1>
-            <p className="text-[#64748b] text-sm mt-1">
-              Choose your level and start learning · {totalLessons} lessons available
-            </p>
-          </div>
-          <div className={`${glass} rounded-xl px-4 py-2.5 flex items-center gap-2 text-sm text-[#a5b4fc] shrink-0`}>
-            <Sparkles className="w-4 h-4" />
-            <span className="font-medium">AI-powered content</span>
-          </div>
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto pb-4">
+        <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5 space-y-3">
+          {lesson.theory.explanation.split('\n').filter(Boolean).map((para, i) => (
+            <p key={i} className="text-[#cbd5e1] text-sm leading-relaxed">{para}</p>
+          ))}
         </div>
-      </motion.div>
-
-      {/* ── Level filter tabs ───────────────────────────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.08 }}
-        className="flex gap-2 flex-wrap"
+      </div>
+      <button
+        onClick={onNext}
+        className="mt-4 w-full py-3.5 rounded-2xl text-white font-bold text-sm transition-all hover:opacity-90 active:scale-[0.98]"
+        style={{ background: `linear-gradient(135deg, ${c}, ${c}99)` }}
       >
-        {filters.map((f) => {
-          const active = activeFilter === f
-          const meta = f !== 'All' ? LEVELS_META[f] : null
-          return (
-            <button
-              key={f}
-              onClick={() => setActiveFilter(f)}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold border-2 transition-all ${
-                active
-                  ? 'text-white border-transparent'
-                  : 'border-white/10 text-[#64748b] hover:text-white hover:border-white/20'
-              }`}
-              style={active
-                ? { backgroundColor: meta ? `${meta.color}25` : '#6366f125', borderColor: meta?.color ?? '#6366f1', color: meta?.color ?? '#818cf8' }
-                : {}}
-            >
-              {f === 'All' ? 'All levels' : f}
-              {meta && <span className="ml-1.5 text-[10px] font-normal opacity-70">{meta.desc}</span>}
-            </button>
-          )
-        })}
-      </motion.div>
-
-      {/* ── Level groups ────────────────────────────────────────────────────── */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeFilter}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="space-y-10"
-        >
-          {filtered.map((group) => {
-            const meta = LEVELS_META[group.level]
-            return (
-              <section key={group.level}>
-                {/* Level heading */}
-                <div className="flex items-center gap-3 mb-4">
-                  <div
-                    className="px-3 py-1.5 rounded-lg text-sm font-black"
-                    style={{ backgroundColor: meta.bg, color: meta.color }}
-                  >
-                    {group.level}
-                  </div>
-                  <div>
-                    <span className="text-white font-bold text-sm">{meta.desc}</span>
-                    <span className="text-[#475569] text-xs ml-2">{group.lessons.length} lessons</span>
-                  </div>
-                  <div className="flex-1 h-[1px] bg-white/[0.06] ml-2" />
-                </div>
-
-                {/* Cards grid */}
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {group.lessons.map((lesson, i) => (
-                    <motion.div
-                      key={lesson.id}
-                      custom={i}
-                      variants={cardVariants}
-                      initial="hidden"
-                      animate="visible"
-                    >
-                      <LessonCard
-                        lesson={lesson}
-                        color={group.color}
-                        onStart={() => openLesson(lesson, group.level, group.color)}
-                      />
-                    </motion.div>
-                  ))}
-                </div>
-              </section>
-            )
-          })}
-        </motion.div>
-      </AnimatePresence>
-
-      {/* ── Lesson modal ────────────────────────────────────────────────────── */}
-      <AnimatePresence>
-        {activeLesson && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              key="backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={closeModal}
-              className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50"
-            />
-
-            {/* Panel */}
-            <motion.div
-              key="modal"
-              initial={{ opacity: 0, y: 40, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.97 }}
-              transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-              className="fixed inset-x-4 bottom-0 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-2xl z-50 bg-[#0f0f23] border border-white/10 rounded-t-3xl sm:rounded-3xl shadow-2xl shadow-black/60 overflow-hidden flex flex-col max-h-[88vh]"
-            >
-              {/* Modal header */}
-              <div className="flex items-start gap-4 p-6 border-b border-white/[0.06] shrink-0">
-                <div
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0"
-                  style={{ backgroundColor: `${activeLesson.levelColor}20` }}
-                >
-                  {activeLesson.icon}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span
-                      className="text-xs font-black px-2 py-0.5 rounded-md"
-                      style={{ backgroundColor: `${activeLesson.levelColor}20`, color: activeLesson.levelColor }}
-                    >
-                      {activeLesson.level}
-                    </span>
-                    <span className="text-[#475569] text-xs flex items-center gap-1">
-                      <Clock className="w-3 h-3" />{activeLesson.duration}
-                    </span>
-                    <span className="text-xs flex items-center gap-1" style={{ color: activeLesson.levelColor }}>
-                      <Zap className="w-3 h-3" />+{activeLesson.xp} XP
-                    </span>
-                  </div>
-                  <h2 className="text-lg font-black text-white leading-snug">{activeLesson.title}</h2>
-                  <p className="text-[#64748b] text-sm mt-0.5">{activeLesson.description}</p>
-                </div>
-                <button
-                  onClick={closeModal}
-                  className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-[#64748b] hover:text-white transition-colors shrink-0"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Modal content */}
-              <div className="flex-1 overflow-y-auto p-6">
-                {aiLoading ? (
-                  <div className="flex flex-col items-center justify-center py-14 gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] flex items-center justify-center">
-                      <Loader2 className="w-6 h-6 text-white animate-spin" />
-                    </div>
-                    <div className="text-center">
-                      <p className="text-white font-semibold text-sm">Zhan is preparing your lesson…</p>
-                      <p className="text-[#475569] text-xs mt-1">Generating personalised content</p>
-                    </div>
-                  </div>
-                ) : (
-                  <motion.div
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4 }}
-                    className="prose prose-invert prose-sm max-w-none"
-                  >
-                    <LessonContent text={aiContent} />
-                  </motion.div>
-                )}
-              </div>
-
-              {/* Modal footer */}
-              {!aiLoading && aiContent && (
-                <div className="shrink-0 p-5 border-t border-white/[0.06] flex flex-col sm:flex-row gap-3">
-                  <Link href="/ai-tutor" className="flex-1" onClick={closeModal}>
-                    <button className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white font-bold text-sm hover:from-[#5558e3] hover:to-[#7c3aed] transition-all shadow-lg shadow-indigo-500/25 hover:scale-[1.02]">
-                      <span className="text-base">👨‍🏫</span>
-                      Practice with Zhan
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
-                  </Link>
-                  <button
-                    onClick={closeModal}
-                    className="px-5 py-3 rounded-xl border border-white/10 text-[#64748b] hover:text-white hover:border-white/20 text-sm font-medium transition-colors"
-                  >
-                    Close
-                  </button>
-                </div>
-              )}
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+        Далее — Примеры →
+      </button>
     </div>
   )
 }
 
-// ── LessonCard component ───────────────────────────────────────────────────────
-function LessonCard({ lesson, color, onStart }: { lesson: LessonItem; color: string; onStart: () => void }) {
+// ─── Step 2: Examples (flip cards) ───────────────────────────────────────────
+function ExamplesStep({ lesson, onNext }: { lesson: Lesson; onNext: () => void }) {
+  const [cur, setCur] = useState(0)
+  const [flipped, setFlipped] = useState(false)
+  const [seen, setSeen] = useState<Set<number>>(new Set())
+  const c = LEVEL_COLORS[lesson.level]
+  const ex = lesson.theory.examples[cur]
+  const allSeen = seen.size === lesson.theory.examples.length
+
+  function markSeen() {
+    setSeen(s => new Set([...s, cur]))
+    if (cur < lesson.theory.examples.length - 1) {
+      setCur(n => n + 1)
+      setFlipped(false)
+    }
+  }
+
   return (
-    <motion.div
-      whileHover={{ y: -5, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 18 }}
-      onClick={onStart}
-      className="group relative bg-white/[0.04] backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden cursor-pointer h-full flex flex-col hover:border-white/20 transition-colors"
-    >
-      {/* Top accent bar */}
-      <div className="h-0.5 w-full" style={{ backgroundColor: color }} />
-
-      {/* Hover glow */}
-      <div
-        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-2xl"
-        style={{ background: `radial-gradient(circle at 50% 0%, ${color}12 0%, transparent 65%)` }}
-      />
-
-      <div className="flex flex-col flex-1 p-5">
-        {/* Icon */}
-        <div
-          className="w-11 h-11 rounded-xl flex items-center justify-center text-xl mb-4 shrink-0"
-          style={{ backgroundColor: `${color}18` }}
-        >
-          {lesson.icon}
-        </div>
-
-        {/* Text */}
-        <h3 className="text-white font-bold text-sm leading-snug mb-1.5 group-hover:text-white transition-colors">
-          {lesson.title}
-        </h3>
-        <p className="text-[#64748b] text-xs leading-relaxed mb-4 flex-1">{lesson.description}</p>
-
-        {/* Meta */}
-        <div className="flex items-center justify-between text-xs mb-4">
-          <span className="flex items-center gap-1 text-[#475569]">
-            <Clock className="w-3 h-3" />{lesson.duration}
-          </span>
-          <span className="flex items-center gap-1 font-semibold" style={{ color }}>
-            <Zap className="w-3 h-3" />+{lesson.xp} XP
-          </span>
-        </div>
-
-        {/* Button */}
-        <div
-          className="w-full py-2.5 rounded-xl text-xs font-bold text-center text-white flex items-center justify-center gap-1.5 transition-all group-hover:shadow-lg"
-          style={{ background: `linear-gradient(135deg, ${color}cc, ${color}88)`, boxShadow: `0 0 0 0 ${color}40` }}
-        >
-          <BookOpen className="w-3.5 h-3.5" />
-          Start Lesson
-        </div>
+    <div className="flex flex-col h-full">
+      {/* Progress dots */}
+      <div className="flex gap-1.5 mb-5">
+        {lesson.theory.examples.map((_, i) => (
+          <div key={i} className="h-1.5 flex-1 rounded-full transition-all"
+            style={{ backgroundColor: seen.has(i) ? c : i === cur ? `${c}60` : 'rgba(255,255,255,0.08)' }} />
+        ))}
       </div>
-    </motion.div>
+
+      <div className="flex-1 flex flex-col items-center justify-center gap-6">
+        {/* Flip card */}
+        <div className="w-full max-w-sm cursor-pointer select-none" style={{ perspective: 1000 }} onClick={() => setFlipped(f => !f)}>
+          <motion.div animate={{ rotateY: flipped ? 180 : 0 }} transition={{ duration: 0.4 }}
+            style={{ transformStyle: 'preserve-3d', position: 'relative', height: 160 }}>
+            {/* Front — English */}
+            <div className="absolute inset-0 bg-white/[0.06] border border-white/10 rounded-2xl flex flex-col items-center justify-center p-6 text-center"
+              style={{ backfaceVisibility: 'hidden' }}>
+              <div className="text-[#475569] text-[10px] uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                <FlipHorizontal className="w-3 h-3" />English
+              </div>
+              <div className="text-white font-bold text-lg leading-snug">{ex.english}</div>
+              <div className="text-[#6366f1] text-xs mt-4 opacity-60">нажми чтобы перевернуть</div>
+            </div>
+            {/* Back — Russian */}
+            <div className="absolute inset-0 rounded-2xl flex flex-col items-center justify-center p-6 text-center"
+              style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)', backgroundColor: `${c}12`, border: `1px solid ${c}30` }}>
+              <div className="text-[10px] uppercase tracking-widest mb-3" style={{ color: c }}>Русский</div>
+              <div className="text-white font-bold text-lg">{ex.russian}</div>
+            </div>
+          </motion.div>
+        </div>
+
+        <p className="text-[#475569] text-xs">
+          {cur + 1} / {lesson.theory.examples.length}
+        </p>
+      </div>
+
+      <div className="mt-4 space-y-2">
+        {!seen.has(cur) && (
+          <button onClick={markSeen}
+            className="w-full py-3 rounded-2xl border border-white/10 text-white/60 hover:text-white hover:border-white/20 text-sm font-medium transition-all">
+            Понятно ✓
+          </button>
+        )}
+        {allSeen && (
+          <button onClick={onNext}
+            className="w-full py-3.5 rounded-2xl text-white font-bold text-sm transition-all hover:opacity-90"
+            style={{ background: `linear-gradient(135deg, ${c}, ${c}99)` }}>
+            К упражнениям →
+          </button>
+        )}
+      </div>
+    </div>
   )
 }
 
-// ── LessonContent: renders the AI markdown-ish text nicely ────────────────────
-function LessonContent({ text }: { text: string }) {
-  const lines = text.split('\n')
+// ─── Step 3: Exercises ────────────────────────────────────────────────────────
+function ExercisesStep({ lesson, onNext }: { lesson: Lesson; onNext: () => void }) {
+  const [cur, setCur] = useState(0)
+  const [answered, setAnswered] = useState(false)
+  const [correct, setCorrect] = useState(false)
+  const [input, setInput] = useState('')
+  const [selected, setSelected] = useState<string | null>(null)
+  const [built, setBuilt] = useState<string[]>([])
+  const [avail, setAvail] = useState<string[]>([])
+  const c = LEVEL_COLORS[lesson.level]
+  const ex = lesson.exercises[cur]
+
+  useEffect(() => {
+    setAnswered(false); setCorrect(false)
+    setInput(''); setSelected(null); setBuilt([])
+    if (ex.type === 'build_sentence' && ex.words)
+      setAvail([...ex.words].sort(() => Math.random() - 0.5))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cur])
+
+  function check() {
+    let ok = false
+    if (ex.type === 'fill_blank') ok = input.trim().toLowerCase() === ex.answer.toLowerCase()
+    else if (ex.type === 'multiple_choice') ok = selected === ex.answer
+    else if (ex.type === 'build_sentence') ok = built.join(' ') === ex.answer
+    setCorrect(ok); setAnswered(true)
+  }
+
+  const parts = ex.type === 'fill_blank' ? ex.question.split('___') : []
+  const canCheck = ex.type === 'fill_blank' ? !!input.trim()
+    : ex.type === 'multiple_choice' ? !!selected
+    : ex.type === 'build_sentence' ? built.length > 0 : false
+
   return (
-    <div className="space-y-2">
-      {lines.map((line, i) => {
-        if (!line.trim()) return <div key={i} className="h-2" />
+    <div className="flex flex-col h-full">
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-[#64748b] text-xs">Упражнение {cur + 1} из {lesson.exercises.length}</span>
+        <div className="flex gap-1">
+          {lesson.exercises.map((_, i) => (
+            <div key={i} className="w-5 h-1.5 rounded-full transition-all"
+              style={{ backgroundColor: i < cur ? c : i === cur ? `${c}80` : 'rgba(255,255,255,0.08)' }} />
+          ))}
+        </div>
+      </div>
 
-        // Bold section headers (e.g. 📖 **What you'll learn**)
-        if (line.includes('**')) {
-          const parts = line.split(/\*\*(.+?)\*\*/g)
-          return (
-            <p key={i} className="text-sm leading-relaxed text-[#e2e8f0]">
-              {parts.map((part, j) =>
-                j % 2 === 1
-                  ? <strong key={j} className="text-white font-bold">{part}</strong>
-                  : <span key={j}>{part}</span>
-              )}
-            </p>
-          )
-        }
+      <div className="flex-1 overflow-y-auto">
+        <AnimatePresence mode="wait">
+          <motion.div key={cur} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
 
-        // Bullet points
-        if (line.startsWith('•') || line.startsWith('-')) {
-          return (
-            <div key={i} className="flex items-start gap-2.5 pl-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#6366f1] mt-2 shrink-0" />
-              <p className="text-sm text-[#cbd5e1] leading-relaxed">{line.replace(/^[•\-]\s*/, '')}</p>
+            {ex.type === 'fill_blank' && (
+              <div className="space-y-4">
+                <div className="text-white font-medium text-base leading-loose flex flex-wrap items-center gap-x-1">
+                  {parts.map((part, i) => (
+                    <span key={i} className="flex items-center gap-1 flex-wrap">
+                      <span>{part}</span>
+                      {i < parts.length - 1 && (
+                        <input type="text" value={input} onChange={e => !answered && setInput(e.target.value)}
+                          onKeyDown={e => e.key === 'Enter' && !answered && canCheck && check()}
+                          disabled={answered} placeholder="______"
+                          className={`w-28 border-b-2 bg-transparent text-center font-bold outline-none px-1 transition-colors ${
+                            answered ? (correct ? 'border-[#10b981] text-[#10b981]' : 'border-[#ef4444] text-[#ef4444]') : 'border-[#6366f1] text-[#a5b4fc]'
+                          }`} />
+                      )}
+                    </span>
+                  ))}
+                </div>
+                {ex.hint && !answered && <p className="text-[#475569] text-xs">💡 {ex.hint}</p>}
+              </div>
+            )}
+
+            {ex.type === 'multiple_choice' && (
+              <div className="space-y-2.5">
+                <p className="text-white font-medium text-sm mb-4">{ex.question}</p>
+                {ex.options?.map(opt => (
+                  <button key={opt} onClick={() => !answered && setSelected(opt)} disabled={answered}
+                    className={`w-full text-left px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all ${
+                      answered
+                        ? opt === ex.answer ? 'border-[#10b981] bg-[#10b981]/15 text-[#10b981]'
+                          : opt === selected ? 'border-[#ef4444] bg-[#ef4444]/15 text-[#ef4444]'
+                          : 'border-white/[0.05] text-[#475569]'
+                        : opt === selected ? 'border-[#6366f1] bg-[#6366f1]/10 text-white'
+                          : 'border-white/10 text-[#94a3b8] hover:border-white/20 hover:text-white'
+                    }`}>
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {ex.type === 'build_sentence' && (
+              <div className="space-y-4">
+                <p className="text-[#94a3b8] text-sm">{ex.question || 'Собери предложение:'}</p>
+                <div className="min-h-12 flex flex-wrap gap-2 p-3 rounded-xl border-2 border-dashed border-white/10 bg-white/[0.02]">
+                  {built.length === 0 && <span className="text-[#334155] text-sm self-center">Нажми на слова снизу...</span>}
+                  {built.map((w, i) => (
+                    <button key={`b${i}`} onClick={() => { if (answered) return; setBuilt(b => b.filter((_, j) => j !== i)); setAvail(a => [...a, w]) }} disabled={answered}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all ${
+                        answered ? (correct ? 'bg-[#10b981]/15 border-[#10b981]/40 text-[#10b981]' : 'bg-[#ef4444]/15 border-[#ef4444]/40 text-[#ef4444]')
+                          : 'bg-[#6366f1]/15 border-[#6366f1]/40 text-[#a5b4fc] hover:bg-[#6366f1]/25'
+                      }`}>
+                      {w}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {avail.map((w, i) => (
+                    <button key={`a${i}`} onClick={() => { if (answered) return; setBuilt(b => [...b, w]); setAvail(a => a.filter((_, j) => j !== i)) }} disabled={answered}
+                      className="px-3 py-1.5 rounded-lg text-sm font-medium bg-white/[0.06] border border-white/10 text-white hover:bg-white/10 transition-all">
+                      {w}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {answered && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+          className={`mt-3 px-4 py-3 rounded-xl text-sm font-medium ${
+            correct ? 'bg-[#10b981]/10 border border-[#10b981]/30 text-[#10b981]' : 'bg-[#ef4444]/10 border border-[#ef4444]/30 text-[#ef4444]'
+          }`}>
+          {correct ? '✅ Правильно!' : `❌ Правильный ответ: ${ex.answer}`}
+        </motion.div>
+      )}
+
+      <div className="mt-3">
+        {!answered ? (
+          <button onClick={check} disabled={!canCheck}
+            className="w-full py-3 rounded-2xl text-white font-bold text-sm disabled:opacity-40 transition-all hover:opacity-90"
+            style={{ background: `linear-gradient(135deg, ${c}, ${c}99)` }}>
+            Проверить
+          </button>
+        ) : (
+          <button onClick={() => { if (cur < lesson.exercises.length - 1) setCur(n => n + 1); else onNext() }}
+            className="w-full py-3.5 rounded-2xl text-white font-bold text-sm transition-all hover:opacity-90"
+            style={{ background: `linear-gradient(135deg, ${c}, ${c}99)` }}>
+            {cur < lesson.exercises.length - 1 ? 'Следующее упражнение →' : 'К тесту →'}
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─── Step 4: Quiz ─────────────────────────────────────────────────────────────
+function QuizStep({ lesson, onFinish }: { lesson: Lesson; onFinish: (score: number) => void }) {
+  const [cur, setCur] = useState(0)
+  const [chosen, setChosen] = useState<string[]>([])
+  const [selected, setSelected] = useState<string | null>(null)
+  const [finalScore, setFinalScore] = useState<number | null>(null)
+  const c = LEVEL_COLORS[lesson.level]
+  const q = lesson.quiz[cur]
+
+  function next() {
+    const newChosen = [...chosen, selected ?? '']
+    setChosen(newChosen)
+    setSelected(null)
+    if (cur < lesson.quiz.length - 1) {
+      setCur(n => n + 1)
+    } else {
+      const score = newChosen.filter((a, i) => a === lesson.quiz[i].answer).length
+      setFinalScore(score)
+      if (score / lesson.quiz.length >= PASS_THRESHOLD) onFinish(score)
+    }
+  }
+
+  if (finalScore !== null) {
+    const pass = finalScore / lesson.quiz.length >= PASS_THRESHOLD
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-center px-4">
+        <div className="text-6xl mb-4">{pass ? '🎉' : '💪'}</div>
+        <h3 className="text-white font-black text-xl mb-2">{pass ? 'Урок завершён!' : 'Попробуй снова'}</h3>
+        <p className="text-[#64748b] text-sm mb-2">{finalScore} из {lesson.quiz.length} правильно</p>
+        {pass && (
+          <div className="flex items-center gap-2 text-[#f59e0b] font-bold text-sm mb-6">
+            <Zap className="w-4 h-4" />+{xpForLesson(lesson)} XP
+          </div>
+        )}
+        {!pass && (
+          <button onClick={() => { setCur(0); setChosen([]); setSelected(null); setFinalScore(null) }}
+            className="flex items-center gap-2 mt-4 px-6 py-3 rounded-2xl border border-white/10 text-white text-sm font-bold hover:border-white/20 transition-all">
+            <RotateCcw className="w-4 h-4" />Пройти тест снова
+          </button>
+        )}
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-[#64748b] text-xs">Вопрос {cur + 1} из {lesson.quiz.length}</span>
+        <div className="flex gap-1">
+          {lesson.quiz.map((_, i) => (
+            <div key={i} className="w-4 h-1.5 rounded-full transition-all"
+              style={{ backgroundColor: i < cur ? c : i === cur ? `${c}80` : 'rgba(255,255,255,0.08)' }} />
+          ))}
+        </div>
+      </div>
+
+      <div className="flex-1 space-y-2.5 overflow-y-auto">
+        <p className="text-white font-medium text-sm mb-4">{q.question}</p>
+        {q.options.map(opt => (
+          <button key={opt} onClick={() => !selected && setSelected(opt)}
+            className={`w-full text-left px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all ${
+              selected === opt ? 'border-[#6366f1] bg-[#6366f1]/10 text-white' : 'border-white/10 text-[#94a3b8] hover:border-white/20 hover:text-white'
+            }`}>
+            {opt}
+          </button>
+        ))}
+      </div>
+
+      <button onClick={next} disabled={!selected}
+        className="mt-4 w-full py-3.5 rounded-2xl text-white font-bold text-sm disabled:opacity-40 transition-all hover:opacity-90"
+        style={{ background: `linear-gradient(135deg, ${c}, ${c}99)` }}>
+        {cur < lesson.quiz.length - 1 ? 'Следующий вопрос →' : 'Завершить тест'}
+      </button>
+    </div>
+  )
+}
+
+// ─── Lesson Player (VIEW 2) ───────────────────────────────────────────────────
+const STEPS = ['Теория', 'Примеры', 'Упражнения', 'Тест'] as const
+type Step = typeof STEPS[number]
+
+function LessonPlayer({ lesson, onBack, onComplete }: {
+  lesson: Lesson
+  onBack: () => void
+  onComplete: (score: number) => void
+}) {
+  const [step, setStep] = useState<Step>('Теория')
+  const stepIdx = STEPS.indexOf(step)
+  const c = LEVEL_COLORS[lesson.level]
+
+  return (
+    <div className="flex flex-col h-[calc(100vh-8rem)] max-h-[800px]">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-5 shrink-0">
+        <button onClick={onBack}
+          className="flex items-center gap-1.5 text-[#64748b] hover:text-white text-sm transition-colors">
+          <ChevronLeft className="w-4 h-4" />Назад
+        </button>
+        <div className="flex-1" />
+        <span className="text-xs font-black px-2.5 py-1 rounded-lg"
+          style={{ backgroundColor: `${c}20`, color: c }}>
+          {lesson.level}
+        </span>
+        <span className="text-[#64748b] text-xs">{lesson.duration}</span>
+      </div>
+
+      <h2 className="text-white font-black text-lg mb-4 shrink-0">{lesson.title}</h2>
+
+      {/* Step indicator */}
+      <div className="flex items-center gap-1 mb-6 shrink-0">
+        {STEPS.map((s, i) => (
+          <div key={s} className="flex items-center gap-1 flex-1">
+            <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex-1 justify-center ${
+              i < stepIdx ? 'text-[#10b981]' : i === stepIdx ? 'text-white' : 'text-[#334155]'
+            }`} style={i === stepIdx ? { backgroundColor: `${c}20`, color: c } : {}}>
+              {i < stepIdx && <CheckCircle className="w-3 h-3 shrink-0" />}
+              <span className="hidden sm:inline">{s}</span>
+              <span className="sm:hidden">{i + 1}</span>
             </div>
-          )
-        }
+            {i < STEPS.length - 1 && <div className="w-3 h-px bg-white/10 shrink-0" />}
+          </div>
+        ))}
+      </div>
 
-        // Numbered list
-        if (/^\d+\./.test(line)) {
-          const num = line.match(/^(\d+)\./)?.[1]
-          const rest = line.replace(/^\d+\.\s*/, '')
-          return (
-            <div key={i} className="flex items-start gap-3 pl-1">
-              <span className="w-5 h-5 rounded-md bg-[#6366f120] text-[#818cf8] text-[10px] font-black flex items-center justify-center shrink-0 mt-0.5">{num}</span>
-              <p className="text-sm text-[#cbd5e1] leading-relaxed">{rest}</p>
+      {/* Step content */}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.div key={step} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.25 }} className="h-full">
+            {step === 'Теория' && <TheoryStep lesson={lesson} onNext={() => setStep('Примеры')} />}
+            {step === 'Примеры' && <ExamplesStep lesson={lesson} onNext={() => setStep('Упражнения')} />}
+            {step === 'Упражнения' && <ExercisesStep lesson={lesson} onNext={() => setStep('Тест')} />}
+            {step === 'Тест' && <QuizStep lesson={lesson} onFinish={onComplete} />}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </div>
+  )
+}
+
+// ─── Curriculum Card ──────────────────────────────────────────────────────────
+function LessonCard({ lesson, unlocked, completed, current, onClick }: {
+  lesson: Lesson
+  unlocked: boolean
+  completed: boolean
+  current: boolean
+  onClick: () => void
+}) {
+  const c = LEVEL_COLORS[lesson.level]
+  return (
+    <motion.button
+      whileHover={unlocked ? { y: -2 } : {}}
+      whileTap={unlocked ? { scale: 0.98 } : {}}
+      onClick={unlocked ? onClick : undefined}
+      className={`w-full text-left bg-white/[0.04] border rounded-2xl p-4 transition-all ${
+        !unlocked ? 'opacity-40 grayscale cursor-not-allowed border-white/[0.06]'
+          : completed ? 'border-[#10b981]/40 hover:border-[#10b981]/60'
+          : current ? 'border-[#6366f1] shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:border-[#6366f1]'
+          : 'border-white/10 hover:border-white/20'
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <p className="text-white font-bold text-sm leading-snug truncate">{lesson.title}</p>
+          <p className="text-[#475569] text-xs mt-1">{lesson.duration}</p>
+        </div>
+        <div className="shrink-0 mt-0.5">
+          {!unlocked ? <Lock className="w-4 h-4 text-[#334155]" />
+            : completed ? <CheckCircle className="w-4 h-4 text-[#10b981]" />
+            : current ? <div className="w-4 h-4 rounded-full border-2 animate-pulse" style={{ borderColor: c }} />
+            : <div className="w-4 h-4 rounded-full border-2 border-white/20" />}
+        </div>
+      </div>
+      {current && (
+        <div className="mt-2 text-xs font-semibold flex items-center gap-1" style={{ color: c }}>
+          <BookOpen className="w-3 h-3" />Текущий урок
+        </div>
+      )}
+    </motion.button>
+  )
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
+export default function LessonsPage() {
+  const [activeLevel, setActiveLevel] = useState<string>('A1')
+  const [activeLesson, setActiveLesson] = useState<Lesson | null>(null)
+  const [progress, setProgress] = useState<Progress>({ completedLessons: {}, totalXP: 0 })
+
+  useEffect(() => { setProgress(loadProgress()) }, [])
+
+  const handleComplete = useCallback((lesson: Lesson, score: number) => {
+    setProgress(prev => {
+      const next: Progress = {
+        completedLessons: { ...prev.completedLessons, [lesson.id]: { score, completedAt: new Date().toISOString() } },
+        totalXP: prev.totalXP + xpForLesson(lesson),
+      }
+      saveProgress(next)
+      return next
+    })
+    // stay in player to show celebration in QuizStep
+  }, [])
+
+  // Find the "current" lesson = first unlocked and not completed
+  const currentLesson = LESSONS.find(l => isUnlocked(l, progress) && !progress.completedLessons[l.id])
+
+  const blocks = lessonsByBlock(activeLevel)
+  const totalCompleted = LESSONS.filter(l => l.level === activeLevel && progress.completedLessons[l.id]).length
+  const totalInLevel = LESSONS.filter(l => l.level === activeLevel).length
+
+  return (
+    <div className="max-w-3xl mx-auto pb-10">
+      <AnimatePresence mode="wait">
+        {activeLesson ? (
+          /* ── VIEW 2: LESSON PLAYER ─────────────────────────────────────── */
+          <motion.div key="player"
+            initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.3 }}>
+            <LessonPlayer
+              lesson={activeLesson}
+              onBack={() => setActiveLesson(null)}
+              onComplete={(score) => handleComplete(activeLesson, score)}
+            />
+          </motion.div>
+        ) : (
+          /* ── VIEW 1: CURRICULUM ─────────────────────────────────────────── */
+          <motion.div key="curriculum"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h1 className="text-2xl font-black text-white">Уроки 📚</h1>
+                <p className="text-[#64748b] text-sm mt-0.5">{totalCompleted}/{totalInLevel} на уровне {activeLevel}</p>
+              </div>
+              <div className="flex items-center gap-2 bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2">
+                <Zap className="w-4 h-4 text-[#f59e0b]" />
+                <span className="text-white font-bold text-sm">{progress.totalXP} XP</span>
+              </div>
             </div>
-          )
-        }
 
-        // Emoji headings (📖, 🔑, 💡, 🚀)
-        if (/^[📖🔑💡🚀🎯✅⚡]/.test(line)) {
-          return (
-            <div key={i} className="flex items-center gap-2 pt-3 pb-1">
-              <p className="text-base font-black text-white">{line}</p>
+            {/* Level tabs */}
+            <div className="flex gap-2 flex-wrap mb-8">
+              {LEVELS.map(lv => {
+                const active = activeLevel === lv
+                const lc = LEVEL_COLORS[lv]
+                return (
+                  <button key={lv} onClick={() => setActiveLevel(lv)}
+                    className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all ${
+                      active ? 'text-white' : 'border-white/10 text-[#64748b] hover:text-white hover:border-white/20'
+                    }`}
+                    style={active ? { backgroundColor: `${lc}20`, borderColor: lc, color: lc } : {}}>
+                    {lv}
+                    <span className="ml-1.5 text-[10px] font-normal opacity-70 hidden sm:inline">{LEVEL_DESC[lv]}</span>
+                  </button>
+                )
+              })}
             </div>
-          )
-        }
 
-        return (
-          <p key={i} className="text-sm text-[#94a3b8] leading-relaxed">{line}</p>
-        )
-      })}
+            {/* Blocks */}
+            <div className="space-y-8">
+              {blocks.map(([blockNum, { name, lessons }]) => {
+                const doneInBlock = lessons.filter(l => progress.completedLessons[l.id]).length
+                const c = LEVEL_COLORS[activeLevel]
+                return (
+                  <section key={blockNum}>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="text-white font-black text-sm">Блок {blockNum}</div>
+                      <div className="text-[#64748b] text-sm">— {name}</div>
+                      <div className="flex-1 h-px bg-white/[0.06]" />
+                      <div className="text-[#475569] text-xs">{doneInBlock} из {lessons.length}</div>
+                    </div>
+
+                    {/* Block progress bar */}
+                    <div className="h-1 bg-white/[0.06] rounded-full mb-4 overflow-hidden">
+                      <div className="h-full rounded-full transition-all"
+                        style={{ width: `${(doneInBlock / lessons.length) * 100}%`, backgroundColor: c }} />
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      {lessons.map(lesson => (
+                        <LessonCard
+                          key={lesson.id}
+                          lesson={lesson}
+                          unlocked={isUnlocked(lesson, progress)}
+                          completed={!!progress.completedLessons[lesson.id]}
+                          current={lesson.id === currentLesson?.id}
+                          onClick={() => setActiveLesson(lesson)}
+                        />
+                      ))}
+                    </div>
+                  </section>
+                )
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

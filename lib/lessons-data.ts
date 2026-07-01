@@ -1,942 +1,2843 @@
 export type ExerciseItem =
-  | { type: 'multiple-choice'; question: string; options: string[]; answer: number; explanation: string }
-  | { type: 'fill-blank'; sentence: string; answer: string; hint: string }
-  | { type: 'reorder'; words: string[]; correct: string }
-  | { type: 'translation'; en: string; ru: string }
-  | { type: 'error-spot'; sentence: string; errorWord: string; correction: string; explanation: string }
-
-export type CEFRLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2'
-export type LessonCategory = 'Grammar' | 'Vocabulary' | 'Reading' | 'Speaking' | 'Writing'
+  | { type: 'fill_blank'; question: string; answer: string; hint?: string; options?: never; words?: never }
+  | { type: 'multiple_choice'; question: string; options: string[]; answer: string; hint?: string; words?: never }
+  | { type: 'build_sentence'; question?: string; words: string[]; answer: string; hint?: string; options?: never }
 
 export interface Lesson {
   id: string
-  level: CEFRLevel
-  category: LessonCategory
+  level: 'A1' | 'A2' | 'B1' | 'B2' | 'C1'
+  block: number
+  blockName: string
+  order: number
   title: string
-  titleRu: string
-  duration: number
-  xpReward: number
-  content: {
+  duration: string
+  theory: {
     explanation: string
-    examples: { en: string; ru: string }[]
-    keyPoints: string[]
+    examples: Array<{ english: string; russian: string }>
   }
   exercises: ExerciseItem[]
+  quiz: Array<{
+    question: string
+    options: string[]
+    answer: string
+  }>
 }
+export type LessonCategory = string
+export type CEFRLevel = Lesson['level']
 
-export const LEVEL_COLORS: Record<CEFRLevel, string> = {
-  A1: '#6B7280', A2: '#3B82F6', B1: '#8B5CF6',
-  B2: '#10B981', C1: '#F59E0B', C2: '#EF4444',
+export const LEVEL_COLORS: Record<string, string> = {
+  A1: '#10b981', A2: '#3b82f6', B1: '#8b5cf6', B2: '#f59e0b', C1: '#ef4444', C2: '#ec4899',
 }
-
-export const LESSONS: Lesson[] = [
-
-  // ── A1 ─────────────────────────────────────────────────────────────────
-  {
-    id: 'a1-present-simple',
-    level: 'A1', category: 'Grammar',
-    title: 'Present Simple', titleRu: 'Настоящее простое — привычки и факты',
-    duration: 10, xpReward: 50,
-    content: {
-      explanation: `Present Simple describes habits, routines, and facts that are always true. For I/you/we/they use the base verb. For he/she/it add -s or -es.\n\nNegative: I don't work. She doesn't work.\nQuestion: Do you work? Does she work?`,
-      examples: [
-        { en: 'I wake up at 7 every morning.', ru: 'Я просыпаюсь в 7 каждое утро.' },
-        { en: 'She works at a hospital.', ru: 'Она работает в больнице.' },
-        { en: 'They don\'t eat meat.', ru: 'Они не едят мясо.' },
-        { en: 'Does he speak Spanish?', ru: 'Он говорит по-испански?' },
-      ],
-      keyPoints: [
-        'He/she/it: add -s or -es (goes, watches, studies)',
-        'Negative: don\'t / doesn\'t + base verb',
-        'Question: Do / Does + subject + base verb?',
-        'Time words: always, usually, often, never, every day',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: 'She ___ to work by bus every day.', options: ['go', 'goes', 'going', 'is go'], answer: 1, explanation: 'He/she/it needs -s: go → goes.' },
-      { type: 'fill-blank', sentence: 'My brother ___ football every Saturday. (play)', answer: 'plays', hint: 'he/she/it → add -s' },
-      { type: 'error-spot', sentence: 'He don\'t like cold weather.', errorWord: 'don\'t', correction: 'doesn\'t', explanation: 'With he/she/it use "doesn\'t", not "don\'t".' },
-      { type: 'translation', en: 'We go to the gym three times a week.', ru: 'Мы ходим в спортзал три раза в неделю.' },
-      { type: 'reorder', words: ['speak', 'Does', 'English', 'your', 'teacher', '?'], correct: 'Does your teacher speak English ?' },
-    ],
-  },
-
-  {
-    id: 'a1-verb-to-be',
-    level: 'A1', category: 'Grammar',
-    title: 'Verb To Be', titleRu: 'Глагол быть — кто я и что вокруг',
-    duration: 10, xpReward: 50,
-    content: {
-      explanation: `The verb "to be" (am/is/are) is the most important verb in English. It links the subject to a description.\n\nPresent: I am, you are, he/she/it is, we/you/they are.\nShort forms: I'm, you're, he's, she's, it's, we're, they're.\nNegative: I'm not, you aren't, he isn't.`,
-      examples: [
-        { en: 'I am a student.', ru: 'Я студент.' },
-        { en: 'She is from Kazakhstan.', ru: 'Она из Казахстана.' },
-        { en: 'They are not at home.', ru: 'Они не дома.' },
-        { en: 'Is the coffee hot?', ru: 'Кофе горячий?' },
-      ],
-      keyPoints: [
-        'I → am | he/she/it → is | you/we/they → are',
-        'Short forms: I\'m, he\'s, they\'re',
-        'Negative: I\'m not, he isn\'t, they aren\'t',
-        'Question: Am I? Is he? Are they?',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: 'My parents ___ very kind people.', options: ['am', 'is', 'are', 'be'], answer: 2, explanation: '"My parents" is plural → use "are".' },
-      { type: 'fill-blank', sentence: 'She ___ a nurse at the city hospital.', answer: 'is', hint: 'he/she/it → is' },
-      { type: 'multiple-choice', question: 'Choose the negative: "He is tired."', options: ['He don\'t tired.', 'He isn\'t tired.', 'He not tired.', 'He aren\'t tired.'], answer: 1, explanation: 'Negative of "is" is "isn\'t" (is not).' },
-      { type: 'translation', en: 'We are happy to be here.', ru: 'Мы рады быть здесь.' },
-      { type: 'error-spot', sentence: 'They is from Russia.', errorWord: 'is', correction: 'are', explanation: '"They" is plural — use "are".' },
-    ],
-  },
-
-  {
-    id: 'a1-articles',
-    level: 'A1', category: 'Grammar',
-    title: 'Articles A / An / The', titleRu: 'Артикли — когда что использовать',
-    duration: 12, xpReward: 50,
-    content: {
-      explanation: `English has three articles: A, AN, and THE.\n\nA / AN (indefinite): Use for non-specific things mentioned for the first time. A + consonant sound. AN + vowel sound (a, e, i, o, u).\n\nTHE (definite): Use when both speaker and listener know which thing is meant, or when something is unique.`,
-      examples: [
-        { en: 'I saw a dog in the park.', ru: 'Я видел собаку в парке.' },
-        { en: 'She is an engineer.', ru: 'Она инженер.' },
-        { en: 'The sun rises in the east.', ru: 'Солнце встаёт на востоке.' },
-        { en: 'Can you close the door?', ru: 'Ты можешь закрыть дверь?' },
-      ],
-      keyPoints: [
-        'A = before consonant sounds: a book, a car, a university (юни — sounds like "you")',
-        'AN = before vowel sounds: an apple, an hour (silent h)',
-        'THE = specific, unique, or already mentioned thing',
-        'No article: languages (English), sports (football), meals (breakfast)',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: 'She is ___ doctor at a big hospital.', options: ['a', 'an', 'the', '—'], answer: 0, explanation: '"Doctor" starts with a consonant sound → use "a".' },
-      { type: 'multiple-choice', question: 'I read ___ book you recommended.', options: ['a', 'an', 'the', '—'], answer: 2, explanation: '"The book you recommended" — we both know which one → "the".' },
-      { type: 'fill-blank', sentence: 'He found ___ old letter in the box.', answer: 'an', hint: '"Old" starts with a vowel sound → a or an?' },
-      { type: 'error-spot', sentence: 'She plays a piano every evening.', errorWord: 'a', correction: 'the', explanation: 'Musical instruments use "the": play the piano, the guitar.' },
-      { type: 'translation', en: 'The Moon is smaller than the Sun.', ru: 'Луна меньше Солнца.' },
-    ],
-  },
-
-  {
-    id: 'a1-numbers-colors-days',
-    level: 'A1', category: 'Vocabulary',
-    title: 'Numbers, Colors & Days', titleRu: 'Цифры, цвета и дни недели',
-    duration: 10, xpReward: 50,
-    content: {
-      explanation: `Essential vocabulary every beginner needs! Numbers 1-100, basic colors, and days of the week form the backbone of daily communication.\n\nDays of the week: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday.\nBasic colors: red, blue, green, yellow, black, white, orange, purple, pink, grey.\nOrdinal numbers: first, second, third, fourth, fifth...`,
-      examples: [
-        { en: 'My meeting is on Wednesday at 3 o\'clock.', ru: 'Моя встреча в среду в 3 часа.' },
-        { en: 'She has thirty-five students in her class.', ru: 'У неё тридцать пять учеников в классе.' },
-        { en: 'His favourite colour is dark blue.', ru: 'Его любимый цвет — тёмно-синий.' },
-        { en: 'Today is the fifteenth of March.', ru: 'Сегодня пятнадцатое марта.' },
-      ],
-      keyPoints: [
-        'Teens: thirteen, fourteen... -teen. Tens: thirty, forty... -ty',
-        'Days are always capitalized in English: Monday, not monday',
-        'The weekend = Saturday and Sunday',
-        'Ordinals: 1st=first, 2nd=second, 3rd=third, then add -th',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: 'Which day comes after Wednesday?', options: ['Tuesday', 'Thursday', 'Friday', 'Monday'], answer: 1, explanation: 'The order: Mon, Tue, Wed, THURSDAY, Fri, Sat, Sun.' },
-      { type: 'translation', en: 'There are twenty-four hours in a day.', ru: 'В сутках двадцать четыре часа.' },
-      { type: 'multiple-choice', question: 'The colour of the sky on a clear day is:', options: ['green', 'red', 'blue', 'yellow'], answer: 2, explanation: 'The sky is blue — "blue sky".' },
-      { type: 'translation', en: 'My birthday is on the third of July.', ru: 'Мой день рождения третьего июля.' },
-      { type: 'fill-blank', sentence: 'There are ___ days in a week.', answer: 'seven', hint: 'Mon, Tue, Wed, Thu, Fri, Sat, Sun = ?' },
-    ],
-  },
-
-  {
-    id: 'a1-greetings',
-    level: 'A1', category: 'Speaking',
-    title: 'Greetings & Introductions', titleRu: 'Приветствия и знакомства',
-    duration: 10, xpReward: 50,
-    content: {
-      explanation: `Knowing how to greet people and introduce yourself is the first step in speaking English. There are formal and informal ways depending on the situation.\n\nFormal: Good morning/afternoon/evening. How do you do?\nInformal: Hi! Hey! What's up? How are you?\n\nIntroducing yourself: "My name is Alex. I'm from Almaty. I'm 25 years old. Nice to meet you!"`,
-      examples: [
-        { en: 'Hi! My name is Anna. What\'s your name?', ru: 'Привет! Меня зовут Анна. Как тебя зовут?' },
-        { en: 'Nice to meet you! Where are you from?', ru: 'Рад познакомиться! Откуда ты?' },
-        { en: 'How are you? — I\'m fine, thanks!', ru: 'Как дела? — Хорошо, спасибо!' },
-        { en: 'Good morning! Have a great day!', ru: 'Доброе утро! Хорошего дня!' },
-      ],
-      keyPoints: [
-        '"How are you?" → Answer: Fine/Great/Not bad, thanks!',
-        '"Nice to meet you" / "Pleased to meet you" — at first meetings',
-        'Goodbye: Bye! See you! Take care! Goodbye!',
-        'Good morning (before noon), Good afternoon (12-6pm), Good evening (after 6pm)',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: 'You meet someone for the first time. You say:', options: ['See you later!', 'Nice to meet you!', 'How have you been?', 'Long time no see!'], answer: 1, explanation: '"Nice to meet you" is for first meetings.' },
-      { type: 'translation', en: 'What do you do for a living?', ru: 'Кем ты работаешь?' },
-      { type: 'fill-blank', sentence: 'A: How are you? B: ___, thank you!', answer: 'Fine', hint: 'A common positive answer to "How are you?"' },
-      { type: 'reorder', words: ['is', 'name', 'My', 'Sarah', '.'], correct: 'My name is Sarah .' },
-      { type: 'multiple-choice', question: '"Good evening" is used:', options: ['Before 12pm', 'Between 12-6pm', 'After 6pm', 'Any time'], answer: 2, explanation: 'Evening starts at approximately 6pm.' },
-    ],
-  },
-
-  // ── A2 ─────────────────────────────────────────────────────────────────
-  {
-    id: 'a2-past-simple',
-    level: 'A2', category: 'Grammar',
-    title: 'Past Simple', titleRu: 'Прошедшее время — что я делал вчера',
-    duration: 12, xpReward: 75,
-    content: {
-      explanation: `Past Simple describes completed actions in the past. Regular verbs add -ed: work → worked. Irregular verbs change completely: go → went, eat → ate, see → saw.\n\nNegative: didn't + base verb (I didn't go).\nQuestion: Did + subject + base verb? (Did you go?)`,
-      examples: [
-        { en: 'I visited my grandmother last Sunday.', ru: 'В прошлое воскресенье я навестил бабушку.' },
-        { en: 'She didn\'t come to the party.', ru: 'Она не пришла на вечеринку.' },
-        { en: 'Did you see that film?', ru: 'Ты видел этот фильм?' },
-        { en: 'We had a wonderful holiday in Italy.', ru: 'У нас был чудесный отпуск в Италии.' },
-      ],
-      keyPoints: [
-        'Regular: add -ed (talked, worked, wanted)',
-        'Irregular: must be memorized (go→went, buy→bought, think→thought)',
-        'Negative: didn\'t + BASE verb (not "didn\'t went"!)',
-        'Time words: yesterday, last week, in 2020, ago, when I was young',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: 'She ___ to London last year for the first time.', options: ['go', 'goes', 'went', 'goed'], answer: 2, explanation: 'Go is irregular: go → went.' },
-      { type: 'error-spot', sentence: 'I didn\'t went to school yesterday.', errorWord: 'went', correction: 'go', explanation: 'After "didn\'t" always use the base verb: "didn\'t go".' },
-      { type: 'fill-blank', sentence: 'We ___ a great time at the concert last night. (have)', answer: 'had', hint: 'have is irregular: have → had' },
-      { type: 'translation', en: 'Did you finish your homework?', ru: 'Ты закончил домашнее задание?' },
-      { type: 'reorder', words: ['yesterday', 'he', 'called', 'you', 'Did', '?'], correct: 'Did he call you yesterday ?' },
-    ],
-  },
-
-  {
-    id: 'a2-present-continuous',
-    level: 'A2', category: 'Grammar',
-    title: 'Present Continuous', titleRu: 'Что происходит прямо сейчас',
-    duration: 12, xpReward: 75,
-    content: {
-      explanation: `Present Continuous describes actions happening right now or temporary situations. Form: am/is/are + verb-ing.\n\nI am working. She is sleeping. They are studying.\nNegative: I'm not working. She isn't sleeping.\nQuestion: Are you working? Is she sleeping?\n\nSpelling: run → running (double consonant), write → writing (drop silent e).`,
-      examples: [
-        { en: 'I\'m reading a great book right now.', ru: 'Я сейчас читаю отличную книгу.' },
-        { en: 'She is living in Paris for six months.', ru: 'Она живёт в Париже шесть месяцев (временно).' },
-        { en: 'They\'re not playing — they\'re watching TV.', ru: 'Они не играют — они смотрят телевизор.' },
-        { en: 'What are you doing this evening?', ru: 'Что ты делаешь сегодня вечером?' },
-      ],
-      keyPoints: [
-        'am/is/are + verb-ing (adding -ing to base verb)',
-        'Spelling: stop→stopping, make→making, study→studying',
-        'Signal words: now, right now, at the moment, currently, today',
-        'Also used for future plans: I\'m meeting Anna tomorrow.',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: 'Listen! The baby ___ in the next room.', options: ['cries', 'cry', 'is crying', 'crying'], answer: 2, explanation: '"Listen!" signals right now → Present Continuous.' },
-      { type: 'fill-blank', sentence: 'She ___ her hair right now. (wash)', answer: 'is washing', hint: 'she + is/are + verb-ing' },
-      { type: 'error-spot', sentence: 'He is swim in the pool.', errorWord: 'swim', correction: 'swimming', explanation: 'Present Continuous = is + verb-ING: swimming.' },
-      { type: 'multiple-choice', question: 'Which sentence uses Present Continuous correctly?', options: ['I am know the answer.', 'She is want more coffee.', 'They are studying for the exam.', 'He is have a car.'], answer: 2, explanation: 'Know, want, have are state verbs — no -ing form in present.' },
-      { type: 'translation', en: 'What are you thinking about?', ru: 'О чём ты думаешь?' },
-    ],
-  },
-
-  {
-    id: 'a2-comparatives',
-    level: 'A2', category: 'Grammar',
-    title: 'Comparatives & Superlatives', titleRu: 'Больше, меньше, самый',
-    duration: 12, xpReward: 75,
-    content: {
-      explanation: `Comparatives compare two things. Superlatives compare one thing to a whole group.\n\nShort adjectives (1-2 syllables): add -er/-est. tall → taller → tallest.\nLong adjectives (3+ syllables): more/most. expensive → more expensive → most expensive.\nIrregular: good → better → best | bad → worse → worst | far → farther → farthest.`,
-      examples: [
-        { en: 'My phone is newer than yours.', ru: 'Мой телефон новее твоего.' },
-        { en: 'This is the most interesting book I\'ve read.', ru: 'Это самая интересная книга, которую я читал.' },
-        { en: 'He runs faster than anyone in the class.', ru: 'Он бегает быстрее всех в классе.' },
-        { en: 'January is the coldest month.', ru: 'Январь — самый холодный месяц.' },
-      ],
-      keyPoints: [
-        'Comparative + than: bigger than, more beautiful than',
-        'Superlative + the: the biggest, the most beautiful',
-        'Double consonant rule: big→bigger, hot→hotter, thin→thinner',
-        'Y→ier: happy→happier→happiest, easy→easier→easiest',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: 'Russia is ___ country in the world by area.', options: ['big', 'bigger', 'the biggest', 'the most big'], answer: 2, explanation: 'Superlative for short adjectives: the + -est → the biggest.' },
-      { type: 'fill-blank', sentence: 'This exam is ___ than the last one. (difficult)', answer: 'more difficult', hint: 'Long adjective → more + adjective' },
-      { type: 'error-spot', sentence: 'My sister is more tall than me.', errorWord: 'more tall', correction: 'taller', explanation: '"Tall" is short → use -er form: taller.' },
-      { type: 'translation', en: 'Which city is more expensive — London or New York?', ru: 'Какой город дороже — Лондон или Нью-Йорк?' },
-      { type: 'multiple-choice', question: 'He felt ___ today than yesterday.', options: ['good', 'gooder', 'better', 'more good'], answer: 2, explanation: '"Good" is irregular: good → better → best.' },
-    ],
-  },
-
-  {
-    id: 'a2-modal-verbs',
-    level: 'A2', category: 'Grammar',
-    title: 'Modal Verbs: can, must, should', titleRu: 'Возможность и обязанность',
-    duration: 12, xpReward: 75,
-    content: {
-      explanation: `Modal verbs express ability, permission, advice, and obligation. They never add -s for he/she/it and are always followed by the base verb.\n\nCAN: ability or permission (I can swim. Can I leave?)\nMUST: strong obligation or logical conclusion (You must wear a seatbelt.)\nSHOULD: advice or recommendation (You should see a doctor.)`,
-      examples: [
-        { en: 'She can speak four languages.', ru: 'Она умеет говорить на четырёх языках.' },
-        { en: 'You must not use your phone while driving.', ru: 'Нельзя пользоваться телефоном за рулём.' },
-        { en: 'You should drink more water.', ru: 'Тебе следует пить больше воды.' },
-        { en: 'Can I open the window?', ru: 'Можно открыть окно?' },
-      ],
-      keyPoints: [
-        'Modals: can/could, must/have to, should/ought to, may/might, will/would',
-        'Never add -s: she cans ✗ → she can ✓',
-        'Always followed by base verb: must to go ✗ → must go ✓',
-        'Negative: can\'t, mustn\'t, shouldn\'t',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: 'You ___ eat so much sugar. It\'s not healthy.', options: ['can', 'must', 'shouldn\'t', 'would'], answer: 2, explanation: '"Shouldn\'t" gives negative advice — don\'t do this.' },
-      { type: 'fill-blank', sentence: 'He ___ drive — he passed his test last week. (can)', answer: 'can', hint: 'Ability: he/she/it + can (no -s!)' },
-      { type: 'error-spot', sentence: 'She cans speak Spanish very well.', errorWord: 'cans', correction: 'can', explanation: 'Modal verbs NEVER add -s for he/she/it.' },
-      { type: 'translation', en: 'You must show your passport at the border.', ru: 'Ты должен показать паспорт на границе.' },
-      { type: 'multiple-choice', question: 'I think you ___ apologize to her. It was your fault.', options: ['can', 'must not', 'should', 'will'], answer: 2, explanation: '"Should" is the right choice for advice/recommendation.' },
-    ],
-  },
-
-  {
-    id: 'a2-prepositions',
-    level: 'A2', category: 'Grammar',
-    title: 'Prepositions: in, on, at, by', titleRu: 'Предлоги места и времени',
-    duration: 12, xpReward: 75,
-    content: {
-      explanation: `Prepositions of time and place are used differently in English. The key ones are IN, ON, AT, and BY.\n\nIN: months, years, seasons, countries, cities (in July, in 2023, in summer, in France)\nON: days and dates (on Monday, on 5th March, on my birthday)\nAT: specific times and places (at 3pm, at noon, at school, at the station)\nBY: deadline or means of transport (by Friday, by car, by train)`,
-      examples: [
-        { en: 'I was born in 1995 in Almaty.', ru: 'Я родился в 1995 году в Алматы.' },
-        { en: 'The meeting is on Thursday at 10am.', ru: 'Встреча в четверг в 10 утра.' },
-        { en: 'She travels to work by subway.', ru: 'Она добирается на работу на метро.' },
-        { en: 'Please finish the report by tomorrow.', ru: 'Пожалуйста, закончи отчёт к завтрашнему дню.' },
-      ],
-      keyPoints: [
-        'IN + month/year/season/century: in March, in 2020, in summer',
-        'ON + day/date/specific day: on Monday, on 15th June, on New Year\'s Day',
-        'AT + time/specific place: at 5pm, at home, at the airport',
-        'BY + transport/deadline: by bus, by email, by next week',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: 'My flight departs ___ 6:30 in the morning.', options: ['in', 'on', 'at', 'by'], answer: 2, explanation: 'Specific times → AT: at 6:30.' },
-      { type: 'multiple-choice', question: 'She was born ___ a cold winter morning.', options: ['in', 'on', 'at', 'by'], answer: 1, explanation: 'Specific days/mornings → ON: on a cold winter morning.' },
-      { type: 'fill-blank', sentence: 'The project must be finished ___ Friday.', answer: 'by', hint: 'Deadline → by' },
-      { type: 'translation', en: 'He always travels by train, not by plane.', ru: 'Он всегда путешествует на поезде, а не на самолёте.' },
-      { type: 'error-spot', sentence: 'We met on the summer of 2019.', errorWord: 'on', correction: 'in', explanation: 'Seasons → IN: in summer, in winter.' },
-    ],
-  },
-
-  // ── B1 ─────────────────────────────────────────────────────────────────
-  {
-    id: 'b1-present-perfect',
-    level: 'B1', category: 'Grammar',
-    title: 'Present Perfect', titleRu: 'Опыт и результат — что успел сделать',
-    duration: 15, xpReward: 100,
-    content: {
-      explanation: `Present Perfect connects the past to the present. Form: have/has + past participle.\n\nUse it for:\n1. Life experiences (Have you ever been to Japan?)\n2. Recent events with present relevance (I've lost my keys — still lost now)\n3. Unfinished time periods (I've worked here for 5 years)\n\nKey words: ever, never, already, yet, just, for, since.`,
-      examples: [
-        { en: 'I have visited 12 countries so far.', ru: 'Я посетил 12 стран к данному моменту.' },
-        { en: 'She has just finished her report.', ru: 'Она только что закончила отчёт.' },
-        { en: 'Have you ever eaten sushi?', ru: 'Ты когда-нибудь ел суши?' },
-        { en: 'He hasn\'t called me yet.', ru: 'Он ещё не позвонил мне.' },
-      ],
-      keyPoints: [
-        'have/has + past participle (worked, eaten, been, gone)',
-        '"Ever/never" for life experience questions and answers',
-        '"Already" in positive sentences, "yet" in negatives and questions',
-        '"For" = duration (for 2 years), "since" = start point (since 2020)',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: 'I ___ my wallet somewhere. I can\'t find it!', options: ['lost', 'have lost', 'has lost', 'lose'], answer: 1, explanation: 'The result is relevant now (still can\'t find it) → Present Perfect.' },
-      { type: 'fill-blank', sentence: 'She has worked at this company ___ 2015.', answer: 'since', hint: 'since = start point in time; for = duration' },
-      { type: 'error-spot', sentence: 'Have you ever went to London?', errorWord: 'went', correction: 'been', explanation: 'Present Perfect needs past participle: go → been/gone, not "went".' },
-      { type: 'translation', en: 'He has never tried sushi in his life.', ru: 'Он никогда в жизни не пробовал суши.' },
-      { type: 'reorder', words: ['already', 'I\'ve', 'this', 'seen', 'film', '.'], correct: 'I\'ve already seen this film .' },
-    ],
-  },
-
-  {
-    id: 'b1-first-conditional',
-    level: 'B1', category: 'Grammar',
-    title: 'First Conditional', titleRu: 'Если... то... — реальные условия',
-    duration: 15, xpReward: 100,
-    content: {
-      explanation: `First Conditional describes real, possible situations and their likely results. It's used for future possibilities that are realistic.\n\nStructure: IF + Present Simple → will + base verb\n\nIf it rains, I will take an umbrella.\nIf you study hard, you will pass the exam.\n\nNote: The "if" clause can come first or second. Use a comma when "if" comes first.`,
-      examples: [
-        { en: 'If she misses the bus, she\'ll be late.', ru: 'Если она опоздает на автобус, она опоздает.' },
-        { en: 'I\'ll call you if I have time.', ru: 'Я позвоню тебе, если у меня будет время.' },
-        { en: 'If the weather is nice, we\'ll have a picnic.', ru: 'Если погода будет хорошей, мы устроим пикник.' },
-        { en: 'Will you come if I invite you?', ru: 'Ты придёшь, если я приглашу тебя?' },
-      ],
-      keyPoints: [
-        'If + Present Simple (NOT "will" in the if-clause!)',
-        'Result clause: will / won\'t + base verb',
-        'Can also use: might, can, should in the result clause',
-        'Real, possible future: "If it rains" (it might really rain)',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: 'If you ___ enough sleep, you\'ll feel better.', options: ['get', 'will get', 'got', 'getting'], answer: 0, explanation: 'After "if" in First Conditional: use Present Simple, not "will".' },
-      { type: 'fill-blank', sentence: 'If it snows tomorrow, we ___ cancel the trip. (might)', answer: 'might cancel', hint: 'Result clause: will/might + base verb' },
-      { type: 'reorder', words: ['pass', 'you', 'study,', 'the', 'If', 'you\'ll', 'exam.'], correct: 'If you study, you\'ll pass the exam.' },
-      { type: 'error-spot', sentence: 'If she will come, we will celebrate.', errorWord: 'will come', correction: 'comes', explanation: 'No "will" in the IF clause: "if she comes".' },
-      { type: 'translation', en: 'We\'ll go swimming if the weather is good.', ru: 'Мы пойдём купаться, если погода будет хорошей.' },
-    ],
-  },
-
-  {
-    id: 'b1-passive-voice',
-    level: 'B1', category: 'Grammar',
-    title: 'Passive Voice', titleRu: 'Страдательный залог — кем/чем сделано',
-    duration: 15, xpReward: 100,
-    content: {
-      explanation: `The Passive Voice focuses on the action and what is done, not who does it. Form: be (in correct tense) + past participle.\n\nPresent: The letter is written. | Past: The letter was written.\nPerfect: The letter has been written. | Future: The letter will be written.\n\nUse passive when the doer is unknown, unimportant, or obvious. Add "by + agent" if needed.`,
-      examples: [
-        { en: 'English is spoken all over the world.', ru: 'На английском говорят по всему миру.' },
-        { en: 'The Eiffel Tower was built in 1889.', ru: 'Эйфелева башня была построена в 1889 году.' },
-        { en: 'My car has been repaired.', ru: 'Моя машина была отремонтирована.' },
-        { en: 'The report will be finished by tomorrow.', ru: 'Отчёт будет закончен к завтрашнему дню.' },
-      ],
-      keyPoints: [
-        'Form: appropriate form of BE + past participle',
-        'To mention who did it: + by (The book was written BY Tolstoy)',
-        'Common in news, science, formal writing',
-        'Can\'t always be passive: "She resembles her mother" has no passive form',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: 'The pyramids ___ by the ancient Egyptians.', options: ['built', 'were built', 'are built', 'build'], answer: 1, explanation: 'Past passive: were + past participle.' },
-      { type: 'fill-blank', sentence: 'English ___ as an official language in many countries. (speak)', answer: 'is spoken', hint: 'Present passive: is/are + past participle' },
-      { type: 'error-spot', sentence: 'This book was wrote by Pushkin.', errorWord: 'wrote', correction: 'written', explanation: 'Passive needs past PARTICIPLE: write → written (not "wrote").' },
-      { type: 'translation', en: 'The package will be delivered tomorrow morning.', ru: 'Посылка будет доставлена завтра утром.' },
-      { type: 'multiple-choice', question: 'A new hospital ___ in our city next year.', options: ['will build', 'will be built', 'is built', 'builds'], answer: 1, explanation: 'Future passive: will be + past participle.' },
-    ],
-  },
-
-  {
-    id: 'b1-relative-clauses',
-    level: 'B1', category: 'Grammar',
-    title: 'Relative Clauses', titleRu: 'Придаточные определительные — который, которая',
-    duration: 15, xpReward: 100,
-    content: {
-      explanation: `Relative clauses give more information about a noun. They are introduced by relative pronouns: who, which, that, whose, where.\n\nWHO: for people (The woman who called is my sister.)\nWHICH: for things (The book which I read was amazing.)\nTHAT: for people or things in defining clauses (The car that I drive is old.)\nWHERE: for places (The city where I was born is beautiful.)`,
-      examples: [
-        { en: 'The man who lives next door is very friendly.', ru: 'Мужчина, который живёт по соседству, очень дружелюбный.' },
-        { en: 'This is the film which won the Oscar.', ru: 'Это фильм, который выиграл Оскар.' },
-        { en: 'I know a restaurant where they serve amazing food.', ru: 'Я знаю ресторан, где подают замечательную еду.' },
-        { en: 'The girl whose father is a pilot wants to fly too.', ru: 'Девочка, чей отец — пилот, тоже хочет летать.' },
-      ],
-      keyPoints: [
-        'WHO for people, WHICH for things, WHERE for places, WHOSE for possession',
-        'THAT can replace who/which in defining (restrictive) clauses',
-        'Defining: no commas (identifies the noun)',
-        'Non-defining: use commas — cannot use "that" (My car, which is red, is fast.)',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: 'The doctor ___ treated me was very professional.', options: ['which', 'whose', 'who', 'where'], answer: 2, explanation: 'For people, use WHO.' },
-      { type: 'fill-blank', sentence: 'Paris is the city ___ the Eiffel Tower stands.', answer: 'where', hint: 'For places: where' },
-      { type: 'reorder', words: ['which', 'I', 'The', 'film', 'watched', 'boring.', 'was'], correct: 'The film which I watched was boring.' },
-      { type: 'error-spot', sentence: 'The car which belongs John is very old.', errorWord: 'which belongs', correction: 'whose', explanation: 'For possession use WHOSE: "the car whose owner is John".' },
-      { type: 'translation', en: 'Do you know anyone who speaks Chinese?', ru: 'Ты знаешь кого-нибудь, кто говорит по-китайски?' },
-    ],
-  },
-
-  {
-    id: 'b1-reported-speech',
-    level: 'B1', category: 'Grammar',
-    title: 'Reported Speech', titleRu: 'Косвенная речь — что он сказал',
-    duration: 15, xpReward: 100,
-    content: {
-      explanation: `Reported speech (indirect speech) is used to report what someone said without quoting their exact words. Tenses usually shift back (backshift).\n\n"I am tired." → She said she WAS tired.\n"I have finished." → He said he HAD finished.\n"I will help you." → She said she WOULD help me.\n\nTime expressions also change: now→then, today→that day, tomorrow→the next day.`,
-      examples: [
-        { en: '"I love pizza," he said. → He said he loved pizza.', ru: '«Я люблю пиццу» — Он сказал, что любит пиццу.' },
-        { en: '"We are leaving," they said. → They said they were leaving.', ru: '«Мы уходим» — Они сказали, что уходят.' },
-        { en: '"I will call you," she promised. → She promised she would call me.', ru: '«Я позвоню тебе» — Она пообещала, что позвонит мне.' },
-        { en: '"Have you seen this film?" → She asked if I had seen that film.', ru: '«Ты видел этот фильм?» — Она спросила, видел ли я этот фильм.' },
-      ],
-      keyPoints: [
-        'Say + that: He said that he was tired.',
-        'Tell + person + that: He told me that he was tired.',
-        'Tense shift: am→was, is→was, will→would, have→had',
-        'Questions: asked if/whether (yes/no questions) or asked + question word',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: '"I am hungry." She said she ___ hungry.', options: ['is', 'am', 'was', 'were'], answer: 2, explanation: 'Backshift: am/is → was in reported speech.' },
-      { type: 'fill-blank', sentence: '"I will help you." He promised he ___ help me.', answer: 'would', hint: 'Backshift: will → would' },
-      { type: 'error-spot', sentence: 'She said me that she was sorry.', errorWord: 'said me', correction: 'told me', explanation: '"Tell" takes an object: told me. "Say" doesn\'t: said that.' },
-      { type: 'translation', en: 'He told us he had already eaten.', ru: 'Он сказал нам, что уже поел.' },
-      { type: 'multiple-choice', question: '"Do you like jazz?" She asked me if I ___ jazz.', options: ['like', 'liked', 'do like', 'will like'], answer: 1, explanation: 'Backshift in yes/no questions: like → liked.' },
-    ],
-  },
-
-  // ── B2 ─────────────────────────────────────────────────────────────────
-  {
-    id: 'b2-second-conditional',
-    level: 'B2', category: 'Grammar',
-    title: 'Second Conditional', titleRu: 'Нереальные условия в настоящем',
-    duration: 15, xpReward: 125,
-    content: {
-      explanation: `Second Conditional describes unreal, hypothetical, or unlikely situations in the present or future. We imagine a different reality.\n\nStructure: IF + Past Simple → would + base verb\n\nIf I were a millionaire, I would travel the world.\n(I'm NOT a millionaire — this is imaginary.)\n\nNote: "Were" is used for all persons with "to be" in formal English: If I WERE you...`,
-      examples: [
-        { en: 'If she had more time, she would learn Korean.', ru: 'Если бы у неё было больше времени, она бы учила корейский.' },
-        { en: 'What would you do if you lost your job?', ru: 'Что бы ты сделал, если бы потерял работу?' },
-        { en: 'If I were you, I wouldn\'t say that.', ru: 'На твоём месте я бы этого не говорил.' },
-        { en: 'We\'d move abroad if we could afford it.', ru: 'Мы бы переехали за границу, если бы могли себе это позволить.' },
-      ],
-      keyPoints: [
-        'IF + Past Simple (imaginary present/future)',
-        'Result: would/could/might + base verb',
-        'Use "were" for all persons with to be (formal): if I were, if she were',
-        '2nd Conditional = UNREAL (currently not true); 1st Conditional = possible',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: 'If she ___ the truth, she wouldn\'t be so upset.', options: ['knew', 'knows', 'would know', 'know'], answer: 0, explanation: 'Second Conditional: if + Past Simple. knew = past simple of know.' },
-      { type: 'fill-blank', sentence: 'If I ___ you, I would accept that job offer.', answer: 'were', hint: 'Second Conditional uses "were" for all persons (formal English).' },
-      { type: 'error-spot', sentence: 'If I would have more money, I would buy a car.', errorWord: 'would have', correction: 'had', explanation: 'No "would" in the IF clause. Use Past Simple: "If I had..."' },
-      { type: 'translation', en: 'What would you do if you could travel back in time?', ru: 'Что бы ты сделал, если бы мог вернуться в прошлое?' },
-      { type: 'reorder', words: ['speak', 'could', 'I', 'Chinese,', 'a', 'If', 'get', 'I\'d', 'better', 'job.'], correct: 'If I could speak Chinese, I\'d get a better job.' },
-    ],
-  },
-
-  {
-    id: 'b2-third-conditional',
-    level: 'B2', category: 'Grammar',
-    title: 'Third Conditional', titleRu: 'Сожаления о прошлом — если бы тогда...',
-    duration: 15, xpReward: 125,
-    content: {
-      explanation: `Third Conditional refers to imaginary situations in the PAST — things that didn't happen. It's used to express regrets or to speculate about past events.\n\nStructure: IF + Past Perfect → would have + past participle\n\nIf I had studied harder, I would have passed the exam.\n(I didn't study hard, so I didn't pass — it's in the past, can't change it.)`,
-      examples: [
-        { en: 'If she had left earlier, she wouldn\'t have missed the train.', ru: 'Если бы она вышла раньше, она бы не опоздала на поезд.' },
-        { en: 'I would have helped you if you had asked me.', ru: 'Я бы помог тебе, если бы ты попросил меня.' },
-        { en: 'If he hadn\'t been so rude, she wouldn\'t have left.', ru: 'Если бы он не был таким грубым, она бы не ушла.' },
-        { en: 'We would have won if we\'d played better.', ru: 'Мы бы выиграли, если бы сыграли лучше.' },
-      ],
-      keyPoints: [
-        'IF + Past Perfect (had + past participle)',
-        'Result: would have + past participle',
-        'Expresses regret, criticism, or speculation about past',
-        'Short forms: I would have → I\'d have | would not have → wouldn\'t have',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: 'If he ___ earlier, he would have caught the bus.', options: ['left', 'had left', 'has left', 'would leave'], answer: 1, explanation: 'Third Conditional: IF + Past Perfect (had + past participle).' },
-      { type: 'fill-blank', sentence: 'She would have gotten the job if she ___ better at the interview. (perform)', answer: 'had performed', hint: 'if + had + past participle' },
-      { type: 'error-spot', sentence: 'If I would have known, I would have told you.', errorWord: 'would have known', correction: 'had known', explanation: 'No "would" in the IF clause. Use Past Perfect: "If I had known..."' },
-      { type: 'translation', en: 'We wouldn\'t have gotten lost if we had brought a map.', ru: 'Мы бы не заблудились, если бы взяли карту.' },
-      { type: 'reorder', words: ['would', 'you', 'called', 'have', 'had', 'your', 'If', 'I', 'number.', 'I', 'known'], correct: 'If I had known your number, I would have called you.' },
-    ],
-  },
-
-  {
-    id: 'b2-gerunds-infinitives',
-    level: 'B2', category: 'Grammar',
-    title: 'Gerunds & Infinitives', titleRu: 'Глагол-ing vs to + infinitive',
-    duration: 15, xpReward: 125,
-    content: {
-      explanation: `After some verbs we use gerunds (verb + -ing), after others we use infinitives (to + verb), and some verbs can use both.\n\nGerund only: enjoy, avoid, suggest, finish, mind, consider, practise\nInfinitive only: want, hope, decide, plan, agree, refuse, manage\nBoth (same meaning): start, begin, like, love, hate, continue\nBoth (different meaning): remember, stop, try, regret`,
-      examples: [
-        { en: 'I enjoy reading before bed.', ru: 'Мне нравится читать перед сном.' },
-        { en: 'She decided to study abroad.', ru: 'Она решила учиться за рубежом.' },
-        { en: 'He stopped smoking last year.', ru: 'Он бросил курить в прошлом году.' },
-        { en: 'I remember meeting her at the conference.', ru: 'Я помню, что встретил её на конференции.' },
-      ],
-      keyPoints: [
-        'Remember + gerund = memory of past event',
-        'Remember + infinitive = remember to do something (don\'t forget)',
-        'Stop + gerund = quit doing; Stop + infinitive = pause to do',
-        'Try + gerund = experiment; Try + infinitive = make effort',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: 'I\'ve always avoided ___ in large crowds.', options: ['to shop', 'shopping', 'shop', 'shopped'], answer: 1, explanation: '"Avoid" is always followed by gerund (-ing form).' },
-      { type: 'multiple-choice', question: 'She decided ___ a new language.', options: ['learning', 'to learn', 'learn', 'learned'], answer: 1, explanation: '"Decide" is always followed by infinitive (to + verb).' },
-      { type: 'fill-blank', sentence: 'Please stop ___ — I can\'t concentrate! (talk)', answer: 'talking', hint: 'Stop + gerund = quit the action' },
-      { type: 'error-spot', sentence: 'He suggested to go to the new restaurant.', errorWord: 'to go', correction: 'going', explanation: '"Suggest" always takes gerund: suggest going, suggest doing.' },
-      { type: 'translation', en: 'I regret not studying harder when I was young.', ru: 'Я сожалею, что не учился усерднее в молодости.' },
-    ],
-  },
-
-  {
-    id: 'b2-discourse-markers',
-    level: 'B2', category: 'Writing',
-    title: 'Discourse Markers', titleRu: 'Слова-связки: however, therefore, nevertheless',
-    duration: 15, xpReward: 125,
-    content: {
-      explanation: `Discourse markers (also called connectors or linking words) connect ideas and make your writing more coherent and sophisticated.\n\nContrast: however, nevertheless, nonetheless, on the other hand, despite, although\nResult: therefore, consequently, as a result, thus, hence\nAddition: furthermore, moreover, in addition, besides\nExample: for instance, for example, such as, namely`,
-      examples: [
-        { en: 'The hotel was expensive; however, the service was excellent.', ru: 'Отель был дорогим; однако сервис был превосходным.' },
-        { en: 'She studied hard. Consequently, she passed with top grades.', ru: 'Она усердно занималась. Следовательно, она сдала с отличием.' },
-        { en: 'Furthermore, the research shows a clear correlation.', ru: 'Более того, исследование показывает явную корреляцию.' },
-        { en: 'Despite the rain, the event was a huge success.', ru: 'Несмотря на дождь, мероприятие прошло с большим успехом.' },
-      ],
-      keyPoints: [
-        'However/Nevertheless: contrast (but more formal)',
-        'Therefore/Consequently/Thus: result or conclusion',
-        'Furthermore/Moreover: add important information',
-        'Despite/Although: contrast (despite + noun/gerund; although + clause)',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: 'The economy is strong. ___, unemployment remains high.', options: ['Therefore', 'However', 'Furthermore', 'As a result'], answer: 1, explanation: 'Contrast between strong economy and high unemployment → However.' },
-      { type: 'fill-blank', sentence: 'He worked very hard. ___, he was promoted within a year.', answer: 'Consequently', hint: 'Result of hard work → a result connector' },
-      { type: 'multiple-choice', question: '_____ his lack of experience, he was hired for the position.', options: ['Although', 'Despite', 'However', 'Therefore'], answer: 1, explanation: '"Despite" + noun/gerund phrase. "Although" needs a full clause.' },
-      { type: 'error-spot', sentence: 'The plan is good. Nevertheless, it needs some changes. Although, we should start now.', errorWord: 'Although,', correction: 'However,', explanation: '"Although" introduces a subordinate clause, not a main sentence. Use "However" to start a new sentence.' },
-      { type: 'translation', en: 'The research is promising; nevertheless, more testing is required.', ru: 'Исследование перспективно; тем не менее, требуется больше тестирования.' },
-    ],
-  },
-
-  {
-    id: 'b2-advanced-passive',
-    level: 'B2', category: 'Grammar',
-    title: 'Advanced Passive Voice', titleRu: 'Пассивный залог — все времена',
-    duration: 20, xpReward: 125,
-    content: {
-      explanation: `Advanced passive forms include all tenses and special constructions.\n\nPassive with modal: should be done, must be checked, can be seen\nPassive infinitive: I want it to be done. It seems to have been solved.\nImpersonal passive: It is said that... / It is believed that... / It is reported that...\nPassive with two objects: She was given a prize. / A prize was given to her.`,
-      examples: [
-        { en: 'It is believed that the treasure is buried here.', ru: 'Считается, что клад зарыт здесь.' },
-        { en: 'The report should have been submitted yesterday.', ru: 'Отчёт должен был быть сдан вчера.' },
-        { en: 'He was seen leaving the building at midnight.', ru: 'Его видели выходящим из здания в полночь.' },
-        { en: 'The CEO is said to have resigned.', ru: 'Говорят, что генеральный директор ушёл в отставку.' },
-      ],
-      keyPoints: [
-        'Modal passive: modal + be + past participle (must be done)',
-        'Perfect passive: have/has/had + been + past participle',
-        'Impersonal: It is said/believed/reported/claimed + that...',
-        'Personal: He is said to be / to have been...',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: 'The results ___ by Friday at the latest.', options: ['should submit', 'should be submitted', 'should have submitted', 'are submitting'], answer: 1, explanation: 'Modal passive: should + be + past participle.' },
-      { type: 'fill-blank', sentence: 'It ___ that the painting was stolen in 1943. (believe)', answer: 'is believed', hint: 'Impersonal passive: It + is/was + past participle + that...' },
-      { type: 'error-spot', sentence: 'The package has been already delivered.', errorWord: 'has been already', correction: 'has already been', explanation: '"Already" goes between "has" and "been": has already been delivered.' },
-      { type: 'translation', en: 'It is reported that hundreds of people were affected.', ru: 'Сообщается, что пострадали сотни людей.' },
-      { type: 'multiple-choice', question: 'The new law ___ by parliament next month.', options: ['will pass', 'will be passing', 'will be passed', 'has been passed'], answer: 2, explanation: 'Future passive: will be + past participle.' },
-    ],
-  },
-
-  // ── C1 ─────────────────────────────────────────────────────────────────
-  {
-    id: 'c1-inversion',
-    level: 'C1', category: 'Grammar',
-    title: 'Inversion', titleRu: 'Инверсия — Never have I seen...',
-    duration: 20, xpReward: 150,
-    content: {
-      explanation: `Inversion means reversing the normal subject-verb order. It's used for emphasis and is common in formal writing and speeches.\n\nNegative adverbials at the beginning: Never, Rarely, Seldom, Hardly, No sooner, Not only, On no account\n\nNever have I seen such beautiful scenery.\nRarely does she complain about anything.\nHardly had he arrived when the problems started.`,
-      examples: [
-        { en: 'Never have I felt so proud.', ru: 'Никогда я не чувствовал такой гордости.' },
-        { en: 'Not only did she win, but she also broke the record.', ru: 'Она не только выиграла, но и побила рекорд.' },
-        { en: 'Rarely does the Prime Minister speak so openly.', ru: 'Редко Премьер-министр говорит так открыто.' },
-        { en: 'Hardly had I sat down when the phone rang.', ru: 'Я едва сел, как зазвонил телефон.' },
-      ],
-      keyPoints: [
-        'Trigger words: Never, Rarely, Seldom, Hardly, Scarcely, No sooner',
-        'Structure: Trigger + auxiliary + subject + main verb',
-        '"Hardly/Scarcely ... when/before": Hardly had she left when it started raining',
-        '"Not only ... but also": requires inversion after "not only"',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: 'Rarely ___ such an inspiring speech.', options: ['I hear', 'do I hear', 'I do hear', 'hear I'], answer: 1, explanation: 'Inversion: Rarely + auxiliary (do) + subject (I) + main verb (hear).' },
-      { type: 'reorder', words: ['they', 'left', 'Not', 'lost,', 'only', 'also', 'got', 'did', 'but', 'they'], correct: 'Not only did they lose, but they also got lost.' },
-      { type: 'fill-blank', sentence: 'No sooner ___ she arrived than the meeting started.', answer: 'had', hint: 'No sooner had + subject + past participle + than' },
-      { type: 'error-spot', sentence: 'Never I have seen such a mess.', errorWord: 'I have', correction: 'have I', explanation: 'Inversion: Never + auxiliary FIRST, then subject: Never HAVE I seen.' },
-      { type: 'translation', en: 'Seldom do we get a chance like this.', ru: 'Редко нам выпадает такой шанс.' },
-    ],
-  },
-
-  {
-    id: 'c1-mixed-conditionals',
-    level: 'C1', category: 'Grammar',
-    title: 'Mixed Conditionals', titleRu: 'Смешанные условия — сложные случаи',
-    duration: 20, xpReward: 150,
-    content: {
-      explanation: `Mixed conditionals combine different time frames in the if-clause and result clause. There are two main types.\n\nType 1 (Past condition → Present result): If + Past Perfect → would + base verb\n"If she had studied medicine, she would be a doctor now."\n(She didn't study medicine in the past → she's not a doctor now)\n\nType 2 (Present/permanent condition → Past result): If + Past Simple → would have + past participle\n"If he were more careful, he wouldn't have made that mistake."`,
-      examples: [
-        { en: 'If I had taken that job, I would be living in Tokyo now.', ru: 'Если бы я взял ту работу, я бы жил сейчас в Токио.' },
-        { en: 'She would have become a dancer if she were more talented.', ru: 'Она стала бы танцором, если бы была более талантливой.' },
-        { en: 'If he hadn\'t been so shy, he would have more friends now.', ru: 'Если бы он не был таким застенчивым, у него было бы сейчас больше друзей.' },
-        { en: 'If I spoke Spanish, I would have got the job in Madrid.', ru: 'Если бы я говорил по-испански, я бы получил работу в Мадриде.' },
-      ],
-      keyPoints: [
-        'Mixed Type 1: If + Past Perfect (past) → would + infinitive (now)',
-        'Mixed Type 2: If + Past Simple (permanent/character) → would have + past participle (past)',
-        '"Now" or "at this moment" in result clause = Mixed Type 1',
-        'Character/permanent state in if-clause = Mixed Type 2',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: 'If he had invested in that company, he ___ a millionaire now.', options: ['would be', 'would have been', 'will be', 'was'], answer: 0, explanation: 'Past condition (had invested) → present result (now) → would + base verb.' },
-      { type: 'fill-blank', sentence: 'If she were more ambitious, she ___ that opportunity last year. (take)', answer: 'would have taken', hint: 'Permanent trait (were) → past result → would have + past participle' },
-      { type: 'translation', en: 'If I hadn\'t moved to London, I wouldn\'t speak English so well now.', ru: 'Если бы я не переехал в Лондон, я бы не говорил на английском так хорошо сейчас.' },
-      { type: 'error-spot', sentence: 'If she studied harder, she would have passed the exam yesterday.', errorWord: 'studied', correction: 'had studied', explanation: 'Past result (yesterday) → past condition needs Past Perfect: "had studied".' },
-      { type: 'multiple-choice', question: 'Type of conditional: "If I were taller, I would have become a model."', options: ['1st Conditional', '2nd Conditional', '3rd Conditional', 'Mixed Conditional'], answer: 3, explanation: 'Permanent trait (were, present) → past result (would have become) = Mixed.' },
-    ],
-  },
-
-  {
-    id: 'c1-idioms',
-    level: 'C1', category: 'Vocabulary',
-    title: 'Essential English Idioms', titleRu: 'Топ идиомы — как говорят носители',
-    duration: 20, xpReward: 150,
-    content: {
-      explanation: `Idioms are fixed phrases whose meaning can't be understood from the individual words. They make your English sound natural and native-like. Here are essential idioms for C1 level:\n\nBody idioms: bite the bullet (терпеть боль), cost an arm and a leg (стоить очень дорого), break a leg (удачи!), pull someone's leg (разыгрывать).\n\nBusiness: think outside the box (мыслить нестандартно), back to the drawing board (начать заново), get the ball rolling (начать процесс).`,
-      examples: [
-        { en: 'The new iPhone costs an arm and a leg, but it\'s worth it.', ru: 'Новый iPhone стоит безумных денег, но оно того стоит.' },
-        { en: 'Just bite the bullet and tell her the truth.', ru: 'Просто соберись с духом и скажи ей правду.' },
-        { en: 'Our plan failed — we\'re back to the drawing board.', ru: 'Наш план провалился — придётся начать всё заново.' },
-        { en: 'Are you pulling my leg? That can\'t be true!', ru: 'Ты меня разыгрываешь? Этого не может быть!' },
-      ],
-      keyPoints: [
-        '"Hit the nail on the head" = say something exactly right',
-        '"Under the weather" = feeling sick or unwell',
-        '"Once in a blue moon" = very rarely',
-        '"Bite off more than you can chew" = take on too much',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: '"Break a leg!" means:', options: ['Be careful!', 'Good luck!', 'Well done!', 'Hurry up!'], answer: 1, explanation: '"Break a leg!" is a theatrical expression meaning "Good luck!" — never use it literally!' },
-      { type: 'multiple-choice', question: 'She\'s feeling under the weather today. This means:', options: ['She\'s very happy', 'She\'s feeling ill', 'She\'s confused', 'She\'s outside'], answer: 1, explanation: '"Under the weather" means feeling unwell or slightly sick.' },
-      { type: 'translation', en: 'We need to think outside the box to solve this problem.', ru: 'Нам нужно мыслить нестандартно, чтобы решить эту проблему.' },
-      { type: 'fill-blank', sentence: 'I only see my old school friends once in a ___ moon.', answer: 'blue', hint: '"Once in a ___ moon" = very rarely' },
-      { type: 'multiple-choice', question: '"Hit the nail on the head" means:', options: ['Use a hammer', 'Make a mistake', 'Say exactly the right thing', 'Arrive on time'], answer: 2, explanation: '"Hit the nail on the head" = identify or say something exactly correctly.' },
-    ],
-  },
-
-  {
-    id: 'c1-academic-writing',
-    level: 'C1', category: 'Writing',
-    title: 'Academic Writing Style', titleRu: 'Академическое письмо — эссе и аргументы',
-    duration: 20, xpReward: 150,
-    content: {
-      explanation: `Academic writing requires formal vocabulary, complex sentence structures, and logical argumentation. Key features: objective tone, formal vocabulary, hedging language, and clear structure.\n\nFormal vocabulary: use → utilize, show → demonstrate, get → obtain, start → initiate, important → significant, big → substantial.\n\nHedging: It can be argued that... / It appears that... / The evidence suggests... / This may indicate...`,
-      examples: [
-        { en: 'The data clearly demonstrates a significant correlation between the variables.', ru: 'Данные явно демонстрируют значительную корреляцию между переменными.' },
-        { en: 'It could be argued that economic factors play a pivotal role in this context.', ru: 'Можно утверждать, что экономические факторы играют ключевую роль в данном контексте.' },
-        { en: 'Notwithstanding the limitations of this study, the findings are noteworthy.', ru: 'Несмотря на ограничения данного исследования, выводы заслуживают внимания.' },
-        { en: 'This paper aims to examine the extent to which globalization affects local cultures.', ru: 'Данная работа направлена на изучение того, в какой мере глобализация влияет на местные культуры.' },
-      ],
-      keyPoints: [
-        'Avoid contractions: don\'t → do not, it\'s → it is',
-        'Use passive voice for objectivity: "it was found" not "I found"',
-        'Hedge claims: "suggests" not "proves", "appears to" not "is"',
-        'Essay structure: Introduction (thesis), Body (arguments + evidence), Conclusion',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: 'The most formal way to say "use" in academic writing is:', options: ['use', 'utilize', 'employ', 'All of these are acceptable'], answer: 3, explanation: 'All three are acceptable in academic writing. "Utilize" and "employ" are more formal.' },
-      { type: 'fill-blank', sentence: 'The evidence ___ that climate change is accelerating. (suggest)', answer: 'suggests', hint: 'Hedging: evidence suggests (not "proves")' },
-      { type: 'error-spot', sentence: 'In this essay, I\'m going to show you the main causes of poverty.', errorWord: 'I\'m going to show you', correction: 'This essay examines', explanation: 'Academic writing avoids contractions and first person. Use: "This essay examines/analyses/demonstrates".' },
-      { type: 'reorder', words: ['argued', 'education', 'economic', 'It', 'be', 'drives', 'that', 'could', 'growth.'], correct: 'It could be argued that education drives economic growth.' },
-      { type: 'translation', en: 'The findings of this study have significant implications for public health policy.', ru: 'Результаты этого исследования имеют важные последствия для политики в области общественного здравоохранения.' },
-    ],
-  },
-
-  {
-    id: 'c1-debate-language',
-    level: 'C1', category: 'Speaking',
-    title: 'Debate Language', titleRu: 'Язык дискуссии — соглашаться и возражать',
-    duration: 20, xpReward: 150,
-    content: {
-      explanation: `Effective debate requires diplomatic language for agreeing, disagreeing, and making concessions without being rude.\n\nAgreeing: Absolutely, I couldn't agree more, You have a point there, That's a fair point.\nDisagreeing politely: I see your point, but... / With all due respect... / I beg to differ.\nConceding: You may be right that... but... / Granted, however... / While I accept that...\nInterrupting: If I could just come in here... / May I add something?`,
-      examples: [
-        { en: 'I see your point, but I\'m not entirely convinced by the evidence.', ru: 'Я понимаю вашу точку зрения, но меня не полностью убеждают доказательства.' },
-        { en: 'Granted, the solution is expensive; nevertheless, the long-term benefits outweigh the costs.', ru: 'Конечно, решение дорогостоящее; тем не менее, долгосрочные преимущества перевешивают затраты.' },
-        { en: 'With all due respect, I think you\'re missing the bigger picture here.', ru: 'При всём уважении, я думаю, что здесь вы упускаете более широкую картину.' },
-        { en: 'That\'s a compelling argument; however, there are other factors to consider.', ru: 'Это убедительный аргумент; однако есть и другие факторы для рассмотрения.' },
-      ],
-      keyPoints: [
-        'Polite disagreement: "I see your point, but..." / "With respect..."',
-        'Strong agreement: "Absolutely!" / "That\'s exactly right!" / "Precisely!"',
-        'Conceding: "Granted..." / "While I accept..." / "Fair point, although..."',
-        'Inviting opinion: "What\'s your take on this?" / "Where do you stand on...?"',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: 'You want to politely disagree. You say:', options: ['"You\'re completely wrong!"', '"I beg to differ."', '"That\'s nonsense."', '"No, that\'s not right."'], answer: 1, explanation: '"I beg to differ" is a polite formal way to express disagreement.' },
-      { type: 'fill-blank', sentence: 'I see your ___, but I believe the data tells a different story.', answer: 'point', hint: '"I see your ___" is a polite disagreement opener.' },
-      { type: 'multiple-choice', question: 'To concede a point and then counter-argue, use:', options: ['"However..."', '"Granted, ... but..."', '"Although..."', '"Therefore..."'], answer: 1, explanation: '"Granted, [their point]... but [your counter-argument]" = classic concession structure.' },
-      { type: 'translation', en: 'With all due respect, the statistics don\'t support that claim.', ru: 'При всём уважении, статистика не подтверждает это утверждение.' },
-      { type: 'reorder', words: ['accept', 'While', 'challenges,', 'there', 'I', 'the', 'are', 'benefits.', 'significant', 'that'], correct: 'While I accept the challenges, there are significant benefits.' },
-    ],
-  },
-
-  // ── C2 ─────────────────────────────────────────────────────────────────
-  {
-    id: 'c2-advanced-idioms',
-    level: 'C2', category: 'Vocabulary',
-    title: 'Advanced Idioms & Phrasal Verbs', titleRu: 'Продвинутые идиомы и фразовые глаголы',
-    duration: 25, xpReward: 200,
-    content: {
-      explanation: `At C2 level, mastering complex phrasal verbs and sophisticated idioms separates near-native from native-sounding English.\n\nComplex phrasal verbs: come to terms with (смириться), fall back on (прибегнуть к), put up with (терпеть), see through (раскусить), talk out of (отговорить), look down on (смотреть свысока).\n\nLiterary idioms: add fuel to the fire, flogging a dead horse, the tip of the iceberg, a double-edged sword.`,
-      examples: [
-        { en: 'I\'ve finally come to terms with the fact that I\'ll never be a professional athlete.', ru: 'Я наконец-то смирился с тем, что никогда не стану профессиональным спортсменом.' },
-        { en: 'The scandal was just the tip of the iceberg — there\'s much more to reveal.', ru: 'Скандал был лишь верхушкой айсберга — есть что ещё раскрыть.' },
-        { en: 'I can\'t put up with this noise any longer.', ru: 'Я больше не могу терпеть этот шум.' },
-        { en: 'Arguing with him is like flogging a dead horse — he never changes his mind.', ru: 'Спорить с ним — всё равно что биться головой об стену — он никогда не меняет своего мнения.' },
-      ],
-      keyPoints: [
-        '"A double-edged sword" = something with both advantages and disadvantages',
-        '"See through someone" = realize their true (deceptive) intentions',
-        '"Fall back on" = use as a last resort or secondary option',
-        '"Talk someone out of" = persuade someone NOT to do something',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: '"He talked me out of quitting." This means:', options: ['He persuaded me to quit', 'He persuaded me NOT to quit', 'He helped me quit', 'He quit because of me'], answer: 1, explanation: '"Talk someone OUT OF" = persuade them not to do something.' },
-      { type: 'multiple-choice', question: '"Adding fuel to the fire" means:', options: ['Starting a problem', 'Making a bad situation worse', 'Solving a problem', 'Ignoring a problem'], answer: 1, explanation: '"Add fuel to the fire" = make an already bad situation even worse.' },
-      { type: 'fill-blank', sentence: 'After years of struggling, she finally came to ___ with her past.', answer: 'terms', hint: '"Come to ___ with" = accept something difficult' },
-      { type: 'translation', en: 'The government\'s new policy is a double-edged sword.', ru: 'Новая политика правительства — это обоюдоострый меч.' },
-      { type: 'error-spot', sentence: 'He always looks down at people who are less educated.', errorWord: 'at', correction: 'on', explanation: '"Look down ON someone" (not at) = consider someone inferior.' },
-    ],
-  },
-
-  {
-    id: 'c2-tense-nuances',
-    level: 'C2', category: 'Grammar',
-    title: 'Nuances of Tenses', titleRu: 'Тонкости времён — уровень носителя',
-    duration: 25, xpReward: 200,
-    content: {
-      explanation: `At C2 level, subtle distinctions in tense use mark truly fluent speakers.\n\nPresent Perfect vs Past Simple: "He has lived here for years" (still here) vs "He lived here for years" (no longer here).\n\nPast Continuous for background: "While she was reading, he arrived." (her reading = background for his arrival).\n\nFuture Perfect: "By the time you read this, I will have left." (completed before a future point)\n\nThe "would" of habit: "Every evening, he would sit by the window." (habitual past)`,
-      examples: [
-        { en: 'I was wondering if you could help me. (polite/tentative)', ru: 'Я хотел узнать, не могли бы вы мне помочь. (вежливая форма)' },
-        { en: 'By next year, she will have been working here for a decade.', ru: 'К следующему году она проработает здесь десять лет.' },
-        { en: 'He would often come home late from the office.', ru: 'Он часто приходил домой поздно из офиса. (привычка в прошлом)' },
-        { en: 'I\'m always losing my keys! (annoying habit — Present Continuous)', ru: 'Я постоянно теряю ключи! (раздражающая привычка)' },
-      ],
-      keyPoints: [
-        '"Would + base verb" for repeated past habits (no longer happening)',
-        'Past Continuous for interrupted or background actions',
-        'Future Perfect (will have + past participle): completed by a future time',
-        'Tentative/polite: "I was hoping..." / "I was wondering..." (more distant than present)',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: 'He ___ in this house for 30 years, but now he lives in Spain.', options: ['has lived', 'lived', 'was living', 'is living'], answer: 1, explanation: 'Completed past period, no connection to now → Past Simple: lived.' },
-      { type: 'fill-blank', sentence: 'By the time she graduates, she ___ English for 10 years. (study)', answer: 'will have been studying', hint: 'Completed action by a future point → Future Perfect Continuous' },
-      { type: 'multiple-choice', question: '"I\'m always misplacing things!" This expresses:', options: ['A current action', 'An annoying habit', 'A future plan', 'A completed action'], answer: 1, explanation: 'Present Continuous with "always" = annoying or notable habit.' },
-      { type: 'translation', en: 'When I was a child, my grandmother would tell me stories every night.', ru: 'Когда я был ребёнком, бабушка каждый вечер рассказывала мне истории.' },
-      { type: 'multiple-choice', question: '"I was wondering if you could help me" is:', options: ['Grammatically wrong', 'Past tense for no reason', 'A polite/tentative form', 'Future in the past'], answer: 2, explanation: 'Past Continuous ("was wondering") is used to sound more polite and less direct in English.' },
-    ],
-  },
-
-  {
-    id: 'c2-register-style',
-    level: 'C2', category: 'Writing',
-    title: 'Register & Style', titleRu: 'Стиль речи — формальный vs неформальный',
-    duration: 25, xpReward: 200,
-    content: {
-      explanation: `Register refers to the level of formality in language. Choosing the wrong register can sound rude, inappropriate, or unprofessional.\n\nFormal: utilize, commence, terminate, sufficient, endeavour, in addition, with reference to\nInformal: use, start, stop, enough, try, also, about\n\nEmail registers: Formal (Dear Sir/Madam, I am writing to enquire) vs Informal (Hi Mark, Just wanted to ask...). Neutral sits between these.`,
-      examples: [
-        { en: 'Formal: I would like to enquire about the position advertised.', ru: 'Формально: Я хотел бы узнать о рекламируемой должности.' },
-        { en: 'Informal: Hey! I saw the job ad — can you tell me more?', ru: 'Неформально: Привет! Видел объявление о работе — можешь рассказать подробнее?' },
-        { en: 'Formal: Please do not hesitate to contact me should you require further information.', ru: 'Формально: Пожалуйста, не стесняйтесь связаться со мной, если вам потребуется дополнительная информация.' },
-        { en: 'Neutral: If you need anything else, feel free to get in touch.', ru: 'Нейтрально: Если вам что-то понадобится, не стесняйтесь обращаться.' },
-      ],
-      keyPoints: [
-        'Formal writing: no contractions, complex sentences, Latinate vocabulary',
-        'Informal writing: contractions OK, simple vocabulary, phrasal verbs fine',
-        'Formal openings: Dear Mr Smith / To Whom It May Concern',
-        'Formal closings: Yours sincerely (named person) / Yours faithfully (unknown)',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: 'Which is the most formal way to begin a business letter to an unknown person?', options: ['Hi there,', 'Hello,', 'To Whom It May Concern,', 'Hey,'], answer: 2, explanation: '"To Whom It May Concern" is the most formal opening when you don\'t know the name.' },
-      { type: 'fill-blank', sentence: 'Please do not ___ to contact us if you need assistance. (formal)', answer: 'hesitate', hint: '"Please do not ___ to contact us" — formal phrase' },
-      { type: 'multiple-choice', question: 'Which is informal? "The meeting is scheduled to ___ at 9am."', options: ['commence', 'start', 'initiate', 'begin'], answer: 1, explanation: '"Start" is informal/neutral. "Commence" and "initiate" are formal.' },
-      { type: 'error-spot', sentence: 'Dear Mr. Johnson, I\'m writing to let you know I can\'t make it to the interview.', errorWord: 'I\'m, can\'t, make it', correction: 'I am, cannot, attend', explanation: 'Formal letters avoid contractions. "Make it" is informal → "attend".' },
-      { type: 'translation', en: 'I would be grateful if you could confirm your availability at your earliest convenience.', ru: 'Я был бы признателен, если бы вы могли подтвердить свою готовность при первой возможности.' },
-    ],
-  },
-
-  {
-    id: 'c2-complex-structures',
-    level: 'C2', category: 'Grammar',
-    title: 'Complex Sentence Structures', titleRu: 'Сложные синтаксические конструкции',
-    duration: 25, xpReward: 200,
-    content: {
-      explanation: `C2 speakers use advanced sentence structures that create elegant, varied writing and speech.\n\nAbsolute clauses: "The meeting over, they went for dinner." (formal/literary)\nParticipial clauses: "Having finished the report, she left the office."\nCleft sentences: "It was John who called you." / "What I need is a rest."\nNominal relative clauses: "What he said surprised everyone."\nEllipsis: "She will help if asked to." [help is omitted]`,
-      examples: [
-        { en: 'It was his confidence that impressed the interviewers most.', ru: 'Именно его уверенность больше всего впечатлила интервьюеров.' },
-        { en: 'Having considered all the options, the board reached a unanimous decision.', ru: 'Рассмотрев все варианты, совет принял единогласное решение.' },
-        { en: 'What strikes me most is her ability to remain calm under pressure.', ru: 'Больше всего меня поражает её способность сохранять спокойствие под давлением.' },
-        { en: 'The negotiations having broken down, both parties sought legal advice.', ru: 'Поскольку переговоры зашли в тупик, обе стороны обратились за юридической консультацией.' },
-      ],
-      keyPoints: [
-        'Cleft sentences for emphasis: "It was X that/who..."',
-        'Participial clauses: Having + past participle (completed action before main verb)',
-        'Nominal relative: What + clause (as subject or object)',
-        'Absolute clause: Noun + participle (with no conjunction) — very formal',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: '"It was the CEO ___  made the final decision." Choose the right word:', options: ['who', 'which', 'what', 'that'], answer: 0, explanation: '"It was + person + who" — use "who" for people in cleft sentences.' },
-      { type: 'reorder', words: ['his', 'Having', 'presentation,', 'a', 'he', 'took', 'finished', 'break.'], correct: 'Having finished his presentation, he took a break.' },
-      { type: 'fill-blank', sentence: '___ she said about the project completely changed my mind.', answer: 'What', hint: 'Nominal relative clause: ___ + subject + verb (as a noun phrase)' },
-      { type: 'translation', en: 'It is her perseverance that sets her apart from the others.', ru: 'Именно её настойчивость выделяет её среди остальных.' },
-      { type: 'error-spot', sentence: 'Having been waiting for hours, the train finally arrived.', errorWord: 'Having been waiting for hours, the train', correction: 'Having waited for hours, the passengers', explanation: 'The subject of the participial clause must match the main clause. The train didn\'t wait — people did.' },
-    ],
-  },
-
-  {
-    id: 'c2-native-patterns',
-    level: 'C2', category: 'Speaking',
-    title: 'Native Speaker Patterns', titleRu: 'Как говорят реальные носители',
-    duration: 25, xpReward: 200,
-    content: {
-      explanation: `Real native speakers use patterns that textbooks rarely teach: reduced forms, vague language, pragmatic markers, and discourse signals.\n\nReduced speech: "gonna" (going to), "wanna" (want to), "kinda" (kind of), "dunno" (don't know), "lemme" (let me), "y'know" (you know).\n\nHedging and vagueness: "sort of", "kind of", "like", "roughly", "approximately", "or so", "and stuff", "and things like that".`,
-      examples: [
-        { en: '"I\'m gonna grab some coffee — you want anything?" (informal spoken)', ru: '«Я пойду возьму кофе — тебе что-нибудь нужно?» (разговорный стиль)' },
-        { en: '"It\'s, like, kind of complicated to explain." (spoken filler)', ru: '«Это, ну, как бы сложно объяснить.» (разговорные вставки)' },
-        { en: '"I\'d say there were, roughly speaking, a hundred people there."', ru: '«Я бы сказал, что там было, грубо говоря, человек сто.»' },
-        { en: '"You know what I mean?" / "Does that make sense?" (checking understanding)', ru: '«Ты понимаешь, о чём я?» / «Это понятно?» (проверка понимания)' },
-      ],
-      keyPoints: [
-        'Spoken English ≠ written English: contractions, reductions, fillers are normal',
-        'Fillers: "you know", "I mean", "like", "right?" — signal natural speech',
-        'Vague language: "or so", "ish" (five-ish = around five)',
-        'Checking: "know what I mean?", "make sense?", "right?" at end of ideas',
-      ],
-    },
-    exercises: [
-      { type: 'multiple-choice', question: '"I dunno" is a spoken reduction of:', options: ['I do know', 'I don\'t know', 'I did know', 'I could know'], answer: 1, explanation: '"Dunno" = "don\'t know" — very common in informal spoken English.' },
-      { type: 'multiple-choice', question: 'A native speaker says: "It took, like, three hours or so." What does "or so" mean?', options: ['Exactly', 'Approximately', 'More than', 'Less than'], answer: 1, explanation: '"Or so" = approximately/roughly. "Three hours or so" = around 3 hours.' },
-      { type: 'fill-blank', sentence: '"I\'m ___ go to the gym after work." (spoken reduction of "going to")', answer: 'gonna', hint: 'Informal spoken reduction of "going to"' },
-      { type: 'translation', en: 'The project is kind of complicated, to be honest.', ru: 'Честно говоря, проект немного сложноват.' },
-      { type: 'error-spot', sentence: 'In my formal presentation: "I\'m gonna talk about, like, three main points, you know?"', errorWord: 'gonna, like, you know', correction: 'going to, three', explanation: 'Spoken fillers ("gonna", "like", "you know") are inappropriate in formal presentations. Use formal language.' },
-    ],
-  },
-]
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
 
 export function getLessonById(id: string): Lesson | undefined {
   return LESSONS.find(l => l.id === id)
 }
 
-export function getLessonsByLevel(level: CEFRLevel): Lesson[] {
-  return LESSONS.filter(l => l.level === level)
-}
-
-export function getNextLesson(currentId: string): Lesson | undefined {
-  const idx = LESSONS.findIndex(l => l.id === currentId)
+export function getNextLesson(id: string): Lesson | undefined {
+  const idx = LESSONS.findIndex(l => l.id === id)
   return idx >= 0 && idx < LESSONS.length - 1 ? LESSONS[idx + 1] : undefined
 }
 
-export const CEFR_ORDER: CEFRLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
+export const LESSONS: Lesson[] = [
+  // ── A1 Block 1: Знакомство ──────────────────────────────────────────────────
+  {
+    id: 'a1-1-1', level: 'A1', block: 1, blockName: 'Знакомство', order: 1,
+    title: 'To Be: am, is, are', duration: '10 мин',
+    theory: {
+      explanation: 'Глагол "to be" означает "быть/являться". Используй am с I, is с he/she/it, are с you/we/they.',
+      examples: [
+        { english: 'I am a student.', russian: 'Я студент.' },
+        { english: 'She is a doctor.', russian: 'Она врач.' },
+        { english: 'We are friends.', russian: 'Мы друзья.' },
+        { english: 'He is tall.', russian: 'Он высокий.' },
+        { english: 'They are happy.', russian: 'Они счастливы.' },
+        { english: 'You are kind.', russian: 'Ты добрый.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I ___ a student.', answer: 'am', hint: 'с I используй am' },
+      { type: 'fill_blank', question: 'She ___ a doctor.', answer: 'is' },
+      { type: 'multiple_choice', question: 'Выбери правильный вариант: They ___ happy.', options: ['am', 'is', 'are', 'be'], answer: 'are' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['We', 'are', 'friends'], answer: 'We are friends' },
+      { type: 'fill_blank', question: 'You ___ kind.', answer: 'are' },
+    ],
+    quiz: [
+      { question: 'I ___ a student.', options: ['am', 'is', 'are', 'be'], answer: 'am' },
+      { question: 'He ___ tall.', options: ['am', 'is', 'are', 'be'], answer: 'is' },
+      { question: 'They ___ happy.', options: ['am', 'is', 'are', 'be'], answer: 'are' },
+      { question: 'We ___ friends.', options: ['am', 'is', 'are', 'be'], answer: 'are' },
+      { question: 'She ___ a teacher.', options: ['am', 'is', 'are', 'be'], answer: 'is' },
+    ],
+  },
+  {
+    id: 'a1-1-2', level: 'A1', block: 1, blockName: 'Знакомство', order: 2,
+    title: 'My name is / Меня зовут', duration: '10 мин',
+    theory: {
+      explanation: 'Для знакомства используй "My name is..." или "I am..." Вопросы: "What is your name?" / "Where are you from?"',
+      examples: [
+        { english: 'My name is Anna.', russian: 'Меня зовут Анна.' },
+        { english: 'What is your name?', russian: 'Как тебя зовут?' },
+        { english: 'I am from Russia.', russian: 'Я из России.' },
+        { english: 'Where are you from?', russian: 'Откуда ты?' },
+        { english: 'Nice to meet you!', russian: 'Приятно познакомиться!' },
+        { english: 'I am 25 years old.', russian: 'Мне 25 лет.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'My ___ is Anna.', answer: 'name' },
+      { type: 'multiple_choice', question: 'Как спросить "Откуда ты?"', options: ['What is your name?', 'Where are you from?', 'How old are you?', 'How are you?'], answer: 'Where are you from?' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['My', 'name', 'is', 'Alex'], answer: 'My name is Alex' },
+      { type: 'fill_blank', question: 'I am ___ Russia.', answer: 'from', hint: 'из = from' },
+      { type: 'multiple_choice', question: '"Приятно познакомиться" по-английски:', options: ['Good morning', 'Nice to meet you', 'Thank you', 'Goodbye'], answer: 'Nice to meet you' },
+    ],
+    quiz: [
+      { question: 'My ___ is Tom.', options: ['name', 'age', 'place', 'job'], answer: 'name' },
+      { question: 'Where ___ you from?', options: ['am', 'is', 'are', 'be'], answer: 'are' },
+      { question: '"Как тебя зовут?" по-английски:', options: ['How are you?', 'What is your name?', 'Where are you?', 'Who are you?'], answer: 'What is your name?' },
+      { question: 'I am ___ Moscow.', options: ['in', 'from', 'at', 'on'], answer: 'from' },
+      { question: 'Nice to ___ you!', options: ['see', 'know', 'meet', 'find'], answer: 'meet' },
+    ],
+  },
+  {
+    id: 'a1-1-3', level: 'A1', block: 1, blockName: 'Знакомство', order: 3,
+    title: 'Числа 1–100', duration: '10 мин',
+    theory: {
+      explanation: 'Числа 1-12 учи наизусть. 13-19: добавляй -teen. 20-90: twenty, thirty... Составные: twenty-one, thirty-five.',
+      examples: [
+        { english: 'One, two, three, four, five', russian: 'Один, два, три, четыре, пять' },
+        { english: 'Ten, eleven, twelve, thirteen', russian: 'Десять, одиннадцать, двенадцать, тринадцать' },
+        { english: 'Twenty, thirty, forty, fifty', russian: 'Двадцать, тридцать, сорок, пятьдесят' },
+        { english: 'I am twenty-three years old.', russian: 'Мне двадцать три года.' },
+        { english: 'There are thirty students.', russian: 'Здесь тридцать студентов.' },
+        { english: 'My phone number is 100.', russian: 'Мой номер телефона — сто.' },
+      ],
+    },
+    exercises: [
+      { type: 'multiple_choice', question: '15 по-английски:', options: ['fifty', 'fifteen', 'fiveteen', 'five-ten'], answer: 'fifteen' },
+      { type: 'multiple_choice', question: '42 по-английски:', options: ['fourty-two', 'forty-two', 'four-two', 'forty two'], answer: 'forty-two' },
+      { type: 'fill_blank', question: 'I am ___-five years old. (25)', answer: 'twenty', hint: 'twenty-five' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['There', 'are', 'thirty', 'students'], answer: 'There are thirty students' },
+      { type: 'multiple_choice', question: '13 по-английски:', options: ['threeten', 'thirty', 'thirteen', 'threeteen'], answer: 'thirteen' },
+    ],
+    quiz: [
+      { question: '11 по-английски:', options: ['onety-one', 'eleven', 'eleventeen', 'oneleven'], answer: 'eleven' },
+      { question: '20 по-английски:', options: ['two-ten', 'twoty', 'twenty', 'twenteen'], answer: 'twenty' },
+      { question: '14 по-английски:', options: ['fourty', 'fourteen', 'four-teen', 'forteen'], answer: 'fourteen' },
+      { question: '50 по-английски:', options: ['fivety', 'fifteen', 'fifty', 'fiveteen'], answer: 'fifty' },
+      { question: '100 по-английски:', options: ['ten-ten', 'hundred', 'one hundred', 'hundredth'], answer: 'one hundred' },
+    ],
+  },
+  {
+    id: 'a1-1-4', level: 'A1', block: 1, blockName: 'Знакомство', order: 4,
+    title: 'Дни недели и месяцы', duration: '10 мин',
+    theory: {
+      explanation: 'Дни недели и месяцы в английском всегда пишутся с большой буквы. Неделя начинается с Sunday или Monday.',
+      examples: [
+        { english: 'Monday, Tuesday, Wednesday', russian: 'Понедельник, вторник, среда' },
+        { english: 'Thursday, Friday, Saturday, Sunday', russian: 'Четверг, пятница, суббота, воскресенье' },
+        { english: 'January, February, March, April', russian: 'Январь, февраль, март, апрель' },
+        { english: 'Today is Monday.', russian: 'Сегодня понедельник.' },
+        { english: 'My birthday is in May.', russian: 'Мой день рождения в мае.' },
+        { english: 'The exam is on Friday.', russian: 'Экзамен в пятницу.' },
+      ],
+    },
+    exercises: [
+      { type: 'multiple_choice', question: '"Пятница" по-английски:', options: ['Thursday', 'Friday', 'Saturday', 'Wednesday'], answer: 'Friday' },
+      { type: 'fill_blank', question: 'Today is ___. (понедельник)', answer: 'Monday' },
+      { type: 'multiple_choice', question: '"Январь" по-английски:', options: ['June', 'July', 'January', 'February'], answer: 'January' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['My', 'birthday', 'is', 'in', 'March'], answer: 'My birthday is in March' },
+      { type: 'multiple_choice', question: 'После Wednesday идёт:', options: ['Tuesday', 'Friday', 'Thursday', 'Monday'], answer: 'Thursday' },
+    ],
+    quiz: [
+      { question: '"Среда" по-английски:', options: ['Monday', 'Wednesday', 'Tuesday', 'Thursday'], answer: 'Wednesday' },
+      { question: '"Декабрь" по-английски:', options: ['October', 'November', 'December', 'September'], answer: 'December' },
+      { question: 'The exam is ___ Friday.', options: ['in', 'at', 'on', 'by'], answer: 'on' },
+      { question: 'My birthday is ___ May.', options: ['on', 'at', 'in', 'by'], answer: 'in' },
+      { question: '"Воскресенье" по-английски:', options: ['Saturday', 'Sunday', 'Monday', 'Friday'], answer: 'Sunday' },
+    ],
+  },
+  {
+    id: 'a1-1-5', level: 'A1', block: 1, blockName: 'Знакомство', order: 5,
+    title: 'Цвета и прилагательные', duration: '10 мин',
+    theory: {
+      explanation: 'Прилагательные в английском стоят ПЕРЕД существительным. Они не изменяются по числу и роду: a big house, big houses.',
+      examples: [
+        { english: 'The sky is blue.', russian: 'Небо голубое.' },
+        { english: 'I have a red car.', russian: 'У меня красная машина.' },
+        { english: 'She has long brown hair.', russian: 'У неё длинные каштановые волосы.' },
+        { english: 'This is a small green bag.', russian: 'Это маленькая зелёная сумка.' },
+        { english: 'The cat is white and black.', russian: 'Кошка белая и чёрная.' },
+        { english: 'He is a tall young man.', russian: 'Он высокий молодой мужчина.' },
+      ],
+    },
+    exercises: [
+      { type: 'multiple_choice', question: '"Красный" по-английски:', options: ['blue', 'green', 'red', 'yellow'], answer: 'red' },
+      { type: 'fill_blank', question: 'The sky is ___.', answer: 'blue' },
+      { type: 'multiple_choice', question: 'Выбери правильный порядок слов:', options: ['a house big', 'big a house', 'a big house', 'house a big'], answer: 'a big house' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['I', 'have', 'a', 'red', 'car'], answer: 'I have a red car' },
+      { type: 'fill_blank', question: 'She has long ___ hair. (коричневый)', answer: 'brown' },
+    ],
+    quiz: [
+      { question: '"Зелёный" по-английски:', options: ['grey', 'green', 'blue', 'yellow'], answer: 'green' },
+      { question: 'Прилагательное стоит:', options: ['после существительного', 'перед существительным', 'в конце предложения', 'где угодно'], answer: 'перед существительным' },
+      { question: 'The cat is ___ and black.', options: ['red', 'blue', 'white', 'pink'], answer: 'white' },
+      { question: '"Маленький" по-английски:', options: ['tall', 'big', 'small', 'long'], answer: 'small' },
+      { question: 'Правильный вариант:', options: ['a house red', 'red a house', 'a red house', 'house red a'], answer: 'a red house' },
+    ],
+  },
+  // ── A1 Block 2: Семья и дом ─────────────────────────────────────────────────
+  {
+    id: 'a1-2-6', level: 'A1', block: 2, blockName: 'Семья и дом', order: 6,
+    title: 'Have got / Has got', duration: '12 мин',
+    theory: {
+      explanation: '"Have got" = иметь. I/you/we/they have got. He/she/it has got. Отрицание: haven\'t got / hasn\'t got.',
+      examples: [
+        { english: 'I have got a cat.', russian: 'У меня есть кошка.' },
+        { english: 'She has got blue eyes.', russian: 'У неё голубые глаза.' },
+        { english: 'We have got a big house.', russian: 'У нас большой дом.' },
+        { english: 'He hasn\'t got a car.', russian: 'У него нет машины.' },
+        { english: 'Have you got a pen?', russian: 'У тебя есть ручка?' },
+        { english: 'They have got two dogs.', russian: 'У них две собаки.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'She ___ got blue eyes.', answer: 'has', hint: 'she → has' },
+      { type: 'multiple_choice', question: 'I ___ got a cat.', options: ['has', 'have', 'had', 'is'], answer: 'have' },
+      { type: 'fill_blank', question: 'He hasn\'t ___ a car.', answer: 'got' },
+      { type: 'build_sentence', question: 'Составь вопрос:', words: ['Have', 'you', 'got', 'a', 'pen?'], answer: 'Have you got a pen?' },
+      { type: 'multiple_choice', question: 'They ___ got two dogs.', options: ['has', 'have', 'is', 'are'], answer: 'have' },
+    ],
+    quiz: [
+      { question: 'She ___ got a sister.', options: ['have', 'has', 'is', 'are'], answer: 'has' },
+      { question: 'I ___ got a bike.', options: ['has', 'is', 'have', 'are'], answer: 'have' },
+      { question: 'He hasn\'t ___ a dog.', options: ['have', 'has', 'got', 'get'], answer: 'got' },
+      { question: 'We ___ got a big flat.', options: ['has', 'is', 'are', 'have'], answer: 'have' },
+      { question: '___ you got a pen?', options: ['Has', 'Is', 'Have', 'Are'], answer: 'Have' },
+    ],
+  },
+  {
+    id: 'a1-2-7', level: 'A1', block: 2, blockName: 'Семья и дом', order: 7,
+    title: 'Семья / Family', duration: '10 мин',
+    theory: {
+      explanation: 'Слова для описания семьи: mother/father, brother/sister, son/daughter, grandparents, husband/wife, uncle/aunt, cousin.',
+      examples: [
+        { english: 'My mother is a teacher.', russian: 'Моя мама — учитель.' },
+        { english: 'I have two brothers.', russian: 'У меня два брата.' },
+        { english: 'Her sister is very kind.', russian: 'Её сестра очень добрая.' },
+        { english: 'My grandfather is 70 years old.', russian: 'Моему дедушке 70 лет.' },
+        { english: 'They have a son and a daughter.', russian: 'У них есть сын и дочь.' },
+        { english: 'My cousin lives in London.', russian: 'Мой двоюродный брат живёт в Лондоне.' },
+      ],
+    },
+    exercises: [
+      { type: 'multiple_choice', question: '"Бабушка" по-английски:', options: ['grandfather', 'grandmother', 'aunt', 'mother'], answer: 'grandmother' },
+      { type: 'fill_blank', question: 'My ___ is a teacher. (мама)', answer: 'mother' },
+      { type: 'multiple_choice', question: '"Двоюродный брат/сестра" по-английски:', options: ['brother', 'nephew', 'cousin', 'uncle'], answer: 'cousin' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['I', 'have', 'two', 'brothers'], answer: 'I have two brothers' },
+      { type: 'fill_blank', question: 'They have a son and a ___.', answer: 'daughter' },
+    ],
+    quiz: [
+      { question: '"Дядя" по-английски:', options: ['nephew', 'uncle', 'cousin', 'brother'], answer: 'uncle' },
+      { question: '"Муж" по-английски:', options: ['wife', 'husband', 'son', 'father'], answer: 'husband' },
+      { question: 'My ___ is 70 years old. (дедушка)', options: ['grandmother', 'uncle', 'grandfather', 'father'], answer: 'grandfather' },
+      { question: '"Племянница" по-английски:', options: ['cousin', 'niece', 'aunt', 'daughter'], answer: 'niece' },
+      { question: 'They have a ___ and a daughter.', options: ['girl', 'boy', 'son', 'nephew'], answer: 'son' },
+    ],
+  },
+  {
+    id: 'a1-2-8', level: 'A1', block: 2, blockName: 'Семья и дом', order: 8,
+    title: 'Дом и комнаты', duration: '10 мин',
+    theory: {
+      explanation: 'Комнаты дома: living room, bedroom, kitchen, bathroom, dining room, hall, garden. Описывай дом используя "there is/are" и прилагательные.',
+      examples: [
+        { english: 'The kitchen is big.', russian: 'Кухня большая.' },
+        { english: 'My bedroom is on the first floor.', russian: 'Моя спальня на первом этаже.' },
+        { english: 'We have a small bathroom.', russian: 'У нас маленькая ванная.' },
+        { english: 'The living room has a sofa.', russian: 'В гостиной есть диван.' },
+        { english: 'There is a table in the kitchen.', russian: 'На кухне есть стол.' },
+        { english: 'Our garden is beautiful.', russian: 'Наш сад красивый.' },
+      ],
+    },
+    exercises: [
+      { type: 'multiple_choice', question: '"Гостиная" по-английски:', options: ['bedroom', 'bathroom', 'living room', 'kitchen'], answer: 'living room' },
+      { type: 'fill_blank', question: 'The ___ is big. (кухня)', answer: 'kitchen' },
+      { type: 'multiple_choice', question: '"Ванная" по-английски:', options: ['bathroom', 'bedroom', 'balcony', 'basement'], answer: 'bathroom' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['There', 'is', 'a', 'table', 'in', 'the', 'kitchen'], answer: 'There is a table in the kitchen' },
+      { type: 'fill_blank', question: 'My bedroom is on the first ___.', answer: 'floor' },
+    ],
+    quiz: [
+      { question: '"Спальня" по-английски:', options: ['kitchen', 'living room', 'bedroom', 'bathroom'], answer: 'bedroom' },
+      { question: '"Столовая" по-английски:', options: ['dining room', 'living room', 'kitchen', 'hall'], answer: 'dining room' },
+      { question: 'The living room has a ___.', options: ['sink', 'sofa', 'toilet', 'shower'], answer: 'sofa' },
+      { question: '"Прихожая" по-английски:', options: ['garden', 'garage', 'hall', 'balcony'], answer: 'hall' },
+      { question: 'My ___ is on the first floor.', options: ['kitchen', 'garden', 'bedroom', 'garage'], answer: 'bedroom' },
+    ],
+  },
+  {
+    id: 'a1-2-9', level: 'A1', block: 2, blockName: 'Семья и дом', order: 9,
+    title: 'Предлоги места', duration: '12 мин',
+    theory: {
+      explanation: 'Предлоги места: in (внутри), on (на поверхности), under (под), next to (рядом), between (между), in front of (перед), behind (за).',
+      examples: [
+        { english: 'The book is on the table.', russian: 'Книга на столе.' },
+        { english: 'The cat is under the chair.', russian: 'Кошка под стулом.' },
+        { english: 'The bank is next to the café.', russian: 'Банк рядом с кафе.' },
+        { english: 'The keys are in my bag.', russian: 'Ключи в моей сумке.' },
+        { english: 'The car is in front of the house.', russian: 'Машина перед домом.' },
+        { english: 'The dog is between the chairs.', russian: 'Собака между стульями.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'The book is ___ the table. (на)', answer: 'on' },
+      { type: 'multiple_choice', question: '"Под" по-английски:', options: ['on', 'in', 'under', 'over'], answer: 'under' },
+      { type: 'fill_blank', question: 'The keys are ___ my bag. (в)', answer: 'in' },
+      { type: 'multiple_choice', question: 'The bank is ___ to the café.', options: ['near', 'next', 'close', 'side'], answer: 'next' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['The', 'cat', 'is', 'under', 'the', 'chair'], answer: 'The cat is under the chair' },
+    ],
+    quiz: [
+      { question: 'The lamp is ___ the table. (на)', options: ['in', 'under', 'on', 'at'], answer: 'on' },
+      { question: 'The cat is ___ the chair. (под)', options: ['on', 'in', 'over', 'under'], answer: 'under' },
+      { question: 'The keys are ___ my bag. (в)', options: ['on', 'at', 'in', 'by'], answer: 'in' },
+      { question: '"Между" по-английски:', options: ['behind', 'in front of', 'between', 'next to'], answer: 'between' },
+      { question: '"Перед" по-английски:', options: ['behind', 'in front of', 'next to', 'under'], answer: 'in front of' },
+    ],
+  },
+  {
+    id: 'a1-2-10', level: 'A1', block: 2, blockName: 'Семья и дом', order: 10,
+    title: 'There is / There are', duration: '12 мин',
+    theory: {
+      explanation: '"There is" используй с единственным числом, "There are" — со множественным. Отрицание: there isn\'t / there aren\'t.',
+      examples: [
+        { english: 'There is a sofa in the room.', russian: 'В комнате есть диван.' },
+        { english: 'There are three windows.', russian: 'Есть три окна.' },
+        { english: 'There isn\'t a TV in the bedroom.', russian: 'В спальне нет телевизора.' },
+        { english: 'There aren\'t any chairs.', russian: 'Нет никаких стульев.' },
+        { english: 'Is there a bathroom?', russian: 'Есть ли ванная?' },
+        { english: 'Are there any shops nearby?', russian: 'Есть ли поблизости магазины?' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'There ___ a sofa in the room.', answer: 'is', hint: 'sofa — единственное число' },
+      { type: 'fill_blank', question: 'There ___ three windows.', answer: 'are', hint: 'три — множественное число' },
+      { type: 'multiple_choice', question: 'There ___ a TV in the bedroom.', options: ['isn\'t', 'aren\'t', 'not', 'no'], answer: 'isn\'t' },
+      { type: 'build_sentence', question: 'Составь вопрос:', words: ['Is', 'there', 'a', 'bathroom?'], answer: 'Is there a bathroom?' },
+      { type: 'multiple_choice', question: 'There ___ any chairs.', options: ['isn\'t', 'aren\'t', 'not are', 'is not'], answer: 'aren\'t' },
+    ],
+    quiz: [
+      { question: 'There ___ a cat on the sofa.', options: ['are', 'is', 'am', 'be'], answer: 'is' },
+      { question: 'There ___ five students.', options: ['is', 'am', 'are', 'be'], answer: 'are' },
+      { question: 'There ___ a shop here. (нет)', options: ['aren\'t', 'isn\'t', 'not is', 'no is'], answer: 'isn\'t' },
+      { question: '___ there a park nearby?', options: ['Are', 'Is', 'Am', 'Be'], answer: 'Is' },
+      { question: 'There ___ any books on the desk.', options: ['isn\'t', 'is not', 'aren\'t', 'not are'], answer: 'aren\'t' },
+    ],
+  },
+  // ── A1 Block 3: Распорядок дня ──────────────────────────────────────────────
+  {
+    id: 'a1-3-11', level: 'A1', block: 3, blockName: 'Распорядок дня', order: 11,
+    title: 'Present Simple: базовые глаголы', duration: '15 мин',
+    theory: {
+      explanation: 'Present Simple — для регулярных действий. I/you/we/they + глагол. He/she/it + глагол+s. Отрицание: don\'t / doesn\'t.',
+      examples: [
+        { english: 'I eat breakfast every morning.', russian: 'Я завтракаю каждое утро.' },
+        { english: 'She works in an office.', russian: 'Она работает в офисе.' },
+        { english: 'They don\'t watch TV.', russian: 'Они не смотрят телевизор.' },
+        { english: 'He doesn\'t like coffee.', russian: 'Он не любит кофе.' },
+        { english: 'Do you speak English?', russian: 'Ты говоришь по-английски?' },
+        { english: 'We go to school on Monday.', russian: 'Мы ходим в школу в понедельник.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'She ___ in an office. (работает)', answer: 'works', hint: 'she → добавь -s' },
+      { type: 'fill_blank', question: 'They ___ watch TV. (не)', answer: 'don\'t' },
+      { type: 'multiple_choice', question: 'He ___ like coffee.', options: ['don\'t', 'doesn\'t', 'isn\'t', 'not'], answer: 'doesn\'t' },
+      { type: 'build_sentence', question: 'Составь вопрос:', words: ['Do', 'you', 'speak', 'English?'], answer: 'Do you speak English?' },
+      { type: 'fill_blank', question: 'I ___ breakfast every morning. (ем)', answer: 'eat' },
+    ],
+    quiz: [
+      { question: 'She ___ coffee. (пьёт)', options: ['drink', 'drinks', 'drinking', 'is drink'], answer: 'drinks' },
+      { question: 'They ___ watch TV.', options: ['doesn\'t', 'don\'t', 'not', 'isn\'t'], answer: 'don\'t' },
+      { question: 'He ___ like sport.', options: ['don\'t', 'not', 'doesn\'t', 'isn\'t'], answer: 'doesn\'t' },
+      { question: '___ you speak French?', options: ['Does', 'Is', 'Are', 'Do'], answer: 'Do' },
+      { question: 'We ___ to school on Monday.', options: ['goes', 'going', 'go', 'is go'], answer: 'go' },
+    ],
+  },
+  {
+    id: 'a1-3-12', level: 'A1', block: 3, blockName: 'Распорядок дня', order: 12,
+    title: 'Наречия частоты', duration: '10 мин',
+    theory: {
+      explanation: 'Наречия частоты: always (всегда), usually (обычно), often (часто), sometimes (иногда), rarely (редко), never (никогда). Стоят перед основным глаголом, но ПОСЛЕ to be.',
+      examples: [
+        { english: 'I always brush my teeth.', russian: 'Я всегда чищу зубы.' },
+        { english: 'She usually has tea for breakfast.', russian: 'Она обычно пьёт чай на завтрак.' },
+        { english: 'He is never late.', russian: 'Он никогда не опаздывает.' },
+        { english: 'We sometimes go to the cinema.', russian: 'Мы иногда ходим в кино.' },
+        { english: 'They often play football.', russian: 'Они часто играют в футбол.' },
+        { english: 'I rarely eat fast food.', russian: 'Я редко ем фастфуд.' },
+      ],
+    },
+    exercises: [
+      { type: 'multiple_choice', question: '"Всегда" по-английски:', options: ['never', 'often', 'always', 'sometimes'], answer: 'always' },
+      { type: 'fill_blank', question: 'She ___ has tea for breakfast. (обычно)', answer: 'usually' },
+      { type: 'multiple_choice', question: 'He is ___ late. (никогда)', options: ['always', 'never', 'not', 'sometimes'], answer: 'never' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['I', 'always', 'brush', 'my', 'teeth'], answer: 'I always brush my teeth' },
+      { type: 'multiple_choice', question: 'Где стоит наречие частоты?', options: ['в конце', 'в начале', 'перед глаголом', 'после существительного'], answer: 'перед глаголом' },
+    ],
+    quiz: [
+      { question: '"Иногда" по-английски:', options: ['often', 'rarely', 'sometimes', 'usually'], answer: 'sometimes' },
+      { question: 'I ___ eat fast food. (редко)', options: ['never', 'always', 'rarely', 'often'], answer: 'rarely' },
+      { question: 'They ___ play football. (часто)', options: ['rarely', 'never', 'sometimes', 'often'], answer: 'often' },
+      { question: 'He is ___ happy. (всегда)', options: ['usually', 'never', 'always', 'often'], answer: 'always' },
+      { question: '"Никогда" по-английски:', options: ['always', 'never', 'rarely', 'sometimes'], answer: 'never' },
+    ],
+  },
+  {
+    id: 'a1-3-13', level: 'A1', block: 3, blockName: 'Распорядок дня', order: 13,
+    title: 'Время (часы)', duration: '10 мин',
+    theory: {
+      explanation: 'Время: "It is + time". Точное: It\'s three o\'clock. Половина: half past two. Четверть: quarter past/to. Без 10: ten to five.',
+      examples: [
+        { english: 'It\'s three o\'clock.', russian: 'Три часа.' },
+        { english: 'It\'s half past four.', russian: 'Половина пятого (4:30).' },
+        { english: 'It\'s quarter past six.', russian: 'Четверть седьмого (6:15).' },
+        { english: 'It\'s quarter to nine.', russian: 'Без четверти девять (8:45).' },
+        { english: 'What time is it?', russian: 'Который час?' },
+        { english: 'I wake up at seven o\'clock.', russian: 'Я просыпаюсь в семь часов.' },
+      ],
+    },
+    exercises: [
+      { type: 'multiple_choice', question: '4:30 по-английски:', options: ['half past three', 'half past four', 'quarter past four', 'four thirty-five'], answer: 'half past four' },
+      { type: 'fill_blank', question: 'It\'s ___ o\'clock. (три часа)', answer: 'three' },
+      { type: 'multiple_choice', question: '6:15 по-английски:', options: ['quarter to six', 'half past six', 'quarter past six', 'six fifteen past'], answer: 'quarter past six' },
+      { type: 'build_sentence', question: 'Составь вопрос:', words: ['What', 'time', 'is', 'it?'], answer: 'What time is it?' },
+      { type: 'multiple_choice', question: '8:45 по-английски:', options: ['quarter past eight', 'quarter to nine', 'half past eight', 'nine to quarter'], answer: 'quarter to nine' },
+    ],
+    quiz: [
+      { question: '3:00 по-английски:', options: ['three past', 'three o\'clock', 'half past two', 'quarter to three'], answer: 'three o\'clock' },
+      { question: '7:30 по-английски:', options: ['half past eight', 'seven thirty past', 'half past seven', 'quarter to eight'], answer: 'half past seven' },
+      { question: '9:15 по-английски:', options: ['quarter to nine', 'quarter past nine', 'half past nine', 'nine past quarter'], answer: 'quarter past nine' },
+      { question: '"Который час?" по-английски:', options: ['Where is the time?', 'What time is it?', 'How much time?', 'When is it?'], answer: 'What time is it?' },
+      { question: '10:45 по-английски:', options: ['quarter past ten', 'quarter to eleven', 'half past ten', 'ten to quarter'], answer: 'quarter to eleven' },
+    ],
+  },
+  {
+    id: 'a1-3-14', level: 'A1', block: 3, blockName: 'Распорядок дня', order: 14,
+    title: 'Глаголы действия', duration: '10 мин',
+    theory: {
+      explanation: 'Основные глаголы действия: go, eat, drink, read, write, watch, play, work, study, sleep, wake up, get up, have, make.',
+      examples: [
+        { english: 'I wake up at 7 o\'clock.', russian: 'Я просыпаюсь в 7 часов.' },
+        { english: 'She reads books in the evening.', russian: 'Она читает книги вечером.' },
+        { english: 'We play football on weekends.', russian: 'Мы играем в футбол на выходных.' },
+        { english: 'He watches TV after dinner.', russian: 'Он смотрит телевизор после ужина.' },
+        { english: 'I make coffee every morning.', russian: 'Я делаю кофе каждое утро.' },
+        { english: 'They study English on Tuesday.', russian: 'Они изучают английский во вторник.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I ___ up at 7 o\'clock. (просыпаюсь)', answer: 'wake' },
+      { type: 'multiple_choice', question: '"Изучать" по-английски:', options: ['watch', 'study', 'play', 'work'], answer: 'study' },
+      { type: 'fill_blank', question: 'She ___ books in the evening. (читает)', answer: 'reads', hint: 'she → reads' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['We', 'play', 'football', 'on', 'weekends'], answer: 'We play football on weekends' },
+      { type: 'multiple_choice', question: '"Делать кофе" по-английски:', options: ['do coffee', 'make coffee', 'cook coffee', 'have coffee'], answer: 'make coffee' },
+    ],
+    quiz: [
+      { question: '"Смотреть телевизор" по-английски:', options: ['look TV', 'see TV', 'watch TV', 'view TV'], answer: 'watch TV' },
+      { question: 'He ___ TV after dinner.', options: ['watch', 'watches', 'is watch', 'watching'], answer: 'watches' },
+      { question: '"Ложиться спать" по-английски:', options: ['go to bed', 'sleep up', 'go sleep', 'lay bed'], answer: 'go to bed' },
+      { question: 'They ___ English on Tuesday.', options: ['studying', 'studys', 'study', 'studies'], answer: 'study' },
+      { question: '"Вставать" по-английски:', options: ['get up', 'stand up', 'go up', 'rise up'], answer: 'get up' },
+    ],
+  },
+  {
+    id: 'a1-3-15', level: 'A1', block: 3, blockName: 'Распорядок дня', order: 15,
+    title: 'Present Continuous', duration: '15 мин',
+    theory: {
+      explanation: 'Present Continuous — действие происходит СЕЙЧАС. Структура: am/is/are + глагол-ing. I am reading. She is working. They are playing.',
+      examples: [
+        { english: 'I am reading a book now.', russian: 'Я сейчас читаю книгу.' },
+        { english: 'She is cooking dinner.', russian: 'Она готовит ужин.' },
+        { english: 'They are playing football.', russian: 'Они играют в футбол.' },
+        { english: 'He is not working today.', russian: 'Он сегодня не работает.' },
+        { english: 'Are you listening to music?', russian: 'Ты слушаешь музыку?' },
+        { english: 'We are watching a film.', russian: 'Мы смотрим фильм.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I am ___ a book now. (читаю)', answer: 'reading', hint: 'read + ing' },
+      { type: 'fill_blank', question: 'She ___ cooking dinner.', answer: 'is' },
+      { type: 'multiple_choice', question: 'They ___ playing football.', options: ['am', 'is', 'are', 'be'], answer: 'are' },
+      { type: 'build_sentence', question: 'Составь вопрос:', words: ['Are', 'you', 'listening', 'to', 'music?'], answer: 'Are you listening to music?' },
+      { type: 'fill_blank', question: 'He is not ___ today. (работает)', answer: 'working', hint: 'work + ing' },
+    ],
+    quiz: [
+      { question: 'I ___ watching TV.', options: ['is', 'am', 'are', 'be'], answer: 'am' },
+      { question: 'She ___ cooking now.', options: ['am', 'are', 'is', 'be'], answer: 'is' },
+      { question: 'They are ___ football. (играют)', options: ['play', 'plays', 'playing', 'played'], answer: 'playing' },
+      { question: '___ you listening to music?', options: ['Is', 'Am', 'Are', 'Do'], answer: 'Are' },
+      { question: 'He is not ___ today.', options: ['work', 'works', 'working', 'worked'], answer: 'working' },
+    ],
+  },
+  // ── A1 Block 4: Прошлое ─────────────────────────────────────────────────────
+  {
+    id: 'a1-4-16', level: 'A1', block: 4, blockName: 'Прошлое', order: 16,
+    title: 'Past Simple: was / were', duration: '12 мин',
+    theory: {
+      explanation: 'Past Simple глагола "to be": was (I/he/she/it), were (you/we/they). Отрицание: wasn\'t / weren\'t. Вопрос: Was/Were + подлежащее?',
+      examples: [
+        { english: 'I was tired yesterday.', russian: 'Я вчера устал.' },
+        { english: 'She was at school.', russian: 'Она была в школе.' },
+        { english: 'We were happy.', russian: 'Мы были счастливы.' },
+        { english: 'He wasn\'t at home.', russian: 'Его не было дома.' },
+        { english: 'Were you at the party?', russian: 'Ты был на вечеринке?' },
+        { english: 'They weren\'t late.', russian: 'Они не опаздывали.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I ___ tired yesterday.', answer: 'was', hint: 'I → was' },
+      { type: 'fill_blank', question: 'We ___ happy.', answer: 'were', hint: 'we → were' },
+      { type: 'multiple_choice', question: 'He ___ at home.', options: ['wasn\'t', 'weren\'t', 'isn\'t', 'not was'], answer: 'wasn\'t' },
+      { type: 'build_sentence', question: 'Составь вопрос:', words: ['Were', 'you', 'at', 'the', 'party?'], answer: 'Were you at the party?' },
+      { type: 'multiple_choice', question: 'They ___ late.', options: ['wasn\'t', 'weren\'t', 'not were', 'didn\'t'], answer: 'weren\'t' },
+    ],
+    quiz: [
+      { question: 'She ___ at school.', options: ['were', 'is', 'was', 'are'], answer: 'was' },
+      { question: 'You ___ right!', options: ['was', 'is', 'were', 'are'], answer: 'were' },
+      { question: 'He ___ at home. (не был)', options: ['weren\'t', 'isn\'t', 'wasn\'t', 'didn\'t'], answer: 'wasn\'t' },
+      { question: '___ they at the party?', options: ['Was', 'Is', 'Are', 'Were'], answer: 'Were' },
+      { question: 'We ___ happy. (не были)', options: ['wasn\'t', 'weren\'t', 'not were', 'didn\'t'], answer: 'weren\'t' },
+    ],
+  },
+  {
+    id: 'a1-4-17', level: 'A1', block: 4, blockName: 'Прошлое', order: 17,
+    title: 'Past Simple: правильные глаголы', duration: '15 мин',
+    theory: {
+      explanation: 'Правильные глаголы в Past Simple: добавляй -ed. work→worked, play→played, watch→watched. Отрицание: didn\'t + инфинитив. Вопрос: Did + подлежащее + инфинитив?',
+      examples: [
+        { english: 'I worked yesterday.', russian: 'Я работал вчера.' },
+        { english: 'She watched a film last night.', russian: 'Она смотрела фильм вчера вечером.' },
+        { english: 'They played football on Saturday.', russian: 'Они играли в футбол в субботу.' },
+        { english: 'He didn\'t work today.', russian: 'Он сегодня не работал.' },
+        { english: 'Did you visit London?', russian: 'Ты посещал Лондон?' },
+        { english: 'We cooked dinner together.', russian: 'Мы вместе готовили ужин.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I ___ yesterday. (worked)', answer: 'worked', hint: 'work + ed' },
+      { type: 'fill_blank', question: 'She ___ a film last night.', answer: 'watched', hint: 'watch + ed' },
+      { type: 'multiple_choice', question: 'He ___ work today.', options: ['didn\'t', 'doesn\'t', 'not', 'wasn\'t'], answer: 'didn\'t' },
+      { type: 'build_sentence', question: 'Составь вопрос:', words: ['Did', 'you', 'visit', 'London?'], answer: 'Did you visit London?' },
+      { type: 'fill_blank', question: 'They ___ football on Saturday.', answer: 'played', hint: 'play + ed' },
+    ],
+    quiz: [
+      { question: 'She ___ a film. (смотрела)', options: ['watched', 'watch', 'watching', 'is watched'], answer: 'watched' },
+      { question: 'He ___ work today.', options: ['doesn\'t', 'didn\'t', 'not', 'wasn\'t'], answer: 'didn\'t' },
+      { question: '___ you visit London?', options: ['Do', 'Does', 'Did', 'Was'], answer: 'Did' },
+      { question: 'They ___ football. (играли)', options: ['plays', 'play', 'playing', 'played'], answer: 'played' },
+      { question: 'I ___ dinner. (готовил)', options: ['cook', 'cooks', 'cooking', 'cooked'], answer: 'cooked' },
+    ],
+  },
+  {
+    id: 'a1-4-18', level: 'A1', block: 4, blockName: 'Прошлое', order: 18,
+    title: 'Неправильные глаголы', duration: '15 мин',
+    theory: {
+      explanation: 'Неправильные глаголы меняют форму в Past Simple: go→went, eat→ate, see→saw, have→had, come→came, take→took, make→made, give→gave.',
+      examples: [
+        { english: 'I went to the cinema.', russian: 'Я ходил в кино.' },
+        { english: 'She ate pasta for dinner.', russian: 'Она ела пасту на ужин.' },
+        { english: 'We saw a great film.', russian: 'Мы посмотрели отличный фильм.' },
+        { english: 'He had a coffee.', russian: 'Он выпил кофе.' },
+        { english: 'They came home late.', russian: 'Они пришли домой поздно.' },
+        { english: 'I took a photo.', russian: 'Я сделал фото.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I ___ to the cinema. (go→?)', answer: 'went', hint: 'go → went' },
+      { type: 'fill_blank', question: 'She ___ pasta for dinner. (eat→?)', answer: 'ate', hint: 'eat → ate' },
+      { type: 'multiple_choice', question: 'He ___ a coffee. (have→?)', options: ['haved', 'had', 'have', 'has'], answer: 'had' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['We', 'saw', 'a', 'great', 'film'], answer: 'We saw a great film' },
+      { type: 'multiple_choice', question: 'I ___ a photo. (take→?)', options: ['taked', 'tooked', 'took', 'takes'], answer: 'took' },
+    ],
+    quiz: [
+      { question: 'go → Past Simple:', options: ['goed', 'went', 'gone', 'go'], answer: 'went' },
+      { question: 'eat → Past Simple:', options: ['eated', 'eaten', 'ate', 'eat'], answer: 'ate' },
+      { question: 'see → Past Simple:', options: ['seed', 'seen', 'saw', 'sees'], answer: 'saw' },
+      { question: 'come → Past Simple:', options: ['comed', 'came', 'come', 'comes'], answer: 'came' },
+      { question: 'make → Past Simple:', options: ['maked', 'makes', 'made', 'make'], answer: 'made' },
+    ],
+  },
+  {
+    id: 'a1-4-19', level: 'A1', block: 4, blockName: 'Прошлое', order: 19,
+    title: 'Вопросы в Past Simple', duration: '12 мин',
+    theory: {
+      explanation: 'Вопросы в Past Simple: Did + подлежащее + инфинитив? С "to be": Was/Were + подлежащее? Краткие ответы: Yes, I did / No, I didn\'t.',
+      examples: [
+        { english: 'Did you go to school?', russian: 'Ты ходил в школу?' },
+        { english: 'Yes, I did. / No, I didn\'t.', russian: 'Да, ходил. / Нет, не ходил.' },
+        { english: 'What did she eat?', russian: 'Что она ела?' },
+        { english: 'Where did they go?', russian: 'Куда они пошли?' },
+        { english: 'Was he at home?', russian: 'Он был дома?' },
+        { english: 'When did you arrive?', russian: 'Когда ты приехал?' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: '___ you go to school?', answer: 'Did' },
+      { type: 'multiple_choice', question: 'Краткий утвердительный ответ на Did you...?', options: ['Yes, I was', 'Yes, I did', 'Yes, I do', 'Yes, I am'], answer: 'Yes, I did' },
+      { type: 'fill_blank', question: 'What ___ she eat?', answer: 'did' },
+      { type: 'build_sentence', question: 'Составь вопрос:', words: ['Where', 'did', 'they', 'go?'], answer: 'Where did they go?' },
+      { type: 'multiple_choice', question: '___ he at home?', options: ['Did', 'Does', 'Was', 'Is'], answer: 'Was' },
+    ],
+    quiz: [
+      { question: '___ you visit London?', options: ['Do', 'Does', 'Did', 'Was'], answer: 'Did' },
+      { question: 'What ___ she eat?', options: ['does', 'do', 'did', 'was'], answer: 'did' },
+      { question: 'Yes, I ___ (ответ на Did you...?)', options: ['was', 'do', 'did', 'am'], answer: 'did' },
+      { question: '___ they at the party?', options: ['Did', 'Does', 'Were', 'Do'], answer: 'Were' },
+      { question: 'Where ___ you go?', options: ['do', 'does', 'did', 'was'], answer: 'did' },
+    ],
+  },
+  {
+    id: 'a1-4-20', level: 'A1', block: 4, blockName: 'Прошлое', order: 20,
+    title: 'Вопросительные слова', duration: '10 мин',
+    theory: {
+      explanation: 'Вопросительные слова: What (что/какой), Where (где/куда), When (когда), Who (кто), Why (почему), How (как), How many/much (сколько).',
+      examples: [
+        { english: 'What is your name?', russian: 'Как тебя зовут?' },
+        { english: 'Where do you live?', russian: 'Где ты живёшь?' },
+        { english: 'When is your birthday?', russian: 'Когда твой день рождения?' },
+        { english: 'Who is your teacher?', russian: 'Кто твой учитель?' },
+        { english: 'Why are you late?', russian: 'Почему ты опаздываешь?' },
+        { english: 'How many students are there?', russian: 'Сколько студентов?' },
+      ],
+    },
+    exercises: [
+      { type: 'multiple_choice', question: '"Где" по-английски:', options: ['When', 'What', 'Where', 'Who'], answer: 'Where' },
+      { type: 'fill_blank', question: '___ is your name? (как/что)', answer: 'What' },
+      { type: 'multiple_choice', question: '"Почему" по-английски:', options: ['How', 'When', 'Who', 'Why'], answer: 'Why' },
+      { type: 'build_sentence', question: 'Составь вопрос:', words: ['Where', 'do', 'you', 'live?'], answer: 'Where do you live?' },
+      { type: 'fill_blank', question: '___ many students are there?', answer: 'How' },
+    ],
+    quiz: [
+      { question: '"Когда" по-английски:', options: ['What', 'Who', 'When', 'Where'], answer: 'When' },
+      { question: '"Кто" по-английски:', options: ['How', 'Why', 'When', 'Who'], answer: 'Who' },
+      { question: '"Как" по-английски:', options: ['Why', 'How', 'Who', 'What'], answer: 'How' },
+      { question: '___ do you live?', options: ['What', 'Who', 'Where', 'Why'], answer: 'Where' },
+      { question: '___ many books do you have?', options: ['What', 'How', 'Why', 'Who'], answer: 'How' },
+    ],
+  },
+  // ── A1 Block 5: Еда и здоровье ──────────────────────────────────────────────
+  {
+    id: 'a1-5-21', level: 'A1', block: 5, blockName: 'Еда и здоровье', order: 21,
+    title: 'Еда и напитки', duration: '10 мин',
+    theory: {
+      explanation: 'Исчисляемые (apple, egg) — можно посчитать: a/an, two. Неисчисляемые (water, bread, milk) — нельзя: some, a glass of. "Some" — в утверждениях, "any" — в вопросах/отрицаниях.',
+      examples: [
+        { english: 'I\'d like some water, please.', russian: 'Я бы хотел воды, пожалуйста.' },
+        { english: 'Do you have any milk?', russian: 'У тебя есть молоко?' },
+        { english: 'She eats an apple every day.', russian: 'Она ест яблоко каждый день.' },
+        { english: 'I don\'t have any coffee.', russian: 'У меня нет кофе.' },
+        { english: 'We need some bread.', russian: 'Нам нужен хлеб.' },
+        { english: 'He drinks two glasses of juice.', russian: 'Он пьёт два стакана сока.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I\'d like ___ water, please.', answer: 'some', hint: 'утверждение → some' },
+      { type: 'fill_blank', question: 'Do you have ___ milk?', answer: 'any', hint: 'вопрос → any' },
+      { type: 'multiple_choice', question: 'Вода — это:', options: ['исчисляемое', 'неисчисляемое', 'всегда с артиклем a', 'во множественном числе'], answer: 'неисчисляемое' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['We', 'need', 'some', 'bread'], answer: 'We need some bread' },
+      { type: 'multiple_choice', question: 'I don\'t have ___ coffee.', options: ['some', 'a', 'any', 'the'], answer: 'any' },
+    ],
+    quiz: [
+      { question: '"Немного молока" по-английски:', options: ['some milk', 'any milk', 'a milk', 'the milk'], answer: 'some milk' },
+      { question: 'Do you have ___ bread?', options: ['some', 'a', 'any', 'the'], answer: 'any' },
+      { question: '"Исчисляемое" слово:', options: ['water', 'milk', 'apple', 'bread'], answer: 'apple' },
+      { question: 'I need ___ eggs.', options: ['any', 'a', 'some', 'the'], answer: 'some' },
+      { question: 'There isn\'t ___ coffee left.', options: ['some', 'a', 'any', 'the'], answer: 'any' },
+    ],
+  },
+  {
+    id: 'a1-5-22', level: 'A1', block: 5, blockName: 'Еда и здоровье', order: 22,
+    title: 'Can / Can\'t', duration: '12 мин',
+    theory: {
+      explanation: '"Can" выражает способность или возможность. Форма одинакова для всех: I/you/he/she/we/they can. Отрицание: can\'t (cannot). Вопрос: Can + подлежащее?',
+      examples: [
+        { english: 'I can swim.', russian: 'Я умею плавать.' },
+        { english: 'She can speak French.', russian: 'Она может говорить по-французски.' },
+        { english: 'He can\'t drive a car.', russian: 'Он не умеет водить машину.' },
+        { english: 'Can you help me?', russian: 'Ты можешь мне помочь?' },
+        { english: 'We can meet tomorrow.', russian: 'Мы можем встретиться завтра.' },
+        { english: 'They can\'t come to the party.', russian: 'Они не могут прийти на вечеринку.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I ___ swim. (умею)', answer: 'can' },
+      { type: 'fill_blank', question: 'He ___ drive a car. (не умеет)', answer: 'can\'t' },
+      { type: 'multiple_choice', question: 'Форма can для he/she:', options: ['cans', 'can', 'could', 'is can'], answer: 'can' },
+      { type: 'build_sentence', question: 'Составь вопрос:', words: ['Can', 'you', 'help', 'me?'], answer: 'Can you help me?' },
+      { type: 'fill_blank', question: 'She ___ speak French.', answer: 'can' },
+    ],
+    quiz: [
+      { question: 'I ___ swim. (умею)', options: ['cans', 'am can', 'can', 'could'], answer: 'can' },
+      { question: 'He ___ drive. (не умеет)', options: ['don\'t can', 'doesn\'t can', 'can\'t', 'not can'], answer: 'can\'t' },
+      { question: '___ you speak English?', options: ['Do', 'Are', 'Can', 'Have'], answer: 'Can' },
+      { question: 'She ___ play guitar.', options: ['cans', 'can', 'is can', 'have can'], answer: 'can' },
+      { question: 'We ___ come. (не можем)', options: ['don\'t can', 'can\'t', 'cannot to', 'not can'], answer: 'can\'t' },
+    ],
+  },
+  {
+    id: 'a1-5-23', level: 'A1', block: 5, blockName: 'Еда и здоровье', order: 23,
+    title: 'Would like', duration: '10 мин',
+    theory: {
+      explanation: '"Would like" — вежливый способ выразить желание (= хотел бы). Краткая форма: I\'d like. Вопрос: Would you like...? Ответ: Yes, please / No, thank you.',
+      examples: [
+        { english: 'I\'d like a coffee, please.', russian: 'Я бы хотел кофе, пожалуйста.' },
+        { english: 'Would you like some tea?', russian: 'Хотите чаю?' },
+        { english: 'She\'d like to visit Paris.', russian: 'Она бы хотела посетить Париж.' },
+        { english: 'Yes, please! / No, thank you.', russian: 'Да, пожалуйста! / Нет, спасибо.' },
+        { english: 'Would you like to eat out?', russian: 'Хочешь поужинать вне дома?' },
+        { english: 'We\'d like two tickets, please.', russian: 'Нам бы два билета, пожалуйста.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I\'d ___ a coffee, please.', answer: 'like' },
+      { type: 'multiple_choice', question: '"Would like" используется для:', options: ['приказов', 'вежливых просьб и желаний', 'привычных действий', 'прошедших событий'], answer: 'вежливых просьб и желаний' },
+      { type: 'fill_blank', question: '___ you like some tea?', answer: 'Would' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['We\'d', 'like', 'two', 'tickets', 'please'], answer: 'We\'d like two tickets please' },
+      { type: 'multiple_choice', question: 'Вежливый отказ на "Would you like...?":', options: ['No, I wouldn\'t.', 'No, thank you.', 'I don\'t want.', 'Not.'], answer: 'No, thank you.' },
+    ],
+    quiz: [
+      { question: 'I\'d like ___ coffee.', options: ['a', 'some', 'any', 'the'], answer: 'a' },
+      { question: '___ you like some cake?', options: ['Do', 'Are', 'Would', 'Can'], answer: 'Would' },
+      { question: '"I\'d like" = ?', options: ['I like', 'I would like', 'I do like', 'I am liking'], answer: 'I would like' },
+      { question: 'She\'d like ___ visit London.', options: ['visit', 'to visit', 'visiting', 'visited'], answer: 'to visit' },
+      { question: 'Вежливое согласие на "Would you like...?":', options: ['Yes, I would.', 'Yes, please!', 'Yes, I like.', 'Yes, I want.'], answer: 'Yes, please!' },
+    ],
+  },
+  {
+    id: 'a1-5-24', level: 'A1', block: 5, blockName: 'Еда и здоровье', order: 24,
+    title: 'Артикли: a, an, the', duration: '15 мин',
+    theory: {
+      explanation: '"A/An" — неопределённый артикль (впервые, один из многих): a cat, an apple. "The" — определённый (конкретный, уже известный). Без артикля: имена, города, языки.',
+      examples: [
+        { english: 'I have a dog.', russian: 'У меня есть собака. (любая)' },
+        { english: 'The dog is very friendly.', russian: 'Собака (та самая) очень дружелюбная.' },
+        { english: 'She is an engineer.', russian: 'Она инженер.' },
+        { english: 'Moscow is the capital of Russia.', russian: 'Москва — столица России.' },
+        { english: 'I speak English.', russian: 'Я говорю по-английски. (без артикля)' },
+        { english: 'Can you close the door?', russian: 'Ты можешь закрыть дверь? (конкретная)' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I have ___ dog. (первое упоминание)', answer: 'a' },
+      { type: 'fill_blank', question: '___ dog is friendly. (уже известная)', answer: 'The' },
+      { type: 'multiple_choice', question: 'Перед словом "apple" используй:', options: ['a', 'an', 'the', 'нет артикля'], answer: 'an' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['She', 'is', 'an', 'engineer'], answer: 'She is an engineer' },
+      { type: 'multiple_choice', question: 'I speak ___ English.', options: ['a', 'an', 'the', 'нет артикля'], answer: 'нет артикля' },
+    ],
+    quiz: [
+      { question: 'I have ___ cat.', options: ['an', 'the', 'a', 'нет'], answer: 'a' },
+      { question: '___ cat is black. (известная)', options: ['A', 'An', 'The', 'нет'], answer: 'The' },
+      { question: 'She is ___ engineer.', options: ['a', 'an', 'the', 'нет'], answer: 'an' },
+      { question: 'I love ___ London. (город)', options: ['a', 'an', 'the', 'нет артикля'], answer: 'нет артикля' },
+      { question: 'Close ___ door, please.', options: ['a', 'an', 'нет', 'the'], answer: 'the' },
+    ],
+  },
+  {
+    id: 'a1-5-25', level: 'A1', block: 5, blockName: 'Еда и здоровье', order: 25,
+    title: 'Must / Mustn\'t', duration: '12 мин',
+    theory: {
+      explanation: '"Must" — обязанность или сильная необходимость (= нужно, обязан). "Mustn\'t" — строгий запрет (= нельзя). Форма одинакова для всех лиц.',
+      examples: [
+        { english: 'You must wear a seatbelt.', russian: 'Ты должен пристегнуть ремень.' },
+        { english: 'Students must do their homework.', russian: 'Студенты должны делать домашнее задание.' },
+        { english: 'You mustn\'t smoke here.', russian: 'Здесь нельзя курить.' },
+        { english: 'I must see a doctor.', russian: 'Мне нужно обратиться к врачу.' },
+        { english: 'You mustn\'t be late.', russian: 'Нельзя опаздывать.' },
+        { english: 'We must leave now.', russian: 'Нам нужно уходить сейчас.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'You ___ wear a seatbelt. (должен)', answer: 'must' },
+      { type: 'fill_blank', question: 'You ___ smoke here. (нельзя)', answer: 'mustn\'t' },
+      { type: 'multiple_choice', question: 'Студенты ___ делать д/з:', options: ['mustn\'t do', 'must do', 'must doing', 'must to do'], answer: 'must do' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['I', 'must', 'see', 'a', 'doctor'], answer: 'I must see a doctor' },
+      { type: 'multiple_choice', question: '"Mustn\'t" значит:', options: ['не нужно', 'нельзя (запрет)', 'не умею', 'не хочу'], answer: 'нельзя (запрет)' },
+    ],
+    quiz: [
+      { question: 'You ___ wear a seatbelt.', options: ['mustn\'t', 'must', 'musts', 'must to'], answer: 'must' },
+      { question: 'You ___ smoke. (запрет)', options: ['must', 'must not', 'mustn\'t', 'not must'], answer: 'mustn\'t' },
+      { question: 'We ___ leave now.', options: ['musts', 'must to', 'must', 'mustn\'t'], answer: 'must' },
+      { question: '"Must" форма для he:', options: ['musts', 'must', 'must to', 'haves must'], answer: 'must' },
+      { question: 'You ___ be late. (нельзя)', options: ['must', 'mustn\'t', 'can\'t must', 'not must'], answer: 'mustn\'t' },
+    ],
+  },
+  // ── A1 Block 6: Будущее ─────────────────────────────────────────────────────
+  {
+    id: 'a1-6-26', level: 'A1', block: 6, blockName: 'Будущее', order: 26,
+    title: 'Going to: планы на будущее', duration: '12 мин',
+    theory: {
+      explanation: '"Going to" = намеренное действие в будущем (уже решено). Структура: am/is/are + going to + инфинитив. I am going to travel. She is going to study.',
+      examples: [
+        { english: 'I am going to travel next year.', russian: 'Я собираюсь путешествовать в следующем году.' },
+        { english: 'She is going to study medicine.', russian: 'Она собирается изучать медицину.' },
+        { english: 'We are going to move to London.', russian: 'Мы собираемся переехать в Лондон.' },
+        { english: 'He isn\'t going to come.', russian: 'Он не собирается приходить.' },
+        { english: 'Are you going to watch the match?', russian: 'Ты собираешься смотреть матч?' },
+        { english: 'They are going to have a party.', russian: 'Они собираются устроить вечеринку.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I am going to ___ next year. (travel)', answer: 'travel' },
+      { type: 'fill_blank', question: 'She ___ going to study medicine.', answer: 'is' },
+      { type: 'multiple_choice', question: 'He ___ going to come.', options: ['isn\'t', 'aren\'t', 'wasn\'t', 'not'], answer: 'isn\'t' },
+      { type: 'build_sentence', question: 'Составь вопрос:', words: ['Are', 'you', 'going', 'to', 'watch', 'the', 'match?'], answer: 'Are you going to watch the match?' },
+      { type: 'multiple_choice', question: '"Going to" используется для:', options: ['прошлых событий', 'запланированных действий', 'способностей', 'обязанностей'], answer: 'запланированных действий' },
+    ],
+    quiz: [
+      { question: 'I ___ going to travel.', options: ['is', 'are', 'am', 'be'], answer: 'am' },
+      { question: 'She is going ___ study medicine.', options: ['for', 'at', 'to', 'by'], answer: 'to' },
+      { question: '___ you going to watch the match?', options: ['Is', 'Am', 'Do', 'Are'], answer: 'Are' },
+      { question: 'He ___ going to come.', options: ['aren\'t', 'isn\'t', 'not is', 'don\'t'], answer: 'isn\'t' },
+      { question: 'We ___ going to move to London.', options: ['is', 'am', 'are', 'be'], answer: 'are' },
+    ],
+  },
+  {
+    id: 'a1-6-27', level: 'A1', block: 6, blockName: 'Будущее', order: 27,
+    title: 'Will: спонтанные решения и предсказания', duration: '12 мин',
+    theory: {
+      explanation: '"Will" используют для спонтанных решений (только что решил) и предсказаний. Структура: will + инфинитив. Краткая форма: I\'ll. Отрицание: won\'t.',
+      examples: [
+        { english: 'I\'ll help you with that.', russian: 'Я помогу тебе с этим.' },
+        { english: 'It will rain tomorrow.', russian: 'Завтра будет дождь.' },
+        { english: 'She won\'t be late.', russian: 'Она не опоздает.' },
+        { english: 'Will you call me?', russian: 'Ты позвонишь мне?' },
+        { english: 'I think he will pass the exam.', russian: 'Я думаю, он сдаст экзамен.' },
+        { english: 'Don\'t worry, I\'ll do it.', russian: 'Не волнуйся, я это сделаю.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I\'ll ___ you with that. (help)', answer: 'help' },
+      { type: 'fill_blank', question: 'It ___ rain tomorrow.', answer: 'will' },
+      { type: 'multiple_choice', question: 'She ___ be late.', options: ['won\'t', 'isn\'t', 'doesn\'t', 'not will'], answer: 'won\'t' },
+      { type: 'build_sentence', question: 'Составь вопрос:', words: ['Will', 'you', 'call', 'me?'], answer: 'Will you call me?' },
+      { type: 'multiple_choice', question: '"Will" используют для:', options: ['прошлых планов', 'спонтанных решений', 'привычных действий', 'запретов'], answer: 'спонтанных решений' },
+    ],
+    quiz: [
+      { question: 'I ___ help you. (помогу)', options: ['am', 'going to', 'will', 'would'], answer: 'will' },
+      { question: 'She ___ be late.', options: ['wouldn\'t', 'isn\'t', 'won\'t', 'not will'], answer: 'won\'t' },
+      { question: '___ you call me?', options: ['Do', 'Are', 'Would', 'Will'], answer: 'Will' },
+      { question: '"Won\'t" = ?', options: ['will not', 'would not', 'was not', 'were not'], answer: 'will not' },
+      { question: 'It ___ rain tomorrow.', options: ['going to', 'will', 'would', 'is'], answer: 'will' },
+    ],
+  },
+  {
+    id: 'a1-6-28', level: 'A1', block: 6, blockName: 'Будущее', order: 28,
+    title: 'Present Perfect: ever / never', duration: '15 мин',
+    theory: {
+      explanation: 'Present Perfect: have/has + Past Participle. С ever/never говорим об опыте жизни. Have you ever been to Paris? I have never eaten sushi.',
+      examples: [
+        { english: 'Have you ever been to Paris?', russian: 'Ты когда-нибудь бывал в Париже?' },
+        { english: 'I have never eaten sushi.', russian: 'Я никогда не ел суши.' },
+        { english: 'She has visited many countries.', russian: 'Она посетила много стран.' },
+        { english: 'We have never seen snow.', russian: 'Мы никогда не видели снега.' },
+        { english: 'He has lived in three cities.', russian: 'Он жил в трёх городах.' },
+        { english: 'I\'ve seen that film.', russian: 'Я видел этот фильм.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I have never ___ sushi. (eaten)', answer: 'eaten', hint: 'eat → eaten' },
+      { type: 'fill_blank', question: 'She ___ visited many countries.', answer: 'has', hint: 'she → has' },
+      { type: 'multiple_choice', question: 'Have you ever ___ to Paris?', options: ['go', 'went', 'goes', 'been'], answer: 'been' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['I', 'have', 'never', 'seen', 'snow'], answer: 'I have never seen snow' },
+      { type: 'multiple_choice', question: '"Ever" в вопросах означает:', options: ['всегда', 'никогда', 'когда-нибудь', 'часто'], answer: 'когда-нибудь' },
+    ],
+    quiz: [
+      { question: 'I have never ___ sushi.', options: ['eat', 'ate', 'eated', 'eaten'], answer: 'eaten' },
+      { question: 'She ___ visited many countries.', options: ['have', 'had', 'has', 'is'], answer: 'has' },
+      { question: 'Have you ever ___ to Paris?', options: ['go', 'went', 'been', 'be'], answer: 'been' },
+      { question: 'We ___ never seen snow.', options: ['has', 'are', 'have', 'had'], answer: 'have' },
+      { question: '"Никогда" в Present Perfect:', options: ['ever', 'yet', 'never', 'just'], answer: 'never' },
+    ],
+  },
+  {
+    id: 'a1-6-29', level: 'A1', block: 6, blockName: 'Будущее', order: 29,
+    title: 'Question Tags', duration: '12 мин',
+    theory: {
+      explanation: 'Question tags — короткие вопросы в конце предложения: "isn\'t it?", "don\'t they?". Если предложение утвердительное → отрицательный тег. Если отрицательное → утвердительный тег.',
+      examples: [
+        { english: 'It\'s cold today, isn\'t it?', russian: 'Сегодня холодно, не правда ли?' },
+        { english: 'You like coffee, don\'t you?', russian: 'Ты любишь кофе, не так ли?' },
+        { english: 'She can swim, can\'t she?', russian: 'Она умеет плавать, не так ли?' },
+        { english: 'They don\'t eat meat, do they?', russian: 'Они не едят мясо, верно?' },
+        { english: 'He wasn\'t home, was he?', russian: 'Его не было дома, так ведь?' },
+        { english: 'We will go, won\'t we?', russian: 'Мы пойдём, не так ли?' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'It\'s cold today, ___ it?', answer: 'isn\'t', hint: 'утвердительное → отрицательный тег' },
+      { type: 'fill_blank', question: 'You like coffee, ___ you?', answer: 'don\'t' },
+      { type: 'multiple_choice', question: 'They don\'t eat meat, ___ they?', options: ['don\'t', 'doesn\'t', 'do', 'are'], answer: 'do' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['She', 'can', 'swim,', 'can\'t', 'she?'], answer: 'She can swim, can\'t she?' },
+      { type: 'multiple_choice', question: 'We will go, ___ we?', options: ['will', 'do', 'are', 'won\'t'], answer: 'won\'t' },
+    ],
+    quiz: [
+      { question: 'It\'s warm, ___ it?', options: ['is', 'isn\'t', 'does', 'doesn\'t'], answer: 'isn\'t' },
+      { question: 'You speak French, ___ you?', options: ['don\'t', 'doesn\'t', 'do', 'are'], answer: 'don\'t' },
+      { question: 'They don\'t like fish, ___ they?', options: ['don\'t', 'do', 'are', 'aren\'t'], answer: 'do' },
+      { question: 'She can drive, ___ she?', options: ['can', 'isn\'t', 'can\'t', 'doesn\'t'], answer: 'can\'t' },
+      { question: 'He wasn\'t late, ___ he?', options: ['was', 'wasn\'t', 'is', 'isn\'t'], answer: 'was' },
+    ],
+  },
+  {
+    id: 'a1-6-30', level: 'A1', block: 6, blockName: 'Будущее', order: 30,
+    title: 'A1 Обзор: итоговый тест', duration: '20 мин',
+    theory: {
+      explanation: 'Повторение всего уровня A1: to be, have got, Present Simple/Continuous, Past Simple, Future (going to/will), модальные глаголы, артикли, предлоги, Present Perfect.',
+      examples: [
+        { english: 'I am a student. She is a doctor.', russian: 'Я студент. Она врач. (to be)' },
+        { english: 'I have got a cat. She has got blue eyes.', russian: 'У меня есть кот. У неё голубые глаза. (have got)' },
+        { english: 'She works every day. He doesn\'t like coffee.', russian: 'Она работает каждый день. (Present Simple)' },
+        { english: 'I went to the cinema. She watched TV.', russian: 'Я ходил в кино. (Past Simple)' },
+        { english: 'I\'m going to travel. It will rain.', russian: 'Я собираюсь путешествовать. (Future)' },
+        { english: 'I have never eaten sushi.', russian: 'Я никогда не ел суши. (Present Perfect)' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'She ___ a doctor. (is/am/are)', answer: 'is' },
+      { type: 'fill_blank', question: 'I ___ to school yesterday. (go→Past)', answer: 'went' },
+      { type: 'multiple_choice', question: 'I ___ going to travel next year.', options: ['is', 'are', 'am', 'be'], answer: 'am' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['I', 'have', 'never', 'eaten', 'sushi'], answer: 'I have never eaten sushi' },
+      { type: 'multiple_choice', question: 'You must wear a seatbelt, ___ you?', options: ['must', 'mustn\'t', 'don\'t', 'aren\'t'], answer: 'mustn\'t' },
+    ],
+    quiz: [
+      { question: 'I ___ a student.', options: ['is', 'are', 'am', 'be'], answer: 'am' },
+      { question: 'She ___ got blue eyes.', options: ['have', 'is', 'has', 'are'], answer: 'has' },
+      { question: 'They ___ watch TV. (не смотрят)', options: ['doesn\'t', 'isn\'t', 'don\'t', 'not'], answer: 'don\'t' },
+      { question: 'I ___ to the cinema yesterday. (go→Past)', options: ['go', 'goes', 'going', 'went'], answer: 'went' },
+      { question: 'She ___ cooking now.', options: ['am', 'are', 'is', 'be'], answer: 'is' },
+      { question: 'You ___ smoke here. (запрет)', options: ['must', 'mustn\'t', 'can', 'should'], answer: 'mustn\'t' },
+      { question: 'I\'m going ___ travel.', options: ['at', 'for', 'to', 'by'], answer: 'to' },
+      { question: 'Have you ever ___ to Paris?', options: ['go', 'went', 'been', 'be'], answer: 'been' },
+      { question: 'It\'s cold, ___ it?', options: ['is', 'isn\'t', 'does', 'doesn\'t'], answer: 'isn\'t' },
+      { question: 'The book is ___ the table. (на)', options: ['in', 'at', 'on', 'under'], answer: 'on' },
+    ],
+  },
+// ── A2 Block 1: Прошлое углублённо ─────────────────────────────────────────
+  {
+    id: 'a2-1-31', level: 'A2', block: 1, blockName: 'Прошлое углублённо', order: 31,
+    title: 'Past Continuous', duration: '15 мин',
+    theory: {
+      explanation: 'Past Continuous — действие, которое было в процессе в определённый момент прошлого. Структура: was/were + глагол-ing. At 7pm, I was cooking dinner.',
+      examples: [
+        { english: 'I was reading at 8pm.', russian: 'В 8 вечера я читал.' },
+        { english: 'She was sleeping when I called.', russian: 'Она спала, когда я позвонил.' },
+        { english: 'They were playing football all afternoon.', russian: 'Они весь вечер играли в футбол.' },
+        { english: 'He wasn\'t watching TV.', russian: 'Он не смотрел телевизор.' },
+        { english: 'What were you doing at noon?', russian: 'Что ты делал в полдень?' },
+        { english: 'We were having dinner at 7.', russian: 'В 7 мы ужинали.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I ___ reading at 8pm.', answer: 'was', hint: 'I → was' },
+      { type: 'fill_blank', question: 'They ___ playing football.', answer: 'were', hint: 'they → were' },
+      { type: 'multiple_choice', question: 'She ___ sleeping when I called.', options: ['is', 'was', 'were', 'be'], answer: 'was' },
+      { type: 'build_sentence', question: 'Составь вопрос:', words: ['What', 'were', 'you', 'doing', 'at', 'noon?'], answer: 'What were you doing at noon?' },
+      { type: 'fill_blank', question: 'He ___ watching TV. (не)', answer: 'wasn\'t' },
+    ],
+    quiz: [
+      { question: 'I ___ cooking at 7pm.', options: ['is', 'are', 'was', 'were'], answer: 'was' },
+      { question: 'They ___ playing football.', options: ['was', 'is', 'are', 'were'], answer: 'were' },
+      { question: 'She was ___ when I called.', options: ['sleep', 'slept', 'sleeping', 'sleeps'], answer: 'sleeping' },
+      { question: '___ you watching TV at 9?', options: ['Was', 'Did', 'Were', 'Are'], answer: 'Were' },
+      { question: 'He ___ watching TV. (не смотрел)', options: ['weren\'t', 'isn\'t', 'wasn\'t', 'didn\'t'], answer: 'wasn\'t' },
+    ],
+  },
+  {
+    id: 'a2-1-32', level: 'A2', block: 1, blockName: 'Прошлое углублённо', order: 32,
+    title: 'Past Simple vs Past Continuous', duration: '15 мин',
+    theory: {
+      explanation: 'Past Simple — завершённое действие. Past Continuous — фон/процесс. When / while связывают их: When I arrived (PS), she was cooking (PC). While she was reading (PC), the phone rang (PS).',
+      examples: [
+        { english: 'When I arrived, she was cooking.', russian: 'Когда я пришёл, она готовила.' },
+        { english: 'While he was reading, the phone rang.', russian: 'Пока он читал, зазвонил телефон.' },
+        { english: 'I was watching TV when the lights went out.', russian: 'Я смотрел ТВ, когда погас свет.' },
+        { english: 'They were sleeping when we arrived.', russian: 'Они спали, когда мы пришли.' },
+        { english: 'She called while I was having lunch.', russian: 'Она позвонила, пока я обедал.' },
+        { english: 'What were you doing when it started to rain?', russian: 'Что ты делал, когда пошёл дождь?' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'When I arrived, she ___ cooking. (was/were)', answer: 'was' },
+      { type: 'multiple_choice', question: 'While he ___ reading, the phone rang.', options: ['is', 'was', 'were', 'had'], answer: 'was' },
+      { type: 'multiple_choice', question: 'I ___ TV when the lights went out.', options: ['watched', 'was watching', 'watch', 'am watching'], answer: 'was watching' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['She', 'called', 'while', 'I', 'was', 'having', 'lunch'], answer: 'She called while I was having lunch' },
+      { type: 'multiple_choice', question: 'Past Continuous выражает:', options: ['завершённое действие', 'фоновое действие в прошлом', 'будущее действие', 'привычку'], answer: 'фоновое действие в прошлом' },
+    ],
+    quiz: [
+      { question: 'When I arrived, she ___ cooking.', options: ['cooked', 'cooks', 'was cooking', 'is cooking'], answer: 'was cooking' },
+      { question: 'While he was reading, the phone ___.', options: ['rings', 'ringing', 'rang', 'has rung'], answer: 'rang' },
+      { question: 'I was watching TV when the lights ___ out.', options: ['go', 'went', 'goes', 'going'], answer: 'went' },
+      { question: '"While" используется с:', options: ['Past Simple', 'Past Continuous', 'Future', 'Present Simple'], answer: 'Past Continuous' },
+      { question: '"When" + короткое прерывающее действие:', options: ['Past Continuous', 'Past Perfect', 'Past Simple', 'Present Simple'], answer: 'Past Simple' },
+    ],
+  },
+  {
+    id: 'a2-1-33', level: 'A2', block: 1, blockName: 'Прошлое углублённо', order: 33,
+    title: 'Used to: прошлые привычки', duration: '12 мин',
+    theory: {
+      explanation: '"Used to" — привычки или состояния в прошлом, которых больше нет. I used to play football (раньше играл, теперь нет). Отрицание: didn\'t use to. Вопрос: Did you use to...?',
+      examples: [
+        { english: 'I used to play football every day.', russian: 'Раньше я играл в футбол каждый день.' },
+        { english: 'She used to live in Paris.', russian: 'Раньше она жила в Париже.' },
+        { english: 'I didn\'t use to like vegetables.', russian: 'Раньше я не любил овощи.' },
+        { english: 'Did you use to have a pet?', russian: 'Раньше у тебя было домашнее животное?' },
+        { english: 'He used to be very shy.', russian: 'Раньше он был очень стеснительным.' },
+        { english: 'We used to go to that café.', russian: 'Раньше мы ходили в то кафе.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I used to ___ football. (play)', answer: 'play' },
+      { type: 'fill_blank', question: 'She used ___ live in Paris.', answer: 'to' },
+      { type: 'multiple_choice', question: 'I ___ use to like vegetables. (отрицание)', options: ['wasn\'t', 'didn\'t', 'don\'t', 'wouldn\'t'], answer: 'didn\'t' },
+      { type: 'build_sentence', question: 'Составь вопрос:', words: ['Did', 'you', 'use', 'to', 'have', 'a', 'pet?'], answer: 'Did you use to have a pet?' },
+      { type: 'multiple_choice', question: '"Used to" выражает:', options: ['действие сейчас', 'прошлую привычку', 'будущий план', 'обязанность'], answer: 'прошлую привычку' },
+    ],
+    quiz: [
+      { question: 'I used to ___ football.', options: ['plays', 'played', 'playing', 'play'], answer: 'play' },
+      { question: 'She used ___ live in Paris.', options: ['for', 'at', 'to', 'by'], answer: 'to' },
+      { question: 'I ___ use to like vegetables.', options: ['wasn\'t', 'didn\'t', 'don\'t', 'not'], answer: 'didn\'t' },
+      { question: '___ you use to have a pet?', options: ['Do', 'Did', 'Were', 'Have'], answer: 'Did' },
+      { question: '"Used to" говорит, что действия:', options: ['продолжаются', 'никогда не было', 'больше не происходят', 'случатся'], answer: 'больше не происходят' },
+    ],
+  },
+  {
+    id: 'a2-1-34', level: 'A2', block: 1, blockName: 'Прошлое углублённо', order: 34,
+    title: 'Past Perfect: до другого прошлого', duration: '15 мин',
+    theory: {
+      explanation: 'Past Perfect — действие, произошедшее ДО другого прошлого. had + Past Participle. When I arrived, she had already left. (Она ушла раньше, чем я пришёл.)',
+      examples: [
+        { english: 'When I arrived, she had already left.', russian: 'Когда я пришёл, она уже ушла.' },
+        { english: 'He had finished dinner before I called.', russian: 'Он поужинал до того, как я позвонил.' },
+        { english: 'They had never seen snow before.', russian: 'До этого они никогда не видели снега.' },
+        { english: 'I hadn\'t read the book before the film.', russian: 'Я не читал книгу до фильма.' },
+        { english: 'Had you studied English before?', russian: 'Ты учил английский раньше?' },
+        { english: 'She had lived there for ten years.', russian: 'Она прожила там десять лет.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'When I arrived, she had already ___.  (left)', answer: 'left', hint: 'leave → left' },
+      { type: 'fill_blank', question: 'He ___ finished dinner before I called.', answer: 'had' },
+      { type: 'multiple_choice', question: 'I ___ read the book. (не читал)', options: ['hadn\'t', 'didn\'t', 'wasn\'t', 'not had'], answer: 'hadn\'t' },
+      { type: 'build_sentence', question: 'Составь вопрос:', words: ['Had', 'you', 'studied', 'English', 'before?'], answer: 'Had you studied English before?' },
+      { type: 'multiple_choice', question: 'Past Perfect используется для:', options: ['действия сейчас', 'действия до другого прошлого', 'будущего', 'привычки'], answer: 'действия до другого прошлого' },
+    ],
+    quiz: [
+      { question: 'She ___ already left.', options: ['has', 'have', 'had', 'was'], answer: 'had' },
+      { question: 'I hadn\'t ___ the book.', options: ['read', 'reads', 'reading', 'readed'], answer: 'read' },
+      { question: '___ you studied English before?', options: ['Have', 'Did', 'Were', 'Had'], answer: 'Had' },
+      { question: 'He ___ dinner before I called.', options: ['finishes', 'has finished', 'had finished', 'finished'], answer: 'had finished' },
+      { question: 'Past Perfect = had + ?', options: ['infinitive', 'Past Simple', 'Past Participle', 'Present Participle'], answer: 'Past Participle' },
+    ],
+  },
+  {
+    id: 'a2-1-35', level: 'A2', block: 1, blockName: 'Прошлое углублённо', order: 35,
+    title: 'Reported Speech: косвенная речь', duration: '15 мин',
+    theory: {
+      explanation: 'Косвенная речь: сдвиг времён назад. "I am tired" → She said she was tired. "I will come" → He said he would come. "I can swim" → She said she could swim.',
+      examples: [
+        { english: '"I am tired." → She said she was tired.', russian: '"Я устала." → Она сказала, что устала.' },
+        { english: '"I will come." → He said he would come.', russian: '"Я приду." → Он сказал, что придёт.' },
+        { english: '"I can swim." → She said she could swim.', russian: '"Я умею плавать." → Она сказала, что умеет плавать.' },
+        { english: '"I have finished." → He said he had finished.', russian: '"Я закончил." → Он сказал, что закончил.' },
+        { english: '"I like coffee." → She said she liked coffee.', russian: '"Мне нравится кофе." → Она сказала, что ей нравится кофе.' },
+        { english: '"I went there." → He said he had gone there.', russian: '"Я ходил туда." → Он сказал, что ходил туда.' },
+      ],
+    },
+    exercises: [
+      { type: 'multiple_choice', question: '"I am tired." → She said she ___ tired.', options: ['is', 'was', 'were', 'has been'], answer: 'was' },
+      { type: 'fill_blank', question: '"I will come." → He said he ___ come.', answer: 'would', hint: 'will → would' },
+      { type: 'multiple_choice', question: '"I can swim." → She said she ___ swim.', options: ['can', 'could', 'was', 'would'], answer: 'could' },
+      { type: 'build_sentence', question: 'Составь предложение в косвенной речи:', words: ['She', 'said', 'she', 'liked', 'coffee'], answer: 'She said she liked coffee' },
+      { type: 'multiple_choice', question: 'В косвенной речи время:', options: ['остаётся тем же', 'сдвигается вперёд', 'сдвигается назад', 'не меняется'], answer: 'сдвигается назад' },
+    ],
+    quiz: [
+      { question: '"I am happy." → He said he ___ happy.', options: ['is', 'was', 'were', 'be'], answer: 'was' },
+      { question: '"I will call." → She said she ___ call.', options: ['will', 'would', 'could', 'should'], answer: 'would' },
+      { question: '"I can drive." → He said he ___ drive.', options: ['can', 'could', 'would', 'should'], answer: 'could' },
+      { question: 'В косвенной речи "am/is/are" меняется на:', options: ['was/were', 'will be', 'have been', 'be'], answer: 'was/were' },
+      { question: '"I like pizza." → She said she ___ pizza.', options: ['likes', 'like', 'liked', 'is liking'], answer: 'liked' },
+    ],
+  },
+  // ── A2 Block 2: Условия и желания ───────────────────────────────────────────
+  {
+    id: 'a2-2-36', level: 'A2', block: 2, blockName: 'Условия и желания', order: 36,
+    title: 'First Conditional: реальные условия', duration: '15 мин',
+    theory: {
+      explanation: 'First Conditional — реальное условие в будущем. If + Present Simple, will + инфинитив. If it rains, I will stay home. (Если пойдёт дождь, я останусь дома.)',
+      examples: [
+        { english: 'If it rains, I will stay home.', russian: 'Если пойдёт дождь, я останусь дома.' },
+        { english: 'If you study, you will pass the exam.', russian: 'Если ты будешь учиться, ты сдашь экзамен.' },
+        { english: 'I will call you if I have time.', russian: 'Я позвоню тебе, если у меня будет время.' },
+        { english: 'If she is late, we will start without her.', russian: 'Если она опоздает, мы начнём без неё.' },
+        { english: 'What will you do if it snows?', russian: 'Что ты будешь делать, если выпадет снег?' },
+        { english: 'If they don\'t come, we won\'t wait.', russian: 'Если они не придут, мы не будем ждать.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'If it rains, I ___ stay home.', answer: 'will', hint: 'реальное условие → will' },
+      { type: 'fill_blank', question: 'If you study, you ___ pass the exam.', answer: 'will' },
+      { type: 'multiple_choice', question: 'В придаточном условия (after "if") используется:', options: ['will', 'Present Simple', 'Past Simple', 'Future Simple'], answer: 'Present Simple' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['If', 'she', 'is', 'late,', 'we', 'will', 'start', 'without', 'her'], answer: 'If she is late, we will start without her' },
+      { type: 'multiple_choice', question: 'If they don\'t come, we ___ wait.', options: ['won\'t', 'don\'t', 'aren\'t', 'will not to'], answer: 'won\'t' },
+    ],
+    quiz: [
+      { question: 'If it rains, I ___ stay home.', options: ['would', 'will', 'am', 'do'], answer: 'will' },
+      { question: 'After "if" in First Conditional:', options: ['will + verb', 'Past Simple', 'Present Simple', 'would + verb'], answer: 'Present Simple' },
+      { question: 'If you ___ hard, you will pass.', options: ['study', 'will study', 'studied', 'would study'], answer: 'study' },
+      { question: 'I ___ call if I have time.', options: ['would', 'will', 'am', 'do'], answer: 'will' },
+      { question: 'If they don\'t come, we ___ wait.', options: ['wouldn\'t', 'won\'t', 'don\'t', 'aren\'t'], answer: 'won\'t' },
+    ],
+  },
+  {
+    id: 'a2-2-37', level: 'A2', block: 2, blockName: 'Условия и желания', order: 37,
+    title: 'Second Conditional: нереальные условия', duration: '15 мин',
+    theory: {
+      explanation: 'Second Conditional — нереальное/маловероятное условие. If + Past Simple, would + инфинитив. If I had money, I would travel. (У меня нет денег, но если бы были...)',
+      examples: [
+        { english: 'If I had money, I would travel.', russian: 'Если бы у меня были деньги, я бы путешествовал.' },
+        { english: 'If she lived in London, she would visit the museums.', russian: 'Если бы она жила в Лондоне, она бы посещала музеи.' },
+        { english: 'I would buy a car if I could drive.', russian: 'Я бы купил машину, если бы умел водить.' },
+        { english: 'If he studied more, he would pass.', russian: 'Если бы он больше учился, он бы сдал.' },
+        { english: 'What would you do if you won the lottery?', russian: 'Что бы ты сделал, если бы выиграл в лотерею?' },
+        { english: 'She wouldn\'t leave if she loved her job.', russian: 'Она бы не уходила, если бы любила свою работу.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'If I had money, I ___ travel.', answer: 'would', hint: 'нереальное → would' },
+      { type: 'fill_blank', question: 'If she ___ in London, she would visit museums.', answer: 'lived', hint: 'после if → Past Simple' },
+      { type: 'multiple_choice', question: 'В придаточном Second Conditional используется:', options: ['Present Simple', 'Past Simple', 'will', 'would'], answer: 'Past Simple' },
+      { type: 'build_sentence', question: 'Составь вопрос:', words: ['What', 'would', 'you', 'do', 'if', 'you', 'won', 'the', 'lottery?'], answer: 'What would you do if you won the lottery?' },
+      { type: 'multiple_choice', question: 'I ___ buy a car if I could drive.', options: ['will', 'would', 'should', 'could'], answer: 'would' },
+    ],
+    quiz: [
+      { question: 'If I had money, I ___ travel.', options: ['will', 'can', 'would', 'should'], answer: 'would' },
+      { question: 'If she ___ in London... (нереально)', options: ['lives', 'will live', 'live', 'lived'], answer: 'lived' },
+      { question: 'Second Conditional выражает:', options: ['реальное будущее', 'нереальное условие', 'прошлое', 'запрет'], answer: 'нереальное условие' },
+      { question: 'I would buy a car if I ___ drive.', options: ['can', 'could', 'will', 'would'], answer: 'could' },
+      { question: 'Главная часть Second Conditional:', options: ['Past Simple', 'Present Simple', 'would + инфинитив', 'will + инфинитив'], answer: 'would + инфинитив' },
+    ],
+  },
+  {
+    id: 'a2-2-38', level: 'A2', block: 2, blockName: 'Условия и желания', order: 38,
+    title: 'I wish: желания', duration: '12 мин',
+    theory: {
+      explanation: '"Wish" + Past Simple — желание изменить настоящее. I wish I had a car. (У меня нет машины, но хотел бы.) Wish + would — желание изменить чужое поведение: I wish he would call.',
+      examples: [
+        { english: 'I wish I had a car.', russian: 'Жаль, что у меня нет машины.' },
+        { english: 'She wishes she lived near the sea.', russian: 'Она хочет, чтобы жила у моря.' },
+        { english: 'I wish he would call me.', russian: 'Хотела бы я, чтобы он мне позвонил.' },
+        { english: 'We wish we could fly.', russian: 'Нам бы хотелось уметь летать.' },
+        { english: 'I wish it wasn\'t so cold.', russian: 'Жаль, что так холодно.' },
+        { english: 'He wishes he spoke better English.', russian: 'Ему бы хотелось лучше говорить по-английски.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I wish I ___ a car. (had)', answer: 'had', hint: 'wish + Past Simple' },
+      { type: 'fill_blank', question: 'I wish he ___ call me. (would)', answer: 'would' },
+      { type: 'multiple_choice', question: '"I wish I had..." означает:', options: ['у меня есть', 'у меня нет, но хотел бы', 'у меня будет', 'у меня было'], answer: 'у меня нет, но хотел бы' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['I', 'wish', 'it', 'wasn\'t', 'so', 'cold'], answer: 'I wish it wasn\'t so cold' },
+      { type: 'multiple_choice', question: 'После "wish" для чужого поведения используется:', options: ['Past Simple', 'would', 'will', 'could'], answer: 'would' },
+    ],
+    quiz: [
+      { question: 'I wish I ___ a car.', options: ['have', 'will have', 'had', 'would have'], answer: 'had' },
+      { question: 'She wishes she ___ near the sea.', options: ['lives', 'will live', 'lived', 'live'], answer: 'lived' },
+      { question: 'I wish he ___ call me.', options: ['will', 'would', 'could', 'can'], answer: 'would' },
+      { question: '"Wish + Past Simple" выражает:', options: ['прошлое сожаление', 'желание о настоящем', 'будущее', 'реальное условие'], answer: 'желание о настоящем' },
+      { question: 'I wish it ___ so cold.', options: ['isn\'t', 'won\'t be', 'wasn\'t', 'wouldn\'t be'], answer: 'wasn\'t' },
+    ],
+  },
+  {
+    id: 'a2-2-39', level: 'A2', block: 2, blockName: 'Условия и желания', order: 39,
+    title: 'Unless / As long as / In case', duration: '12 мин',
+    theory: {
+      explanation: '"Unless" = if not. "As long as" = при условии что. "In case" = на случай если. Unless you study, you will fail. As long as you work hard, you will succeed.',
+      examples: [
+        { english: 'Unless you study, you will fail.', russian: 'Если не будешь учиться, провалишься.' },
+        { english: 'I won\'t go unless you come.', russian: 'Я не пойду, если ты не придёшь.' },
+        { english: 'As long as you work hard, you\'ll succeed.', russian: 'Пока ты усердно работаешь, ты добьёшься успеха.' },
+        { english: 'Take an umbrella in case it rains.', russian: 'Возьми зонт на случай дождя.' },
+        { english: 'You can use my phone as long as you\'re careful.', russian: 'Можешь взять мой телефон, если будешь осторожен.' },
+        { english: 'In case of emergency, call 112.', russian: 'В случае экстренной ситуации звони 112.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: '___ you study, you will fail.', answer: 'Unless', hint: 'Unless = if not' },
+      { type: 'multiple_choice', question: '"Unless" означает:', options: ['если', 'если не', 'пока', 'хотя'], answer: 'если не' },
+      { type: 'fill_blank', question: 'Take an umbrella in ___ it rains.', answer: 'case' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['I', 'won\'t', 'go', 'unless', 'you', 'come'], answer: 'I won\'t go unless you come' },
+      { type: 'multiple_choice', question: '"As long as" означает:', options: ['если не', 'до тех пор как / при условии что', 'на случай если', 'хотя'], answer: 'до тех пор как / при условии что' },
+    ],
+    quiz: [
+      { question: '"Unless" = ?', options: ['if', 'if not', 'when', 'while'], answer: 'if not' },
+      { question: '___ you study, you will fail.', options: ['If', 'While', 'Unless', 'When'], answer: 'Unless' },
+      { question: 'Take an umbrella in ___ it rains.', options: ['case', 'if', 'when', 'unless'], answer: 'case' },
+      { question: '"As long as you work hard" означает:', options: ['хотя ты работаешь', 'если ты не работаешь', 'при условии что работаешь', 'когда закончишь'], answer: 'при условии что работаешь' },
+      { question: 'I won\'t go ___ you come.', options: ['as long as', 'unless', 'in case', 'when'], answer: 'unless' },
+    ],
+  },
+  {
+    id: 'a2-2-40', level: 'A2', block: 2, blockName: 'Условия и желания', order: 40,
+    title: 'Сравнительные и превосходные степени', duration: '15 мин',
+    theory: {
+      explanation: 'Сравнительная: короткие прилагательные + -er (bigger), длинные: more + adj (more expensive). Превосходная: the + -est (the biggest), the most + adj (the most expensive).',
+      examples: [
+        { english: 'This car is bigger than that one.', russian: 'Эта машина больше той.' },
+        { english: 'She is more intelligent than her brother.', russian: 'Она умнее своего брата.' },
+        { english: 'This is the biggest city in Russia.', russian: 'Это самый большой город в России.' },
+        { english: 'English is easier than Chinese.', russian: 'Английский легче китайского.' },
+        { english: 'He is the most talented student.', russian: 'Он самый талантливый студент.' },
+        { english: 'Today is hotter than yesterday.', russian: 'Сегодня жарче, чем вчера.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'This car is ___ than that one. (big→сравн.)', answer: 'bigger', hint: 'big + ger' },
+      { type: 'fill_blank', question: 'She is more ___ than her brother. (intelligent)', answer: 'intelligent' },
+      { type: 'multiple_choice', question: 'Превосходная степень "big":', options: ['more big', 'most big', 'biggest', 'the biggest'], answer: 'the biggest' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['English', 'is', 'easier', 'than', 'Chinese'], answer: 'English is easier than Chinese' },
+      { type: 'multiple_choice', question: 'Превосходная от "expensive":', options: ['expensivest', 'most expensive', 'the most expensive', 'more expensive'], answer: 'the most expensive' },
+    ],
+    quiz: [
+      { question: 'Сравнительная от "big":', options: ['more big', 'bigest', 'bigger', 'most big'], answer: 'bigger' },
+      { question: 'Превосходная от "tall":', options: ['taller', 'most tall', 'tallest', 'the tallest'], answer: 'the tallest' },
+      { question: 'English is ___ than Chinese. (easy)', options: ['more easy', 'easyer', 'easier', 'the easiest'], answer: 'easier' },
+      { question: 'Превосходная от "interesting":', options: ['interestingest', 'more interesting', 'the most interesting', 'most interestingest'], answer: 'the most interesting' },
+      { question: 'Today is ___ than yesterday. (hot)', options: ['hoter', 'more hot', 'hottest', 'hotter'], answer: 'hotter' },
+    ],
+  },
+  // ── A2 Block 3: Обязательства ───────────────────────────────────────────────
+  {
+    id: 'a2-3-41', level: 'A2', block: 3, blockName: 'Обязательства', order: 41,
+    title: 'Should / Shouldn\'t: советы', duration: '12 мин',
+    theory: {
+      explanation: '"Should" — совет или рекомендация (= стоит, следует). "Shouldn\'t" — не стоит. You should see a doctor. You shouldn\'t eat so much sugar. Форма одинакова для всех.',
+      examples: [
+        { english: 'You should see a doctor.', russian: 'Тебе стоит обратиться к врачу.' },
+        { english: 'She should study more.', russian: 'Ей стоит больше учиться.' },
+        { english: 'You shouldn\'t eat so much sugar.', russian: 'Не стоит есть так много сахара.' },
+        { english: 'Should I call him?', russian: 'Мне стоит ему позвонить?' },
+        { english: 'They should arrive early.', russian: 'Им стоит приехать пораньше.' },
+        { english: 'He shouldn\'t be so rude.', russian: 'Ему не стоит быть таким грубым.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'You ___ see a doctor.', answer: 'should', hint: 'совет → should' },
+      { type: 'fill_blank', question: 'You ___ eat so much sugar.', answer: 'shouldn\'t', hint: 'не стоит → shouldn\'t' },
+      { type: 'multiple_choice', question: '"Should" используется для:', options: ['запретов', 'советов', 'способностей', 'планов'], answer: 'советов' },
+      { type: 'build_sentence', question: 'Составь вопрос:', words: ['Should', 'I', 'call', 'him?'], answer: 'Should I call him?' },
+      { type: 'multiple_choice', question: 'He ___ be so rude.', options: ['should', 'shouldn\'t', 'mustn\'t', 'wouldn\'t'], answer: 'shouldn\'t' },
+    ],
+    quiz: [
+      { question: 'You ___ see a doctor.', options: ['must', 'should', 'can', 'would'], answer: 'should' },
+      { question: 'You ___ eat so much. (не стоит)', options: ['mustn\'t', 'shouldn\'t', 'won\'t', 'can\'t'], answer: 'shouldn\'t' },
+      { question: '___ I call him?', options: ['Must', 'Can', 'Should', 'Would'], answer: 'Should' },
+      { question: '"Should" выражает:', options: ['обязанность', 'совет', 'способность', 'запрет'], answer: 'совет' },
+      { question: 'She ___ study more.', options: ['shoulds', 'should to', 'should', 'shoulding'], answer: 'should' },
+    ],
+  },
+  {
+    id: 'a2-3-42', level: 'A2', block: 3, blockName: 'Обязательства', order: 42,
+    title: 'Have to / Don\'t have to', duration: '12 мин',
+    theory: {
+      explanation: '"Have to" — внешняя обязанность (= должен, обязан по правилам). "Don\'t have to" — отсутствие обязанности (= не обязан). I have to work on Saturday. You don\'t have to come.',
+      examples: [
+        { english: 'I have to work on Saturday.', russian: 'Мне нужно работать в субботу.' },
+        { english: 'She has to wear a uniform.', russian: 'Ей нужно носить форму.' },
+        { english: 'You don\'t have to come.', russian: 'Тебе не обязательно приходить.' },
+        { english: 'He doesn\'t have to pay.', russian: 'Ему не нужно платить.' },
+        { english: 'Do you have to work tomorrow?', russian: 'Тебе нужно работать завтра?' },
+        { english: 'We have to follow the rules.', russian: 'Нам нужно соблюдать правила.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I ___ to work on Saturday.', answer: 'have' },
+      { type: 'fill_blank', question: 'She ___ to wear a uniform.', answer: 'has', hint: 'she → has to' },
+      { type: 'multiple_choice', question: 'You ___ have to come. (не обязательно)', options: ['mustn\'t', 'don\'t', 'doesn\'t', 'won\'t'], answer: 'don\'t' },
+      { type: 'build_sentence', question: 'Составь вопрос:', words: ['Do', 'you', 'have', 'to', 'work', 'tomorrow?'], answer: 'Do you have to work tomorrow?' },
+      { type: 'multiple_choice', question: '"Don\'t have to" значит:', options: ['нельзя', 'не обязательно', 'должен', 'можно'], answer: 'не обязательно' },
+    ],
+    quiz: [
+      { question: 'I ___ to work on Saturday.', options: ['has', 'have', 'must', 'should'], answer: 'have' },
+      { question: 'She ___ to wear a uniform.', options: ['have', 'has', 'must', 'should'], answer: 'has' },
+      { question: 'You ___ have to come. (не обязательно)', options: ['must not', 'don\'t', 'doesn\'t', 'mustn\'t'], answer: 'don\'t' },
+      { question: '___ you have to work tomorrow?', options: ['Must', 'Should', 'Do', 'Have'], answer: 'Do' },
+      { question: '"Don\'t have to" отличается от "mustn\'t":', options: ['смысл одинаков', 'don\'t have to = не обязан, mustn\'t = нельзя', 'оба означают нельзя', 'оба означают не обязан'], answer: 'don\'t have to = не обязан, mustn\'t = нельзя' },
+    ],
+  },
+  {
+    id: 'a2-3-43', level: 'A2', block: 3, blockName: 'Обязательства', order: 43,
+    title: 'Герундий и инфинитив', duration: '15 мин',
+    theory: {
+      explanation: 'После некоторых глаголов идёт герундий (-ing): enjoy, finish, like, hate, stop. После других — инфинитив (to): want, need, decide, hope, plan. Некоторые принимают оба.',
+      examples: [
+        { english: 'I enjoy reading books.', russian: 'Мне нравится читать книги.' },
+        { english: 'She finished doing her homework.', russian: 'Она закончила делать домашнее задание.' },
+        { english: 'We decided to travel.', russian: 'Мы решили путешествовать.' },
+        { english: 'He wants to learn French.', russian: 'Он хочет выучить французский.' },
+        { english: 'I hate getting up early.', russian: 'Я ненавижу рано вставать.' },
+        { english: 'She plans to move to London.', russian: 'Она планирует переехать в Лондон.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I enjoy ___ books. (read→герундий)', answer: 'reading', hint: 'enjoy + -ing' },
+      { type: 'fill_blank', question: 'We decided ___ travel. (инфинитив)', answer: 'to', hint: 'decide + to' },
+      { type: 'multiple_choice', question: 'После "enjoy" используется:', options: ['инфинитив', 'герундий (-ing)', 'Past Simple', 'Past Participle'], answer: 'герундий (-ing)' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['She', 'plans', 'to', 'move', 'to', 'London'], answer: 'She plans to move to London' },
+      { type: 'multiple_choice', question: 'He wants ___ French.', options: ['learning', 'learn', 'to learn', 'learned'], answer: 'to learn' },
+    ],
+    quiz: [
+      { question: 'I enjoy ___ books.', options: ['to read', 'read', 'reading', 'reads'], answer: 'reading' },
+      { question: 'She finished ___ homework.', options: ['to do', 'does', 'doing', 'do'], answer: 'doing' },
+      { question: 'We decided ___ travel.', options: ['traveling', 'travel', 'to travel', 'traveled'], answer: 'to travel' },
+      { question: 'После "want" используется:', options: ['герундий', 'Past Simple', 'инфинитив', 'Present Participle'], answer: 'инфинитив' },
+      { question: 'I hate ___ up early.', options: ['to get', 'getting', 'get', 'gets'], answer: 'getting' },
+    ],
+  },
+  {
+    id: 'a2-3-44', level: 'A2', block: 3, blockName: 'Обязательства', order: 44,
+    title: 'Пассивный залог: Present & Past', duration: '15 мин',
+    theory: {
+      explanation: 'Пассивный залог: am/is/are + Past Participle (Present), was/were + Past Participle (Past). English is spoken worldwide. The letter was written yesterday.',
+      examples: [
+        { english: 'English is spoken worldwide.', russian: 'На английском говорят по всему миру.' },
+        { english: 'The letter was written yesterday.', russian: 'Письмо было написано вчера.' },
+        { english: 'Coffee is grown in Brazil.', russian: 'Кофе выращивают в Бразилии.' },
+        { english: 'The cake was made by my mother.', russian: 'Торт был приготовлен моей мамой.' },
+        { english: 'Many languages are taught at school.', russian: 'В школе преподают много языков.' },
+        { english: 'The window was broken last night.', russian: 'Окно было разбито прошлой ночью.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'English is ___ worldwide. (speak→PP)', answer: 'spoken', hint: 'speak → spoken' },
+      { type: 'fill_blank', question: 'The letter ___ written yesterday.', answer: 'was' },
+      { type: 'multiple_choice', question: 'Coffee ___ grown in Brazil.', options: ['am', 'is', 'are', 'be'], answer: 'is' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['The', 'cake', 'was', 'made', 'by', 'my', 'mother'], answer: 'The cake was made by my mother' },
+      { type: 'multiple_choice', question: 'Пассивный залог Present: am/is/are + ?', options: ['infinitive', 'Past Simple', 'Past Participle', 'Present Participle'], answer: 'Past Participle' },
+    ],
+    quiz: [
+      { question: 'English ___ spoken worldwide.', options: ['am', 'are', 'is', 'be'], answer: 'is' },
+      { question: 'The letter ___ written yesterday.', options: ['is', 'are', 'were', 'was'], answer: 'was' },
+      { question: 'Coffee is ___ in Brazil. (grow)', options: ['grow', 'grew', 'grown', 'growing'], answer: 'grown' },
+      { question: 'Many languages ___ taught at school.', options: ['is', 'am', 'are', 'be'], answer: 'are' },
+      { question: 'Пассивный залог Past: was/were + ?', options: ['infinitive', 'Past Simple', 'Past Participle', '-ing'], answer: 'Past Participle' },
+    ],
+  },
+  {
+    id: 'a2-3-45', level: 'A2', block: 3, blockName: 'Обязательства', order: 45,
+    title: 'Просьбы, разрешения, предложения', duration: '12 мин',
+    theory: {
+      explanation: 'Просьбы: Can/Could you...? Would you mind...? Разрешение: Can/Could/May I...? Предложения: Shall I...? Would you like me to...? Shall we...?',
+      examples: [
+        { english: 'Could you help me, please?', russian: 'Не могли бы вы мне помочь?' },
+        { english: 'Would you mind closing the window?', russian: 'Вы не против закрыть окно?' },
+        { english: 'May I come in?', russian: 'Можно войти?' },
+        { english: 'Shall I carry that for you?', russian: 'Мне нести это для вас?' },
+        { english: 'Would you like me to help?', russian: 'Хотите, чтобы я помог?' },
+        { english: 'Shall we go to the café?', russian: 'Пойдём в кафе?' },
+      ],
+    },
+    exercises: [
+      { type: 'multiple_choice', question: 'Вежливая просьба:', options: ['Give me water!', 'Could you help me?', 'Help me!', 'I want water.'], answer: 'Could you help me?' },
+      { type: 'fill_blank', question: '___ I come in? (разрешение)', answer: 'May', hint: 'May I...? = Можно...?' },
+      { type: 'multiple_choice', question: 'Предложить помощь:', options: ['Should I help?', 'Shall I help?', 'Must I help?', 'Will I help?'], answer: 'Shall I help?' },
+      { type: 'build_sentence', question: 'Составь вопрос:', words: ['Would', 'you', 'mind', 'closing', 'the', 'window?'], answer: 'Would you mind closing the window?' },
+      { type: 'multiple_choice', question: '"Would you mind..." + глагол в форме:', options: ['инфинитив', 'Past Simple', '-ing', 'Past Participle'], answer: '-ing' },
+    ],
+    quiz: [
+      { question: '___ you help me, please?', options: ['Will', 'Should', 'Could', 'Must'], answer: 'Could' },
+      { question: '___ I come in?', options: ['Shall', 'Would', 'May', 'Should'], answer: 'May' },
+      { question: '___ I carry that for you?', options: ['May', 'Should', 'Shall', 'Must'], answer: 'Shall' },
+      { question: 'Would you mind ___ the window?', options: ['close', 'to close', 'closed', 'closing'], answer: 'closing' },
+      { question: '"Shall we go?" — это:', options: ['просьба', 'разрешение', 'предложение', 'запрет'], answer: 'предложение' },
+    ],
+  },
+  // ── A2 Block 4: Present Perfect углублённо ──────────────────────────────────
+  {
+    id: 'a2-4-46', level: 'A2', block: 4, blockName: 'Present Perfect углублённо', order: 46,
+    title: 'Present Perfect: just / already / yet', duration: '15 мин',
+    theory: {
+      explanation: '"Just" — только что (утверждение). "Already" — уже (утверждение, иногда вопрос). "Yet" — ещё нет / уже (вопрос и отрицание). I have just eaten. I\'ve already done it. Have you done it yet?',
+      examples: [
+        { english: 'I have just arrived.', russian: 'Я только что приехал.' },
+        { english: 'She has already finished her work.', russian: 'Она уже закончила работу.' },
+        { english: 'Have you eaten yet?', russian: 'Ты уже поел?' },
+        { english: 'I haven\'t called him yet.', russian: 'Я ещё не позвонил ему.' },
+        { english: 'He has just sent the email.', russian: 'Он только что отправил письмо.' },
+        { english: 'We have already seen that film.', russian: 'Мы уже видели этот фильм.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I have ___ arrived. (только что)', answer: 'just' },
+      { type: 'fill_blank', question: 'She has ___ finished. (уже)', answer: 'already' },
+      { type: 'multiple_choice', question: 'Have you eaten ___?', options: ['just', 'already', 'yet', 'still'], answer: 'yet' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['I', 'haven\'t', 'called', 'him', 'yet'], answer: 'I haven\'t called him yet' },
+      { type: 'multiple_choice', question: '"Yet" в отрицательных предложениях стоит:', options: ['в начале', 'после have', 'в конце', 'перед not'], answer: 'в конце' },
+    ],
+    quiz: [
+      { question: 'I have ___ arrived. (только что)', options: ['yet', 'already', 'just', 'ever'], answer: 'just' },
+      { question: 'She has ___ finished. (уже)', options: ['just', 'yet', 'never', 'already'], answer: 'already' },
+      { question: 'Have you eaten ___?', options: ['just', 'already', 'yet', 'since'], answer: 'yet' },
+      { question: 'I haven\'t called him ___.', options: ['just', 'already', 'yet', 'still'], answer: 'yet' },
+      { question: '"Just" стоит в предложении:', options: ['в конце', 'перед have', 'между have и PP', 'в начале'], answer: 'между have и PP' },
+    ],
+  },
+  {
+    id: 'a2-4-47', level: 'A2', block: 4, blockName: 'Present Perfect углублённо', order: 47,
+    title: 'Present Perfect vs Past Simple', duration: '15 мин',
+    theory: {
+      explanation: 'Past Simple — конкретное время в прошлом (yesterday, last week). Present Perfect — связь с настоящим, без конкретного времени. I saw him yesterday (PS). I have seen him (PP).',
+      examples: [
+        { english: 'I saw him yesterday. (PS)', russian: 'Я видел его вчера. (конкретное время)' },
+        { english: 'I have seen him before. (PP)', russian: 'Я видел его раньше. (опыт)' },
+        { english: 'She left at 5pm. (PS)', russian: 'Она ушла в 17:00. (конкретное время)' },
+        { english: 'She has left. (PP)', russian: 'Она ушла. (результат важен сейчас)' },
+        { english: 'We went to Paris last summer. (PS)', russian: 'Мы ездили в Париж прошлым летом.' },
+        { english: 'We have been to Paris. (PP)', russian: 'Мы бывали в Париже. (опыт)' },
+      ],
+    },
+    exercises: [
+      { type: 'multiple_choice', question: 'I ___ him yesterday.', options: ['have seen', 'see', 'had seen', 'saw'], answer: 'saw' },
+      { type: 'multiple_choice', question: 'I ___ him before. (опыт, без времени)', options: ['saw', 'see', 'have seen', 'had seen'], answer: 'have seen' },
+      { type: 'fill_blank', question: 'She ___ at 5pm. (left — конкретное время)', answer: 'left' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['We', 'have', 'been', 'to', 'Paris'], answer: 'We have been to Paris' },
+      { type: 'multiple_choice', question: 'С "yesterday" используется:', options: ['Present Perfect', 'Past Continuous', 'Past Simple', 'Past Perfect'], answer: 'Past Simple' },
+    ],
+    quiz: [
+      { question: 'I ___ him yesterday. (saw)', options: ['have seen', 'seen', 'saw', 'see'], answer: 'saw' },
+      { question: 'I ___ him before. (опыт)', options: ['saw', 'see', 'have seen', 'seeing'], answer: 'have seen' },
+      { question: 'С "last week" используется:', options: ['Present Perfect', 'Past Simple', 'Past Continuous', 'Present Simple'], answer: 'Past Simple' },
+      { question: 'We ___ to Paris last summer.', options: ['have been', 'been', 'are', 'went'], answer: 'went' },
+      { question: 'She ___ already left. (PP)', options: ['is', 'was', 'has', 'have'], answer: 'has' },
+    ],
+  },
+  {
+    id: 'a2-4-48', level: 'A2', block: 4, blockName: 'Present Perfect углублённо', order: 48,
+    title: 'Present Perfect: for / since', duration: '12 мин',
+    theory: {
+      explanation: '"For" — период времени (for two years, for a month). "Since" — начальная точка (since 2020, since Monday). I have lived here for five years. She has worked here since 2019.',
+      examples: [
+        { english: 'I have lived here for five years.', russian: 'Я живу здесь пять лет.' },
+        { english: 'She has worked here since 2019.', russian: 'Она работает здесь с 2019 года.' },
+        { english: 'We have been friends for a long time.', russian: 'Мы дружим давно.' },
+        { english: 'He has known her since school.', russian: 'Он знает её со школы.' },
+        { english: 'How long have you studied English?', russian: 'Как долго ты учишь английский?' },
+        { english: 'They haven\'t spoken since the argument.', russian: 'Они не разговаривали с момента ссоры.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I have lived here ___ five years. (период)', answer: 'for', hint: 'период времени → for' },
+      { type: 'fill_blank', question: 'She has worked here ___ 2019. (точка)', answer: 'since', hint: 'начальная точка → since' },
+      { type: 'multiple_choice', question: '"For" используется с:', options: ['конкретной датой', 'периодом времени', 'наречием ever', 'вопросами'], answer: 'периодом времени' },
+      { type: 'build_sentence', question: 'Составь вопрос:', words: ['How', 'long', 'have', 'you', 'studied', 'English?'], answer: 'How long have you studied English?' },
+      { type: 'multiple_choice', question: 'He has known her ___ school.', options: ['for', 'during', 'since', 'from'], answer: 'since' },
+    ],
+    quiz: [
+      { question: 'I have lived here ___ five years.', options: ['since', 'from', 'for', 'during'], answer: 'for' },
+      { question: 'She has worked here ___ 2019.', options: ['for', 'from', 'during', 'since'], answer: 'since' },
+      { question: '"Since" используется с:', options: ['периодом', 'начальной точкой', 'частотой', 'любым временем'], answer: 'начальной точкой' },
+      { question: 'How ___ have you studied English?', options: ['much', 'many', 'long', 'often'], answer: 'long' },
+      { question: 'We have been friends ___ a long time.', options: ['since', 'from', 'for', 'during'], answer: 'for' },
+    ],
+  },
+  {
+    id: 'a2-4-49', level: 'A2', block: 4, blockName: 'Present Perfect углублённо', order: 49,
+    title: 'Present Perfect Continuous', duration: '15 мин',
+    theory: {
+      explanation: 'Present Perfect Continuous: have/has been + -ing. Действие началось в прошлом и всё ещё продолжается, или только закончилось. I have been studying for 2 hours. She has been working all day.',
+      examples: [
+        { english: 'I have been studying for two hours.', russian: 'Я учусь уже два часа.' },
+        { english: 'She has been working all day.', russian: 'Она работает весь день.' },
+        { english: 'They have been waiting since noon.', russian: 'Они ждут с полудня.' },
+        { english: 'How long have you been learning English?', russian: 'Как давно ты учишь английский?' },
+        { english: 'He has been sleeping for ten hours!', russian: 'Он спит уже десять часов!' },
+        { english: 'I\'ve been feeling tired lately.', russian: 'В последнее время я чувствую усталость.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I have been ___ for two hours. (study→-ing)', answer: 'studying', hint: 'study + ing' },
+      { type: 'fill_blank', question: 'She ___ been working all day.', answer: 'has' },
+      { type: 'multiple_choice', question: 'They have been waiting ___ noon.', options: ['for', 'from', 'during', 'since'], answer: 'since' },
+      { type: 'build_sentence', question: 'Составь вопрос:', words: ['How', 'long', 'have', 'you', 'been', 'learning', 'English?'], answer: 'How long have you been learning English?' },
+      { type: 'multiple_choice', question: 'Present Perfect Continuous: have/has been + ?', options: ['Past Participle', 'Past Simple', '-ing', 'инфинитив'], answer: '-ing' },
+    ],
+    quiz: [
+      { question: 'I have been ___ for two hours.', options: ['study', 'studied', 'studying', 'studies'], answer: 'studying' },
+      { question: 'She ___ been working all day.', options: ['have', 'is', 'has', 'was'], answer: 'has' },
+      { question: 'They have been waiting ___ noon.', options: ['for', 'from', 'since', 'during'], answer: 'since' },
+      { question: 'He has been ___ for ten hours!', options: ['sleep', 'slept', 'sleeping', 'sleeps'], answer: 'sleeping' },
+      { question: 'How long ___ you been learning?', options: ['are', 'were', 'have', 'has'], answer: 'have' },
+    ],
+  },
+  {
+    id: 'a2-4-50', level: 'A2', block: 4, blockName: 'Present Perfect углублённо', order: 50,
+    title: 'A2 Обзор: итоговый тест', duration: '25 мин',
+    theory: {
+      explanation: 'Повторение A2: Past Continuous, used to, First/Second Conditional, wish, should/have to, пассив, герундий/инфинитив, Present Perfect с just/already/yet/for/since, PP Continuous.',
+      examples: [
+        { english: 'When I arrived, she was cooking.', russian: 'Прошлое — когда я пришёл, она готовила.' },
+        { english: 'I used to play football.', russian: 'Раньше я играл в футбол.' },
+        { english: 'If it rains, I will stay home.', russian: 'First Conditional — реальное.' },
+        { english: 'If I had money, I would travel.', russian: 'Second Conditional — нереальное.' },
+        { english: 'I have just arrived.', russian: 'Present Perfect — только что.' },
+        { english: 'She has been working since morning.', russian: 'PP Continuous — с утра.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'When I arrived, she ___ cooking.', answer: 'was' },
+      { type: 'fill_blank', question: 'If it rains, I ___ stay home.', answer: 'will' },
+      { type: 'multiple_choice', question: 'I have just ___ home.', options: ['arrive', 'arrived', 'arriving', 'arrives'], answer: 'arrived' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['English', 'is', 'spoken', 'worldwide'], answer: 'English is spoken worldwide' },
+      { type: 'multiple_choice', question: 'I wish I ___ a car. (wish + Past Simple)', options: ['have', 'will have', 'had', 'have had'], answer: 'had' },
+    ],
+    quiz: [
+      { question: 'When I arrived, she ___ cooking.', options: ['is', 'was', 'were', 'has been'], answer: 'was' },
+      { question: 'I used to ___ football. (play)', options: ['plays', 'playing', 'play', 'played'], answer: 'play' },
+      { question: 'If it rains, I ___ stay home.', options: ['would', 'will', 'am', 'going to'], answer: 'will' },
+      { question: 'If I had money, I ___ travel.', options: ['will', 'can', 'would', 'should'], answer: 'would' },
+      { question: 'I wish I ___ a car.', options: ['have', 'will have', 'had', 'having'], answer: 'had' },
+      { question: 'You ___ see a doctor. (совет)', options: ['must', 'should', 'have to', 'need'], answer: 'should' },
+      { question: 'English is ___ worldwide. (speak→PP)', options: ['speak', 'spoke', 'speaking', 'spoken'], answer: 'spoken' },
+      { question: 'I have ___ arrived. (только что)', options: ['already', 'yet', 'just', 'still'], answer: 'just' },
+      { question: 'I have lived here ___ five years.', options: ['since', 'from', 'for', 'during'], answer: 'for' },
+      { question: 'She has been ___ all day. (work)', options: ['work', 'worked', 'working', 'works'], answer: 'working' },
+    ],
+  },
+// ── B1 Block 1: Времена углублённо ─────────────────────────────────────────
+  {
+    id: 'b1-1-51', level: 'B1', block: 1, blockName: 'Времена углублённо', order: 51,
+    title: 'Future Continuous', duration: '15 мин',
+    theory: {
+      explanation: 'Future Continuous — действие, которое будет в процессе в определённый момент будущего. will be + -ing. At 8pm, I will be cooking dinner. This time tomorrow, she will be flying.',
+      examples: [
+        { english: 'At 8pm, I will be cooking dinner.', russian: 'В 8 вечера я буду готовить ужин.' },
+        { english: 'This time tomorrow, she will be flying.', russian: 'Завтра в это время она будет лететь.' },
+        { english: 'They will be working when you arrive.', russian: 'Они будут работать, когда ты придёшь.' },
+        { english: 'Will you be using your car tomorrow?', russian: 'Ты будешь пользоваться машиной завтра?' },
+        { english: 'I won\'t be coming to the party.', russian: 'Я не буду приходить на вечеринку.' },
+        { english: 'He will be sleeping at midnight.', russian: 'В полночь он будет спать.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I will be ___ dinner at 8pm.', answer: 'cooking', hint: 'cook + ing' },
+      { type: 'fill_blank', question: 'She will be ___ tomorrow. (fly→-ing)', answer: 'flying' },
+      { type: 'multiple_choice', question: 'Future Continuous: will ___ + -ing', options: ['have', 'be', 'get', 'do'], answer: 'be' },
+      { type: 'build_sentence', question: 'Составь вопрос:', words: ['Will', 'you', 'be', 'using', 'your', 'car', 'tomorrow?'], answer: 'Will you be using your car tomorrow?' },
+      { type: 'fill_blank', question: 'He ___ be sleeping at midnight. (не будет)', answer: 'won\'t' },
+    ],
+    quiz: [
+      { question: 'Future Continuous строится как:', options: ['will + verb', 'will + have + PP', 'will be + -ing', 'am/is/are + -ing'], answer: 'will be + -ing' },
+      { question: 'At 8pm, I will be ___ dinner.', options: ['cook', 'cooked', 'cooking', 'cooks'], answer: 'cooking' },
+      { question: '___ you be using your car tomorrow?', options: ['Do', 'Are', 'Have', 'Will'], answer: 'Will' },
+      { question: 'They ___ working when you arrive.', options: ['will', 'will have', 'will be', 'are'], answer: 'will be' },
+      { question: 'I ___ be coming. (не приду)', options: ['will not', 'won\'t', 'am not', 'wasn\'t'], answer: 'won\'t' },
+    ],
+  },
+  {
+    id: 'b1-1-52', level: 'B1', block: 1, blockName: 'Времена углублённо', order: 52,
+    title: 'Future Perfect', duration: '15 мин',
+    theory: {
+      explanation: 'Future Perfect — действие будет завершено к определённому моменту будущего. will have + Past Participle. By 9pm, I will have finished work. She will have left by the time you arrive.',
+      examples: [
+        { english: 'By 9pm, I will have finished work.', russian: 'К 9 вечера я закончу работу.' },
+        { english: 'She will have left by the time you arrive.', russian: 'Она уйдёт до того, как ты придёшь.' },
+        { english: 'By next year, I will have saved enough.', russian: 'К следующему году я накоплю достаточно.' },
+        { english: 'Will they have arrived by then?', russian: 'Они прибудут к тому времени?' },
+        { english: 'He won\'t have finished by tomorrow.', russian: 'Он не закончит к завтрашнему дню.' },
+        { english: 'By the end of the week, we will have moved.', russian: 'К концу недели мы переедем.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'By 9pm, I will have ___ work. (finish→PP)', answer: 'finished' },
+      { type: 'fill_blank', question: 'She will have ___ by then. (left)', answer: 'left' },
+      { type: 'multiple_choice', question: 'Future Perfect: will ___ + Past Participle', options: ['be', 'get', 'have', 'do'], answer: 'have' },
+      { type: 'build_sentence', question: 'Составь вопрос:', words: ['Will', 'they', 'have', 'arrived', 'by', 'then?'], answer: 'Will they have arrived by then?' },
+      { type: 'multiple_choice', question: '"By next year" обычно используется с:', options: ['Past Simple', 'Future Continuous', 'Future Perfect', 'Present Perfect'], answer: 'Future Perfect' },
+    ],
+    quiz: [
+      { question: 'Future Perfect строится как:', options: ['will + verb', 'will be + -ing', 'will have + PP', 'have + PP'], answer: 'will have + PP' },
+      { question: 'By 9pm, I will have ___ work.', options: ['finish', 'finishing', 'finishes', 'finished'], answer: 'finished' },
+      { question: '___ they have arrived by then?', options: ['Do', 'Are', 'Have', 'Will'], answer: 'Will' },
+      { question: 'She ___ have left by then. (не уйдёт)', options: ['will', 'won\'t', 'hadn\'t', 'isn\'t'], answer: 'won\'t' },
+      { question: '"By the time" используется с:', options: ['Past Simple', 'Future Simple', 'Future Perfect', 'Present Continuous'], answer: 'Future Perfect' },
+    ],
+  },
+  {
+    id: 'b1-1-53', level: 'B1', block: 1, blockName: 'Времена углублённо', order: 53,
+    title: 'Third Conditional: прошлые условия', duration: '15 мин',
+    theory: {
+      explanation: 'Third Conditional — нереальное условие в прошлом. If + Past Perfect, would have + PP. If I had studied, I would have passed. (Я не учился, поэтому не сдал — сожаление о прошлом.)',
+      examples: [
+        { english: 'If I had studied, I would have passed.', russian: 'Если бы я учился, я бы сдал.' },
+        { english: 'She would have been happier if she had stayed.', russian: 'Она была бы счастливее, если бы осталась.' },
+        { english: 'If he had arrived earlier, he would have met her.', russian: 'Если бы он пришёл раньше, он бы встретил её.' },
+        { english: 'We wouldn\'t have been late if we had left on time.', russian: 'Мы не опоздали бы, если бы вышли вовремя.' },
+        { english: 'Would you have helped if I had asked?', russian: 'Ты бы помог, если бы я попросил?' },
+        { english: 'If it hadn\'t rained, we would have gone out.', russian: 'Если бы не было дождя, мы бы вышли.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'If I had studied, I would have ___.', answer: 'passed', hint: 'pass → passed' },
+      { type: 'fill_blank', question: 'If he had arrived earlier, he would have ___ her.', answer: 'met', hint: 'meet → met' },
+      { type: 'multiple_choice', question: 'Third Conditional — придаточная часть:', options: ['If + Present Simple', 'If + Past Simple', 'If + Past Perfect', 'If + would'], answer: 'If + Past Perfect' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['If', 'it', 'hadn\'t', 'rained,', 'we', 'would', 'have', 'gone', 'out'], answer: 'If it hadn\'t rained, we would have gone out' },
+      { type: 'multiple_choice', question: 'Third Conditional — главная часть:', options: ['will + verb', 'would + verb', 'would have + PP', 'had + PP'], answer: 'would have + PP' },
+    ],
+    quiz: [
+      { question: 'If I had studied, I ___ have passed.', options: ['will', 'would', 'could have', 'should'], answer: 'would' },
+      { question: 'If he ___ earlier, he would have met her.', options: ['arrives', 'arrived', 'has arrived', 'had arrived'], answer: 'had arrived' },
+      { question: 'Third Conditional выражает:', options: ['реальное будущее', 'нереальное настоящее', 'нереальное прошлое', 'прошлую привычку'], answer: 'нереальное прошлое' },
+      { question: 'We ___ late if we had left on time.', options: ['hadn\'t been', 'won\'t have been', 'wouldn\'t have been', 'weren\'t'], answer: 'wouldn\'t have been' },
+      { question: 'If it ___ rained, we would have gone out.', options: ['didn\'t', 'hasn\'t', 'hadn\'t', 'wasn\'t'], answer: 'hadn\'t' },
+    ],
+  },
+  {
+    id: 'b1-1-54', level: 'B1', block: 1, blockName: 'Времена углублённо', order: 54,
+    title: 'Mixed Conditionals', duration: '15 мин',
+    theory: {
+      explanation: 'Mixed Conditionals смешивают времена. Тип 1: If + PP (прошлое) → would + inf (настоящее): If I had studied, I would be a doctor now. Тип 2: If + Past Simple (настоящее) → would have + PP (прошлое).',
+      examples: [
+        { english: 'If I had studied medicine, I would be a doctor now.', russian: 'Если бы я учился на медика, я был бы врачом сейчас.' },
+        { english: 'If she weren\'t so busy, she would have come yesterday.', russian: 'Если бы она не была так занята, она бы пришла вчера.' },
+        { english: 'If I had saved money, I wouldn\'t be broke now.', russian: 'Если бы я откладывал деньги, я бы не был сейчас без денег.' },
+        { english: 'If you were taller, you would have made the team.', russian: 'Если бы ты был выше, ты бы попал в команду.' },
+        { english: 'If he had taken the job, he wouldn\'t be unemployed.', russian: 'Если бы он взял работу, он бы не был безработным.' },
+        { english: 'She would have called if she had my number.', russian: 'Она бы позвонила, если бы у неё был мой номер.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'If I had studied, I ___ be a doctor now.', answer: 'would', hint: 'прошлое → настоящее: would + inf' },
+      { type: 'multiple_choice', question: 'Mixed Conditional (тип 1): If + Past Perfect →', options: ['will + verb', 'would + verb', 'would have + PP', 'Past Simple'], answer: 'would + verb' },
+      { type: 'fill_blank', question: 'If I had saved money, I wouldn\'t ___ broke now.', answer: 'be' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['If', 'you', 'were', 'taller,', 'you', 'would', 'have', 'made', 'the', 'team'], answer: 'If you were taller, you would have made the team' },
+      { type: 'multiple_choice', question: 'Mixed Conditional (тип 2): If + Past Simple →', options: ['would + verb', 'would have + PP', 'will + verb', 'Past Perfect'], answer: 'would have + PP' },
+    ],
+    quiz: [
+      { question: 'If I had studied, I ___ be a doctor now.', options: ['will', 'would', 'could', 'should'], answer: 'would' },
+      { question: 'If she ___ busy, she would have come.', options: ['isn\'t', 'wasn\'t', 'weren\'t', 'hasn\'t been'], answer: 'weren\'t' },
+      { question: 'Mixed Conditional смешивает:', options: ['два прошлых времени', 'настоящее и будущее', 'прошлое и настоящее', 'два будущих времени'], answer: 'прошлое и настоящее' },
+      { question: 'If he had taken the job, he ___ unemployed.', options: ['won\'t be', 'isn\'t', 'wouldn\'t be', 'wasn\'t'], answer: 'wouldn\'t be' },
+      { question: 'She ___ have called if she had my number.', options: ['will', 'would', 'could', 'should'], answer: 'would' },
+    ],
+  },
+  {
+    id: 'b1-1-55', level: 'B1', block: 1, blockName: 'Времена углублённо', order: 55,
+    title: 'Conditionals: обзор всех типов', duration: '15 мин',
+    theory: {
+      explanation: 'Тип 0: истины (If water boils, it becomes steam). Тип 1: реальное (If it rains, I\'ll stay). Тип 2: нереальное (If I had money, I\'d travel). Тип 3: прошлое (If I had studied, I would have passed).',
+      examples: [
+        { english: 'If you heat water to 100°C, it boils. (Type 0)', russian: 'Если нагреть воду до 100°C, она закипит. (факт)' },
+        { english: 'If it rains, I will stay home. (Type 1)', russian: 'Если пойдёт дождь, я останусь дома. (реальное)' },
+        { english: 'If I had money, I would travel. (Type 2)', russian: 'Если бы у меня были деньги, я бы путешествовал. (нереальное)' },
+        { english: 'If I had studied, I would have passed. (Type 3)', russian: 'Если бы я учился, я бы сдал. (прошлое)' },
+        { english: 'Unless you hurry, you\'ll be late. (= if you don\'t)', russian: 'Если не поторопишься, опоздаешь.' },
+        { english: 'I wish I had more time. (wish + PS)', russian: 'Жаль, что у меня нет времени.' },
+      ],
+    },
+    exercises: [
+      { type: 'multiple_choice', question: '"If you heat water, it boils." — это тип:', options: ['Type 1', 'Type 2', 'Type 3', 'Type 0'], answer: 'Type 0' },
+      { type: 'multiple_choice', question: '"If it rains, I will stay." — это тип:', options: ['Type 0', 'Type 2', 'Type 1', 'Type 3'], answer: 'Type 1' },
+      { type: 'fill_blank', question: 'If I had money, I ___ travel. (Type 2)', answer: 'would' },
+      { type: 'build_sentence', question: 'Составь Type 3:', words: ['If', 'I', 'had', 'studied,', 'I', 'would', 'have', 'passed'], answer: 'If I had studied, I would have passed' },
+      { type: 'multiple_choice', question: '"Unless" = ?', options: ['if', 'if not', 'although', 'while'], answer: 'if not' },
+    ],
+    quiz: [
+      { question: 'Type 0 — для:', options: ['нереальных условий', 'общих истин', 'прошлых сожалений', 'будущих планов'], answer: 'общих истин' },
+      { question: 'Type 1 главная часть:', options: ['would + verb', 'Past Simple', 'will + verb', 'would have + PP'], answer: 'will + verb' },
+      { question: 'Type 2 придаточная часть:', options: ['Present Simple', 'Past Simple', 'Past Perfect', 'Future Simple'], answer: 'Past Simple' },
+      { question: 'Type 3 главная часть:', options: ['will + verb', 'would + verb', 'would have + PP', 'Past Perfect'], answer: 'would have + PP' },
+      { question: 'If I ___ money, I would travel. (Type 2)', options: ['have', 'will have', 'had', 'would have'], answer: 'had' },
+    ],
+  },
+  // ── B1 Block 2: Пассив и придаточные ───────────────────────────────────────
+  {
+    id: 'b1-2-56', level: 'B1', block: 2, blockName: 'Пассив и придаточные', order: 56,
+    title: 'Пассивный залог: все времена', duration: '15 мин',
+    theory: {
+      explanation: 'Пассив строится: to be + Past Participle. Present: is/are made. Past: was/were made. Future: will be made. PP: has/have been made. Continuous: is/was being made.',
+      examples: [
+        { english: 'Cars are made in factories.', russian: 'Машины производятся на заводах. (Present Simple Passive)' },
+        { english: 'The report was written yesterday.', russian: 'Отчёт был написан вчера. (Past Simple Passive)' },
+        { english: 'The film will be released next week.', russian: 'Фильм выйдет на следующей неделе. (Future Passive)' },
+        { english: 'The work has been completed.', russian: 'Работа завершена. (Present Perfect Passive)' },
+        { english: 'The bridge is being repaired.', russian: 'Мост ремонтируется. (Present Continuous Passive)' },
+        { english: 'The cake was being made when I arrived.', russian: 'Торт готовился, когда я пришёл. (Past Continuous Passive)' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'Cars ___ made in factories.', answer: 'are', hint: 'Present Simple Passive' },
+      { type: 'fill_blank', question: 'The report ___ written yesterday.', answer: 'was', hint: 'Past Simple Passive' },
+      { type: 'multiple_choice', question: 'The film ___ released next week.', options: ['is', 'was', 'will be', 'has been'], answer: 'will be' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['The', 'work', 'has', 'been', 'completed'], answer: 'The work has been completed' },
+      { type: 'multiple_choice', question: 'The bridge ___ being repaired. (сейчас)', options: ['is', 'was', 'will', 'has'], answer: 'is' },
+    ],
+    quiz: [
+      { question: 'Cars ___ made in factories. (Present Passive)', options: ['is', 'was', 'are', 'were'], answer: 'are' },
+      { question: 'The report ___ written yesterday. (Past Passive)', options: ['is', 'are', 'was', 'were'], answer: 'was' },
+      { question: 'The film ___ released next week. (Future Passive)', options: ['is', 'was', 'will be', 'has been'], answer: 'will be' },
+      { question: 'The work ___ completed. (Present Perfect Passive)', options: ['is', 'was', 'were', 'has been'], answer: 'has been' },
+      { question: 'Пассив строится: to be + ?', options: ['infinitive', '-ing', 'Past Simple', 'Past Participle'], answer: 'Past Participle' },
+    ],
+  },
+  {
+    id: 'b1-2-57', level: 'B1', block: 2, blockName: 'Пассив и придаточные', order: 57,
+    title: 'Относительные придаточные', duration: '15 мин',
+    theory: {
+      explanation: 'Относительные местоимения: who (для людей), which (для вещей), that (для всего), where (для мест), whose (чей). Defining: без запятых. Non-defining: с запятыми, нельзя "that".',
+      examples: [
+        { english: 'The man who lives next door is a doctor.', russian: 'Мужчина, который живёт по соседству, — врач.' },
+        { english: 'The book which I read was great.', russian: 'Книга, которую я прочитал, была отличной.' },
+        { english: 'The café where we met is closing.', russian: 'Кафе, где мы познакомились, закрывается.' },
+        { english: 'My sister, who lives in London, is a teacher.', russian: 'Моя сестра, которая живёт в Лондоне, — учительница.' },
+        { english: 'The car whose engine is broken needs repair.', russian: 'Машина, чей двигатель сломан, нуждается в ремонте.' },
+        { english: 'That\'s the restaurant that/which I told you about.', russian: 'Вот ресторан, о котором я тебе рассказывал.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'The man ___ lives next door is a doctor.', answer: 'who', hint: 'для людей → who' },
+      { type: 'fill_blank', question: 'The book ___ I read was great.', answer: 'which', hint: 'для вещей → which' },
+      { type: 'multiple_choice', question: 'The café ___ we met is closing.', options: ['who', 'which', 'where', 'whose'], answer: 'where' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['The', 'man', 'who', 'lives', 'next', 'door', 'is', 'a', 'doctor'], answer: 'The man who lives next door is a doctor' },
+      { type: 'multiple_choice', question: 'Non-defining relative clauses нельзя использовать с:', options: ['who', 'which', 'that', 'where'], answer: 'that' },
+    ],
+    quiz: [
+      { question: 'Для людей в относительных придаточных:', options: ['which', 'that', 'where', 'who'], answer: 'who' },
+      { question: 'Для мест в относительных придаточных:', options: ['who', 'which', 'whose', 'where'], answer: 'where' },
+      { question: 'The book ___ I read was great.', options: ['who', 'where', 'which', 'whose'], answer: 'which' },
+      { question: '"Whose" используется для:', options: ['мест', 'вещей', 'принадлежности', 'людей'], answer: 'принадлежности' },
+      { question: 'Non-defining clause — c запятыми, нельзя:', options: ['who', 'which', 'that', 'where'], answer: 'that' },
+    ],
+  },
+  {
+    id: 'b1-2-58', level: 'B1', block: 2, blockName: 'Пассив и придаточные', order: 58,
+    title: 'Причастные обороты', duration: '15 мин',
+    theory: {
+      explanation: 'Причастие настоящего (-ing): активное, одновременное действие. Feeling tired, she went to bed. Причастие прошедшего (-ed/PP): пассивное. Shocked by the news, he sat down.',
+      examples: [
+        { english: 'Feeling tired, she went to bed.', russian: 'Чувствуя усталость, она легла спать.' },
+        { english: 'Shocked by the news, he sat down.', russian: 'Потрясённый новостью, он сел.' },
+        { english: 'The woman standing by the door is my boss.', russian: 'Женщина, стоящая у двери, — мой начальник.' },
+        { english: 'The book written by Tolstoy is famous.', russian: 'Книга, написанная Толстым, знаменита.' },
+        { english: 'Not knowing what to do, he called her.', russian: 'Не зная, что делать, он ей позвонил.' },
+        { english: 'Exhausted after the match, they slept.', russian: 'Измотанные после матча, они спали.' },
+      ],
+    },
+    exercises: [
+      { type: 'multiple_choice', question: '"Feeling tired, she went to bed." — "Feeling" это:', options: ['Past Participle', 'Present Participle', 'Passive form', 'Gerund'], answer: 'Present Participle' },
+      { type: 'fill_blank', question: '___ by the news, he sat down. (shock→PP)', answer: 'Shocked', hint: 'shock → shocked' },
+      { type: 'multiple_choice', question: 'The woman ___ by the door is my boss.', options: ['stood', 'stands', 'standing', 'stand'], answer: 'standing' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['Not', 'knowing', 'what', 'to', 'do,', 'he', 'called', 'her'], answer: 'Not knowing what to do, he called her' },
+      { type: 'multiple_choice', question: 'Present Participle выражает:', options: ['пассивное действие', 'завершённое действие', 'одновременное активное действие', 'прошлое действие'], answer: 'одновременное активное действие' },
+    ],
+    quiz: [
+      { question: '"Shocked by the news" — "Shocked" это:', options: ['Present Participle', 'Past Participle', 'Gerund', 'Infinitive'], answer: 'Past Participle' },
+      { question: 'The woman ___ by the door is my boss.', options: ['stood', 'standing', 'stands', 'stand'], answer: 'standing' },
+      { question: '"Feeling tired" выражает:', options: ['пассивное действие', 'одновременное действие', 'прошлое завершённое', 'будущее'], answer: 'одновременное действие' },
+      { question: 'The book ___ by Tolstoy is famous.', options: ['writing', 'write', 'written', 'wrote'], answer: 'written' },
+      { question: '"Not knowing what to do" — это:', options: ['Infinitive clause', 'Relative clause', 'Participle clause', 'Noun clause'], answer: 'Participle clause' },
+    ],
+  },
+  {
+    id: 'b1-2-59', level: 'B1', block: 2, blockName: 'Пассив и придаточные', order: 59,
+    title: 'Каузативная конструкция have/get', duration: '12 мин',
+    theory: {
+      explanation: 'Каузатив = "заказать кому-то сделать что-то". have + объект + PP: I had my car repaired. get + объект + PP (разговорный): I got my hair cut. Субъект не делает сам, а организует.',
+      examples: [
+        { english: 'I had my car repaired.', russian: 'Я починил машину (у мастера).' },
+        { english: 'She got her hair cut.', russian: 'Она постриглась (у парикмахера).' },
+        { english: 'We had the house painted.', russian: 'Нам покрасили дом.' },
+        { english: 'He\'s having his suit cleaned.', russian: 'Ему чистят костюм.' },
+        { english: 'I need to get my phone fixed.', russian: 'Мне нужно починить телефон.' },
+        { english: 'They had the documents translated.', russian: 'Им перевели документы.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I had my car ___.', answer: 'repaired', hint: 'have + obj + PP' },
+      { type: 'fill_blank', question: 'She got her hair ___.', answer: 'cut', hint: 'get + obj + PP' },
+      { type: 'multiple_choice', question: 'Каузатив "have" означает:', options: ['делать самому', 'заставлять кого-то', 'организовывать для себя', 'хотеть'], answer: 'организовывать для себя' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['We', 'had', 'the', 'house', 'painted'], answer: 'We had the house painted' },
+      { type: 'multiple_choice', question: 'I need to get my phone ___.', options: ['fix', 'fixing', 'fixed', 'fixes'], answer: 'fixed' },
+    ],
+    quiz: [
+      { question: 'I had my car ___.', options: ['repair', 'repairing', 'repaired', 'repairs'], answer: 'repaired' },
+      { question: 'She ___ her hair cut.', options: ['had', 'got', 'had/got', 'made'], answer: 'had/got' },
+      { question: 'Каузатив: have/get + объект + ?', options: ['infinitive', 'Past Simple', '-ing', 'Past Participle'], answer: 'Past Participle' },
+      { question: 'We ___ the house painted.', options: ['made', 'did', 'had', 'got'], answer: 'had' },
+      { question: '"Get" в каузативе — это стиль:', options: ['официальный', 'разговорный', 'письменный', 'научный'], answer: 'разговорный' },
+    ],
+  },
+  {
+    id: 'b1-2-60', level: 'B1', block: 2, blockName: 'Пассив и придаточные', order: 60,
+    title: 'Инверсия для эмфазы', duration: '15 мин',
+    theory: {
+      explanation: 'Инверсия — изменение порядка слов для усиления. После отрицательных наречий: Never have I seen... Rarely does she... Not only... but also. So + adj + be: So tired was he that...',
+      examples: [
+        { english: 'Never have I seen such beauty.', russian: 'Никогда я не видел такой красоты.' },
+        { english: 'Rarely does she complain.', russian: 'Она редко жалуется.' },
+        { english: 'Not only did he lie, but he also cheated.', russian: 'Он не только лгал, но ещё и обманывал.' },
+        { english: 'So tired was he that he fell asleep.', russian: 'Он был так устал, что заснул.' },
+        { english: 'Only then did I understand.', russian: 'Только тогда я понял.' },
+        { english: 'No sooner had he arrived than it started.', russian: 'Едва он прибыл, как это началось.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'Never ___ I seen such beauty.', answer: 'have', hint: 'Инверсия: вспомогательный + подлежащее' },
+      { type: 'fill_blank', question: 'Rarely ___ she complain.', answer: 'does' },
+      { type: 'multiple_choice', question: 'После отрицательного наречия порядок слов:', options: ['прямой', 'инверсия', 'как в вопросе', 'как в пассиве'], answer: 'инверсия' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['Never', 'have', 'I', 'seen', 'such', 'beauty'], answer: 'Never have I seen such beauty' },
+      { type: 'multiple_choice', question: 'Not only ___ he lie, but he also cheated.', options: ['he did', 'did he', 'was he', 'he was'], answer: 'did he' },
+    ],
+    quiz: [
+      { question: 'Never ___ I seen such beauty.', options: ['did', 'do', 'have', 'am'], answer: 'have' },
+      { question: 'Rarely ___ she complain.', options: ['is', 'does', 'has', 'do'], answer: 'does' },
+      { question: 'Инверсия используется для:', options: ['ошибок', 'усиления/эмфазы', 'пассива', 'вопросов'], answer: 'усиления/эмфазы' },
+      { question: 'Not only did he lie, but he also ___.', options: ['cheated', 'was cheated', 'cheating', 'cheat'], answer: 'cheated' },
+      { question: 'Only then ___ I understand.', options: ['I did', 'did I', 'was I', 'I was'], answer: 'did I' },
+    ],
+  },
+  // ── B1 Block 3: Модальные глаголы углублённо ────────────────────────────────
+  {
+    id: 'b1-3-61', level: 'B1', block: 3, blockName: 'Модальные глаголы углублённо', order: 61,
+    title: 'Модальные: вывод и предположение', duration: '15 мин',
+    theory: {
+      explanation: 'Must = уверен (положительно): He must be tired. Can\'t = уверен (отрицательно): She can\'t be home. Might/May/Could = возможно: It might rain. Для прошлого: must have, can\'t have, might have.',
+      examples: [
+        { english: 'He must be tired. He worked all day.', russian: 'Он, должно быть, устал. Он работал весь день.' },
+        { english: 'She can\'t be home. Her car isn\'t there.', russian: 'Её не может быть дома. Её машины там нет.' },
+        { english: 'It might rain — take an umbrella.', russian: 'Может пойти дождь — возьми зонт.' },
+        { english: 'He must have forgotten.', russian: 'Он, должно быть, забыл. (прошлое)' },
+        { english: 'She can\'t have said that!', russian: 'Она не могла этого сказать!' },
+        { english: 'They might have missed the train.', russian: 'Они, возможно, пропустили поезд.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'He ___ be tired. He worked all day. (уверен)', answer: 'must', hint: 'уверенность → must' },
+      { type: 'fill_blank', question: 'She ___ be home. Her car isn\'t there. (невозможно)', answer: 'can\'t' },
+      { type: 'multiple_choice', question: 'It ___ rain — take an umbrella. (возможно)', options: ['must', 'can\'t', 'might', 'should'], answer: 'might' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['He', 'must', 'have', 'forgotten'], answer: 'He must have forgotten' },
+      { type: 'multiple_choice', question: '"Can\'t have done" выражает:', options: ['уверенность в прошлом', 'невозможность в прошлом', 'вероятность в прошлом', 'запрет'], answer: 'невозможность в прошлом' },
+    ],
+    quiz: [
+      { question: 'He ___ be tired. (уверен)', options: ['might', 'can\'t', 'must', 'should'], answer: 'must' },
+      { question: 'She ___ be home. Her car isn\'t there. (невозможно)', options: ['must', 'might', 'could', 'can\'t'], answer: 'can\'t' },
+      { question: 'It ___ rain. (возможно)', options: ['must', 'can\'t', 'might', 'should'], answer: 'might' },
+      { question: '"Must have forgotten" выражает:', options: ['будущее', 'вероятность в прошлом', 'уверенность в прошлом', 'запрет'], answer: 'уверенность в прошлом' },
+      { question: 'She ___ have said that! (невозможно в прошлом)', options: ['must', 'might', 'could', 'can\'t'], answer: 'can\'t' },
+    ],
+  },
+  {
+    id: 'b1-3-62', level: 'B1', block: 3, blockName: 'Модальные глаголы углублённо', order: 62,
+    title: 'Should have / Could have / Would have', duration: '15 мин',
+    theory: {
+      explanation: '"Should have + PP" — должен был, но не сделал (сожаление/критика). "Could have + PP" — мог бы, но не сделал. "Would have + PP" — сделал бы (в условии).',
+      examples: [
+        { english: 'You should have called me. (but you didn\'t)', russian: 'Ты должен был позвонить мне. (но не позвонил)' },
+        { english: 'She shouldn\'t have eaten so much.', russian: 'Ей не следовало есть так много.' },
+        { english: 'I could have helped you.', russian: 'Я мог бы тебе помочь.' },
+        { english: 'He couldn\'t have known.', russian: 'Он не мог знать.' },
+        { english: 'They would have won if they had practised.', russian: 'Они бы победили, если бы тренировались.' },
+        { english: 'I would have called but I lost your number.', russian: 'Я бы позвонил, но потерял твой номер.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'You should have ___ me. (call→PP)', answer: 'called', hint: 'should have + PP' },
+      { type: 'fill_blank', question: 'I could have ___ you. (help→PP)', answer: 'helped' },
+      { type: 'multiple_choice', question: '"Should have called" означает:', options: ['позвонил', 'позвонит', 'должен был позвонить, но не позвонил', 'звонил'], answer: 'должен был позвонить, но не позвонил' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['She', 'shouldn\'t', 'have', 'eaten', 'so', 'much'], answer: 'She shouldn\'t have eaten so much' },
+      { type: 'multiple_choice', question: '"Could have helped" означает:', options: ['помог', 'поможет', 'должен был помочь', 'мог бы помочь, но не помог'], answer: 'мог бы помочь, но не помог' },
+    ],
+    quiz: [
+      { question: 'You should have ___ me.', options: ['call', 'calling', 'calls', 'called'], answer: 'called' },
+      { question: '"Should have + PP" выражает:', options: ['будущее действие', 'сожаление о прошлом', 'разрешение', 'способность'], answer: 'сожаление о прошлом' },
+      { question: 'I could have ___ you. (help)', options: ['help', 'helping', 'helped', 'helps'], answer: 'helped' },
+      { question: 'She shouldn\'t have ___ so much.', options: ['eat', 'eats', 'eaten', 'eating'], answer: 'eaten' },
+      { question: '"Could have known" — он:', options: ['знал', 'мог бы знать, но не знал', 'должен знать', 'знал бы'], answer: 'мог бы знать, но не знал' },
+    ],
+  },
+  {
+    id: 'b1-3-63', level: 'B1', block: 3, blockName: 'Модальные глаголы углублённо', order: 63,
+    title: 'Wish / If only: сожаления', duration: '12 мин',
+    theory: {
+      explanation: '"Wish + Past Simple" — о настоящем: I wish I knew. "Wish + Past Perfect" — о прошлом: I wish I had studied. "If only" — более эмоционально. "Wish + would" — о поведении других.',
+      examples: [
+        { english: 'I wish I knew the answer.', russian: 'Жаль, что я не знаю ответа. (настоящее)' },
+        { english: 'I wish I had studied harder.', russian: 'Жаль, что я не учился усерднее. (прошлое)' },
+        { english: 'If only I could fly!', russian: 'Если бы я только мог летать!' },
+        { english: 'I wish he would stop smoking.', russian: 'Хотел бы я, чтобы он бросил курить.' },
+        { english: 'She wishes she hadn\'t said that.', russian: 'Она сожалеет, что сказала это.' },
+        { english: 'If only I had more time.', russian: 'Если бы только у меня было больше времени.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I wish I ___ the answer. (know→Past Simple)', answer: 'knew' },
+      { type: 'fill_blank', question: 'I wish I ___ studied harder. (had)', answer: 'had', hint: 'о прошлом: wish + Past Perfect' },
+      { type: 'multiple_choice', question: '"Wish + Past Perfect" — о:', options: ['настоящем', 'будущем', 'прошлом', 'привычке'], answer: 'прошлом' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['I', 'wish', 'he', 'would', 'stop', 'smoking'], answer: 'I wish he would stop smoking' },
+      { type: 'multiple_choice', question: '"If only" отличается от "wish" тем, что:', options: ['другая грамматика', 'более эмоционально', 'только о прошлом', 'только о будущем'], answer: 'более эмоционально' },
+    ],
+    quiz: [
+      { question: 'I wish I ___ the answer. (настоящее)', options: ['know', 'knew', 'had known', 'will know'], answer: 'knew' },
+      { question: 'I wish I ___ studied harder. (прошлое)', options: ['have', 'had', 'would have', 'will have'], answer: 'had' },
+      { question: '"Wish + would" используется для:', options: ['своих желаний', 'чужого поведения', 'прошлых событий', 'будущих планов'], answer: 'чужого поведения' },
+      { question: 'She wishes she ___ that. (прошлое: hadn\'t said)', options: ['didn\'t say', 'hadn\'t said', 'won\'t say', 'doesn\'t say'], answer: 'hadn\'t said' },
+      { question: '"If only I had more time" = ?', options: ['У меня много времени', 'Жаль, что мало времени', 'Я хочу времени', 'У меня будет время'], answer: 'Жаль, что мало времени' },
+    ],
+  },
+  {
+    id: 'b1-3-64', level: 'B1', block: 3, blockName: 'Модальные глаголы углублённо', order: 64,
+    title: 'Выражение согласия и несогласия', duration: '12 мин',
+    theory: {
+      explanation: 'Согласие: So do I (утверждение), Neither/Nor do I (отрицание). I love pizza — So do I. I don\'t like fish — Neither do I. Используй вспомогательный глагол соответствующего времени.',
+      examples: [
+        { english: 'I love pizza. — So do I!', russian: 'Я люблю пиццу. — Я тоже!' },
+        { english: 'I don\'t like fish. — Neither do I.', russian: 'Я не люблю рыбу. — Я тоже (нет).' },
+        { english: 'She was tired. — So was he.', russian: 'Она устала. — Он тоже.' },
+        { english: 'They haven\'t been there. — Neither have we.', russian: 'Они там не были. — Мы тоже.' },
+        { english: 'I will come. — So will she.', russian: 'Я приду. — Она тоже.' },
+        { english: 'He can\'t swim. — Neither can I.', russian: 'Он не умеет плавать. — Я тоже.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I love pizza. — So ___ I!', answer: 'do' },
+      { type: 'fill_blank', question: 'I don\'t like fish. — ___ do I.', answer: 'Neither' },
+      { type: 'multiple_choice', question: 'She was tired. — So ___ he.', options: ['is', 'does', 'was', 'did'], answer: 'was' },
+      { type: 'build_sentence', question: 'Составь ответ:', words: ['Neither', 'have', 'we'], answer: 'Neither have we' },
+      { type: 'multiple_choice', question: 'He can\'t swim. — ___ can I.', options: ['So', 'Neither', 'Nor', 'Neither/Nor'], answer: 'Neither/Nor' },
+    ],
+    quiz: [
+      { question: 'I love pizza. — So ___ I!', options: ['am', 'is', 'do', 'does'], answer: 'do' },
+      { question: 'I don\'t like fish. — ___ do I.', options: ['So', 'Neither', 'Not', 'Nor'], answer: 'Neither' },
+      { question: 'She was tired. — So ___ he.', options: ['is', 'was', 'were', 'did'], answer: 'was' },
+      { question: 'They haven\'t been there. — ___ have we.', options: ['So', 'Neither', 'Also', 'Too'], answer: 'Neither' },
+      { question: 'I will come. — So ___ she.', options: ['does', 'will', 'is', 'shall'], answer: 'will' },
+    ],
+  },
+  {
+    id: 'b1-3-65', level: 'B1', block: 3, blockName: 'Модальные глаголы углублённо', order: 65,
+    title: 'Номинализация и абстрактные существительные', duration: '15 мин',
+    theory: {
+      explanation: 'Номинализация — превращение глагола/прилагательного в существительное. decide→decision, develop→development, happy→happiness, strong→strength. Широко используется в академическом и деловом английском.',
+      examples: [
+        { english: 'decide → decision', russian: 'решать → решение' },
+        { english: 'develop → development', russian: 'развивать → развитие' },
+        { english: 'happy → happiness', russian: 'счастливый → счастье' },
+        { english: 'The government made a decision.', russian: 'Правительство приняло решение.' },
+        { english: 'There has been rapid development.', russian: 'Произошло стремительное развитие.' },
+        { english: 'strong → strength, weak → weakness', russian: 'сильный → сила, слабый → слабость' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'decide → ___ (существительное)', answer: 'decision', hint: 'decide → decision' },
+      { type: 'fill_blank', question: 'develop → ___ (существительное)', answer: 'development' },
+      { type: 'multiple_choice', question: 'happy → ?', options: ['happiness', 'happyment', 'happily', 'happihood'], answer: 'happiness' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['The', 'government', 'made', 'a', 'decision'], answer: 'The government made a decision' },
+      { type: 'multiple_choice', question: 'strong → ?', options: ['strongness', 'strength', 'stronly', 'strongity'], answer: 'strength' },
+    ],
+    quiz: [
+      { question: 'decide → ?', options: ['decision', 'decidement', 'decidion', 'decider'], answer: 'decision' },
+      { question: 'develop → ?', options: ['developness', 'developer', 'development', 'developy'], answer: 'development' },
+      { question: 'happy → ?', options: ['happyness', 'happiness', 'happily', 'happiment'], answer: 'happiness' },
+      { question: 'strong → ?', options: ['strongness', 'strongly', 'strength', 'stronger'], answer: 'strength' },
+      { question: 'Номинализация — это:', options: ['превращение глагола в прилагательное', 'превращение глагола/прилагательного в существительное', 'создание наречий', 'изменение времени'], answer: 'превращение глагола/прилагательного в существительное' },
+    ],
+  },
+  // ── B1 Block 4: Дискурс ─────────────────────────────────────────────────────
+  {
+    id: 'b1-4-66', level: 'B1', block: 4, blockName: 'Дискурс', order: 66,
+    title: 'Союзы: however / although / despite', duration: '12 мин',
+    theory: {
+      explanation: '"However" = однако (начало предложения, с запятой). "Although/Even though" = хотя (придаточное). "Despite/In spite of" + noun/gerund. However, she came. Although she was tired, she came. Despite being tired, she came.',
+      examples: [
+        { english: 'However, she decided to come.', russian: 'Однако она решила прийти.' },
+        { english: 'Although she was tired, she came.', russian: 'Хотя она устала, она пришла.' },
+        { english: 'Despite the rain, they went out.', russian: 'Несмотря на дождь, они вышли.' },
+        { english: 'In spite of being tired, she finished.', russian: 'Несмотря на усталость, она закончила.' },
+        { english: 'Even though he studied, he failed.', russian: 'Несмотря на то что он учился, он провалился.' },
+        { english: 'The food was good. However, it was expensive.', russian: 'Еда была хорошей. Однако она была дорогой.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: '___ she was tired, she came.', answer: 'Although', hint: 'хотя = Although' },
+      { type: 'fill_blank', question: '___ the rain, they went out.', answer: 'Despite', hint: 'несмотря на (+ noun) = Despite' },
+      { type: 'multiple_choice', question: '"However" стоит в предложении:', options: ['в середине', 'в конце', 'в начале с запятой', 'перед придаточным'], answer: 'в начале с запятой' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['Despite', 'being', 'tired,', 'she', 'finished'], answer: 'Despite being tired, she finished' },
+      { type: 'multiple_choice', question: '"Despite" используется с:', options: ['придаточным предложением', 'существительным или герундием', 'инфинитивом', 'вспомогательным глаголом'], answer: 'существительным или герундием' },
+    ],
+    quiz: [
+      { question: '"Хотя" = ?', options: ['Despite', 'However', 'Although', 'In spite'], answer: 'Although' },
+      { question: '"Однако" = ?', options: ['Although', 'Despite', 'However', 'Even'], answer: 'However' },
+      { question: 'Despite ___ tired, she finished.', options: ['be', 'was', 'is', 'being'], answer: 'being' },
+      { question: '"Despite" + ?', options: ['придаточное', 'существительное/герундий', 'только существительное', 'только герундий'], answer: 'существительное/герундий' },
+      { question: 'Although she ___ tired, she came.', options: ['is', 'was', 'were', 'be'], answer: 'was' },
+    ],
+  },
+  {
+    id: 'b1-4-67', level: 'B1', block: 4, blockName: 'Дискурс', order: 67,
+    title: 'Цель: so that / in order to / to', duration: '12 мин',
+    theory: {
+      explanation: '"To/In order to" + инфинитив: She studies to pass the exam. "So that" + подлежащее + глагол: She studies so that she can pass. "In order not to" — отрицательная цель.',
+      examples: [
+        { english: 'She studies to pass the exam.', russian: 'Она учится, чтобы сдать экзамен.' },
+        { english: 'I left early in order to catch the train.', russian: 'Я ушёл рано, чтобы успеть на поезд.' },
+        { english: 'He called so that she would know.', russian: 'Он позвонил, чтобы она знала.' },
+        { english: 'I spoke quietly so as not to wake the baby.', russian: 'Я говорил тихо, чтобы не разбудить ребёнка.' },
+        { english: 'In order not to be late, I set an alarm.', russian: 'Чтобы не опоздать, я поставил будильник.' },
+        { english: 'She saved money so that she could travel.', russian: 'Она откладывала деньги, чтобы путешествовать.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'She studies ___ pass the exam.', answer: 'to', hint: 'to + инфинитив' },
+      { type: 'fill_blank', question: 'He called so ___ she would know.', answer: 'that' },
+      { type: 'multiple_choice', question: '"So that" + ?', options: ['инфинитив', 'подлежащее + глагол', 'герундий', 'Past Participle'], answer: 'подлежащее + глагол' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['I', 'left', 'early', 'in', 'order', 'to', 'catch', 'the', 'train'], answer: 'I left early in order to catch the train' },
+      { type: 'multiple_choice', question: '"In order not to" — это:', options: ['цель', 'отрицательная цель', 'причина', 'условие'], answer: 'отрицательная цель' },
+    ],
+    quiz: [
+      { question: 'She studies ___ pass the exam.', options: ['so that', 'for', 'to', 'in order'], answer: 'to' },
+      { question: 'He called ___ she would know.', options: ['to', 'in order', 'so that', 'for'], answer: 'so that' },
+      { question: '"In order to" = ?', options: ['хотя', 'несмотря на', 'чтобы', 'потому что'], answer: 'чтобы' },
+      { question: 'I spoke quietly so as not ___ wake the baby.', options: ['for', 'so', 'to', 'that'], answer: 'to' },
+      { question: '"So that" используется с:', options: ['инфинитивом', 'герундием', 'подлежащим + глаголом', 'Past Participle'], answer: 'подлежащим + глаголом' },
+    ],
+  },
+  {
+    id: 'b1-4-68', level: 'B1', block: 4, blockName: 'Дискурс', order: 68,
+    title: 'Следствие: so / such / too / enough', duration: '12 мин',
+    theory: {
+      explanation: '"So + adj/adv": It\'s so hot. "Such + (a) noun": It\'s such a hot day. "Too + adj": too hot to go out. "Adj + enough": warm enough to swim. "Enough" стоит ПОСЛЕ прилагательного.',
+      examples: [
+        { english: 'It\'s so hot today!', russian: 'Сегодня так жарко!' },
+        { english: 'It was such a great film!', russian: 'Это был такой отличный фильм!' },
+        { english: 'It\'s too hot to go outside.', russian: 'Слишком жарко, чтобы выйти.' },
+        { english: 'It\'s warm enough to swim.', russian: 'Достаточно тепло, чтобы плавать.' },
+        { english: 'She runs so fast that no one can catch her.', russian: 'Она бежит так быстро, что никто не может её догнать.' },
+        { english: 'He isn\'t tall enough to reach the shelf.', russian: 'Он недостаточно высокий, чтобы дотянуться до полки.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'It\'s ___ hot today! (так)', answer: 'so', hint: 'so + прилагательное' },
+      { type: 'fill_blank', question: 'It was ___ a great film!', answer: 'such', hint: 'such + a + noun' },
+      { type: 'multiple_choice', question: 'It\'s ___ hot to go outside.', options: ['so', 'such', 'too', 'enough'], answer: 'too' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['It\'s', 'warm', 'enough', 'to', 'swim'], answer: 'It\'s warm enough to swim' },
+      { type: 'multiple_choice', question: '"Enough" стоит:', options: ['перед прилагательным', 'после прилагательного', 'в начале предложения', 'перед существительным'], answer: 'после прилагательного' },
+    ],
+    quiz: [
+      { question: 'It\'s ___ hot today. (так)', options: ['such', 'too', 'so', 'enough'], answer: 'so' },
+      { question: 'It was ___ a great film.', options: ['so', 'too', 'enough', 'such'], answer: 'such' },
+      { question: 'It\'s ___ hot to go out. (слишком)', options: ['so', 'such', 'enough', 'too'], answer: 'too' },
+      { question: 'It\'s warm ___ to swim. (достаточно)', options: ['so', 'such', 'too', 'enough'], answer: 'enough' },
+      { question: '"Enough" в предложении с прилагательным стоит:', options: ['до', 'после', 'в начале', 'в конце предложения'], answer: 'после' },
+    ],
+  },
+  {
+    id: 'b1-4-69', level: 'B1', block: 4, blockName: 'Дискурс', order: 69,
+    title: 'Глаголы сообщения', duration: '12 мин',
+    theory: {
+      explanation: 'Reporting verbs: say (+ that), tell (+ кому + that), ask (+ кому + инфинитив), advise/suggest (+ герундий или что + should). He said he was tired. She told me to come. He suggested going.',
+      examples: [
+        { english: 'He said he was tired.', russian: 'Он сказал, что устал.' },
+        { english: 'She told me to come.', russian: 'Она сказала мне прийти.' },
+        { english: 'He asked me where I lived.', russian: 'Он спросил, где я живу.' },
+        { english: 'She advised me to see a doctor.', russian: 'Она посоветовала мне обратиться к врачу.' },
+        { english: 'He suggested going to the cinema.', russian: 'Он предложил пойти в кино.' },
+        { english: 'They warned us not to be late.', russian: 'Они предупредили нас не опаздывать.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'He ___ he was tired. (say→прошлое)', answer: 'said' },
+      { type: 'fill_blank', question: 'She ___ me to come. (tell→прошлое)', answer: 'told', hint: 'tell + кому + to' },
+      { type: 'multiple_choice', question: 'He suggested ___ to the cinema.', options: ['go', 'to go', 'going', 'went'], answer: 'going' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['She', 'advised', 'me', 'to', 'see', 'a', 'doctor'], answer: 'She advised me to see a doctor' },
+      { type: 'multiple_choice', question: '"Tell" требует после себя:', options: ['только that', 'кому + that/инфинитив', 'только инфинитив', 'only герундий'], answer: 'кому + that/инфинитив' },
+    ],
+    quiz: [
+      { question: 'He ___ he was tired.', options: ['told', 'said', 'asked', 'spoke'], answer: 'said' },
+      { question: 'She ___ me to come.', options: ['said', 'asked', 'told', 'spoke'], answer: 'told' },
+      { question: 'He suggested ___ to the cinema.', options: ['go', 'to go', 'going', 'went'], answer: 'going' },
+      { question: 'She advised me ___ a doctor.', options: ['see', 'seeing', 'to see', 'saw'], answer: 'to see' },
+      { question: 'They warned us ___ late.', options: ['be not', 'to not be', 'not to be', 'not being'], answer: 'not to be' },
+    ],
+  },
+  {
+    id: 'b1-4-70', level: 'B1', block: 4, blockName: 'Дискурс', order: 70,
+    title: 'Фразовые глаголы', duration: '15 мин',
+    theory: {
+      explanation: 'Фразовые глаголы — глагол + частица/предлог. Значение часто не буквальное. give up (бросить), look forward to (ждать с нетерпением), put off (откладывать), carry on (продолжать), come up with (придумать).',
+      examples: [
+        { english: 'She gave up smoking.', russian: 'Она бросила курить.' },
+        { english: 'I\'m looking forward to the trip.', russian: 'Я с нетерпением жду поездки.' },
+        { english: 'Don\'t put off what you can do today.', russian: 'Не откладывай то, что можешь сделать сегодня.' },
+        { english: 'Carry on with your work.', russian: 'Продолжай свою работу.' },
+        { english: 'He came up with a great idea.', russian: 'Он придумал отличную идею.' },
+        { english: 'She turned down the offer.', russian: 'Она отклонила предложение.' },
+      ],
+    },
+    exercises: [
+      { type: 'multiple_choice', question: '"Give up" означает:', options: ['продолжать', 'начать', 'бросить/отказаться', 'найти'], answer: 'бросить/отказаться' },
+      { type: 'fill_blank', question: 'I\'m looking forward ___ the trip.', answer: 'to', hint: 'look forward to + noun/gerund' },
+      { type: 'multiple_choice', question: '"Put off" означает:', options: ['отклонить', 'откладывать', 'начинать', 'заканчивать'], answer: 'откладывать' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['He', 'came', 'up', 'with', 'a', 'great', 'idea'], answer: 'He came up with a great idea' },
+      { type: 'multiple_choice', question: '"Turn down" означает:', options: ['принять', 'повторить', 'отклонить', 'выключить'], answer: 'отклонить' },
+    ],
+    quiz: [
+      { question: '"Give up" = ?', options: ['начать', 'продолжить', 'бросить', 'найти'], answer: 'бросить' },
+      { question: '"Put off" = ?', options: ['отклонить', 'откладывать', 'начинать', 'принять'], answer: 'откладывать' },
+      { question: '"Look forward to" = ?', options: ['оглянуться назад', 'с нетерпением ждать', 'бояться', 'не хотеть'], answer: 'с нетерпением ждать' },
+      { question: '"Carry on" = ?', options: ['остановиться', 'начать', 'продолжать', 'вернуться'], answer: 'продолжать' },
+      { question: '"Come up with" = ?', options: ['прийти к', 'придумать', 'столкнуться с', 'отказаться от'], answer: 'придумать' },
+    ],
+  },
+  // ── B1 Block 5: B1 Обзор ───────────────────────────────────────────────────
+  {
+    id: 'b1-5-71', level: 'B1', block: 5, blockName: 'B1 Обзор', order: 71,
+    title: 'Артикли: продвинутый уровень', duration: '12 мин',
+    theory: {
+      explanation: 'Без артикля: абстрактные понятия (love, happiness), языки, предметы (I study English), имена собственные. The: горы, моря, реки (the Alps, the Nile), уникальные объекты (the sun, the moon).',
+      examples: [
+        { english: 'Love is the most important thing.', russian: 'Любовь — самое важное. (абстракция, без артикля)' },
+        { english: 'She speaks French.', russian: 'Она говорит по-французски. (язык, без артикля)' },
+        { english: 'The Nile is the longest river.', russian: 'Нил — самая длинная река. (the + реки)' },
+        { english: 'The Alps are in Europe.', russian: 'Альпы находятся в Европе. (the + горные системы)' },
+        { english: 'The sun rises in the east.', russian: 'Солнце восходит на востоке.' },
+        { english: 'He studies medicine at university.', russian: 'Он изучает медицину в университете. (без артикля)' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'She speaks ___ French. (артикль?)', answer: 'нет', hint: 'перед языками артикль не нужен' },
+      { type: 'fill_blank', question: '___ Nile is the longest river.', answer: 'The', hint: 'реки → the' },
+      { type: 'multiple_choice', question: '___ sun rises in the east.', options: ['A', 'An', 'The', 'нет'], answer: 'The' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['The', 'Alps', 'are', 'in', 'Europe'], answer: 'The Alps are in Europe' },
+      { type: 'multiple_choice', question: 'Перед абстрактными существительными:', options: ['a/an', 'the', 'нет артикля', 'any'], answer: 'нет артикля' },
+    ],
+    quiz: [
+      { question: '___ Nile is the longest river.', options: ['A', 'An', 'The', 'нет'], answer: 'The' },
+      { question: 'She speaks ___ French.', options: ['a', 'the', 'нет', 'an'], answer: 'нет' },
+      { question: '___ sun is a star.', options: ['A', 'An', 'нет', 'The'], answer: 'The' },
+      { question: 'He studies ___ medicine.', options: ['a', 'the', 'an', 'нет'], answer: 'нет' },
+      { question: '___ Alps are in Europe.', options: ['A', 'нет', 'An', 'The'], answer: 'The' },
+    ],
+  },
+  {
+    id: 'b1-5-72', level: 'B1', block: 5, blockName: 'B1 Обзор', order: 72,
+    title: 'Эмфатические конструкции', duration: '12 мин',
+    theory: {
+      explanation: 'Для усиления: "It is/was... that/who..." (cleft sentence). It was John who called me. What I need is sleep. What surprised me was her answer. Do/did для эмфазы в утверждениях: I do love you!',
+      examples: [
+        { english: 'It was John who called me.', russian: 'Именно Джон позвонил мне.' },
+        { english: 'What I need is sleep.', russian: 'То, что мне нужно, — это сон.' },
+        { english: 'It\'s the coffee that I love, not the tea.', russian: 'Именно кофе я люблю, а не чай.' },
+        { english: 'I do love you!', russian: 'Я действительно тебя люблю!' },
+        { english: 'What surprised me was her answer.', russian: 'Меня удивил её ответ.' },
+        { english: 'It was in Paris that we first met.', russian: 'Именно в Париже мы впервые встретились.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'It was John ___ called me.', answer: 'who', hint: 'для людей → who' },
+      { type: 'fill_blank', question: '___ I need is sleep.', answer: 'What' },
+      { type: 'multiple_choice', question: 'I ___ love you! (эмфаза)', options: ['really', 'do', 'am', 'have'], answer: 'do' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['It', 'was', 'John', 'who', 'called', 'me'], answer: 'It was John who called me' },
+      { type: 'multiple_choice', question: '"It is... that/who..." используется для:', options: ['пассива', 'эмфазы/усиления', 'вопросов', 'отрицания'], answer: 'эмфазы/усиления' },
+    ],
+    quiz: [
+      { question: 'It was John ___ called me.', options: ['which', 'that', 'who', 'where'], answer: 'who' },
+      { question: '___ I need is sleep.', options: ['That', 'Which', 'Who', 'What'], answer: 'What' },
+      { question: 'I ___ love you! (эмфаза)', options: ['am', 'really', 'do', 'did'], answer: 'do' },
+      { question: 'It was ___ that we first met.', options: ['in Paris', 'Paris', 'to Paris', 'at Paris'], answer: 'in Paris' },
+      { question: '"Cleft sentence" нужна для:', options: ['пассива', 'эмфазы', 'вопросов', 'отрицания'], answer: 'эмфазы' },
+    ],
+  },
+  {
+    id: 'b1-5-73', level: 'B1', block: 5, blockName: 'B1 Обзор', order: 73,
+    title: 'Словообразование', duration: '15 мин',
+    theory: {
+      explanation: 'Суффиксы существительных: -tion (education), -ment (government), -ness (kindness), -er/-or (teacher, actor). Суффиксы прилагательных: -ful (useful), -less (useless), -ous (dangerous), -al (national).',
+      examples: [
+        { english: 'educate → education', russian: 'обучать → образование' },
+        { english: 'govern → government', russian: 'управлять → правительство' },
+        { english: 'kind → kindness', russian: 'добрый → доброта' },
+        { english: 'use → useful / useless', russian: 'использовать → полезный / бесполезный' },
+        { english: 'danger → dangerous', russian: 'опасность → опасный' },
+        { english: 'nation → national', russian: 'нация → национальный' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'educate → ___ (существительное)', answer: 'education' },
+      { type: 'fill_blank', question: 'kind → ___ (существительное)', answer: 'kindness' },
+      { type: 'multiple_choice', question: '"Опасный" = ?', options: ['danger', 'dangerly', 'dangerous', 'dangerful'], answer: 'dangerous' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['Education', 'is', 'very', 'important'], answer: 'Education is very important' },
+      { type: 'multiple_choice', question: '"Бесполезный" = ?', options: ['usely', 'useful', 'useless', 'unuseful'], answer: 'useless' },
+    ],
+    quiz: [
+      { question: 'educate → ?', options: ['educatement', 'education', 'educater', 'educatition'], answer: 'education' },
+      { question: 'govern → ?', options: ['governness', 'governation', 'government', 'governship'], answer: 'government' },
+      { question: 'kind → ?', options: ['kindly', 'kindment', 'kindful', 'kindness'], answer: 'kindness' },
+      { question: 'use → ? (полезный)', options: ['useness', 'usefully', 'useful', 'using'], answer: 'useful' },
+      { question: 'nation → ?', options: ['nationally', 'nationism', 'national', 'nationality'], answer: 'national' },
+    ],
+  },
+  {
+    id: 'b1-5-74', level: 'B1', block: 5, blockName: 'B1 Обзор', order: 74,
+    title: 'Идиомы и устойчивые выражения', duration: '12 мин',
+    theory: {
+      explanation: 'Идиомы — устойчивые выражения, смысл которых не выводится из слов. Break a leg! (Удачи!), hit the nail on the head (попасть в точку), piece of cake (пустяк), under the weather (нездоровится), bite the bullet (стиснуть зубы).',
+      examples: [
+        { english: 'Break a leg!', russian: 'Удачи! (актёрам перед выступлением)' },
+        { english: 'You hit the nail on the head.', russian: 'Ты попал в точку.' },
+        { english: 'The exam was a piece of cake.', russian: 'Экзамен был пустяком.' },
+        { english: 'I\'m feeling under the weather.', russian: 'Мне нездоровится.' },
+        { english: 'Just bite the bullet and do it!', russian: 'Просто стисни зубы и сделай это!' },
+        { english: 'It\'s raining cats and dogs.', russian: 'Льёт как из ведра.' },
+      ],
+    },
+    exercises: [
+      { type: 'multiple_choice', question: '"Break a leg" означает:', options: ['сломай ногу', 'удачи', 'пошевелись', 'беги'], answer: 'удачи' },
+      { type: 'multiple_choice', question: '"Piece of cake" означает:', options: ['кусок торта', 'пустяк/лёгкое дело', 'вкусная еда', 'особый десерт'], answer: 'пустяк/лёгкое дело' },
+      { type: 'fill_blank', question: 'I\'m feeling under the ___. (нездоровится)', answer: 'weather' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['You', 'hit', 'the', 'nail', 'on', 'the', 'head'], answer: 'You hit the nail on the head' },
+      { type: 'multiple_choice', question: '"It\'s raining cats and dogs" означает:', options: ['идёт лёгкий дождь', 'льёт как из ведра', 'гроза', 'идёт снег'], answer: 'льёт как из ведра' },
+    ],
+    quiz: [
+      { question: '"Break a leg!" = ?', options: ['Сломай ногу', 'Стоп!', 'Удачи!', 'Иди!'], answer: 'Удачи!' },
+      { question: '"Piece of cake" = ?', options: ['Торт', 'Пустяк', 'Сложно', 'Вкусно'], answer: 'Пустяк' },
+      { question: '"Under the weather" = ?', options: ['На улице', 'Нездоровится', 'В плохую погоду', 'Промок'], answer: 'Нездоровится' },
+      { question: '"Hit the nail on the head" = ?', options: ['Ударить гвоздь', 'Попасть в точку', 'Сломать что-то', 'Правильно забить гвоздь'], answer: 'Попасть в точку' },
+      { question: '"Bite the bullet" = ?', options: ['Укусить пулю', 'Стиснуть зубы и выдержать', 'Быть смелым', 'Есть быстро'], answer: 'Стиснуть зубы и выдержать' },
+    ],
+  },
+  {
+    id: 'b1-5-75', level: 'B1', block: 5, blockName: 'B1 Обзор', order: 75,
+    title: 'B1 Обзор: итоговый тест', duration: '25 мин',
+    theory: {
+      explanation: 'Повторение B1: Future Continuous/Perfect, все типы условных, пассив всех времён, относительные придаточные, модальные глаголы вывода и прошлого, фразовые глаголы, словообразование.',
+      examples: [
+        { english: 'At 8pm, I will be cooking. (Future Continuous)', russian: 'В 8 я буду готовить.' },
+        { english: 'By 9pm, I will have finished. (Future Perfect)', russian: 'К 9 я закончу.' },
+        { english: 'If I had studied, I would have passed. (Type 3)', russian: 'Если бы учился, сдал бы.' },
+        { english: 'He must be tired. / She can\'t have said that.', russian: 'Вывод и невозможность в прошлом.' },
+        { english: 'Never have I seen such beauty. (Инверсия)', russian: 'Никогда не видел такой красоты.' },
+        { english: 'She gave up smoking. (Фразовый глагол)', russian: 'Она бросила курить.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'At 8pm, I will ___ cooking.', answer: 'be' },
+      { type: 'fill_blank', question: 'If I had studied, I would have ___.', answer: 'passed' },
+      { type: 'multiple_choice', question: 'He ___ be tired. He worked all day. (уверен)', options: ['might', 'could', 'must', 'should'], answer: 'must' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['Never', 'have', 'I', 'seen', 'such', 'beauty'], answer: 'Never have I seen such beauty' },
+      { type: 'multiple_choice', question: '"Give up" = ?', options: ['начать', 'продолжить', 'бросить', 'найти'], answer: 'бросить' },
+    ],
+    quiz: [
+      { question: 'At 8pm, I will ___ cooking.', options: ['have', 'be', 'get', 'do'], answer: 'be' },
+      { question: 'By 9pm, I will have ___ work.', options: ['finish', 'finishing', 'finishes', 'finished'], answer: 'finished' },
+      { question: 'If I had studied, I ___ have passed.', options: ['will', 'can', 'would', 'could'], answer: 'would' },
+      { question: 'Cars ___ made in factories. (Present Passive)', options: ['is', 'was', 'are', 'were'], answer: 'are' },
+      { question: 'He ___ be tired. He worked all day.', options: ['might', 'could', 'must', 'should'], answer: 'must' },
+      { question: 'Never ___ I seen such beauty.', options: ['did', 'do', 'have', 'am'], answer: 'have' },
+      { question: 'She ___ up smoking. (give up)', options: ['gave', 'give', 'given', 'giving'], answer: 'gave' },
+      { question: '"Should have called" означает:', options: ['позвонил', 'должен был позвонить', 'мог бы позвонить', 'позвонит'], answer: 'должен был позвонить' },
+      { question: 'The man ___ lives next door is a doctor.', options: ['which', 'where', 'who', 'whose'], answer: 'who' },
+      { question: 'educate → ?', options: ['educatement', 'educater', 'education', 'educatition'], answer: 'education' },
+    ],
+  },
+// ── B2 Block 1: Продвинутая грамматика ─────────────────────────────────────
+  {
+    id: 'b2-1-76', level: 'B2', block: 1, blockName: 'Продвинутая грамматика', order: 76,
+    title: 'Сослагательное наклонение', duration: '15 мин',
+    theory: {
+      explanation: 'Субъюнктив (сослагательное наклонение): I suggest that he be... It is important that she arrive on time... После глаголов suggest, recommend, insist, demand, propose + that + подлежащее + bare infinitive.',
+      examples: [
+        { english: 'I suggest that he be more careful.', russian: 'Я предлагаю, чтобы он был осторожнее.' },
+        { english: 'It is essential that she arrive on time.', russian: 'Важно, чтобы она прибыла вовремя.' },
+        { english: 'He insisted that we leave immediately.', russian: 'Он настаивал, чтобы мы немедленно ушли.' },
+        { english: 'They demanded that the manager speak to them.', russian: 'Они потребовали, чтобы менеджер поговорил с ними.' },
+        { english: 'The doctor recommended that she rest.', russian: 'Врач рекомендовал, чтобы она отдохнула.' },
+        { english: 'If I were you, I would apologise. (were = субъюнктив)', russian: 'Если бы я был тобой, я бы извинился.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I suggest that he ___ more careful.', answer: 'be', hint: 'субъюнктив: bare infinitive' },
+      { type: 'fill_blank', question: 'It is essential that she ___ on time.', answer: 'arrive', hint: 'субъюнктив после "essential that"' },
+      { type: 'multiple_choice', question: 'После "suggest that" используется:', options: ['инфинитив с to', 'bare infinitive', '-ing', 'Past Simple'], answer: 'bare infinitive' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['He', 'insisted', 'that', 'we', 'leave', 'immediately'], answer: 'He insisted that we leave immediately' },
+      { type: 'multiple_choice', question: '"If I were you" — "were" это:', options: ['Past Simple', 'Past Perfect', 'субъюнктив', 'Future'], answer: 'субъюнктив' },
+    ],
+    quiz: [
+      { question: 'I suggest that he ___ more careful.', options: ['is', 'was', 'be', 'being'], answer: 'be' },
+      { question: 'It is essential that she ___ on time.', options: ['arrives', 'arrived', 'arrive', 'arriving'], answer: 'arrive' },
+      { question: 'После "insist that" используется:', options: ['инфинитив с to', 'bare infinitive', 'Past Simple', '-ing'], answer: 'bare infinitive' },
+      { question: '"If I ___ you, I would apologise."', options: ['am', 'was', 'were', 'be'], answer: 'were' },
+      { question: 'They demanded that the manager ___ to them.', options: ['speaks', 'spoke', 'speak', 'speaking'], answer: 'speak' },
+    ],
+  },
+  {
+    id: 'b2-1-77', level: 'B2', block: 1, blockName: 'Продвинутая грамматика', order: 77,
+    title: 'Альтернативы условным: provided / supposing', duration: '15 мин',
+    theory: {
+      explanation: '"Provided (that)" = при условии что (более строго чем "if"). "Supposing" = предположим что. "As long as" = до тех пор пока. "On condition that" = при условии что (официальный стиль).',
+      examples: [
+        { english: 'You can use my car, provided you drive carefully.', russian: 'Можешь взять мою машину, при условии что будешь ездить осторожно.' },
+        { english: 'Supposing it rains, what will you do?', russian: 'Предположим, пойдёт дождь — что ты будешь делать?' },
+        { english: 'I\'ll help as long as you help me too.', russian: 'Я помогу, пока ты тоже помогаешь мне.' },
+        { english: 'She agreed on condition that he called first.', russian: 'Она согласилась при условии, что он позвонит первым.' },
+        { english: 'You may attend provided that you register.', russian: 'Вы можете присутствовать при условии регистрации.' },
+        { english: 'Supposing you won the lottery, what would you do?', russian: 'Предположим, ты выиграл в лотерею — что бы ты сделал?' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'You can use my car, ___ you drive carefully.', answer: 'provided', hint: '"при условии что" = provided' },
+      { type: 'fill_blank', question: '___ it rains, what will you do?', answer: 'Supposing', hint: '"предположим, что" = Supposing' },
+      { type: 'multiple_choice', question: '"Provided that" используется:', options: ['более мягко чем if', 'более строго чем if', 'только в вопросах', 'только в отрицаниях'], answer: 'более строго чем if' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['I\'ll', 'help', 'as', 'long', 'as', 'you', 'help', 'me', 'too'], answer: 'I\'ll help as long as you help me too' },
+      { type: 'multiple_choice', question: '"On condition that" — стиль:', options: ['разговорный', 'официальный', 'поэтический', 'научный'], answer: 'официальный' },
+    ],
+    quiz: [
+      { question: '"Provided that" = ?', options: ['хотя', 'несмотря на', 'при условии что', 'потому что'], answer: 'при условии что' },
+      { question: '"Supposing" = ?', options: ['если не', 'предположим что', 'при условии что', 'хотя'], answer: 'предположим что' },
+      { question: 'You can come ___ you arrive on time.', options: ['although', 'despite', 'provided', 'unless'], answer: 'provided' },
+      { question: '"As long as" = ?', options: ['хотя', 'пока/при условии что', 'несмотря на', 'если не'], answer: 'пока/при условии что' },
+      { question: '"On condition that" используется в стиле:', options: ['разговорном', 'официальном', 'художественном', 'поэтическом'], answer: 'официальном' },
+    ],
+  },
+  {
+    id: 'b2-1-78', level: 'B2', block: 1, blockName: 'Продвинутая грамматика', order: 78,
+    title: 'Герундий: продвинутый уровень', duration: '15 мин',
+    theory: {
+      explanation: 'Герундий после предлогов (всегда): interested in doing, tired of waiting, good at speaking. После "look forward to, be used to, object to" + герундий, не инфинитив! Герундий как подлежащее: Swimming is healthy.',
+      examples: [
+        { english: 'I\'m interested in learning Japanese.', russian: 'Мне интересно учить японский.' },
+        { english: 'She\'s tired of waiting.', russian: 'Она устала ждать.' },
+        { english: 'I\'m looking forward to seeing you.', russian: 'С нетерпением жду встречи с тобой.' },
+        { english: 'He\'s used to working late.', russian: 'Он привык работать допоздна.' },
+        { english: 'Swimming is great exercise.', russian: 'Плавание — отличная физическая нагрузка.' },
+        { english: 'She objects to being treated like a child.', russian: 'Она возражает против того, чтобы с ней обращались как с ребёнком.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I\'m interested in ___ Japanese. (learn→герундий)', answer: 'learning', hint: 'после предлога → -ing' },
+      { type: 'fill_blank', question: 'I\'m looking forward to ___ you. (see→герундий)', answer: 'seeing' },
+      { type: 'multiple_choice', question: 'После "be used to" используется:', options: ['инфинитив', 'bare infinitive', '-ing', 'Past Simple'], answer: '-ing' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['Swimming', 'is', 'great', 'exercise'], answer: 'Swimming is great exercise' },
+      { type: 'multiple_choice', question: 'He objects to ___ like a child.', options: ['treat', 'be treated', 'treated', 'being treated'], answer: 'being treated' },
+    ],
+    quiz: [
+      { question: 'She\'s tired of ___.', options: ['to wait', 'wait', 'waiting', 'waited'], answer: 'waiting' },
+      { question: 'I\'m looking forward to ___ you.', options: ['see', 'sees', 'saw', 'seeing'], answer: 'seeing' },
+      { question: 'После предлога всегда используется:', options: ['инфинитив с to', 'bare infinitive', 'герундий (-ing)', 'Past Simple'], answer: 'герундий (-ing)' },
+      { question: 'He\'s used to ___ late.', options: ['work', 'works', 'worked', 'working'], answer: 'working' },
+      { question: '___ is great exercise.', options: ['To swim', 'Swim', 'Swimming', 'Swims'], answer: 'Swimming' },
+    ],
+  },
+  {
+    id: 'b2-1-79', level: 'B2', block: 1, blockName: 'Продвинутая грамматика', order: 79,
+    title: 'Формальный vs разговорный стиль', duration: '15 мин',
+    theory: {
+      explanation: 'Формальный: полные формы (do not, cannot), латинские слова (commence, terminate), пассив. Разговорный: сокращения (don\'t, can\'t), фразовые глаголы, менее формальная лексика.',
+      examples: [
+        { english: 'Formal: I would like to enquire... / Informal: I want to ask...', russian: 'Официально: Я хотел бы осведомиться... / Неформально: Хочу спросить...' },
+        { english: 'Formal: commence / Informal: start, begin', russian: 'Официально: приступить / Неформально: начать' },
+        { english: 'Formal: terminate / Informal: end, finish', russian: 'Официально: завершить / Неформально: закончить' },
+        { english: 'Formal: The meeting was attended by... / Informal: Everyone came to...', russian: 'Официально: на встрече присутствовали... / Неформально: все пришли на...' },
+        { english: 'Formal: It is recommended that... / Informal: You should...', russian: 'Официально: рекомендуется... / Неформально: тебе стоит...' },
+        { english: 'Formal: Furthermore / Informal: Also, and', russian: 'Официально: более того / Неформально: также, и' },
+      ],
+    },
+    exercises: [
+      { type: 'multiple_choice', question: 'Более формальный вариант "start":',  options: ['begin', 'commence', 'kick off', 'get going'], answer: 'commence' },
+      { type: 'multiple_choice', question: 'В официальном стиле используются:', options: ['сокращения', 'фразовые глаголы', 'полные формы', 'разговорные слова'], answer: 'полные формы' },
+      { type: 'fill_blank', question: 'Более формальный вариант "end": ___', answer: 'terminate', hint: 'terminate = официальное "end"' },
+      { type: 'build_sentence', question: 'Составь официальный вариант:', words: ['It', 'is', 'recommended', 'that', 'you', 'attend'], answer: 'It is recommended that you attend' },
+      { type: 'multiple_choice', question: '"Furthermore" — это стиль:', options: ['разговорный', 'официальный', 'поэтический', 'научный'], answer: 'официальный' },
+    ],
+    quiz: [
+      { question: 'Более официальный вариант "start":', options: ['kick off', 'begin', 'commence', 'get going'], answer: 'commence' },
+      { question: 'Более официальный вариант "end":', options: ['finish', 'stop', 'terminate', 'wrap up'], answer: 'terminate' },
+      { question: 'В официальном стиле вместо "I want to ask":', options: ['I wanna ask', 'I\'d like to enquire', 'Can I ask?', 'Let me ask'], answer: 'I\'d like to enquire' },
+      { question: 'Официальная связка вместо "also":', options: ['and', 'plus', 'furthermore', 'too'], answer: 'furthermore' },
+      { question: 'В официальном стиле НЕ используют:', options: ['пассив', 'полные формы', 'сокращения (don\'t)', 'латинские слова'], answer: 'сокращения (don\'t)' },
+    ],
+  },
+  {
+    id: 'b2-1-80', level: 'B2', block: 1, blockName: 'Продвинутая грамматика', order: 80,
+    title: 'Продвинутые пассивные конструкции', duration: '15 мин',
+    theory: {
+      explanation: 'Пассив с глаголами мнения: It is said that... / He is said to be... It is believed/reported/thought/claimed/known. Двойной пассив с "have + объект + PP". Personal vs impersonal passive.',
+      examples: [
+        { english: 'It is said that he is very rich.', russian: 'Говорят, что он очень богат.' },
+        { english: 'He is said to be very rich.', russian: 'Говорят, что он очень богат. (личный пассив)' },
+        { english: 'It is believed that the economy will improve.', russian: 'Считается, что экономика улучшится.' },
+        { english: 'The suspect is thought to have fled.', russian: 'Подозреваемый, как считается, сбежал.' },
+        { english: 'It is reported that ten people were injured.', russian: 'Сообщается, что десять человек пострадали.' },
+        { english: 'She is known to be a great cook.', russian: 'Известно, что она отличный повар.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'It is ___ that he is very rich.', answer: 'said', hint: 'It is said that...' },
+      { type: 'fill_blank', question: 'He is ___ to be very rich.', answer: 'said', hint: 'личный пассив' },
+      { type: 'multiple_choice', question: 'It is ___ that the economy will improve.', options: ['think', 'thought', 'thinking', 'thinks'], answer: 'thought' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['It', 'is', 'reported', 'that', 'ten', 'people', 'were', 'injured'], answer: 'It is reported that ten people were injured' },
+      { type: 'multiple_choice', question: 'She is ___ to be a great cook.', options: ['know', 'knowing', 'known', 'knew'], answer: 'known' },
+    ],
+    quiz: [
+      { question: 'It ___ said that he is rich.', options: ['has', 'is', 'was', 'are'], answer: 'is' },
+      { question: 'He ___ said to be rich.', options: ['has', 'is', 'was', 'were'], answer: 'is' },
+      { question: 'It is ___ that the economy will improve.', options: ['think', 'thought', 'thinking', 'thinks'], answer: 'thought' },
+      { question: 'She is ___ to be a great cook.', options: ['know', 'knowing', 'knew', 'known'], answer: 'known' },
+      { question: 'It is ___ that ten people were injured.', options: ['report', 'reporting', 'reported', 'reports'], answer: 'reported' },
+    ],
+  },
+  // ── B2 Block 2: Продвинутый дискурс ────────────────────────────────────────
+  {
+    id: 'b2-2-81', level: 'B2', block: 2, blockName: 'Продвинутый дискурс', order: 81,
+    title: 'Маркеры дискурса', duration: '15 мин',
+    theory: {
+      explanation: 'Маркеры дискурса организуют речь. Добавление: furthermore, moreover, in addition. Противопоставление: however, on the other hand, nevertheless. Причина: consequently, therefore, as a result. Пример: for instance, namely.',
+      examples: [
+        { english: 'Furthermore, the results were positive.', russian: 'Более того, результаты были положительными.' },
+        { english: 'However, there were some problems.', russian: 'Однако были некоторые проблемы.' },
+        { english: 'As a result, sales increased.', russian: 'В результате продажи выросли.' },
+        { english: 'On the other hand, costs also rose.', russian: 'С другой стороны, затраты тоже выросли.' },
+        { english: 'For instance, the London office grew by 20%.', russian: 'Например, лондонский офис вырос на 20%.' },
+        { english: 'Nevertheless, we remain optimistic.', russian: 'Тем не менее, мы остаёмся оптимистичными.' },
+      ],
+    },
+    exercises: [
+      { type: 'multiple_choice', question: '"Более того" = ?', options: ['However', 'Therefore', 'Furthermore', 'Nevertheless'], answer: 'Furthermore' },
+      { type: 'multiple_choice', question: '"В результате" = ?', options: ['However', 'Moreover', 'As a result', 'On the other hand'], answer: 'As a result' },
+      { type: 'fill_blank', question: '___, there were some problems. (однако)', answer: 'However' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['Furthermore,', 'the', 'results', 'were', 'positive'], answer: 'Furthermore, the results were positive' },
+      { type: 'multiple_choice', question: '"С другой стороны" = ?', options: ['Furthermore', 'Therefore', 'On the other hand', 'For instance'], answer: 'On the other hand' },
+    ],
+    quiz: [
+      { question: '"Более того" = ?', options: ['However', 'Therefore', 'Furthermore', 'Nevertheless'], answer: 'Furthermore' },
+      { question: '"Однако" = ?', options: ['Moreover', 'Furthermore', 'However', 'Therefore'], answer: 'However' },
+      { question: '"В результате" = ?', options: ['However', 'Moreover', 'Furthermore', 'As a result'], answer: 'As a result' },
+      { question: '"Тем не менее" = ?', options: ['However', 'Nevertheless', 'Therefore', 'Moreover'], answer: 'Nevertheless' },
+      { question: '"Например" = ?', options: ['Therefore', 'Nevertheless', 'For instance', 'However'], answer: 'For instance' },
+    ],
+  },
+  {
+    id: 'b2-2-82', level: 'B2', block: 2, blockName: 'Продвинутый дискурс', order: 82,
+    title: 'Язык смягчения (Hedging)', duration: '15 мин',
+    theory: {
+      explanation: 'Hedging — выражения для смягчения утверждений: tend to, appear to, seem to, it is likely that, it seems that, it could be argued that, generally speaking, to some extent.',
+      examples: [
+        { english: 'It seems that the problem is complex.', russian: 'Кажется, проблема сложная.' },
+        { english: 'People tend to prefer familiar things.', russian: 'Люди, как правило, предпочитают знакомые вещи.' },
+        { english: 'It is likely that prices will rise.', russian: 'Вероятно, цены вырастут.' },
+        { english: 'To some extent, this is true.', russian: 'В какой-то мере это верно.' },
+        { english: 'It could be argued that both sides have merit.', russian: 'Можно утверждать, что обе стороны правы.' },
+        { english: 'Generally speaking, exercise is beneficial.', russian: 'В целом, физические упражнения полезны.' },
+      ],
+    },
+    exercises: [
+      { type: 'multiple_choice', question: '"Кажется, что" = ?', options: ['It is that', 'It seems that', 'It is likely', 'It tends to'], answer: 'It seems that' },
+      { type: 'fill_blank', question: 'People ___ to prefer familiar things.', answer: 'tend', hint: 'tend to = как правило' },
+      { type: 'multiple_choice', question: '"В какой-то мере" = ?', options: ['Generally speaking', 'To some extent', 'It seems that', 'It tends to'], answer: 'To some extent' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['It', 'is', 'likely', 'that', 'prices', 'will', 'rise'], answer: 'It is likely that prices will rise' },
+      { type: 'multiple_choice', question: '"В целом" = ?', options: ['To some extent', 'It seems that', 'Generally speaking', 'It could be argued'], answer: 'Generally speaking' },
+    ],
+    quiz: [
+      { question: '"Кажется" в hedging = ?', options: ['tends', 'seems', 'appears', 'seems/appears'], answer: 'seems/appears' },
+      { question: 'People ___ to prefer familiar things.', options: ['seems', 'tend', 'appear', 'likely'], answer: 'tend' },
+      { question: '"Вероятно, что" = ?', options: ['It tends that', 'It seems that', 'It is likely that', 'It could that'], answer: 'It is likely that' },
+      { question: '"В какой-то мере" = ?', options: ['To some extent', 'Generally speaking', 'It seems that', 'It is likely'], answer: 'To some extent' },
+      { question: '"Можно утверждать, что" = ?', options: ['It tends to', 'It seems that', 'It could be argued that', 'Generally speaking'], answer: 'It could be argued that' },
+    ],
+  },
+  {
+    id: 'b2-2-83', level: 'B2', block: 2, blockName: 'Продвинутый дискурс', order: 83,
+    title: 'Сложные придаточные предложения', duration: '15 мин',
+    theory: {
+      explanation: 'Сложные сочетания: No matter how/what/where/who (как бы ни). However + adj: However tired she is. Wherever: Wherever you go. Whoever: Whoever wins. Whenever: Whenever I visit.',
+      examples: [
+        { english: 'No matter how hard she tries, she fails.', russian: 'Как бы она ни старалась, она терпит неудачу.' },
+        { english: 'However tired she is, she always smiles.', russian: 'Как бы она ни устала, она всегда улыбается.' },
+        { english: 'Wherever you go, I\'ll follow.', russian: 'Куда бы ты ни пошёл, я последую за тобой.' },
+        { english: 'Whoever wins will face challenges.', russian: 'Кто бы ни победил, столкнётся с трудностями.' },
+        { english: 'Whenever I visit, she bakes a cake.', russian: 'Всякий раз, когда я прихожу, она печёт торт.' },
+        { english: 'No matter what happens, stay calm.', russian: 'Что бы ни случилось, сохраняй спокойствие.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'No ___ how hard she tries, she fails.', answer: 'matter' },
+      { type: 'fill_blank', question: '___ you go, I\'ll follow.', answer: 'Wherever', hint: 'куда бы ни = wherever' },
+      { type: 'multiple_choice', question: '"Кто бы ни" = ?', options: ['Wherever', 'Whenever', 'Whoever', 'Whatever'], answer: 'Whoever' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['No', 'matter', 'what', 'happens,', 'stay', 'calm'], answer: 'No matter what happens, stay calm' },
+      { type: 'multiple_choice', question: '"Всякий раз, когда" = ?', options: ['Wherever', 'Whoever', 'Whenever', 'Whatever'], answer: 'Whenever' },
+    ],
+    quiz: [
+      { question: '"Куда бы ни" = ?', options: ['Whatever', 'Whenever', 'Whoever', 'Wherever'], answer: 'Wherever' },
+      { question: '"Кто бы ни" = ?', options: ['Whatever', 'Whenever', 'Wherever', 'Whoever'], answer: 'Whoever' },
+      { question: '"Что бы ни" = ?', options: ['Whoever', 'Wherever', 'Whatever', 'Whenever'], answer: 'Whatever' },
+      { question: '"Всякий раз, когда" = ?', options: ['Wherever', 'Whoever', 'Whatever', 'Whenever'], answer: 'Whenever' },
+      { question: 'No ___ how hard she tries, she fails.', options: ['wonder', 'matter', 'need', 'doubt'], answer: 'matter' },
+    ],
+  },
+  {
+    id: 'b2-2-84', level: 'B2', block: 2, blockName: 'Продвинутый дискурс', order: 84,
+    title: 'Сложные именные группы', duration: '15 мин',
+    theory: {
+      explanation: 'Развёрнутые именные группы: прилагательные + существительное + предложный оборот + относительное придаточное. "The recently published report on climate change that shocked the world." Компрессия информации.',
+      examples: [
+        { english: 'The recently published report shocked the world.', russian: 'Недавно опубликованный отчёт потряс мир.' },
+        { english: 'A carefully designed experiment', russian: 'Тщательно спланированный эксперимент' },
+        { english: 'The world\'s leading experts in the field', russian: 'Ведущие мировые эксперты в этой области' },
+        { english: 'A long-awaited breakthrough in cancer research', russian: 'Давно ожидаемый прорыв в исследовании рака' },
+        { english: 'The much-discussed proposal that was rejected', russian: 'Широко обсуждаемое предложение, которое было отклонено' },
+        { english: 'An increasingly complex situation', russian: 'Всё более сложная ситуация' },
+      ],
+    },
+    exercises: [
+      { type: 'multiple_choice', question: '"The recently published report" — это:', options: ['простая именная группа', 'развёрнутая именная группа', 'придаточное предложение', 'пассивная конструкция'], answer: 'развёрнутая именная группа' },
+      { type: 'fill_blank', question: 'A carefully ___ experiment. (design→PP)', answer: 'designed' },
+      { type: 'multiple_choice', question: '"Much-discussed" — это:', options: ['наречие', 'сложное прилагательное', 'глагол', 'существительное'], answer: 'сложное прилагательное' },
+      { type: 'build_sentence', question: 'Составь фразу:', words: ['A', 'long-awaited', 'breakthrough', 'in', 'research'], answer: 'A long-awaited breakthrough in research' },
+      { type: 'multiple_choice', question: '"Increasingly" + прилагательное означает:', options: ['однажды', 'неожиданно', 'всё более и более', 'внезапно'], answer: 'всё более и более' },
+    ],
+    quiz: [
+      { question: '"A carefully designed experiment" — "designed" это:', options: ['Past Simple', 'Present Participle', 'Past Participle', 'Gerund'], answer: 'Past Participle' },
+      { question: '"Much-discussed" — тип слова:', options: ['наречие', 'глагол', 'сложное прилагательное', 'существительное'], answer: 'сложное прилагательное' },
+      { question: '"Increasingly complex" = ?', options: ['слегка сложный', 'всё более сложный', 'однажды сложный', 'очень сложный'], answer: 'всё более сложный' },
+      { question: '"The world\'s leading experts in the field" — это:', options: ['простое слово', 'развёрнутая именная группа', 'глагольная группа', 'придаточное'], answer: 'развёрнутая именная группа' },
+      { question: 'A long-___ breakthrough. (await→PP)', options: ['awaited', 'awaiting', 'await', 'awaits'], answer: 'awaited' },
+    ],
+  },
+  {
+    id: 'b2-2-85', level: 'B2', block: 2, blockName: 'Продвинутый дискурс', order: 85,
+    title: 'Числа, данные и статистика', duration: '12 мин',
+    theory: {
+      explanation: 'Описание данных: rise/increase (рост), fall/decrease (падение), remain stable (остаться стабильным), peak at (достигнуть пика). Наречия: sharply, gradually, slightly, dramatically. Доли: a third, a quarter, the majority.',
+      examples: [
+        { english: 'Sales rose sharply by 20%.', russian: 'Продажи резко выросли на 20%.' },
+        { english: 'The number of users fell gradually.', russian: 'Число пользователей постепенно снижалось.' },
+        { english: 'Prices remained stable throughout the year.', russian: 'Цены оставались стабильными в течение года.' },
+        { english: 'The figure peaked at 500 in March.', russian: 'Показатель достиг пика в 500 в марте.' },
+        { english: 'The majority of students passed the exam.', russian: 'Большинство студентов сдали экзамен.' },
+        { english: 'Approximately a third of respondents agreed.', russian: 'Примерно треть респондентов согласилась.' },
+      ],
+    },
+    exercises: [
+      { type: 'multiple_choice', question: '"Резко" в описании данных = ?', options: ['gradually', 'slightly', 'sharply', 'steadily'], answer: 'sharply' },
+      { type: 'fill_blank', question: 'Sales ___ sharply by 20%. (вырос)', answer: 'rose', hint: 'rise → rose' },
+      { type: 'multiple_choice', question: '"Достичь пика" = ?', options: ['fall at', 'rise to', 'peak at', 'remain at'], answer: 'peak at' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['The', 'majority', 'of', 'students', 'passed'], answer: 'The majority of students passed' },
+      { type: 'multiple_choice', question: '"Постепенно" = ?', options: ['sharply', 'dramatically', 'gradually', 'rapidly'], answer: 'gradually' },
+    ],
+    quiz: [
+      { question: '"Резко" = ?', options: ['gradually', 'slightly', 'sharply', 'steadily'], answer: 'sharply' },
+      { question: '"Постепенно" = ?', options: ['sharply', 'dramatically', 'rapidly', 'gradually'], answer: 'gradually' },
+      { question: '"Достичь пика" = ?', options: ['fall at', 'rise to', 'peak at', 'remain at'], answer: 'peak at' },
+      { question: '"Оставаться стабильным" = ?', options: ['rise', 'fall', 'peak', 'remain stable'], answer: 'remain stable' },
+      { question: '"Большинство" = ?', options: ['a minority', 'a third', 'a quarter', 'the majority'], answer: 'the majority' },
+    ],
+  },
+  // ── B2 Block 3: B2 Обзор ───────────────────────────────────────────────────
+  {
+    id: 'b2-3-86', level: 'B2', block: 3, blockName: 'B2 Обзор', order: 86,
+    title: 'Продвинутые модальные глаголы', duration: '15 мин',
+    theory: {
+      explanation: 'Need + bare inf (= must): You needn\'t come. (= don\'t have to). Dare: He dared not speak. Would (повторяющееся прошлое): Every Sunday he would read. Shall (официальное): Shall I proceed?',
+      examples: [
+        { english: 'You needn\'t come if you\'re busy.', russian: 'Тебе не обязательно приходить, если занят.' },
+        { english: 'Every Sunday he would read the paper.', russian: 'Каждое воскресенье он читал газету. (привычка)' },
+        { english: 'He dared not say a word.', russian: 'Он не осмелился сказать ни слова.' },
+        { english: 'Shall I open the window?', russian: 'Открыть окно?' },
+        { english: 'I should have called earlier.', russian: 'Мне следовало позвонить раньше.' },
+        { english: 'You might want to reconsider.', russian: 'Возможно, вам стоит пересмотреть.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'You ___ come if you\'re busy. (needn\'t)', answer: 'needn\'t', hint: 'needn\'t = don\'t have to' },
+      { type: 'fill_blank', question: 'Every Sunday he ___ read the paper.', answer: 'would', hint: 'would = повторяющееся прошлое' },
+      { type: 'multiple_choice', question: '"Needn\'t" означает:', options: ['запрет', 'не обязательно', 'невозможно', 'неспособность'], answer: 'не обязательно' },
+      { type: 'build_sentence', question: 'Составь вопрос:', words: ['Shall', 'I', 'open', 'the', 'window?'], answer: 'Shall I open the window?' },
+      { type: 'multiple_choice', question: '"Would" для прошлых привычек:', options: ['нельзя заменить на "used to"', 'то же самое, что "used to" для действий', 'только для состояний', 'только в отрицаниях'], answer: 'то же самое, что "used to" для действий' },
+    ],
+    quiz: [
+      { question: '"Needn\'t" = ?', options: ['mustn\'t', 'don\'t have to', 'can\'t', 'shouldn\'t'], answer: 'don\'t have to' },
+      { question: 'Every Sunday he ___ read the paper. (привычка)', options: ['will', 'would', 'could', 'should'], answer: 'would' },
+      { question: 'He ___ not say a word. (dare)', options: ['dares', 'dared', 'dare', 'daring'], answer: 'dared' },
+      { question: '___ I open the window? (официальное)', options: ['Will', 'Would', 'Shall', 'Should'], answer: 'Shall' },
+      { question: 'You ___ want to reconsider. (возможно, стоит)', options: ['must', 'would', 'might', 'will'], answer: 'might' },
+    ],
+  },
+  {
+    id: 'b2-3-87', level: 'B2', block: 3, blockName: 'B2 Обзор', order: 87,
+    title: 'Предложения с номинализацией', duration: '15 мин',
+    theory: {
+      explanation: 'Академический стиль: замена глаголов существительными. "Prices rose" → "There was a rise in prices." "Scientists discovered" → "The discovery was made by scientists." Делает текст более формальным.',
+      examples: [
+        { english: 'Prices rose. → There was a rise in prices.', russian: 'Цены выросли. → Произошёл рост цен.' },
+        { english: 'Scientists discovered. → A discovery was made.', russian: 'Учёные открыли. → Было сделано открытие.' },
+        { english: 'The government decided. → The government\'s decision...', russian: 'Правительство решило. → Решение правительства...' },
+        { english: 'The economy developed. → Economic development occurred.', russian: 'Экономика развивалась. → Произошло экономическое развитие.' },
+        { english: 'They agreed. → Their agreement was...', russian: 'Они договорились. → Их соглашение было...' },
+        { english: 'She improved. → Her improvement was noticeable.', russian: 'Она улучшилась. → Её улучшение было заметным.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: '"Prices rose" → There was a ___ in prices.', answer: 'rise', hint: 'rise (noun) = рост' },
+      { type: 'fill_blank', question: '"Scientists discovered" → A ___ was made.', answer: 'discovery' },
+      { type: 'multiple_choice', question: 'Номинализация в академическом тексте:', options: ['делает текст менее формальным', 'делает текст более формальным', 'упрощает предложения', 'добавляет ошибки'], answer: 'делает текст более формальным' },
+      { type: 'build_sentence', question: 'Составь номинализацию:', words: ['There', 'was', 'a', 'rise', 'in', 'prices'], answer: 'There was a rise in prices' },
+      { type: 'multiple_choice', question: '"Improve" → существительное:', options: ['improveness', 'improvation', 'improvement', 'improver'], answer: 'improvement' },
+    ],
+    quiz: [
+      { question: '"Rise" (noun) = ?', options: ['рост', 'упадок', 'остаться', 'колебание'], answer: 'рост' },
+      { question: '"Discovery" = глагол:', options: ['discover', 'discoverment', 'discoverate', 'discoveration'], answer: 'discover' },
+      { question: '"Develop" → существительное:', options: ['developness', 'development', 'developer', 'developation'], answer: 'development' },
+      { question: '"Agree" → существительное:', options: ['agreeness', 'agreetion', 'agreement', 'agreefully'], answer: 'agreement' },
+      { question: 'Номинализация — это:', options: ['существительное→глагол', 'глагол/прил→существительное', 'наречие→прилагательное', 'глагол→наречие'], answer: 'глагол/прил→существительное' },
+    ],
+  },
+  {
+    id: 'b2-3-88', level: 'B2', block: 3, blockName: 'B2 Обзор', order: 88,
+    title: 'Точность и нюансы значений', duration: '15 мин',
+    theory: {
+      explanation: 'Синонимы имеют нюансы: say/tell/speak/talk различаются. look/see/watch/stare. big/large/huge/enormous. Коллокации: make a decision (не do), do homework (не make), have a shower (не do/make).',
+      examples: [
+        { english: 'make a decision (NOT do a decision)', russian: 'принять решение (не "do a decision")' },
+        { english: 'do homework (NOT make homework)', russian: 'делать домашнее задание' },
+        { english: 'have a shower / a meal / a rest', russian: 'принять душ / поесть / отдохнуть' },
+        { english: 'She is tall (inherent) vs. She grew tall (process)', russian: 'Она высокая (свойство) vs. Она выросла высокой (процесс)' },
+        { english: 'see (involuntary) vs. look at (deliberate) vs. watch (attentively)', russian: 'видеть (непроизвольно) vs. смотреть на (намеренно) vs. наблюдать (внимательно)' },
+        { english: 'say something vs. tell someone something', russian: 'сказать что-то vs. сказать кому-то что-то' },
+      ],
+    },
+    exercises: [
+      { type: 'multiple_choice', question: 'Правильная коллокация:', options: ['do a decision', 'make a decision', 'have a decision', 'take a decision?'], answer: 'make a decision' },
+      { type: 'multiple_choice', question: 'Правильная коллокация:', options: ['make homework', 'do homework', 'have homework', 'take homework'], answer: 'do homework' },
+      { type: 'fill_blank', question: 'She ___ a shower every morning. (принимает)', answer: 'has', hint: 'have a shower = принять душ' },
+      { type: 'multiple_choice', question: '"Смотреть внимательно/наблюдать" = ?', options: ['see', 'look at', 'watch', 'gaze'], answer: 'watch' },
+      { type: 'multiple_choice', question: '"Tell" требует после себя:', options: ['только that', 'только инфинитив', 'кому + что', 'только прямую речь'], answer: 'кому + что' },
+    ],
+    quiz: [
+      { question: 'Правильная коллокация:', options: ['do a decision', 'make a decision', 'take a decision', 'have a decision'], answer: 'make a decision' },
+      { question: 'Правильная коллокация:', options: ['make homework', 'have homework', 'do homework', 'take homework'], answer: 'do homework' },
+      { question: 'I ___ a shower every morning.', options: ['make', 'do', 'have', 'take'], answer: 'have' },
+      { question: '"Видеть непроизвольно" = ?', options: ['watch', 'look', 'see', 'gaze'], answer: 'see' },
+      { question: '"Смотреть специально/намеренно" = ?', options: ['see', 'watch', 'look at', 'stare'], answer: 'look at' },
+    ],
+  },
+  {
+    id: 'b2-3-89', level: 'B2', block: 3, blockName: 'B2 Обзор', order: 89,
+    title: 'Написание академических текстов', duration: '15 мин',
+    theory: {
+      explanation: 'Академическое эссе: введение (thesis statement), основная часть (topic sentence + evidence + analysis), заключение. Hedging: it seems, it could be argued. Маркеры: Furthermore, However, Consequently.',
+      examples: [
+        { english: 'This essay will argue that...', russian: 'Это эссе будет утверждать, что...' },
+        { english: 'It could be argued that technology improves lives.', russian: 'Можно утверждать, что технологии улучшают жизнь.' },
+        { english: 'Furthermore, research suggests that...', russian: 'Более того, исследования предполагают, что...' },
+        { english: 'However, there are counterarguments.', russian: 'Однако существуют контраргументы.' },
+        { english: 'In conclusion, the evidence suggests...', russian: 'В заключение, данные свидетельствуют...' },
+        { english: 'The data indicates a significant increase.', russian: 'Данные указывают на значительный рост.' },
+      ],
+    },
+    exercises: [
+      { type: 'multiple_choice', question: 'Академическое эссе начинается с:', options: ['заключения', 'примеров', 'введения с тезисом', 'данных'], answer: 'введения с тезисом' },
+      { type: 'fill_blank', question: 'In ___, the evidence suggests... (в заключение)', answer: 'conclusion' },
+      { type: 'multiple_choice', question: '"Topic sentence" — это:', options: ['главное предложение абзаца', 'заключение', 'введение', 'тезис всего эссе'], answer: 'главное предложение абзаца' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['Furthermore,', 'research', 'suggests', 'that', 'education', 'matters'], answer: 'Furthermore, research suggests that education matters' },
+      { type: 'multiple_choice', question: '"The data indicates..." — стиль:', options: ['разговорный', 'официальный/академический', 'поэтический', 'газетный'], answer: 'официальный/академический' },
+    ],
+    quiz: [
+      { question: 'Академическое эссе начинается с:', options: ['заключения', 'примеров', 'введения с тезисом', 'данных'], answer: 'введения с тезисом' },
+      { question: '"In conclusion" стоит в:', options: ['введении', 'основной части', 'заключении', 'теме'], answer: 'заключении' },
+      { question: '"Topic sentence" — это:', options: ['тезис всего эссе', 'введение', 'главное предложение абзаца', 'данные'], answer: 'главное предложение абзаца' },
+      { question: 'Hedging делает утверждение:', options: ['более категоричным', 'более мягким/осторожным', 'более разговорным', 'менее ясным'], answer: 'более мягким/осторожным' },
+      { question: '"Furthermore" используется для:', options: ['противопоставления', 'добавления', 'причины', 'примера'], answer: 'добавления' },
+    ],
+  },
+  {
+    id: 'b2-3-90', level: 'B2', block: 3, blockName: 'B2 Обзор', order: 90,
+    title: 'B2 Обзор: итоговый тест', duration: '25 мин',
+    theory: {
+      explanation: 'Повторение B2: сослагательное наклонение, альтернативы условным, продвинутый пассив, маркеры дискурса, hedging, номинализация, коллокации, академический стиль.',
+      examples: [
+        { english: 'I suggest that he be more careful. (субъюнктив)', russian: 'Сослагательное: bare infinitive после suggest' },
+        { english: 'It is said that he is rich. (пассив мнения)', russian: 'Пассив глаголов мнения.' },
+        { english: 'To some extent, this is true. (hedging)', russian: 'Смягчение.' },
+        { english: 'Furthermore, the results were positive. (маркер)', russian: 'Дискурсивный маркер.' },
+        { english: 'There was a rise in prices. (номинализация)', russian: 'Номинализация.' },
+        { english: 'No matter how hard she tries. (сложный союз)', russian: 'Сложное придаточное.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'I suggest that he ___ more careful.', answer: 'be' },
+      { type: 'fill_blank', question: 'It is ___ that he is rich.', answer: 'said' },
+      { type: 'multiple_choice', question: '"В результате" = ?', options: ['Furthermore', 'However', 'As a result', 'Moreover'], answer: 'As a result' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['There', 'was', 'a', 'rise', 'in', 'prices'], answer: 'There was a rise in prices' },
+      { type: 'multiple_choice', question: 'Правильная коллокация:', options: ['do a decision', 'make a decision', 'have a decision', 'take a decision'], answer: 'make a decision' },
+    ],
+    quiz: [
+      { question: 'I suggest that he ___ more careful.', options: ['is', 'was', 'be', 'being'], answer: 'be' },
+      { question: 'It is ___ that he is rich.', options: ['think', 'thought', 'said', 'say'], answer: 'said' },
+      { question: '"Более того" = ?', options: ['However', 'Therefore', 'Furthermore', 'Nevertheless'], answer: 'Furthermore' },
+      { question: '"В результате" = ?', options: ['However', 'Moreover', 'Furthermore', 'As a result'], answer: 'As a result' },
+      { question: '"Кажется, что" = ?', options: ['It tends that', 'It seems that', 'It is likely', 'Generally speaking'], answer: 'It seems that' },
+      { question: 'You ___ use my car, provided you drive carefully.', options: ['should', 'can', 'must', 'shall'], answer: 'can' },
+      { question: '"Куда бы ни" = ?', options: ['Whatever', 'Whenever', 'Whoever', 'Wherever'], answer: 'Wherever' },
+      { question: '"Резко" (о данных) = ?', options: ['gradually', 'slightly', 'sharply', 'steadily'], answer: 'sharply' },
+      { question: 'Правильная коллокация:', options: ['make homework', 'do homework', 'have homework', 'take homework'], answer: 'do homework' },
+      { question: '"Needn\'t" = ?', options: ['mustn\'t', 'don\'t have to', 'can\'t', 'shouldn\'t'], answer: 'don\'t have to' },
+    ],
+  },
+  // ── C1 Block 1: Уровень C1 ──────────────────────────────────────────────────
+  {
+    id: 'c1-1-91', level: 'C1', block: 1, blockName: 'Уровень C1', order: 91,
+    title: 'Продвинутые условные: смешанные типы', duration: '20 мин',
+    theory: {
+      explanation: 'На уровне C1 условные предложения смешиваются свободно. Без "if": Were I to... / Had I known... / Should you need... (инверсия). Had I known, I would have acted differently. Were I in your position, I would resign.',
+      examples: [
+        { english: 'Had I known, I would have acted differently.', russian: 'Если бы я знал, я бы поступил иначе.' },
+        { english: 'Were I in your position, I would resign.', russian: 'Будь я на твоём месте, я бы ушёл.' },
+        { english: 'Should you need help, call me.', russian: 'Если вам понадобится помощь, позвоните.' },
+        { english: 'But for your help, I couldn\'t have done it.', russian: 'Если бы не твоя помощь, я бы не смог.' },
+        { english: 'Supposing you were offered the job, would you take it?', russian: 'Предположим, вам предложат работу — возьмёте?' },
+        { english: 'If only I had listened to her advice!', russian: 'Если бы я только послушал её совета!' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: '___ I known, I would have acted differently.', answer: 'Had', hint: 'Инверсия: Had I... = If I had...' },
+      { type: 'fill_blank', question: '___ I in your position, I would resign.', answer: 'Were', hint: 'Инверсия: Were I... = If I were...' },
+      { type: 'multiple_choice', question: '"But for your help" означает:', options: ['благодаря твоей помощи', 'если бы не твоя помощь', 'несмотря на твою помощь', 'после твоей помощи'], answer: 'если бы не твоя помощь' },
+      { type: 'build_sentence', question: 'Составь предложение с инверсией:', words: ['Should', 'you', 'need', 'help,', 'call', 'me'], answer: 'Should you need help, call me' },
+      { type: 'multiple_choice', question: '"Had I known" = ?', options: ['If I have known', 'If I had known', 'If I knew', 'If I know'], answer: 'If I had known' },
+    ],
+    quiz: [
+      { question: '"Had I known" = ?', options: ['If I have known', 'If I had known', 'If I knew', 'If I know'], answer: 'If I had known' },
+      { question: '"Were I in your position" = ?', options: ['If I was', 'If I am', 'If I were', 'If I have been'], answer: 'If I were' },
+      { question: '"Should you need help" = ?', options: ['If you needed help', 'If you would need help', 'If you need help', 'If you have needed help'], answer: 'If you need help' },
+      { question: '"But for your help" = ?', options: ['Thanks to your help', 'If it weren\'t for your help', 'Despite your help', 'After your help'], answer: 'If it weren\'t for your help' },
+      { question: 'Инверсия в условных предложениях используется для:', options: ['ошибок', 'официального/литературного стиля', 'разговорного стиля', 'вопросов'], answer: 'официального/литературного стиля' },
+    ],
+  },
+  {
+    id: 'c1-1-92', level: 'C1', block: 1, blockName: 'Уровень C1', order: 92,
+    title: 'Продвинутые модальные конструкции', duration: '20 мин',
+    theory: {
+      explanation: 'Модальные + perfect + passive: It must have been stolen. The report should have been submitted. Can\'t have been written by him. Modal + continuous perfect: She must have been working all night.',
+      examples: [
+        { english: 'It must have been stolen.', russian: 'Это, должно быть, было украдено.' },
+        { english: 'The report should have been submitted yesterday.', russian: 'Отчёт должен был быть отправлен вчера.' },
+        { english: 'She must have been working all night.', russian: 'Она, должно быть, работала всю ночь.' },
+        { english: 'It can\'t have been written by him.', russian: 'Это не могло быть написано им.' },
+        { english: 'The package might have been lost.', russian: 'Посылка, возможно, была потеряна.' },
+        { english: 'They could have been waiting for hours.', russian: 'Они могли ждать часами.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: 'It must have been ___.  (steal→PP пассив)', answer: 'stolen' },
+      { type: 'fill_blank', question: 'She must have been ___ all night. (work→-ing)', answer: 'working' },
+      { type: 'multiple_choice', question: '"It can\'t have been written by him" выражает:', options: ['уверенность', 'невозможность в прошлом пассив', 'разрешение', 'запрет'], answer: 'невозможность в прошлом пассив' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['The', 'package', 'might', 'have', 'been', 'lost'], answer: 'The package might have been lost' },
+      { type: 'multiple_choice', question: '"Must have been + -ing" выражает:', options: ['уверенность в прошлом действии-процессе', 'запрет', 'невозможность', 'разрешение'], answer: 'уверенность в прошлом действии-процессе' },
+    ],
+    quiz: [
+      { question: 'It must have been ___.  (steal)', options: ['steal', 'steals', 'stolen', 'stealing'], answer: 'stolen' },
+      { question: 'She must have been ___ all night.', options: ['work', 'worked', 'working', 'works'], answer: 'working' },
+      { question: '"Can\'t have been done" выражает:', options: ['уверенность', 'невозможность в прошлом', 'вероятность', 'разрешение'], answer: 'невозможность в прошлом' },
+      { question: 'The package ___ have been lost. (возможно)', options: ['must', 'can\'t', 'might', 'should'], answer: 'might' },
+      { question: 'They ___ have been waiting for hours. (могли)', options: ['must', 'might', 'could', 'should'], answer: 'could' },
+    ],
+  },
+  {
+    id: 'c1-1-93', level: 'C1', block: 1, blockName: 'Уровень C1', order: 93,
+    title: 'Риторические приёмы', duration: '20 мин',
+    theory: {
+      explanation: 'Риторика: анафора (повторение в начале), трёхчленные структуры (tricolon), риторический вопрос, литота (understatement). "I have a dream... I have a dream..." "Veni, vidi, vici." "Not bad" (= very good).',
+      examples: [
+        { english: 'I have a dream... I have a dream... (anaphora)', russian: 'У меня есть мечта... (анафора — повторение)' },
+        { english: 'We came, we saw, we conquered. (tricolon)', russian: 'Пришли, увидели, победили. (трёхчленная структура)' },
+        { english: 'Is this the kind of world we want? (rhetorical Q)', russian: 'Это тот мир, который мы хотим? (риторический вопрос)' },
+        { english: '"Not bad" meaning "very good" (litotes)', russian: '"Неплохо" в значении "очень хорошо" (литота)' },
+        { english: 'The weather is somewhat unpleasant. (euphemism for "terrible")', russian: 'Погода несколько неприятна. (эвфемизм)' },
+        { english: 'Education, innovation, determination — that\'s what we need.', russian: 'Образование, инновации, решимость — вот что нам нужно.' },
+      ],
+    },
+    exercises: [
+      { type: 'multiple_choice', question: 'Анафора — это:', options: ['повторение слов в конце предложений', 'повторение слов в начале предложений', 'три элемента в ряд', 'риторический вопрос'], answer: 'повторение слов в начале предложений' },
+      { type: 'multiple_choice', question: '"Not bad" в смысле "очень хорошо" — это:', options: ['анафора', 'трёхчленная структура', 'литота', 'метафора'], answer: 'литота' },
+      { type: 'fill_blank', question: '"Veni, vidi, vici" — это ___ (трёхчленная структура).', answer: 'tricolon', hint: 'tricolon = три элемента' },
+      { type: 'build_sentence', question: 'Составь риторический вопрос:', words: ['Is', 'this', 'the', 'kind', 'of', 'world', 'we', 'want?'], answer: 'Is this the kind of world we want?' },
+      { type: 'multiple_choice', question: 'Риторический вопрос:', options: ['требует ответа', 'не требует ответа', 'задаётся только в эссе', 'содержит отрицание'], answer: 'не требует ответа' },
+    ],
+    quiz: [
+      { question: 'Анафора — это:', options: ['повторение в конце', 'повторение в начале', 'три элемента', 'риторический вопрос'], answer: 'повторение в начале' },
+      { question: '"Not bad" в смысле "очень хорошо" — это:', options: ['анафора', 'tricolon', 'литота', 'риторический вопрос'], answer: 'литота' },
+      { question: 'Tricolon — это:', options: ['повторение', 'три элемента в ряд', 'риторический вопрос', 'эвфемизм'], answer: 'три элемента в ряд' },
+      { question: 'Риторический вопрос:', options: ['всегда требует ответа', 'не требует ответа', 'только в диалоге', 'только в письме'], answer: 'не требует ответа' },
+      { question: 'Эвфемизм — это:', options: ['преувеличение', 'мягкая замена грубого/жёсткого слова', 'повторение', 'три элемента'], answer: 'мягкая замена грубого/жёсткого слова' },
+    ],
+  },
+  {
+    id: 'c1-1-94', level: 'C1', block: 1, blockName: 'Уровень C1', order: 94,
+    title: 'Выражение позиции и взгляда', duration: '20 мин',
+    theory: {
+      explanation: 'Stance adverbials: frankly, honestly, surprisingly, allegedly. Sentence adverbs: Fortunately, the plan worked. Attitude markers: to my surprise, to be honest. Emphasizers: absolutely, entirely, utterly.',
+      examples: [
+        { english: 'Frankly, I don\'t believe him.', russian: 'Честно говоря, я ему не верю.' },
+        { english: 'Surprisingly, they agreed.', russian: 'К удивлению, они согласились.' },
+        { english: 'Allegedly, he was there at the time.', russian: 'По имеющимся данным, он был там в то время.' },
+        { english: 'To my surprise, she won.', russian: 'К моему удивлению, она выиграла.' },
+        { english: 'Fortunately, everyone arrived safely.', russian: 'К счастью, все прибыли благополучно.' },
+        { english: 'I am utterly convinced.', russian: 'Я совершенно убеждён.' },
+      ],
+    },
+    exercises: [
+      { type: 'multiple_choice', question: '"Frankly" означает:', options: ['к счастью', 'честно говоря', 'предположительно', 'к удивлению'], answer: 'честно говоря' },
+      { type: 'fill_blank', question: '___, they agreed. (К удивлению)', answer: 'Surprisingly' },
+      { type: 'multiple_choice', question: '"Allegedly" означает:', options: ['честно', 'к счастью', 'по имеющимся данным', 'к удивлению'], answer: 'по имеющимся данным' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['Fortunately,', 'everyone', 'arrived', 'safely'], answer: 'Fortunately, everyone arrived safely' },
+      { type: 'multiple_choice', question: '"Utterly" — это:', options: ['слегка', 'совершенно/абсолютно', 'иногда', 'обычно'], answer: 'совершенно/абсолютно' },
+    ],
+    quiz: [
+      { question: '"Frankly" = ?', options: ['к счастью', 'честно говоря', 'предположительно', 'к удивлению'], answer: 'честно говоря' },
+      { question: '"Surprisingly" = ?', options: ['к счастью', 'к сожалению', 'к удивлению', 'предположительно'], answer: 'к удивлению' },
+      { question: '"Allegedly" = ?', options: ['честно', 'к счастью', 'по имеющимся данным', 'абсолютно'], answer: 'по имеющимся данным' },
+      { question: '"Fortunately" = ?', options: ['к сожалению', 'к удивлению', 'честно говоря', 'к счастью'], answer: 'к счастью' },
+      { question: '"Utterly convinced" = ?', options: ['слегка убеждён', 'иногда убеждён', 'совершенно убеждён', 'редко убеждён'], answer: 'совершенно убеждён' },
+    ],
+  },
+  {
+    id: 'c1-1-95', level: 'C1', block: 1, blockName: 'Уровень C1', order: 95,
+    title: 'C1 Обзор: итоговый тест', duration: '30 мин',
+    theory: {
+      explanation: 'Финальный обзор C1: условные с инверсией, модальные + пассив + perfect continuous, риторические приёмы, stance adverbials, академический стиль, номинализация, продвинутые именные группы.',
+      examples: [
+        { english: 'Had I known, I would have acted differently.', russian: 'Инверсия в условном.' },
+        { english: 'It must have been stolen.', russian: 'Модальный + пассив + perfect.' },
+        { english: 'Were I to accept, what would happen?', russian: 'Were + инфинитив (официальный стиль).' },
+        { english: 'Not bad (litotes) / Frankly, I disagree (stance)', russian: 'Литота и stance adverbial.' },
+        { english: 'Should you need assistance, do not hesitate to contact us.', russian: 'Официальный условный с инверсией.' },
+        { english: 'Furthermore, the evidence suggests... (discourse marker)', russian: 'Дискурсивный маркер.' },
+      ],
+    },
+    exercises: [
+      { type: 'fill_blank', question: '___ I known, I would have acted differently.', answer: 'Had' },
+      { type: 'fill_blank', question: 'It must have been ___ by someone. (steal→PP)', answer: 'stolen' },
+      { type: 'multiple_choice', question: '"Frankly" — это:', options: ['союз', 'stance adverbial', 'дискурсивный маркер', 'hedging'], answer: 'stance adverbial' },
+      { type: 'build_sentence', question: 'Составь предложение:', words: ['Should', 'you', 'need', 'help,', 'call', 'me'], answer: 'Should you need help, call me' },
+      { type: 'multiple_choice', question: '"Not bad" в значении "очень хорошо" — это:', options: ['анафора', 'tricolon', 'литота', 'риторический вопрос'], answer: 'литота' },
+    ],
+    quiz: [
+      { question: '"Had I known" = ?', options: ['If I have known', 'If I had known', 'If I knew', 'If I know'], answer: 'If I had known' },
+      { question: '"Were I in your position" = ?', options: ['If I was', 'If I am', 'If I were', 'If I have been'], answer: 'If I were' },
+      { question: 'It must have been ___.', options: ['steal', 'steals', 'stolen', 'stealing'], answer: 'stolen' },
+      { question: 'She must have been ___ all night.', options: ['work', 'worked', 'working', 'works'], answer: 'working' },
+      { question: 'Анафора — это:', options: ['повторение в конце', 'повторение в начале', 'три элемента', 'риторический вопрос'], answer: 'повторение в начале' },
+      { question: '"Frankly" = ?', options: ['к счастью', 'честно говоря', 'предположительно', 'к удивлению'], answer: 'честно говоря' },
+      { question: '"Allegedly" = ?', options: ['честно', 'к счастью', 'по имеющимся данным', 'абсолютно'], answer: 'по имеющимся данным' },
+      { question: 'Litotes — это:', options: ['преувеличение', 'смягчение/преуменьшение', 'повторение', 'три элемента'], answer: 'смягчение/преуменьшение' },
+      { question: '"Should you need help" — это:', options: ['первый тип условного', 'второй тип', 'инверсия первого типа', 'третий тип'], answer: 'инверсия первого типа' },
+      { question: '"Furthermore" используется для:', options: ['противопоставления', 'добавления', 'причины', 'примера'], answer: 'добавления' },
+    ],
+  },
+]
 
-export function isLevelLocked(userLevel: CEFRLevel, lessonLevel: CEFRLevel): boolean {
-  return CEFR_ORDER.indexOf(lessonLevel) > CEFR_ORDER.indexOf(userLevel)
-}
-
-// Fix: some lessons have content as string (paste error) — normalize
-LESSONS.forEach(l => {
-  if (typeof (l.content as unknown) === 'string') {
-    const str = l.content as unknown as string
-    l.content = {
-      explanation: str,
-      examples: [],
-      keyPoints: [],
-    }
-  }
-})
+export default LESSONS
