@@ -147,7 +147,8 @@ function diffWords(target: string, spoken: string) {
 
 function getSR(): (new () => SpeechRecInst2) | null {
   if (typeof window === 'undefined') return null
-  return window.SpeechRecognition || window.webkitSpeechRecognition || null
+  const w = window as Window & { SpeechRecognition?: new () => SpeechRecInst2; webkitSpeechRecognition?: new () => SpeechRecInst2 }
+  return w.SpeechRecognition || w.webkitSpeechRecognition || null
 }
 
 function speak(text: string, rate = 1) {
