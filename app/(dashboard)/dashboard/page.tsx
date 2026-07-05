@@ -9,6 +9,7 @@ import {
   Sparkles, ChevronRight,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { StreakWidget } from '@/components/StreakWidget'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface Profile {
@@ -71,6 +72,13 @@ export default function DashboardPage() {
   const [vocabCount, setVocabCount] = useState(0)
   const [recentConvs, setRecentConvs] = useState<RecentConv[]>([])
   const [loading, setLoading] = useState(true)
+  const [localLevel, setLocalLevel] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setLocalLevel(localStorage.getItem('fluenta_user_level'))
+    }
+  }, [])
 
   useEffect(() => {
     async function load() {
@@ -247,42 +255,49 @@ export default function DashboardPage() {
         </motion.div>
       </div>
 
-      {/* ── 4. Quick Actions ───────────────────────────────────────────────── */}
+      {/* ── 4. Full nav grid (3×3) ─────────────────────────────────────────── */}
       <motion.div custom={7} variants={fadeUp} initial="hidden" animate="visible">
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-[#475569] mb-3">Quick Actions</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-[#475569]">Все разделы</h2>
+          {localLevel && (
+            <span className="text-xs px-2 py-0.5 rounded-lg font-semibold"
+              style={{ backgroundColor: '#6366f120', color: '#818cf8' }}>
+              Твой уровень: {localLevel}
+            </span>
+          )}
+        </div>
+        <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {[
-            { emoji: '📖', label: 'Lessons', desc: 'Structured curriculum A1–C2', href: '/lessons', color: '#6366f1', bg: '#6366f120' },
-            { emoji: '📝', label: 'Vocabulary', desc: `${vocabCount} words in your bank`, href: '/vocabulary', color: '#8b5cf6', bg: '#8b5cf620' },
-            { emoji: '📊', label: 'My Progress', desc: `Current level: ${level}`, href: '/progress', color: '#06b6d4', bg: '#06b6d420' },
-          ].map((action, i) => (
-            <Link key={action.label} href={action.href}>
-              <motion.div
-                whileHover={{ y: -4, scale: 1.02 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 18 }}
-                className={`group ${glass} rounded-2xl p-5 cursor-pointer flex items-center gap-4 relative overflow-hidden`}
-              >
-                {/* Hover glow */}
-                <div
-                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none rounded-2xl"
-                  style={{ background: `radial-gradient(circle at 0% 50%, ${action.color}15 0%, transparent 60%)` }}
-                />
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0" style={{ backgroundColor: action.bg }}>
-                  {action.emoji}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-white font-bold text-sm">{action.label}</div>
-                  <div className="text-[#64748b] text-xs mt-0.5 truncate">{action.desc}</div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-[#334155] group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" />
+            { emoji: '📖', label: 'Уроки', href: '/lessons', color: '#6366f1' },
+            { emoji: '🃏', label: 'Словарь', href: '/vocabulary', color: '#8b5cf6' },
+            { emoji: '🎧', label: 'Аудирование', href: '/listening', color: '#3b82f6' },
+            { emoji: '📄', label: 'Чтение', href: '/reading', color: '#06b6d4' },
+            { emoji: '✍️', label: 'Письмо', href: '/writing', color: '#10b981' },
+            { emoji: '🎤', label: 'Произношение', href: '/pronunciation', color: '#f59e0b' },
+            { emoji: '📋', label: 'Грамматика', href: '/grammar', color: '#ef4444' },
+            { emoji: '🤖', label: 'AI Репетитор', href: '/ai-tutor', color: '#a855f7' },
+            { emoji: '📊', label: 'Тест уровня', href: '/level-test', color: '#f97316' },
+          ].map((item) => (
+            <Link key={item.href} href={item.href}>
+              <motion.div whileHover={{ y: -3, scale: 1.04 }} transition={{ type: 'spring', stiffness: 300, damping: 18 }}
+                className={`group ${glass} rounded-2xl p-4 cursor-pointer flex flex-col items-center gap-2 text-center relative overflow-hidden`}>
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none rounded-2xl"
+                  style={{ background: `radial-gradient(circle at 50% 50%, ${item.color}18 0%, transparent 70%)` }} />
+                <div className="text-2xl">{item.emoji}</div>
+                <div className="text-white text-xs font-semibold leading-tight">{item.label}</div>
               </motion.div>
             </Link>
           ))}
         </div>
       </motion.div>
 
-      {/* ── 6. Recent Activity ─────────────────────────────────────────────── */}
+      {/* ── 5b. Streak Widget ──────────────────────────────────────────────── */}
       <motion.div custom={8} variants={fadeUp} initial="hidden" animate="visible">
+        <StreakWidget />
+      </motion.div>
+
+      {/* ── 6. Recent Activity ─────────────────────────────────────────────── */}
+      <motion.div custom={9} variants={fadeUp} initial="hidden" animate="visible">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-[#475569]">Recent Activity</h2>
           {recentConvs.length > 0 && (
@@ -333,7 +348,7 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* ── Level badge ────────────────────────────────────────────────────── */}
-      <motion.div custom={9} variants={fadeUp} initial="hidden" animate="visible">
+      <motion.div custom={10} variants={fadeUp} initial="hidden" animate="visible">
         <div className={`${glass} rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4`}>
           <div className="flex items-center gap-3 flex-1">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] flex items-center justify-center">

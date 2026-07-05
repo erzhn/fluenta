@@ -20,6 +20,11 @@ import {
   Zap,
   Target,
   X,
+  BarChart2,
+  PenLine,
+  Headphones,
+  FileText,
+  GraduationCap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getLevelFromXP } from "@/lib/gamification";
@@ -32,6 +37,11 @@ const NAV_ITEMS = [
   { href: "/lessons",      icon: BookOpen,        label: "Уроки",        badge: null },
   { href: "/vocabulary",   icon: Layers,          label: "Словарь",      badge: "vocab" },
   { href: "/pronunciation",icon: Mic,             label: "Произношение", badge: null },
+  { href: "/listening",    icon: Headphones,      label: "Аудирование",  badge: null },
+  { href: "/reading",      icon: FileText,        label: "Чтение",       badge: null },
+  { href: "/writing",      icon: PenLine,         label: "Письмо",       badge: null },
+  { href: "/grammar",      icon: GraduationCap,   label: "Грамматика",   badge: null },
+  { href: "/level-test",   icon: BarChart2,       label: "Тест уровня",  badge: null },
   { href: "/progress",     icon: TrendingUp,      label: "Прогресс",     badge: null },
 ];
 

@@ -1,596 +1,283 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, X, Loader2, RotateCcw, Trash2, Calendar, BookOpen } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
-import type { VocabWord } from '@/types'
+import { RotateCcw, Volume2, Check, X, Layers } from 'lucide-react'
+import { VOCABULARY, type VocabWord } from '@/lib/vocabulary-data'
 
-// ── Glassmorphism helper ───────────────────────────────────────────────────────
-const glass = 'bg-white/[0.04] backdrop-blur-xl border border-white/10'
+const STORAGE_KEY = 'fluenta_vocab_srs'
 
-// ── Simple SRS constants (days) ───────────────────────────────────────────────
-const SRS = { hard: 1, good: 3, easy: 7 } as const
-type Rating = keyof typeof SRS
-
-// ── Helpers ────────────────────────────────────────────────────────────────────
-function daysUntil(iso: string): number {
-  return Math.ceil((new Date(iso).getTime() - Date.now()) / 86400000)
+interface CardState {
+  id: string
+  box: number
+  nextReview: string
+  lastResult?: 'correct' | 'incorrect'
 }
 
-function nextReviewLabel(iso: string): string {
-  const d = daysUntil(iso)
-  if (d <= 0) return 'Due now'
-  if (d === 1) return 'Tomorrow'
-  if (d < 7) return `In ${d} days`
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+type SRSState = Record<string, CardState>
+
+function todayISO() {
+  return new Date().toISOString().slice(0, 10)
 }
 
-function isDue(iso: string): boolean {
-  return new Date(iso) <= new Date()
-}
-
-function addDays(n: number): string {
+function nextReviewDate(box: number): string {
+  const intervals = [0, 1, 3, 7, 14, 30]
+  const days = intervals[Math.min(box, intervals.length - 1)]
   const d = new Date()
-  d.setDate(d.getDate() + n)
-  return d.toISOString()
+  d.setDate(d.getDate() + days)
+  return d.toISOString().slice(0, 10)
 }
 
-// ── Animation variants ─────────────────────────────────────────────────────────
-const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
-  visible: (i = 0) => ({ opacity: 1, y: 0, transition: { duration: 0.4, delay: i * 0.06, ease: 'easeOut' as const } }),
+function loadSRS(): SRSState {
+  if (typeof window === 'undefined') return {}
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    return raw ? JSON.parse(raw) : {}
+  } catch { return {} }
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
+function saveSRS(state: SRSState) {
+  if (typeof window === 'undefined') return
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+}
+
+function getDueCards(all: VocabWord[], srs: SRSState): VocabWord[] {
+  const today = todayISO()
+  return all.filter(w => {
+    const cs = srs[w.id]
+    if (!cs) return true
+    if (cs.box >= 5) return false
+    return cs.nextReview <= today
+  })
+}
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+const BOX_LABELS = ['Новые', 'День 1', 'День 3', 'Нед. 1', 'Нед. 2', 'Выучены']
+const BOX_COLORS = ['#ef4444', '#f59e0b', '#3b82f6', '#8b5cf6', '#10b981', '#10b981']
+
 export default function VocabularyPage() {
-  const [userId, setUserId] = useState<string | null>(null)
-  const [words, setWords] = useState<VocabWord[]>([])
-  const [loading, setLoading] = useState(true)
-
-  // Add-word form
-  const [word, setWord] = useState('')
-  const [translation, setTranslation] = useState('')
-  const [example, setExample] = useState('')
-  const [saving, setSaving] = useState(false)
-  const [addError, setAddError] = useState('')
-
-  // Review mode
-  const [reviewing, setReviewing] = useState(false)
-  const [reviewQueue, setReviewQueue] = useState<VocabWord[]>([])
-  const [reviewIdx, setReviewIdx] = useState(0)
+  const [srs, setSRS] = useState<SRSState>({})
+  const [queue, setQueue] = useState<VocabWord[]>([])
+  const [qIdx, setQIdx] = useState(0)
   const [flipped, setFlipped] = useState(false)
-  const [reviewDone, setReviewDone] = useState(false)
-  const [reviewed, setReviewed] = useState(0)
+  const [mode, setMode] = useState<'study' | 'stats'>('study')
+  const [hydrated, setHydrated] = useState(false)
 
-  // ── Load user + words ──────────────────────────────────────────────────────
   useEffect(() => {
-    ;(async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.user) { setLoading(false); return }
-      setUserId(session.user.id)
-
-      const { data } = await supabase
-        .from('vocabulary')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: false })
-      setWords(data ?? [])
-      setLoading(false)
-    })()
+    const loaded = loadSRS()
+    setSRS(loaded)
+    const due = shuffle(getDueCards(VOCABULARY, loaded))
+    setQueue(due.slice(0, 20))
+    setHydrated(true)
   }, [])
 
-  const dueWords = words.filter((w) => isDue(w.next_review))
-  const totalWords = words.length
+  const card = queue[qIdx]
+  const done = qIdx >= queue.length
+  const totalDue = queue.length
 
-  // ── Add word ───────────────────────────────────────────────────────────────
-  const handleAdd = useCallback(async () => {
-    if (!word.trim() || !translation.trim()) {
-      setAddError('Word and translation are required.')
-      return
+  function speak(text: string) {
+    speechSynthesis.cancel()
+    const utt = new SpeechSynthesisUtterance(text)
+    utt.lang = 'en-GB'
+    utt.rate = 0.9
+    speechSynthesis.speak(utt)
+  }
+
+  function handleAnswer(correct: boolean) {
+    if (!card) return
+    const existing = srs[card.id]
+    const currentBox = existing?.box ?? 0
+    const newBox = correct ? Math.min(currentBox + 1, 5) : 0
+    const updated = {
+      ...srs,
+      [card.id]: {
+        id: card.id,
+        box: newBox,
+        nextReview: nextReviewDate(newBox),
+        lastResult: correct ? 'correct' : 'incorrect',
+      } as CardState,
     }
-    if (!userId) return
-    setSaving(true)
-    setAddError('')
-
-    const payload = {
-      user_id: userId,
-      word: word.trim(),
-      translation: translation.trim(),
-      context: example.trim() || null,
-      next_review: addDays(1),
-      interval: 1,
-      ease_factor: 2.5,
-      repetitions: 0,
-      difficulty: 3,
-      created_at: new Date().toISOString(),
-    }
-
-    const { data, error } = await supabase.from('vocabulary').insert(payload).select().single()
-    if (error) {
-      setAddError('Failed to save. Please try again.')
-    } else if (data) {
-      setWords((prev) => [data as VocabWord, ...prev])
-      setWord('')
-      setTranslation('')
-      setExample('')
-    }
-    setSaving(false)
-  }, [word, translation, example, userId])
-
-  // ── Delete word ────────────────────────────────────────────────────────────
-  const handleDelete = useCallback(async (id: string) => {
-    await supabase.from('vocabulary').delete().eq('id', id)
-    setWords((prev) => prev.filter((w) => w.id !== id))
-  }, [])
-
-  // ── Start review ───────────────────────────────────────────────────────────
-  function startReview() {
-    const queue = [...dueWords].sort(() => Math.random() - 0.5)
-    setReviewQueue(queue)
-    setReviewIdx(0)
+    setSRS(updated)
+    saveSRS(updated)
     setFlipped(false)
-    setReviewed(0)
-    setReviewDone(false)
-    setReviewing(true)
+    setTimeout(() => setQIdx(i => i + 1), 150)
   }
 
-  // ── Rate card ──────────────────────────────────────────────────────────────
-  async function rateCard(rating: Rating) {
-    const current = reviewQueue[reviewIdx]
-    if (!current) return
-
-    const days = SRS[rating]
-    const updates = {
-      next_review: addDays(days),
-      interval: days,
-      repetitions: (current.repetitions ?? 0) + 1,
-    }
-
-    await supabase.from('vocabulary').update(updates).eq('id', current.id)
-    setWords((prev) => prev.map((w) => w.id === current.id ? { ...w, ...updates } : w))
-    setReviewed((n) => n + 1)
-
-    const next = reviewIdx + 1
-    if (next >= reviewQueue.length) {
-      setReviewDone(true)
-    } else {
-      setReviewIdx(next)
-      setFlipped(false)
-    }
+  function restart() {
+    const loaded = loadSRS()
+    const due = shuffle(getDueCards(VOCABULARY, loaded))
+    setQueue(due.slice(0, 20))
+    setQIdx(0)
+    setFlipped(false)
   }
 
-  // ── Loading skeleton ───────────────────────────────────────────────────────
-  if (loading) {
-    return (
-      <div className="max-w-4xl mx-auto space-y-6 pb-8">
-        <div className="h-10 w-48 bg-white/5 rounded-xl animate-pulse" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => <div key={i} className="h-28 bg-white/5 rounded-2xl animate-pulse" />)}
-        </div>
-      </div>
-    )
-  }
+  const boxCounts = [0, 1, 2, 3, 4, 5].map(b =>
+    VOCABULARY.filter(w => (srs[w.id]?.box ?? 0) === b).length
+  )
+  const totalLearned = VOCABULARY.filter(w => (srs[w.id]?.box ?? 0) >= 5).length
 
-  // ── Review mode ────────────────────────────────────────────────────────────
-  if (reviewing) {
-    return (
-      <ReviewView
-        queue={reviewQueue}
-        idx={reviewIdx}
-        flipped={flipped}
-        done={reviewDone}
-        reviewed={reviewed}
-        onFlip={() => setFlipped(true)}
-        onRate={rateCard}
-        onExit={() => setReviewing(false)}
-      />
-    )
-  }
+  if (!hydrated) return null
 
-  // ── Main view ──────────────────────────────────────────────────────────────
   return (
-    <div className="max-w-4xl mx-auto space-y-7 pb-8">
-
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white">Vocabulary 📝</h1>
-            <p className="text-[#64748b] text-sm mt-1">Build your word bank and review with flashcards</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className={`${glass} rounded-xl px-4 py-2.5 text-center`}>
-              <div className="text-xl font-black text-white">{totalWords}</div>
-              <div className="text-[#64748b] text-[10px] uppercase tracking-wider">Words</div>
-            </div>
-            <div className={`${glass} rounded-xl px-4 py-2.5 text-center`}>
-              <div className="text-xl font-black" style={{ color: dueWords.length > 0 ? '#f97316' : '#10b981' }}>
-                {dueWords.length}
-              </div>
-              <div className="text-[#64748b] text-[10px] uppercase tracking-wider">Due today</div>
-            </div>
-          </div>
+    <div className="max-w-2xl mx-auto p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Словарь</h1>
+          <p className="text-[#64748b] text-sm">{VOCABULARY.length} слов • Метод Leitner</p>
         </div>
-      </motion.div>
-
-      {/* ── Review CTA ─────────────────────────────────────────────────────── */}
-      <motion.div custom={1} variants={fadeUp} initial="hidden" animate="visible">
-        <div className={`relative rounded-2xl overflow-hidden ${dueWords.length > 0 ? '' : glass}`}>
-          {dueWords.length > 0 && (
-            <>
-              <div className="absolute inset-0 bg-gradient-to-r from-[#6366f1]/20 to-[#8b5cf6]/20" />
-              <div className="absolute inset-0 border border-[#6366f1]/30 rounded-2xl pointer-events-none" />
-            </>
-          )}
-          <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5">
-            <div>
-              <h3 className="text-white font-bold text-sm">
-                {dueWords.length > 0
-                  ? `⏰ ${dueWords.length} card${dueWords.length !== 1 ? 's' : ''} ready for review`
-                  : '✅ All caught up!'}
-              </h3>
-              <p className="text-[#64748b] text-xs mt-0.5">
-                {dueWords.length > 0
-                  ? 'Review now to keep your memory sharp'
-                  : 'No cards due. Come back tomorrow!'}
-              </p>
-            </div>
-            {dueWords.length > 0 && (
-              <button
-                onClick={startReview}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white font-bold text-sm hover:from-[#5558e3] hover:to-[#7c3aed] transition-all shadow-lg shadow-indigo-500/25 hover:scale-[1.03] shrink-0"
-              >
-                <RotateCcw className="w-4 h-4" />
-                Review Cards ({dueWords.length})
-              </button>
-            )}
-          </div>
-        </div>
-      </motion.div>
-
-      {/* ── Add word form ───────────────────────────────────────────────────── */}
-      <motion.div custom={2} variants={fadeUp} initial="hidden" animate="visible">
-        <div className={`${glass} rounded-2xl p-5`}>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-7 h-7 rounded-lg bg-[#6366f120] flex items-center justify-center">
-              <Plus className="w-4 h-4 text-[#6366f1]" />
-            </div>
-            <h2 className="text-white font-bold text-sm">Add new word</h2>
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-3 mb-3">
-            <div>
-              <label className="text-[#64748b] text-xs font-medium mb-1.5 block">English word *</label>
-              <input
-                value={word}
-                onChange={(e) => { setWord(e.target.value); setAddError('') }}
-                onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-                placeholder="e.g. perseverance"
-                className="w-full bg-white/[0.06] border border-white/10 hover:border-white/20 focus:border-[#6366f1] rounded-xl px-4 py-2.5 text-white placeholder-[#334155] text-sm outline-none transition-colors"
-              />
-            </div>
-            <div>
-              <label className="text-[#64748b] text-xs font-medium mb-1.5 block">Translation *</label>
-              <input
-                value={translation}
-                onChange={(e) => { setTranslation(e.target.value); setAddError('') }}
-                onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-                placeholder="e.g. настойчивость"
-                className="w-full bg-white/[0.06] border border-white/10 hover:border-white/20 focus:border-[#6366f1] rounded-xl px-4 py-2.5 text-white placeholder-[#334155] text-sm outline-none transition-colors"
-              />
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <label className="text-[#64748b] text-xs font-medium mb-1.5 block">Example sentence <span className="text-[#334155]">(optional)</span></label>
-            <input
-              value={example}
-              onChange={(e) => setExample(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-              placeholder="e.g. Her perseverance paid off in the end."
-              className="w-full bg-white/[0.06] border border-white/10 hover:border-white/20 focus:border-[#6366f1] rounded-xl px-4 py-2.5 text-white placeholder-[#334155] text-sm outline-none transition-colors"
-            />
-          </div>
-
-          <AnimatePresence>
-            {addError && (
-              <motion.p
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="text-[#ef4444] text-xs mb-3"
-              >
-                {addError}
-              </motion.p>
-            )}
-          </AnimatePresence>
-
-          <button
-            onClick={handleAdd}
-            disabled={!word.trim() || !translation.trim() || saving}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white font-bold text-sm disabled:opacity-50 hover:from-[#5558e3] hover:to-[#7c3aed] transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg shadow-indigo-500/20"
-          >
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-            Add Word
+        <div className="flex items-center gap-2">
+          <button onClick={() => setMode('study')}
+            className={`px-3 py-1.5 rounded-xl text-sm border transition-all ${mode === 'study' ? 'border-[#6366f1] bg-[#6366f1]/20 text-white' : 'border-white/10 text-[#64748b]'}`}>
+            Учить
+          </button>
+          <button onClick={() => setMode('stats')}
+            className={`px-3 py-1.5 rounded-xl text-sm border transition-all ${mode === 'stats' ? 'border-[#6366f1] bg-[#6366f1]/20 text-white' : 'border-white/10 text-[#64748b]'}`}>
+            Прогресс
           </button>
         </div>
-      </motion.div>
+      </div>
 
-      {/* ── Word list ───────────────────────────────────────────────────────── */}
-      <motion.div custom={3} variants={fadeUp} initial="hidden" animate="visible">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-[#475569]">
-            Your words {totalWords > 0 && `· ${totalWords}`}
-          </h2>
-        </div>
-
-        {words.length === 0 ? (
-          <div className={`${glass} rounded-2xl py-14 flex flex-col items-center gap-4 text-center`}>
-            <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center text-2xl">📝</div>
-            <div>
-              <p className="text-white font-semibold text-sm mb-1">No words yet</p>
-              <p className="text-[#475569] text-xs">Add your first word above to get started!</p>
+      {mode === 'stats' && (
+        <div className="space-y-4">
+          <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-white font-semibold">Всего выучено</span>
+              <span className="text-2xl font-bold text-[#10b981]">{totalLearned} <span className="text-[#475569] text-base font-normal">/ {VOCABULARY.length}</span></span>
+            </div>
+            <div className="h-2 bg-white/[0.06] rounded-full overflow-hidden">
+              <div className="h-full rounded-full bg-[#10b981] transition-all duration-1000"
+                style={{ width: `${(totalLearned / VOCABULARY.length) * 100}%` }} />
             </div>
           </div>
-        ) : (
-          <motion.div layout className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            <AnimatePresence mode="popLayout">
-              {words.map((w, i) => (
-                <WordCard key={w.id} word={w} index={i} onDelete={handleDelete} />
+          <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
+            <h3 className="text-white font-semibold mb-4">Ящики Leitner</h3>
+            <div className="space-y-2">
+              {BOX_LABELS.map((label, b) => (
+                <div key={b} className="flex items-center gap-3">
+                  <div className="w-20 text-xs font-medium" style={{ color: BOX_COLORS[b] }}>{label}</div>
+                  <div className="flex-1 h-5 bg-white/[0.04] rounded-lg overflow-hidden">
+                    <motion.div className="h-full rounded-lg"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(boxCounts[b] / Math.max(VOCABULARY.length, 1)) * 100}%` }}
+                      transition={{ duration: 0.6, delay: b * 0.08 }}
+                      style={{ backgroundColor: `${BOX_COLORS[b]}60` }} />
+                  </div>
+                  <span className="text-[#64748b] text-xs w-8 text-right">{boxCounts[b]}</span>
+                </div>
               ))}
-            </AnimatePresence>
-          </motion.div>
-        )}
-      </motion.div>
-    </div>
-  )
-}
-
-// ── WordCard ───────────────────────────────────────────────────────────────────
-function WordCard({ word, index, onDelete }: { word: VocabWord; index: number; onDelete: (id: string) => void }) {
-  const [confirming, setConfirming] = useState(false)
-  const due = isDue(word.next_review)
-  const mastered = (word.interval ?? 1) >= 21
-
-  const badge = mastered
-    ? { label: 'Mastered', color: '#10b981', bg: '#10b98118' }
-    : word.repetitions === 0
-    ? { label: 'New', color: '#6366f1', bg: '#6366f118' }
-    : { label: 'Learning', color: '#f59e0b', bg: '#f59e0b18' }
-
-  return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, scale: 0.96 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.94 }}
-      transition={{ duration: 0.25, delay: index * 0.03 }}
-      className="group bg-white/[0.04] backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden hover:border-white/20 transition-colors relative"
-    >
-      {/* Due indicator */}
-      {due && !mastered && (
-        <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#f97316] to-[#ef4444]" />
-      )}
-      {mastered && (
-        <div className="absolute top-0 left-0 right-0 h-0.5 bg-[#10b981]" />
-      )}
-
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <h3 className="text-white font-bold text-base leading-snug">{word.word}</h3>
-          <div className="flex items-center gap-1.5 shrink-0">
-            <span
-              className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-              style={{ backgroundColor: badge.bg, color: badge.color }}
-            >
-              {badge.label}
-            </span>
-            {confirming ? (
-              <button
-                onClick={() => onDelete(word.id)}
-                className="w-6 h-6 rounded-md bg-[#ef444420] flex items-center justify-center text-[#ef4444] hover:bg-[#ef444430] transition-colors"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            ) : (
-              <button
-                onClick={() => setConfirming(true)}
-                onBlur={() => setConfirming(false)}
-                className="w-6 h-6 rounded-md flex items-center justify-center text-[#334155] hover:text-[#ef4444] opacity-0 group-hover:opacity-100 transition-all"
-              >
-                <Trash2 className="w-3 h-3" />
-              </button>
-            )}
+            </div>
           </div>
         </div>
+      )}
 
-        <p className="text-[#94a3b8] text-sm mb-3">{word.translation}</p>
-
-        {word.context && (
-          <p className="text-[#64748b] text-xs italic leading-relaxed mb-3 line-clamp-2">
-            &ldquo;{word.context}&rdquo;
-          </p>
-        )}
-
-        <div className="flex items-center gap-1.5 text-[11px] text-[#475569]">
-          <Calendar className="w-3 h-3" />
-          {due && !mastered ? (
-            <span className="text-[#f97316] font-semibold">Due for review</span>
-          ) : (
-            <span>{nextReviewLabel(word.next_review)}</span>
+      {mode === 'study' && (
+        <>
+          {totalDue > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[#64748b] text-sm">{Math.min(qIdx, totalDue)} / {totalDue} карточек</span>
+                <button onClick={restart}
+                  className="flex items-center gap-1 text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">
+                  <RotateCcw className="w-3 h-3" /> Обновить
+                </button>
+              </div>
+              <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] rounded-full transition-all"
+                  style={{ width: `${Math.min(qIdx / totalDue, 1) * 100}%` }} />
+              </div>
+            </div>
           )}
-          {word.repetitions > 0 && (
-            <span className="text-[#334155] ml-auto">{word.repetitions}× reviewed</span>
-          )}
-        </div>
-      </div>
-    </motion.div>
-  )
-}
 
-// ── ReviewView ─────────────────────────────────────────────────────────────────
-function ReviewView({
-  queue, idx, flipped, done, reviewed,
-  onFlip, onRate, onExit,
-}: {
-  queue: VocabWord[]
-  idx: number
-  flipped: boolean
-  done: boolean
-  reviewed: number
-  onFlip: () => void
-  onRate: (r: Rating) => void
-  onExit: () => void
-}) {
-  const total = queue.length
-  const current = queue[idx]
-  const progress = total > 0 ? ((done ? total : idx) / total) * 100 : 0
+          <AnimatePresence mode="wait">
+            {done && (
+              <motion.div key="done" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+                className="text-center py-12 bg-white/[0.04] border border-white/10 rounded-2xl">
+                <div className="text-4xl mb-4">🎉</div>
+                <h2 className="text-white font-bold text-xl mb-2">Сессия завершена!</h2>
+                <p className="text-[#64748b] mb-6">{totalDue > 0 ? `Ты прошёл ${totalDue} карточек` : 'Нет карточек для повторения'}</p>
+                <button onClick={restart}
+                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white font-semibold hover:opacity-90 transition-opacity">
+                  {totalDue > 0 ? 'Ещё раз' : 'Обновить'}
+                </button>
+              </motion.div>
+            )}
 
-  return (
-    <div className="max-w-lg mx-auto pb-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-white font-black text-lg">Flashcard Review</h2>
-          <p className="text-[#64748b] text-xs mt-0.5">
-            {done ? `Reviewed ${reviewed} card${reviewed !== 1 ? 's' : ''}` : `${idx + 1} of ${total}`}
-          </p>
-        </div>
-        <button
-          onClick={onExit}
-          className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-[#64748b] hover:text-white transition-colors"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
+            {!done && totalDue === 0 && (
+              <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                className="text-center py-12 bg-white/[0.04] border border-white/10 rounded-2xl">
+                <Layers className="w-10 h-10 mx-auto mb-3 text-[#475569]" />
+                <h2 className="text-white font-bold mb-2">Всё повторено!</h2>
+                <p className="text-[#64748b] text-sm">Возвращайся позже или пройди уроки, чтобы добавить слова.</p>
+              </motion.div>
+            )}
 
-      {/* Progress bar */}
-      <div className="h-1.5 rounded-full bg-white/8 overflow-hidden mb-8">
-        <motion.div
-          animate={{ width: `${progress}%` }}
-          transition={{ duration: 0.4 }}
-          className="h-full rounded-full bg-gradient-to-r from-[#6366f1] to-[#8b5cf6]"
-        />
-      </div>
-
-      <AnimatePresence mode="wait">
-        {done ? (
-          /* Done state */
-          <motion.div
-            key="done"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className={`${glass} rounded-3xl p-10 text-center`}
-          >
-            <div className="text-5xl mb-4">🎉</div>
-            <h3 className="text-white font-black text-2xl mb-2">Session complete!</h3>
-            <p className="text-[#64748b] text-sm mb-8">
-              You reviewed <span className="text-white font-bold">{reviewed}</span> card{reviewed !== 1 ? 's' : ''}. Great work!
-            </p>
-            <button
-              onClick={onExit}
-              className="px-8 py-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white font-bold text-sm hover:from-[#5558e3] hover:to-[#7c3aed] transition-all shadow-lg shadow-indigo-500/25 hover:scale-[1.03]"
-            >
-              Back to vocabulary
-            </button>
-          </motion.div>
-        ) : (
-          /* Card */
-          <motion.div
-            key={idx}
-            initial={{ opacity: 0, x: 24 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -24 }}
-            transition={{ duration: 0.25 }}
-          >
-            {/* Flashcard */}
-            <div
-              onClick={() => !flipped && onFlip()}
-              className={`${glass} rounded-3xl p-8 min-h-[240px] flex flex-col items-center justify-center text-center cursor-pointer select-none mb-6 relative overflow-hidden transition-all hover:border-white/20`}
-              style={{ cursor: flipped ? 'default' : 'pointer' }}
-            >
-              {/* Front hint */}
-              {!flipped && (
-                <p className="absolute top-4 text-[#334155] text-xs uppercase tracking-wider">
-                  Tap to reveal translation
-                </p>
-              )}
-              {flipped && (
-                <p className="absolute top-4 text-[#6366f1] text-xs uppercase tracking-wider font-semibold">
-                  Translation
-                </p>
-              )}
-
-              <AnimatePresence mode="wait">
-                {!flipped ? (
-                  <motion.div key="front" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center">
-                    <p className="text-4xl font-black text-white mb-3">{current?.word}</p>
-                    {current?.context && (
-                      <p className="text-[#475569] text-sm italic max-w-xs">
-                        &ldquo;{current.context}&rdquo;
-                      </p>
-                    )}
-                  </motion.div>
-                ) : (
-                  <motion.div key="back" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="text-center space-y-3">
-                    <p className="text-3xl font-black text-white">{current?.word}</p>
-                    <p className="text-xl text-[#818cf8] font-bold">{current?.translation}</p>
-                    {current?.context && (
-                      <p className="text-[#64748b] text-sm italic max-w-xs">
-                        &ldquo;{current.context}&rdquo;
-                      </p>
-                    )}
-                    <div className="flex items-center justify-center gap-1.5 text-[#334155] text-xs">
-                      <BookOpen className="w-3 h-3" />
-                      {current?.repetitions ?? 0}× reviewed
+            {!done && card && (
+              <motion.div key={card.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }}>
+                <div className="relative h-56 cursor-pointer" onClick={() => setFlipped(v => !v)}
+                  style={{ perspective: '1000px' }}>
+                  <motion.div className="absolute inset-0 w-full h-full" style={{ transformStyle: 'preserve-3d' }}
+                    animate={{ rotateY: flipped ? 180 : 0 }} transition={{ duration: 0.4 }}>
+                    {/* Front */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#6366f1]/20 to-[#8b5cf6]/20 border border-[#6366f1]/30 rounded-2xl flex flex-col items-center justify-center"
+                      style={{ backfaceVisibility: 'hidden' }}>
+                      <p className="text-white text-3xl font-bold mb-3">{card.word}</p>
+                      <p className="text-[#64748b] text-sm">Нажми, чтобы увидеть перевод</p>
+                      <button onClick={e => { e.stopPropagation(); speak(card.word) }}
+                        className="mt-4 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 text-[#94a3b8] hover:text-white text-sm transition-colors">
+                        <Volume2 className="w-4 h-4" /> Послушать
+                      </button>
+                    </div>
+                    {/* Back */}
+                    <div className="absolute inset-0 bg-white/[0.04] border border-white/10 rounded-2xl flex flex-col items-center justify-center p-6"
+                      style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
+                      <p className="text-[#94a3b8] text-sm mb-1">Перевод</p>
+                      <p className="text-white text-2xl font-bold mb-4">{card.translation}</p>
+                      <p className="text-[#64748b] text-sm text-center italic">"{card.example}"</p>
+                      <p className="text-[#475569] text-xs text-center mt-1">{card.exampleTranslation}</p>
                     </div>
                   </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                </div>
 
-            {/* Rating buttons */}
-            <AnimatePresence>
-              {flipped && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="grid grid-cols-3 gap-3"
-                >
-                  {([
-                    { rating: 'hard', emoji: '😰', label: 'Hard', sub: '1 day', color: '#ef4444', bg: '#ef444415' },
-                    { rating: 'good', emoji: '👍', label: 'Good', sub: '3 days', color: '#f59e0b', bg: '#f59e0b15' },
-                    { rating: 'easy', emoji: '😊', label: 'Easy', sub: '7 days', color: '#10b981', bg: '#10b98115' },
-                  ] as const).map(({ rating, emoji, label, sub, color, bg }) => (
-                    <motion.button
-                      key={rating}
-                      whileHover={{ scale: 1.04 }}
-                      whileTap={{ scale: 0.96 }}
-                      onClick={() => onRate(rating)}
-                      className="flex flex-col items-center gap-1 py-4 rounded-2xl border transition-all font-semibold"
-                      style={{ backgroundColor: bg, borderColor: `${color}30`, color }}
-                    >
-                      <span className="text-2xl">{emoji}</span>
-                      <span className="text-sm font-bold">{label}</span>
-                      <span className="text-[10px] opacity-60">{sub}</span>
-                    </motion.button>
+                <div className="flex items-center gap-2 mt-2 justify-center">
+                  {[0, 1, 2, 3, 4, 5].map(b => (
+                    <div key={b} className="w-2 h-2 rounded-full transition-all"
+                      style={{
+                        backgroundColor: (srs[card.id]?.box ?? 0) === b ? BOX_COLORS[b] : 'rgba(255,255,255,0.1)',
+                        transform: (srs[card.id]?.box ?? 0) === b ? 'scale(1.3)' : 'scale(1)',
+                      }} />
                   ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  <span className="text-[#475569] text-xs ml-1">{BOX_LABELS[srs[card.id]?.box ?? 0]}</span>
+                </div>
 
-            {!flipped && (
-              <button
-                onClick={onFlip}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white font-bold text-sm hover:from-[#5558e3] hover:to-[#7c3aed] transition-all shadow-lg shadow-indigo-500/25 hover:scale-[1.02]"
-              >
-                Show Answer
-              </button>
+                <AnimatePresence>
+                  {flipped && (
+                    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                      className="flex gap-4 mt-4">
+                      <button onClick={() => handleAnswer(false)}
+                        className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-[#ef4444]/15 border border-[#ef4444]/30 text-[#f87171] font-semibold hover:bg-[#ef4444]/25 transition-colors">
+                        <X className="w-5 h-5" /> Не знаю
+                      </button>
+                      <button onClick={() => handleAnswer(true)}
+                        className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-[#10b981]/15 border border-[#10b981]/30 text-[#10b981] font-semibold hover:bg-[#10b981]/25 transition-colors">
+                        <Check className="w-5 h-5" /> Знаю
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
             )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </AnimatePresence>
+        </>
+      )}
     </div>
   )
 }
