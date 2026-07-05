@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Play, Square, RefreshCw, ChevronLeft, ChevronRight, Volume2 } from 'lucide-react'
+import { speak, stopSpeaking } from '@/lib/speech'
 
 interface ListeningExercise {
   id: string
@@ -99,29 +100,24 @@ export default function ListeningPage() {
   const [showHint, setShowHint] = useState(false)
   const [showText, setShowText] = useState(false)
   const [plays, setPlays] = useState(0)
-  const synthRef = useRef<SpeechSynthesisUtterance | null>(null)
-
   const ex = EXERCISES[idx]
 
-  function speak() {
+  async function handlePlay() {
     if (playing) {
-      speechSynthesis.cancel()
+      stopSpeaking()
       setPlaying(false)
       return
     }
-    speechSynthesis.cancel()
-    const utt = new SpeechSynthesisUtterance(ex.text)
-    utt.lang = 'en-GB'
-    utt.rate = ex.speed * speedMult
-    utt.onend = () => setPlaying(false)
-    synthRef.current = utt
-    speechSynthesis.speak(utt)
     setPlaying(true)
     setPlays(p => p + 1)
+    await speak(ex.text, {
+      rate: ex.speed * speedMult,
+      onEnd: () => setPlaying(false),
+    })
   }
 
   function goTo(i: number) {
-    speechSynthesis.cancel()
+    stopSpeaking()
     setIdx(i)
     setSelected(null)
     setChecked(false)
@@ -134,7 +130,7 @@ export default function ListeningPage() {
   function handleCheck() {
     if (!selected) return
     setChecked(true)
-    speechSynthesis.cancel()
+    stopSpeaking()
     setPlaying(false)
   }
 
@@ -205,7 +201,7 @@ export default function ListeningPage() {
             <p className="text-center text-[#475569] text-xs mb-4">{SPEED_LABELS[speedMult]}</p>
 
             {/* Play / Stop button */}
-            <button onClick={speak}
+            <button onClick={handlePlay}
               className={`w-full py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all ${playing ? 'bg-[#ef4444]/20 border border-[#ef4444]/40 text-[#f87171]' : 'bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white shadow-lg shadow-[#6366f1]/30'}`}>
               {playing ? <><Square className="w-4 h-4" /> Остановить</> : <><Volume2 className="w-4 h-4" /> {plays > 0 ? 'Слушать снова' : 'Слушать'}</>}
             </button>

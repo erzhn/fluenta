@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { RotateCcw, Volume2, Check, X, Layers } from 'lucide-react'
 import { VOCABULARY, type VocabWord } from '@/lib/vocabulary-data'
+import { speak, stopSpeaking } from '@/lib/speech'
 
 const STORAGE_KEY = 'fluenta_vocab_srs'
 
@@ -83,12 +84,12 @@ export default function VocabularyPage() {
   const done = qIdx >= queue.length
   const totalDue = queue.length
 
-  function speak(text: string) {
-    speechSynthesis.cancel()
-    const utt = new SpeechSynthesisUtterance(text)
-    utt.lang = 'en-GB'
-    utt.rate = 0.9
-    speechSynthesis.speak(utt)
+  const [speaking, setSpeaking] = useState(false)
+
+  async function handleListen(word: string) {
+    if (speaking) { stopSpeaking(); setSpeaking(false); return }
+    setSpeaking(true)
+    await speak(word, { rate: 0.9, onEnd: () => setSpeaking(false) })
   }
 
   function handleAnswer(correct: boolean) {
@@ -231,9 +232,9 @@ export default function VocabularyPage() {
                       style={{ backfaceVisibility: 'hidden' }}>
                       <p className="text-white text-3xl font-bold mb-3">{card.word}</p>
                       <p className="text-[#64748b] text-sm">Нажми, чтобы увидеть перевод</p>
-                      <button onClick={e => { e.stopPropagation(); speak(card.word) }}
+                      <button onClick={e => { e.stopPropagation(); handleListen(card.word) }}
                         className="mt-4 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 text-[#94a3b8] hover:text-white text-sm transition-colors">
-                        <Volume2 className="w-4 h-4" /> Послушать
+                        <Volume2 className="w-4 h-4" /> {speaking ? '⏹ Стоп' : 'Послушать'}
                       </button>
                     </div>
                     {/* Back */}

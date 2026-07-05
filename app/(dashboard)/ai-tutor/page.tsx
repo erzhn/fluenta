@@ -5,21 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Send, RotateCcw, Mic, MicOff } from 'lucide-react'
 import { ChatMessage } from '@/components/ai-tutor/ChatMessage'
 import type { Message } from '@/types'
-
-// ── Web Speech API types ───────────────────────────────────────────────────────
-declare global {
-  interface Window {
-    SpeechRecognition: new () => SpeechRecInst
-    webkitSpeechRecognition: new () => SpeechRecInst
-  }
-}
-interface SpeechRecInst {
-  lang: string; continuous: boolean; interimResults: boolean
-  onresult: ((e: { results: { [i: number]: { [i: number]: { transcript: string } }; length: number } }) => void) | null
-  onerror: ((e: Event) => void) | null
-  onend: (() => void) | null
-  start(): void; stop(): void; abort(): void
-}
+import { createRecognition, isSpeechRecognitionSupported } from '@/lib/speech'
 
 type ChatMode = 'tutor' | 'conversation'
 
@@ -46,7 +32,7 @@ export default function AITutorPage() {
   const [listening, setListening] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const srRef = useRef<SpeechRecInst | null>(null)
+  const srRef = useRef<ReturnType<typeof createRecognition>>(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -127,25 +113,20 @@ export default function AITutorPage() {
   }
 
   const startListening = () => {
-    const SR = typeof window !== 'undefined'
-      ? (window.SpeechRecognition || window.webkitSpeechRecognition)
-      : null
-    if (!SR) return
-    srRef.current?.abort()
-    const rec = new SR()
-    rec.lang = 'en-US'
-    rec.continuous = false
-    rec.interimResults = false
-    rec.onresult = (e) => {
-      const text = e.results[0][0].transcript
-      setListening(false)
-      sendMessage(text)
-    }
-    rec.onerror = () => setListening(false)
-    rec.onend   = () => setListening(false)
-    srRef.current = rec
-    rec.start()
+    if (!isSpeechRecognitionSupported()) return
+    srRef.current?.stop()
     setListening(true)
+    srRef.current = createRecognition(
+      (transcript, isFinal) => {
+        if (isFinal) {
+          setListening(false)
+          srRef.current?.stop()
+          sendMessage(transcript)
+        }
+      },
+      () => setListening(false)
+    )
+    srRef.current?.start()
   }
 
   const stopListening = () => {

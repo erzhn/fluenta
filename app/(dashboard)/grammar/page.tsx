@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, ChevronDown, ChevronUp, Volume2 } from 'lucide-react'
+import { speak } from '@/lib/speech'
 
 interface GrammarCard {
   id: string
@@ -282,14 +283,6 @@ export default function GrammarPage() {
   const [search, setSearch] = useState('')
   const [expanded, setExpanded] = useState<string | null>(null)
 
-  function speak(text: string) {
-    speechSynthesis.cancel()
-    const utt = new SpeechSynthesisUtterance(text)
-    utt.lang = 'en-GB'
-    utt.rate = 0.9
-    speechSynthesis.speak(utt)
-  }
-
   const filtered = GRAMMAR_CARDS.filter(c => {
     const matchLevel = filter === 'All' || c.level === filter
     const matchSearch = !search || c.title.toLowerCase().includes(search.toLowerCase()) || c.rule.toLowerCase().includes(search.toLowerCase())
@@ -365,7 +358,7 @@ export default function GrammarPage() {
                                 <div className="flex items-center gap-1.5">
                                   <span className="text-[#10b981] text-xs">✓</span>
                                   <span className="text-[#10b981] text-sm">{ex.correct.split(' → ')[0]}</span>
-                                  <button onClick={() => speak(ex.correct.split(' → ')[0])}
+                                  <button onClick={() => speak(ex.correct.split(' → ')[0], { rate: 0.9 })}
                                     className="text-[#475569] hover:text-[#6366f1] transition-colors flex-shrink-0">
                                     <Volume2 className="w-3 h-3" />
                                   </button>

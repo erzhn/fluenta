@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Volume2, ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { speak, stopSpeaking } from '@/lib/speech'
 
 interface ReadingArticle {
   id: string
@@ -143,12 +144,12 @@ export default function ReadingPage() {
 
   const article = ARTICLES[idx]
 
-  function speak(text: string) {
-    speechSynthesis.cancel()
-    const utt = new SpeechSynthesisUtterance(text)
-    utt.lang = 'en-GB'
-    utt.rate = 0.9
-    speechSynthesis.speak(utt)
+  const [speaking, setSpeaking] = useState(false)
+
+  async function handleListen() {
+    if (speaking) { stopSpeaking(); setSpeaking(false); return }
+    setSpeaking(true)
+    await speak(article.paragraphs.join(' '), { rate: 0.95, onEnd: () => setSpeaking(false) })
   }
 
   function goTo(i: number) {
@@ -156,7 +157,8 @@ export default function ReadingPage() {
     setAnswers({})
     setChecked(false)
     setShowVocabPanel(false)
-    speechSynthesis.cancel()
+    stopSpeaking()
+    setSpeaking(false)
   }
 
   const allAnswered = article.questions.every(q => answers[q.q])
@@ -198,9 +200,9 @@ export default function ReadingPage() {
                   {article.level}
                 </span>
               </div>
-              <button onClick={() => speak(article.paragraphs.join(' '))}
+              <button onClick={handleListen}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 text-[#94a3b8] hover:text-white text-sm transition-colors">
-                <Volume2 className="w-4 h-4" /> Слушать
+                <Volume2 className="w-4 h-4" /> {speaking ? '⏹ Стоп' : 'Слушать'}
               </button>
             </div>
 
@@ -237,7 +239,7 @@ export default function ReadingPage() {
                   <div key={v.word} className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-white font-medium">{v.word}</span>
-                      <button onClick={() => speak(v.word)} className="text-[#6366f1] hover:text-[#818cf8]">
+                      <button onClick={() => speak(v.word, { rate: 0.9 })} className="text-[#6366f1] hover:text-[#818cf8]">
                         <Volume2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
