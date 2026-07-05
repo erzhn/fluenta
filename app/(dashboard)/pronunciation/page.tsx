@@ -499,4 +499,375 @@ function FreeSpeechTab({ supported }: { supported: boolean }) {
 
   const circumference = 2 * Math.PI * 40
 
-  ret
+  return (
+    <div className={`${glass} rounded-2xl p-5 sm:p-6 space-y-5`}>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <h3 className="text-white font-bold">Тема:</h3>
+        <button onClick={newTopic} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[#64748b] hover:text-white bg-white/[0.03] border border-white/[0.06] text-xs transition-all">
+          <RefreshCw className="w-3 h-3" /> Новая тема
+        </button>
+      </div>
+      <div className="bg-[#6366f1]/10 border border-[#6366f1]/30 rounded-xl p-4 text-center">
+        <p className="text-[#818cf8] font-bold text-lg">{topic}</p>
+        <p className="text-[#64748b] text-xs mt-1">Говори 30 секунд на английском</p>
+      </div>
+      {recording && (
+        <div className="flex items-center justify-center">
+          <div className="relative w-24 h-24">
+            <svg className="w-24 h-24 -rotate-90" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#6366f1" strokeWidth="8"
+                strokeDasharray={circumference}
+                strokeDashoffset={circumference * (1 - timeLeft / 30)}
+                strokeLinecap="round" style={{ transition: 'stroke-dashoffset 1s linear' }}/>
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-white font-black text-2xl">{timeLeft}</span>
+            </div>
+          </div>
+        </div>
+      )}
+      <Waveform active={recording} />
+      <div className="flex justify-center">
+        <button onClick={recording ? endRec : startRec} disabled={!supported}
+          className={`flex items-center gap-2.5 px-8 py-4 rounded-2xl font-bold text-sm transition-all disabled:opacity-40 ${
+            recording ? 'bg-red-500/20 border border-red-500/60 text-red-400'
+                      : 'bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white shadow-xl shadow-indigo-500/25 hover:scale-[1.03]'
+          }`}>
+          {recording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+          {recording ? 'Закончить' : '🎤 Начать говорить'}
+        </button>
+      </div>
+      {done && transcript && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+          <div className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06]">
+            <p className="text-[#64748b] text-xs mb-1">Ты сказал:</p>
+            <p className="text-white/80 text-sm">{transcript}</p>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-[#64748b] text-sm">Слов произнесено: <span className="text-white font-bold">{wordCount}</span></span>
+            <ScoreBadge score={fluency} />
+          </div>
+        </motion.div>
+      )}
+    </div>
+  )
+}
+
+// ── Mode 4: Minimal Pairs ──────────────────────────────────────────────────────
+function MinimalPairsTab({ supported }: { supported: boolean }) {
+  const [idx, setIdx]         = useState(0)
+  const [phase, setPhase]     = useState<'listen'|'guess'|'speak'|'result'>('listen')
+  const [playing, setPlaying] = useState<1|2|null>(null)
+  const [guess, setGuess]     = useState<1|2|null>(null)
+  const [correct, setCorrect] = useState<boolean|null>(null)
+  const [spokenScore, setSpokenScore] = useState<number|null>(null)
+  const [target, setTarget]   = useState(1)
+  const recRef = useRef<SpeechRecInst2 | null>(null)
+
+  const pair = MINIMAL_PAIRS[idx]
+
+  function playWord(which: 1|2, rate=1) {
+    setPlaying(which)
+    const word = which === 1 ? pair.word1 : pair.word2
+    const u = new SpeechSynthesisUtterance(word.toLowerCase())
+    u.lang = 'en-US'; u.rate = rate
+    u.onend = () => setPlaying(null)
+    window.speechSynthesis.cancel()
+    window.speechSynthesis.speak(u)
+  }
+
+  function startGuess() {
+    const t = Math.random() < 0.5 ? 1 : 2
+    setTarget(t); setPhase('guess'); setGuess(null); setCorrect(null)
+    setTimeout(() => playWord(t as 1|2), 300)
+  }
+
+  function makeGuess(which: 1|2) {
+    setGuess(which)
+    const ok = which === target
+    setCorrect(ok)
+    saveScore('minimal-pairs', ok ? 100 : 0, pair.sound)
+    setTimeout(() => setPhase('speak'), 1000)
+  }
+
+  function startSpeak() {
+    const SR = getSR(); if (!SR) return
+    const word = target === 1 ? pair.word1 : pair.word2
+    const rec = new SR()
+    rec.lang = 'en-US'; rec.continuous = false; rec.interimResults = false
+    rec.onresult = (e) => {
+      const spoken = e.results[0][0].transcript.toUpperCase()
+      const s = spoken.includes(word) ? 100 : scoreWords(word, spoken)
+      setSpokenScore(s)
+      saveScore('minimal-pairs', s, pair.sound)
+      setPhase('result')
+    }
+    rec.onerror = () => setPhase('result')
+    recRef.current = rec; rec.start()
+  }
+
+  function next() {
+    setIdx((i) => (i + 1) % MINIMAL_PAIRS.length)
+    setPhase('listen'); setGuess(null); setCorrect(null); setSpokenScore(null)
+  }
+
+  return (
+    <div className={`${glass} rounded-2xl p-5 sm:p-6 space-y-5`}>
+      <div className="text-center">
+        <span className="text-[#64748b] text-xs bg-white/[0.04] px-3 py-1 rounded-full border border-white/[0.06]">
+          Звук: {pair.sound}
+        </span>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        {([1,2] as const).map((w) => {
+          const word = w === 1 ? pair.word1 : pair.word2
+          return (
+            <button key={w} onClick={() => playWord(w)}
+              className={`p-6 rounded-2xl border font-black text-2xl transition-all ${
+                playing === w ? 'bg-[#6366f1]/20 border-[#6366f1] scale-[1.03] text-[#818cf8]' : 'bg-white/[0.03] border-white/10 text-white hover:border-[#6366f1]/50'
+              }`}>
+              {word}
+            </button>
+          )
+        })}
+      </div>
+      {phase === 'listen' && (
+        <div className="space-y-3">
+          <p className="text-center text-[#64748b] text-sm">Нажми на слова чтобы услышать разницу, потом:</p>
+          <button onClick={startGuess} className="w-full py-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white font-bold text-sm">
+            🎯 Угадай какое слово!
+          </button>
+        </div>
+      )}
+      {phase === 'guess' && (
+        <div className="space-y-3">
+          <p className="text-center text-white font-bold">Какое слово прозвучало?</p>
+          <div className="grid grid-cols-2 gap-3">
+            {([1,2] as const).map((w) => (
+              <button key={w} onClick={() => makeGuess(w)}
+                className={`py-4 rounded-xl font-bold border-2 transition-all text-lg ${
+                  guess === w ? (correct ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400' : 'bg-red-500/20 border-red-500 text-red-400')
+                             : 'bg-white/[0.04] border-white/10 text-white hover:border-[#6366f1]/60'
+                }`}>
+                {w === 1 ? pair.word1 : pair.word2}
+              </button>
+            ))}
+          </div>
+          {correct !== null && (
+            <p className={`text-center font-bold ${correct ? 'text-emerald-400' : 'text-red-400'}`}>
+              {correct ? '✅ Правильно!' : `❌ Нет, прозвучало "${target === 1 ? pair.word1 : pair.word2}"`}
+            </p>
+          )}
+        </div>
+      )}
+      {phase === 'speak' && (
+        <div className="space-y-3">
+          <p className="text-center text-white font-bold">Теперь произнеси: <span className="text-[#818cf8]">{target === 1 ? pair.word1 : pair.word2}</span></p>
+          <button onClick={startSpeak} disabled={!supported} className="w-full py-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white font-bold text-sm disabled:opacity-40">
+            🎤 Произнести
+          </button>
+        </div>
+      )}
+      {phase === 'result' && (
+        <div className="space-y-4">
+          {spokenScore !== null && <div className="flex justify-center"><ScoreBadge score={spokenScore} /></div>}
+          <button onClick={next} className="w-full py-3 rounded-xl text-[#64748b] hover:text-white bg-white/[0.03] border border-white/[0.06] text-sm font-medium transition-all">
+            Следующая пара →
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Mode 5: Tongue Twisters ────────────────────────────────────────────────────
+function TongueTwistersTab({ supported }: { supported: boolean }) {
+  const [idx, setIdx]       = useState(0)
+  const [speed, setSpeed]   = useState<'slow'|'normal'|'fast'>('slow')
+  const [recording, setRec] = useState(false)
+  const [scores, setScores] = useState<Record<string,number>>({})
+  const recRef = useRef<SpeechRecInst2 | null>(null)
+  const tt = TONGUE_TWISTERS[idx]
+  const rateMap = { slow: 0.6, normal: 1, fast: 1.4 }
+
+  function startRec() {
+    const SR = getSR(); if (!SR) return
+    const rec = new SR()
+    rec.lang = 'en-US'; rec.continuous = false; rec.interimResults = false
+    rec.onresult = (e) => {
+      const spoken = e.results[0][0].transcript
+      const s = scoreWords(tt, spoken)
+      setScores((prev) => ({ ...prev, [speed]: s }))
+      saveScore('tongue-twister', s)
+      setRec(false)
+    }
+    rec.onerror = () => setRec(false)
+    rec.onend   = () => setRec(false)
+    recRef.current = rec; rec.start()
+    setRec(true)
+  }
+
+  return (
+    <div className={`${glass} rounded-2xl p-5 sm:p-6 space-y-5`}>
+      <div className="flex gap-2 justify-center">
+        {TONGUE_TWISTERS.map((_, i) => (
+          <button key={i} onClick={() => { setIdx(i); setScores({}) }}
+            className={`w-2 h-2 rounded-full transition-all ${i === idx ? 'bg-[#6366f1] scale-125' : 'bg-white/20'}`}/>
+        ))}
+      </div>
+      <div className="bg-white/[0.03] rounded-xl p-5 border border-white/[0.06] text-center">
+        <p className="text-white font-bold text-lg leading-relaxed">{tt}</p>
+      </div>
+      <div className="flex gap-2 justify-center">
+        {(['slow','normal','fast'] as const).map((s) => (
+          <button key={s} onClick={() => setSpeed(s)}
+            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${
+              speed === s ? 'bg-[#6366f1] border-[#6366f1] text-white' : 'bg-white/[0.03] border-white/10 text-[#64748b] hover:text-white'
+            }`}>
+            {s === 'slow' ? '🐢 Медленно' : s === 'normal' ? '🚶 Нормально' : '🏃 Быстро'}
+            {scores[s] !== undefined && <span className="ml-1 text-xs opacity-70">{scores[s]}%</span>}
+          </button>
+        ))}
+      </div>
+      <div className="flex gap-3 justify-center">
+        <button onClick={() => speak(tt, rateMap[speed])}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[#6366f1]/40 text-[#818cf8] hover:bg-[#6366f1]/10 text-sm font-semibold transition-all">
+          <Volume2 className="w-4 h-4"/> 🔊 Послушай
+        </button>
+        <button onClick={recording ? () => recRef.current?.stop() : startRec} disabled={!supported}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all disabled:opacity-40 ${
+            recording ? 'bg-red-500/20 border border-red-500/60 text-red-400 animate-pulse'
+                      : 'bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white shadow-lg'
+          }`}>
+          {recording ? <MicOff className="w-4 h-4"/> : <Mic className="w-4 h-4"/>}
+          {recording ? 'Слушаю...' : '🎤 Попробуй'}
+        </button>
+      </div>
+      <Waveform active={recording} />
+      {Object.keys(scores).length > 0 && (
+        <div className="grid grid-cols-3 gap-2">
+          {(['slow','normal','fast'] as const).map((s) => scores[s] !== undefined && (
+            <div key={s} className="text-center p-3 bg-white/[0.03] rounded-xl border border-white/[0.06]">
+              <p className="text-[#64748b] text-xs mb-1">{s === 'slow' ? '🐢' : s === 'normal' ? '🚶' : '🏃'}</p>
+              <p className="font-black text-lg" style={{ color: colorFor(scores[s]) }}>{scores[s]}%</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Progress Panel ─────────────────────────────────────────────────────────────
+function ProgressPanel() {
+  const [data, setData] = useState<SessionData>(emptySession())
+  useEffect(() => { setData(loadSession()) }, [])
+  const avg = data.attempts > 0 ? Math.round(data.totalScore / data.attempts) : 0
+  const weakSounds = Object.entries(data.weakSounds)
+    .map(([sound, scores]) => ({ sound, avg: Math.round(scores.reduce((a,b) => a+b,0)/scores.length) }))
+    .filter((x) => x.avg < 70)
+    .sort((a,b) => a.avg - b.avg)
+    .slice(0, 3)
+  return (
+    <div className={`${glass} rounded-2xl p-5 space-y-4`}>
+      <h3 className="text-white font-bold">📊 Прогресс</h3>
+      <div className="grid grid-cols-3 gap-2 text-center">
+        <div className="bg-white/[0.03] rounded-xl p-3 border border-white/[0.06]">
+          <p className="text-2xl font-black text-[#818cf8]">{data.attempts}</p>
+          <p className="text-[#64748b] text-xs">попыток</p>
+        </div>
+        <div className="bg-white/[0.03] rounded-xl p-3 border border-white/[0.06]">
+          <p className="text-2xl font-black" style={{ color: colorFor(avg) }}>{avg}%</p>
+          <p className="text-[#64748b] text-xs">средний балл</p>
+        </div>
+        <div className="bg-white/[0.03] rounded-xl p-3 border border-white/[0.06]">
+          <p className="text-2xl font-black text-orange-400">{data.streak}🔥</p>
+          <p className="text-[#64748b] text-xs">дней подряд</p>
+        </div>
+      </div>
+      {weakSounds.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-[#64748b] text-xs uppercase tracking-wider">Слабые звуки</p>
+          {weakSounds.map((x) => (
+            <div key={x.sound} className="flex items-center justify-between bg-red-500/5 border border-red-500/20 rounded-xl px-3 py-2">
+              <span className="text-white/70 text-sm font-mono">{x.sound}</span>
+              <span className="text-red-400 font-bold text-sm">{x.avg}%</span>
+            </div>
+          ))}
+          <p className="text-[#64748b] text-xs">💡 Тренируй эти звуки в «Минимальных парах»</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Main Page ──────────────────────────────────────────────────────────────────
+type Mode = 'shadow'|'read'|'free'|'pairs'|'twister'
+const MODES: { id: Mode; label: string }[] = [
+  { id: 'shadow',  label: '🎭 Повторяй за мной' },
+  { id: 'read',    label: '📖 Читай вслух'       },
+  { id: 'free',    label: '⏱ 30 секунд'          },
+  { id: 'pairs',   label: '👥 Минимальные пары'  },
+  { id: 'twister', label: '🌀 Скороговорки'       },
+]
+
+export default function PronunciationPage() {
+  const [mode, setMode]           = useState<Mode>('shadow')
+  const [supported, setSupported] = useState(true)
+
+  useEffect(() => {
+    setSupported(!!(
+      typeof window !== 'undefined' &&
+      (window.SpeechRecognition || (window as Window & { webkitSpeechRecognition?: unknown }).webkitSpeechRecognition)
+    ))
+  }, [])
+
+  return (
+    <div className="min-h-screen bg-[#0f0f1a] p-4 sm:p-6 lg:p-8">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-black text-white">🎤 Тренажёр речи</h1>
+          <p className="text-[#64748b] mt-1">Улучши произношение с помощью AI-анализа</p>
+        </div>
+
+        {!supported && (
+          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 text-yellow-400 text-sm">
+            ⚠️ Тренажёр речи работает только в Chrome. Открой сайт в Google Chrome.
+          </div>
+        )}
+
+        {/* Mode tabs */}
+        <div className="flex flex-wrap gap-2">
+          {MODES.map((m) => (
+            <button key={m.id} onClick={() => setMode(m.id)}
+              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all border ${
+                mode === m.id
+                  ? 'bg-[#6366f1] border-[#6366f1] text-white shadow-lg shadow-indigo-500/20'
+                  : 'bg-white/[0.03] border-white/[0.06] text-[#64748b] hover:text-white hover:border-white/20'
+              }`}>
+              {m.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <AnimatePresence mode="wait">
+              <motion.div key={mode} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
+                {mode === 'shadow'  && <ShadowingTab    supported={supported} />}
+                {mode === 'read'    && <ReadAloudTab    supported={supported} />}
+                {mode === 'free'    && <FreeSpeechTab   supported={supported} />}
+                {mode === 'pairs'   && <MinimalPairsTab supported={supported} />}
+                {mode === 'twister' && <TongueTwistersTab supported={supported} />}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+          <div>
+            <ProgressPanel />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
