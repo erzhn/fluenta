@@ -818,10 +818,9 @@ export default function PronunciationPage() {
   const [supported, setSupported] = useState(true)
 
   useEffect(() => {
-    setSupported(!!(
-      typeof window !== 'undefined' &&
-      (window.SpeechRecognition || (window as Window & { webkitSpeechRecognition?: unknown }).webkitSpeechRecognition)
-    ))
+    if (typeof window === 'undefined') return
+    const w = window as Window & { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown }
+    setSupported(!!(w.SpeechRecognition || w.webkitSpeechRecognition))
   }, [])
 
   return (
