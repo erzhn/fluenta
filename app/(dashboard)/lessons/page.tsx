@@ -1,10 +1,13 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, CheckCircle, Lock, Zap, RotateCcw, BookOpen, FlipHorizontal } from 'lucide-react'
 import { LESSONS } from '@/lib/lessons-data'
 import type { Lesson } from '@/lib/lessons-data'
+import { MODULES } from '@/lib/modules-data'
+import type { ModuleLesson, ModuleId } from '@/lib/modules-data'
 
 // ─── Progress ─────────────────────────────────────────────────────────────────
 interface LessonResult { score: number; completedAt: string }
@@ -482,9 +485,41 @@ function LessonCard({ lesson, unlocked, completed, current, onClick }: {
   )
 }
 
+// ─── Module helpers ───────────────────────────────────────────────────────────
+function moduleLessonsByBlock(lessons: ModuleLesson[]) {
+  const map = new Map<number, { name: string; lessons: ModuleLesson[] }>()
+  for (const l of lessons) {
+    if (!map.has(l.block)) map.set(l.block, { name: l.blockName, lessons: [] })
+    map.get(l.block)!.lessons.push(l)
+  }
+  return [...map.entries()].sort((a, b) => a[0] - b[0])
+}
+
+function isModuleLessonUnlocked(lesson: ModuleLesson, allModuleLessons: ModuleLesson[], progress: Progress): boolean {
+  const sorted = [...allModuleLessons].sort((a, b) => a.order - b.order)
+  const idx = sorted.findIndex(l => l.id === lesson.id)
+  if (idx <= 0) return true
+  const prev = sorted[idx - 1]
+  const r = progress.completedLessons[prev.id]
+  if (!r) return false
+  return r.score / prev.quiz.length >= PASS_THRESHOLD
+}
+
+const MODULE_TABS = [
+  { id: null,         label: '📚 Основной курс' },
+  { id: 'business',  label: '💼 Деловой' },
+  { id: 'academic',  label: '🎓 Академическое' },
+  { id: 'speaking',  label: '🗣️ Разговорный' },
+  { id: 'grammar',   label: '🔤 Грамматика' },
+] as const
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function LessonsPage() {
+  const searchParams = useSearchParams()
+  const initModule = (searchParams.get('module') as ModuleId | null) ?? null
+
   const [activeLevel, setActiveLevel] = useState<string>('A1')
+  const [activeModule, setActiveModule] = useState<ModuleId | null>(initModule)
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null)
   const [progress, setProgress] = useState<Progress>({ completedLessons: {}, totalXP: 0 })
 
@@ -499,12 +534,13 @@ export default function LessonsPage() {
       saveProgress(next)
       return next
     })
-    // stay in player to show celebration in QuizStep
   }, [])
 
-  // Find the "current" lesson = first unlocked and not completed
-  const currentLesson = LESSONS.find(l => isUnlocked(l, progress) && !progress.completedLessons[l.id])
+  const currentModuleMeta = activeModule ? MODULES.find(m => m.id === activeModule) ?? null : null
+  const moduleLessons = currentModuleMeta?.lessons ?? []
 
+  // Main course state
+  const currentLesson = LESSONS.find(l => isUnlocked(l, progress) && !progress.completedLessons[l.id])
   const blocks = lessonsByBlock(activeLevel)
   const totalCompleted = LESSONS.filter(l => l.level === activeLevel && progress.completedLessons[l.id]).length
   const totalInLevel = LESSONS.filter(l => l.level === activeLevel).length
@@ -533,7 +569,11 @@ export default function LessonsPage() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h1 className="text-2xl font-black text-white">Уроки 📚</h1>
-                <p className="text-[#64748b] text-sm mt-0.5">{totalCompleted}/{totalInLevel} на уровне {activeLevel}</p>
+                <p className="text-[#64748b] text-sm mt-0.5">
+                  {activeModule
+                    ? `${currentModuleMeta?.title ?? ''} · ${moduleLessons.filter(l => progress.completedLessons[l.id]).length}/${moduleLessons.length} уроков`
+                    : `${totalCompleted}/${totalInLevel} на уровне ${activeLevel}`}
+                </p>
               </div>
               <div className="flex items-center gap-2 bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2">
                 <Zap className="w-4 h-4 text-[#f59e0b]" />
@@ -541,60 +581,116 @@ export default function LessonsPage() {
               </div>
             </div>
 
-            {/* Level tabs */}
-            <div className="flex gap-2 flex-wrap mb-8">
-              {LEVELS.map(lv => {
-                const active = activeLevel === lv
-                const lc = LEVEL_COLORS[lv]
+            {/* Module tabs */}
+            <div className="flex gap-2 flex-wrap mb-5 overflow-x-auto pb-1">
+              {MODULE_TABS.map(tab => {
+                const active = activeModule === tab.id
                 return (
-                  <button key={lv} onClick={() => setActiveLevel(lv)}
-                    className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all ${
-                      active ? 'text-white' : 'border-white/10 text-[#64748b] hover:text-white hover:border-white/20'
+                  <button
+                    key={String(tab.id)}
+                    onClick={() => setActiveModule(tab.id as ModuleId | null)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all whitespace-nowrap shrink-0 ${
+                      active
+                        ? 'bg-indigo-500/20 border-indigo-500/60 text-indigo-300'
+                        : 'border-white/10 text-[#64748b] hover:text-white hover:border-white/20'
                     }`}
-                    style={active ? { backgroundColor: `${lc}20`, borderColor: lc, color: lc } : {}}>
-                    {lv}
-                    <span className="ml-1.5 text-[10px] font-normal opacity-70 hidden sm:inline">{LEVEL_DESC[lv]}</span>
+                  >
+                    {tab.label}
                   </button>
                 )
               })}
             </div>
 
-            {/* Blocks */}
-            <div className="space-y-8">
-              {blocks.map(([blockNum, { name, lessons }]) => {
-                const doneInBlock = lessons.filter(l => progress.completedLessons[l.id]).length
-                const c = LEVEL_COLORS[activeLevel]
-                return (
-                  <section key={blockNum}>
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="text-white font-black text-sm">Блок {blockNum}</div>
-                      <div className="text-[#64748b] text-sm">— {name}</div>
-                      <div className="flex-1 h-px bg-white/[0.06]" />
-                      <div className="text-[#475569] text-xs">{doneInBlock} из {lessons.length}</div>
-                    </div>
+            {activeModule ? (
+              /* ── MODULE CURRICULUM ──────────────────────────────────────── */
+              <div className="space-y-8">
+                {moduleLessonsByBlock(moduleLessons).map(([blockNum, { name, lessons }]) => {
+                  const doneInBlock = lessons.filter(l => progress.completedLessons[l.id]).length
+                  const c = '#6366f1'
+                  return (
+                    <section key={blockNum}>
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="text-white font-black text-sm">Блок {blockNum}</div>
+                        <div className="text-[#64748b] text-sm">— {name}</div>
+                        <div className="flex-1 h-px bg-white/[0.06]" />
+                        <div className="text-[#475569] text-xs">{doneInBlock} из {lessons.length}</div>
+                      </div>
+                      <div className="h-1 bg-white/[0.06] rounded-full mb-4 overflow-hidden">
+                        <div className="h-full rounded-full transition-all"
+                          style={{ width: `${(doneInBlock / lessons.length) * 100}%`, backgroundColor: c }} />
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-3">
+                        {lessons.map(lesson => (
+                          <LessonCard
+                            key={lesson.id}
+                            lesson={lesson}
+                            unlocked={isModuleLessonUnlocked(lesson, moduleLessons, progress)}
+                            completed={!!progress.completedLessons[lesson.id]}
+                            current={false}
+                            onClick={() => setActiveLesson(lesson)}
+                          />
+                        ))}
+                      </div>
+                    </section>
+                  )
+                })}
+              </div>
+            ) : (
+              /* ── MAIN COURSE CURRICULUM ─────────────────────────────────── */
+              <>
+                {/* Level tabs */}
+                <div className="flex gap-2 flex-wrap mb-8">
+                  {LEVELS.map(lv => {
+                    const active = activeLevel === lv
+                    const lc = LEVEL_COLORS[lv]
+                    return (
+                      <button key={lv} onClick={() => setActiveLevel(lv)}
+                        className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all ${
+                          active ? 'text-white' : 'border-white/10 text-[#64748b] hover:text-white hover:border-white/20'
+                        }`}
+                        style={active ? { backgroundColor: `${lc}20`, borderColor: lc, color: lc } : {}}>
+                        {lv}
+                        <span className="ml-1.5 text-[10px] font-normal opacity-70 hidden sm:inline">{LEVEL_DESC[lv]}</span>
+                      </button>
+                    )
+                  })}
+                </div>
 
-                    {/* Block progress bar */}
-                    <div className="h-1 bg-white/[0.06] rounded-full mb-4 overflow-hidden">
-                      <div className="h-full rounded-full transition-all"
-                        style={{ width: `${(doneInBlock / lessons.length) * 100}%`, backgroundColor: c }} />
-                    </div>
-
-                    <div className="grid sm:grid-cols-2 gap-3">
-                      {lessons.map(lesson => (
-                        <LessonCard
-                          key={lesson.id}
-                          lesson={lesson}
-                          unlocked={isUnlocked(lesson, progress)}
-                          completed={!!progress.completedLessons[lesson.id]}
-                          current={lesson.id === currentLesson?.id}
-                          onClick={() => setActiveLesson(lesson)}
-                        />
-                      ))}
-                    </div>
-                  </section>
-                )
-              })}
-            </div>
+                {/* Blocks */}
+                <div className="space-y-8">
+                  {blocks.map(([blockNum, { name, lessons }]) => {
+                    const doneInBlock = lessons.filter(l => progress.completedLessons[l.id]).length
+                    const c = LEVEL_COLORS[activeLevel]
+                    return (
+                      <section key={blockNum}>
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="text-white font-black text-sm">Блок {blockNum}</div>
+                          <div className="text-[#64748b] text-sm">— {name}</div>
+                          <div className="flex-1 h-px bg-white/[0.06]" />
+                          <div className="text-[#475569] text-xs">{doneInBlock} из {lessons.length}</div>
+                        </div>
+                        <div className="h-1 bg-white/[0.06] rounded-full mb-4 overflow-hidden">
+                          <div className="h-full rounded-full transition-all"
+                            style={{ width: `${(doneInBlock / lessons.length) * 100}%`, backgroundColor: c }} />
+                        </div>
+                        <div className="grid sm:grid-cols-2 gap-3">
+                          {lessons.map(lesson => (
+                            <LessonCard
+                              key={lesson.id}
+                              lesson={lesson}
+                              unlocked={isUnlocked(lesson, progress)}
+                              completed={!!progress.completedLessons[lesson.id]}
+                              current={lesson.id === currentLesson?.id}
+                              onClick={() => setActiveLesson(lesson)}
+                            />
+                          ))}
+                        </div>
+                      </section>
+                    )
+                  })}
+                </div>
+              </>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
