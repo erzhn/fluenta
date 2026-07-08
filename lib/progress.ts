@@ -260,7 +260,23 @@ export async function migrateLocalStorageToSupabase(userId: string) {
       )
     )
 
-    const vocabData = ls<Record<string, { box: number; nextReview: string }>>(LS_VOCAB, {})
+    const vocabData = ls<Record<string, unknown>>(LS_VOCAB, {})
     const intervals = [0, 1, 3, 7, 14, 30]
     await Promise.all(
-      Object.entries(vocabData).map(([wordId, v]
+      Object.entries(vocabData).map(([wordId, raw]) => {
+        const v = raw as { box?: number; nextReview?: string }
+        const box = v.box ?? 0
+        const intervalDays = intervals[Math.min(box, intervals.length - 1)]
+        return updateVocabWord(userId, wordId, box, intervalDays)
+      })
+    )
+
+    const levelRaw = ls<string | null>(LS_LEVEL, null)
+    const levelScoreRaw = ls<{ level: string; score: number } | null>(LS_LEVEL_SCORE, null)
+    if (levelRaw) await setUserLevel(userId, levelRaw, levelScoreRaw?.score ?? 0)
+
+    localStorage.setItem(MIGRATED_KEY, 'true')
+  } catch {
+    // Migration failed silently — will retry next login
+  }
+}
