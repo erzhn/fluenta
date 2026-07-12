@@ -537,6 +537,7 @@ const MODULE_TABS = [
 export default function LessonsPage() {
   const searchParams = useSearchParams()
   const initModule = (searchParams.get('module') as ModuleId | null) ?? null
+  const openLessonId = searchParams.get('open')
 
   const [activeLevel, setActiveLevel] = useState<string>('A1')
   const [activeModule, setActiveModule] = useState<ModuleId | null>(initModule)
@@ -549,9 +550,15 @@ export default function LessonsPage() {
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
-      setIsGuest(!user)
+      const guest = !user
+      setIsGuest(guest)
+      // Auto-open lesson from ?open= query param (e.g. from dashboard "continue" card)
+      if (openLessonId && !guest) {
+        const lesson = LESSONS.find(l => l.id === openLessonId)
+        if (lesson) setActiveLesson(lesson)
+      }
     })
-  }, [])
+  }, [openLessonId])
 
   const DEMO_LESSON_ID = LESSONS[0]?.id
 
@@ -560,6 +567,7 @@ export default function LessonsPage() {
       setShowDemoModal(true)
       return
     }
+    localStorage.setItem('fluenta_last_lesson_id', lesson.id)
     setActiveLesson(lesson)
   }
 

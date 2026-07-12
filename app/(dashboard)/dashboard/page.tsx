@@ -10,6 +10,8 @@ import {
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { StreakWidget, loadStreak, type StreakData } from '@/components/StreakWidget'
+import { LESSONS, LEVEL_COLORS, type Lesson } from '@/lib/lessons-data'
+import { getLessonCompletions } from '@/lib/progress'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface Profile {
@@ -75,6 +77,9 @@ export default function DashboardPage() {
   const [localLevel, setLocalLevel] = useState<string | null>(null)
   const [streakData, setStreakData] = useState<StreakData | null>(null)
   const [vocabDue, setVocabDue] = useState(0)
+  const [nextLesson, setNextLesson] = useState<Lesson | null>(null)
+  const [completedCount, setCompletedCount] = useState(0)
+  const [nextLessonLoading, setNextLessonLoading] = useState(true)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -103,15 +108,30 @@ export default function DashboardPage() {
       setFullName((user.user_metadata?.full_name as string | null) ?? null)
       setUserId(user.id)
 
-      const [profileRes, vocabRes, convRes] = await Promise.all([
+      const [profileRes, vocabRes, convRes, completions] = await Promise.all([
         supabase.from('profiles').select('name,streak,xp,current_level,daily_goal_minutes').eq('id', user.id).single(),
         supabase.from('vocabulary').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
         supabase.from('ai_conversations').select('id,title,updated_at').eq('user_id', user.id).order('updated_at', { ascending: false }).limit(3),
+        getLessonCompletions(user.id),
       ])
 
       if (profileRes.data) setProfile(profileRes.data as Profile)
       setVocabCount(vocabRes.count ?? 0)
       if (convRes.data) setRecentConvs(convRes.data as RecentConv[])
+
+      // Find next uncompleted lesson
+      const completedIds = new Set(Object.keys(completions))
+      setCompletedCount(completedIds.size)
+      let found: Lesson | null = null
+      for (const level of ['A1', 'A2', 'B1', 'B2', 'C1'] as const) {
+        for (const lesson of LESSONS.filter(l => l.level === level).sort((a, b) => a.block - b.block || a.order - b.order)) {
+          if (!completedIds.has(lesson.id)) { found = lesson; break }
+        }
+        if (found) break
+      }
+      setNextLesson(found)
+      setNextLessonLoading(false)
+
       setLoading(false)
     }
     load()
@@ -174,6 +194,64 @@ export default function DashboardPage() {
               <span className="text-[#818cf8] text-sm font-medium">Пройти тест →</span>
             </div>
           </Link>
+        )}
+      </motion.div>
+
+      {/* ── 1b. Continue where you left off ───────────────────────────────── */}
+      <motion.div custom={0.5} variants={fadeUp} initial="hidden" animate="visible">
+        {nextLessonLoading ? (
+          <div className={`${glass} rounded-2xl p-5 animate-pulse`}>
+            <div className="h-3.5 bg-white/[0.06] rounded w-1/3 mb-3" />
+            <div className="h-5 bg-white/[0.06] rounded w-2/3 mb-2" />
+            <div className="h-3 bg-white/[0.06] rounded w-1/2" />
+          </div>
+        ) : nextLesson ? (
+          <Link href={`/lessons?open=${nextLesson.id}`}>
+            <div className={`${glass} rounded-2xl p-5 hover:border-[#6366f1]/40 hover:bg-white/[0.06] transition-all cursor-pointer group`}>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-medium text-[#64748b] uppercase tracking-wider">
+                  Продолжить обучение
+                </span>
+                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full"
+                  style={{ background: `${LEVEL_COLORS[nextLesson.level]}20`, color: LEVEL_COLORS[nextLesson.level] }}>
+                  {nextLesson.level}
+                </span>
+              </div>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-semibold text-base truncate group-hover:text-[#a5b4fc] transition-colors">
+                    {nextLesson.title}
+                  </p>
+                  <p className="text-[#64748b] text-sm mt-0.5">
+                    Блок {nextLesson.block} · {nextLesson.blockName} · {nextLesson.duration}
+                  </p>
+                </div>
+                <div className="shrink-0 w-10 h-10 rounded-xl bg-[#6366f1]/20 flex items-center justify-center group-hover:bg-[#6366f1]/30 transition-colors">
+                  <ArrowRight className="w-5 h-5 text-[#6366f1] group-hover:translate-x-0.5 transition-transform" />
+                </div>
+              </div>
+              <div className="mt-4">
+                <div className="flex justify-between text-xs text-[#475569] mb-1.5">
+                  <span>{completedCount} из {LESSONS.length} уроков</span>
+                  <span>{Math.round(completedCount / LESSONS.length * 100)}%</span>
+                </div>
+                <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all duration-500"
+                    style={{ width: `${Math.round(completedCount / LESSONS.length * 100)}%`, background: 'linear-gradient(90deg, #6366f1, #8b5cf6)' }} />
+                </div>
+              </div>
+            </div>
+          </Link>
+        ) : (
+          <div className={`${glass} rounded-2xl p-5 border-green-500/20`}>
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">🎉</span>
+              <div>
+                <p className="text-white font-semibold">Все уроки завершены!</p>
+                <p className="text-[#64748b] text-sm">Уровень C1 достигнут</p>
+              </div>
+            </div>
+          </div>
         )}
       </motion.div>
 
@@ -244,7 +322,7 @@ export default function DashboardPage() {
           <h2 className="text-white font-bold text-sm mb-3">Сегодня</h2>
           <div className="space-y-2">
             {[
-              { emoji: '📖', text: 'Продолжи урок', sub: 'Следующий незавершённый урок', href: '/lessons', color: '#6366f1' },
+              { emoji: '📖', text: nextLesson ? nextLesson.title : 'Продолжи урок', sub: nextLesson ? `${nextLesson.level} · Блок ${nextLesson.block}` : 'Следующий незавершённый урок', href: nextLesson ? `/lessons?open=${nextLesson.id}` : '/lessons', color: '#6366f1' },
               { emoji: '🔤', text: `Словарный запас${vocabDue > 0 ? `: ${vocabDue} слов к повторению` : ''}`, sub: vocabDue > 0 ? 'Пора повторить!' : 'Все слова изучены', href: '/vocabulary', color: '#8b5cf6' },
               { emoji: '✍️', text: 'Практика письма', sub: 'Напиши текст — ИИ проверит', href: '/writing', color: '#10b981' },
               { emoji: '🎧', text: 'Аудирование', sub: 'Слушай и отвечай на вопросы', href: '/listening', color: '#3b82f6' },
