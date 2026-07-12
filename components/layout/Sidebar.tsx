@@ -26,6 +26,7 @@ import {
   FileText,
   GraduationCap,
   Trophy,
+  Link2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getLevelFromXP } from "@/lib/gamification";
@@ -41,8 +42,9 @@ const NAV_ITEMS = [
   { href: "/listening",    icon: Headphones,      label: "Аудирование",  badge: null },
   { href: "/reading",      icon: FileText,        label: "Чтение",       badge: null },
   { href: "/writing",      icon: PenLine,         label: "Письмо",       badge: null },
-  { href: "/grammar",      icon: GraduationCap,   label: "Грамматика",   badge: null },
-  { href: "/modules",      icon: Trophy,          label: "Модули",       badge: null },
+  { href: "/grammar",        icon: GraduationCap,   label: "Грамматика",         badge: null },
+  { href: "/phrasal-verbs", icon: Link2,           label: "Фразовые глаголы",   badge: null },
+  { href: "/modules",       icon: Trophy,          label: "Модули",             badge: null },
   { href: "/level-test",   icon: BarChart2,       label: "Тест уровня",  badge: null },
   { href: "/progress",     icon: TrendingUp,      label: "Прогресс",     badge: null },
 ];

@@ -78,7 +78,7 @@ function TheoryStep({ lesson, onNext }: { lesson: Lesson; onNext: () => void }) 
         className="mt-4 w-full py-3.5 rounded-2xl text-white font-bold text-sm transition-all hover:opacity-90 active:scale-[0.98]"
         style={{ background: `linear-gradient(135deg, ${c}, ${c}99)` }}
       >
-        Р”Р°Р»РµРµ вЂ” РџСЂРёРјРµСЂС‹ в†’
+        Далее — Примеры →
       </button>
     </div>
   )
@@ -123,12 +123,12 @@ function ExamplesStep({ lesson, onNext }: { lesson: Lesson; onNext: () => void }
                 <FlipHorizontal className="w-3 h-3" />English
               </div>
               <div className="text-white font-bold text-lg leading-snug">{ex.english}</div>
-              <div className="text-[#6366f1] text-xs mt-4 opacity-60">РЅР°Р¶РјРё С‡С‚РѕР±С‹ РїРµСЂРµРІРµСЂРЅСѓС‚СЊ</div>
+              <div className="text-[#6366f1] text-xs mt-4 opacity-60">нажми чтобы перевернуть</div>
             </div>
-            {/* Back вЂ” Russian */}
+            {/* Back — Russian */}
             <div className="absolute inset-0 rounded-2xl flex flex-col items-center justify-center p-6 text-center"
               style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)', backgroundColor: `${c}12`, border: `1px solid ${c}30` }}>
-              <div className="text-[10px] uppercase tracking-widest mb-3" style={{ color: c }}>Р СѓСЃСЃРєРёР№</div>
+              <div className="text-[10px] uppercase tracking-widest mb-3" style={{ color: c }}>Русский</div>
               <div className="text-white font-bold text-lg">{ex.russian}</div>
             </div>
           </motion.div>
@@ -143,14 +143,14 @@ function ExamplesStep({ lesson, onNext }: { lesson: Lesson; onNext: () => void }
         {!seen.has(cur) && (
           <button onClick={markSeen}
             className="w-full py-3 rounded-2xl border border-white/10 text-white/60 hover:text-white hover:border-white/20 text-sm font-medium transition-all">
-            РџРѕРЅСЏС‚РЅРѕ вњ“
+            Понятно ✓
           </button>
         )}
         {allSeen && (
           <button onClick={onNext}
             className="w-full py-3.5 rounded-2xl text-white font-bold text-sm transition-all hover:opacity-90"
             style={{ background: `linear-gradient(135deg, ${c}, ${c}99)` }}>
-            Рљ СѓРїСЂР°Р¶РЅРµРЅРёСЏРј в†’
+            К упражнениям →
           </button>
         )}
       </div>
@@ -203,7 +203,7 @@ function ExercisesStep({ lesson, onNext, module: mod }: { lesson: Lesson; onNext
         />
         <button onClick={() => setSpeakingDone(true)}
           className="text-[#64748b] hover:text-white text-sm text-center transition-colors">
-          РџСЂРѕРїСѓСЃС‚РёС‚СЊ в†’ Рє СѓРїСЂР°Р¶РЅРµРЅРёСЏРј
+          Пропустить → к упражнениям
         </button>
       </div>
     )
@@ -212,7 +212,7 @@ function ExercisesStep({ lesson, onNext, module: mod }: { lesson: Lesson; onNext
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between mb-4">
-        <span className="text-[#64748b] text-xs">РЈРїСЂР°Р¶РЅРµРЅРёРµ {cur + 1} РёР· {lesson.exercises.length}</span>
+        <span className="text-[#64748b] text-xs">Упражнение {cur + 1} из {lesson.exercises.length}</span>
         <div className="flex gap-1">
           {lesson.exercises.map((_, i) => (
             <div key={i} className="w-5 h-1.5 rounded-full transition-all"
@@ -242,7 +242,7 @@ function ExercisesStep({ lesson, onNext, module: mod }: { lesson: Lesson; onNext
                     </span>
                   ))}
                 </div>
-                {ex.hint && !answered && <p className="text-[#475569] text-xs">рџ’Ў {ex.hint}</p>}
+                {ex.hint && !answered && <p className="text-[#475569] text-xs">💡 {ex.hint}</p>}
               </div>
             )}
 
@@ -267,9 +267,9 @@ function ExercisesStep({ lesson, onNext, module: mod }: { lesson: Lesson; onNext
 
             {ex.type === 'build_sentence' && (
               <div className="space-y-4">
-                <p className="text-[#94a3b8] text-sm">{ex.question || 'РЎРѕР±РµСЂРё РїСЂРµРґР»РѕР¶РµРЅРёРµ:'}</p>
+                <p className="text-[#94a3b8] text-sm">{ex.question || 'Собери предложение:'}</p>
                 <div className="min-h-12 flex flex-wrap gap-2 p-3 rounded-xl border-2 border-dashed border-white/10 bg-white/[0.02]">
-                  {built.length === 0 && <span className="text-[#334155] text-sm self-center">РќР°Р¶РјРё РЅР° СЃР»РѕРІР° СЃРЅРёР·Сѓ...</span>}
+                  {built.length === 0 && <span className="text-[#334155] text-sm self-center">Нажми на слова снизу...</span>}
                   {built.map((w, i) => (
                     <button key={`b${i}`} onClick={() => { if (answered) return; setBuilt(b => b.filter((_, j) => j !== i)); setAvail(a => [...a, w]) }} disabled={answered}
                       className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all ${
@@ -300,7 +300,7 @@ function ExercisesStep({ lesson, onNext, module: mod }: { lesson: Lesson; onNext
           className={`mt-3 px-4 py-3 rounded-xl text-sm font-medium ${
             correct ? 'bg-[#10b981]/10 border border-[#10b981]/30 text-[#10b981]' : 'bg-[#ef4444]/10 border border-[#ef4444]/30 text-[#ef4444]'
           }`}>
-          {correct ? 'вњ… РџСЂР°РІРёР»СЊРЅРѕ!' : `вќЊ РџСЂР°РІРёР»СЊРЅС‹Р№ РѕС‚РІРµС‚: ${ex.answer}`}
+          {correct ? '✅ Правильно!' : `❌ Правильный ответ: ${ex.answer}`}
         </motion.div>
       )}
 
@@ -309,13 +309,13 @@ function ExercisesStep({ lesson, onNext, module: mod }: { lesson: Lesson; onNext
           <button onClick={check} disabled={!canCheck}
             className="w-full py-3 rounded-2xl text-white font-bold text-sm disabled:opacity-40 transition-all hover:opacity-90"
             style={{ background: `linear-gradient(135deg, ${c}, ${c}99)` }}>
-            РџСЂРѕРІРµСЂРёС‚СЊ
+            Проверить
           </button>
         ) : (
           <button onClick={() => { if (cur < lesson.exercises.length - 1) setCur(n => n + 1); else onNext() }}
             className="w-full py-3.5 rounded-2xl text-white font-bold text-sm transition-all hover:opacity-90"
             style={{ background: `linear-gradient(135deg, ${c}, ${c}99)` }}>
-            {cur < lesson.exercises.length - 1 ? 'РЎР»РµРґСѓСЋС‰РµРµ СѓРїСЂР°Р¶РЅРµРЅРёРµ в†’' : 'Рљ С‚РµСЃС‚Сѓ в†’'}
+            {cur < lesson.exercises.length - 1 ? 'Следующее упражнение →' : 'К тесту →'}
           </button>
         )}
       </div>
@@ -349,9 +349,9 @@ function QuizStep({ lesson, onFinish }: { lesson: Lesson; onFinish: (score: numb
     const pass = finalScore / lesson.quiz.length >= PASS_THRESHOLD
     return (
       <div className="flex flex-col items-center justify-center h-full text-center px-4">
-        <div className="text-6xl mb-4">{pass ? 'рџЋ‰' : 'рџ’Є'}</div>
-        <h3 className="text-white font-black text-xl mb-2">{pass ? 'РЈСЂРѕРє Р·Р°РІРµСЂС€С‘РЅ!' : 'РџРѕРїСЂРѕР±СѓР№ СЃРЅРѕРІР°'}</h3>
-        <p className="text-[#64748b] text-sm mb-2">{finalScore} РёР· {lesson.quiz.length} РїСЂР°РІРёР»СЊРЅРѕ</p>
+        <div className="text-6xl mb-4">{pass ? '🎉' : '💪'}</div>
+        <h3 className="text-white font-black text-xl mb-2">{pass ? 'Урок завершён!' : 'Попробуй снова'}</h3>
+        <p className="text-[#64748b] text-sm mb-2">{finalScore} из {lesson.quiz.length} правильно</p>
         {pass && (
           <div className="flex items-center gap-2 text-[#f59e0b] font-bold text-sm mb-6">
             <Zap className="w-4 h-4" />+{xpForLesson(lesson)} XP
@@ -360,7 +360,7 @@ function QuizStep({ lesson, onFinish }: { lesson: Lesson; onFinish: (score: numb
         {!pass && (
           <button onClick={() => { setCur(0); setChosen([]); setSelected(null); setFinalScore(null) }}
             className="flex items-center gap-2 mt-4 px-6 py-3 rounded-2xl border border-white/10 text-white text-sm font-bold hover:border-white/20 transition-all">
-            <RotateCcw className="w-4 h-4" />РџСЂРѕР№С‚Рё С‚РµСЃС‚ СЃРЅРѕРІР°
+            <RotateCcw className="w-4 h-4" />Пройти тест снова
           </button>
         )}
       </div>
@@ -370,7 +370,7 @@ function QuizStep({ lesson, onFinish }: { lesson: Lesson; onFinish: (score: numb
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between mb-4">
-        <span className="text-[#64748b] text-xs">Р’РѕРїСЂРѕСЃ {cur + 1} РёР· {lesson.quiz.length}</span>
+        <span className="text-[#64748b] text-xs">Вопрос {cur + 1} из {lesson.quiz.length}</span>
         <div className="flex gap-1">
           {lesson.quiz.map((_, i) => (
             <div key={i} className="w-4 h-1.5 rounded-full transition-all"
@@ -394,14 +394,14 @@ function QuizStep({ lesson, onFinish }: { lesson: Lesson; onFinish: (score: numb
       <button onClick={next} disabled={!selected}
         className="mt-4 w-full py-3.5 rounded-2xl text-white font-bold text-sm disabled:opacity-40 transition-all hover:opacity-90"
         style={{ background: `linear-gradient(135deg, ${c}, ${c}99)` }}>
-        {cur < lesson.quiz.length - 1 ? 'РЎР»РµРґСѓСЋС‰РёР№ РІРѕРїСЂРѕСЃ в†’' : 'Р—Р°РІРµСЂС€РёС‚СЊ С‚РµСЃС‚'}
+        {cur < lesson.quiz.length - 1 ? 'Следующий вопрос →' : 'Завершить тест'}
       </button>
     </div>
   )
 }
 
 // в”Ђв”Ђв”Ђ Lesson Player (VIEW 2) в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
-const STEPS = ['РўРµРѕСЂРёСЏ', 'РџСЂРёРјРµСЂС‹', 'РЈРїСЂР°Р¶РЅРµРЅРёСЏ', 'РўРµСЃС‚'] as const
+const STEPS = ['Теория', 'Примеры', 'Упражнения', 'Тест'] as const
 type Step = typeof STEPS[number]
 
 function LessonPlayer({ lesson, onBack, onComplete }: {
@@ -409,7 +409,7 @@ function LessonPlayer({ lesson, onBack, onComplete }: {
   onBack: () => void
   onComplete: (score: number) => void
 }) {
-  const [step, setStep] = useState<Step>('РўРµРѕСЂРёСЏ')
+  const [step, setStep] = useState<Step>('Теория')
   const stepIdx = STEPS.indexOf(step)
   const c = LEVEL_COLORS[lesson.level]
 
@@ -419,7 +419,7 @@ function LessonPlayer({ lesson, onBack, onComplete }: {
       <div className="flex items-center gap-3 mb-5 shrink-0">
         <button onClick={onBack}
           className="flex items-center gap-1.5 text-[#64748b] hover:text-white text-sm transition-colors">
-          <ChevronLeft className="w-4 h-4" />РќР°Р·Р°Рґ
+          <ChevronLeft className="w-4 h-4" />Назад
         </button>
         <div className="flex-1" />
         <span className="text-xs font-black px-2.5 py-1 rounded-lg"
@@ -452,10 +452,10 @@ function LessonPlayer({ lesson, onBack, onComplete }: {
         <AnimatePresence mode="wait">
           <motion.div key={step} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.25 }} className="h-full">
-            {step === 'РўРµРѕСЂРёСЏ' && <TheoryStep lesson={lesson} onNext={() => setStep('РџСЂРёРјРµСЂС‹')} />}
-            {step === 'РџСЂРёРјРµСЂС‹' && <ExamplesStep lesson={lesson} onNext={() => setStep('РЈРїСЂР°Р¶РЅРµРЅРёСЏ')} />}
-            {step === 'РЈРїСЂР°Р¶РЅРµРЅРёСЏ' && <ExercisesStep lesson={lesson} onNext={() => setStep('РўРµСЃС‚')} module={(lesson as any).module} />}
-            {step === 'РўРµСЃС‚' && <QuizStep lesson={lesson} onFinish={onComplete} />}
+            {step === 'Теория' && <TheoryStep lesson={lesson} onNext={() => setStep('Примеры')} />}
+            {step === 'Примеры' && <ExamplesStep lesson={lesson} onNext={() => setStep('Упражнения')} />}
+            {step === 'Упражнения' && <ExercisesStep lesson={lesson} onNext={() => setStep('Тест')} module={(lesson as any).module} />}
+            {step === 'Тест' && <QuizStep lesson={lesson} onFinish={onComplete} />}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -498,7 +498,7 @@ function LessonCard({ lesson, unlocked, completed, current, onClick }: {
       </div>
       {current && (
         <div className="mt-2 text-xs font-semibold flex items-center gap-1" style={{ color: c }}>
-          <BookOpen className="w-3 h-3" />РўРµРєСѓС‰РёР№ СѓСЂРѕРє
+          <BookOpen className="w-3 h-3" />Текущий урок
         </div>
       )}
     </motion.button>
@@ -526,11 +526,11 @@ function isModuleLessonUnlocked(lesson: ModuleLesson, allModuleLessons: ModuleLe
 }
 
 const MODULE_TABS = [
-  { id: null,         label: 'рџ“љ РћСЃРЅРѕРІРЅРѕР№ РєСѓСЂСЃ' },
-  { id: 'business',  label: 'рџ’ј Р”РµР»РѕРІРѕР№' },
-  { id: 'academic',  label: 'рџЋ“ РђРєР°РґРµРјРёС‡РµСЃРєРѕРµ' },
-  { id: 'speaking',  label: 'рџ—ЈпёЏ Р Р°Р·РіРѕРІРѕСЂРЅС‹Р№' },
-  { id: 'grammar',   label: 'рџ”¤ Р“СЂР°РјРјР°С‚РёРєР°' },
+  { id: null,         label: '📚 Основной курс' },
+  { id: 'business',  label: '💼 Деловой' },
+  { id: 'academic',  label: '🎓 Академическое' },
+  { id: 'speaking',  label: '🗣️ Разговорный' },
+  { id: 'grammar',   label: '📖 Грамматика' },
 ] as const
 
 // в”Ђв”Ђв”Ђ Main Page в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
@@ -606,11 +606,11 @@ export default function LessonsPage() {
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-2xl font-black text-white">РЈСЂРѕРєРё рџ“љ</h1>
+                <h1 className="text-2xl font-black text-white">Уроки 📚</h1>
                 <p className="text-[#64748b] text-sm mt-0.5">
                   {activeModule
-                    ? `${currentModuleMeta?.title ?? ''} В· ${moduleLessons.filter(l => progress.completedLessons[l.id]).length}/${moduleLessons.length} СѓСЂРѕРєРѕРІ`
-                    : `${totalCompleted}/${totalInLevel} РЅР° СѓСЂРѕРІРЅРµ ${activeLevel}`}
+                    ? `${currentModuleMeta?.title ?? ''} · ${moduleLessons.filter(l => progress.completedLessons[l.id]).length}/${moduleLessons.length} уроков`
+                    : `${totalCompleted}/${totalInLevel} на уровне ${activeLevel}`}
                 </p>
               </div>
               <div className="flex items-center gap-2 bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2">
@@ -648,10 +648,10 @@ export default function LessonsPage() {
                   return (
                     <section key={blockNum}>
                       <div className="flex items-center gap-3 mb-3">
-                        <div className="text-white font-black text-sm">Р‘Р»РѕРє {blockNum}</div>
-                        <div className="text-[#64748b] text-sm">вЂ” {name}</div>
+                        <div className="text-white font-black text-sm">Блок {blockNum}</div>
+                        <div className="text-[#64748b] text-sm">— {name}</div>
                         <div className="flex-1 h-px bg-white/[0.06]" />
-                        <div className="text-[#475569] text-xs">{doneInBlock} РёР· {lessons.length}</div>
+                        <div className="text-[#475569] text-xs">{doneInBlock} из {lessons.length}</div>
                       </div>
                       <div className="h-1 bg-white/[0.06] rounded-full mb-4 overflow-hidden">
                         <div className="h-full rounded-full transition-all"
@@ -702,10 +702,10 @@ export default function LessonsPage() {
                     return (
                       <section key={blockNum}>
                         <div className="flex items-center gap-3 mb-3">
-                          <div className="text-white font-black text-sm">Р‘Р»РѕРє {blockNum}</div>
-                          <div className="text-[#64748b] text-sm">вЂ” {name}</div>
+                          <div className="text-white font-black text-sm">Блок {blockNum}</div>
+                          <div className="text-[#64748b] text-sm">— {name}</div>
                           <div className="flex-1 h-px bg-white/[0.06]" />
-                          <div className="text-[#475569] text-xs">{doneInBlock} РёР· {lessons.length}</div>
+                          <div className="text-[#475569] text-xs">{doneInBlock} из {lessons.length}</div>
                         </div>
                         <div className="h-1 bg-white/[0.06] rounded-full mb-4 overflow-hidden">
                           <div className="h-full rounded-full transition-all"
