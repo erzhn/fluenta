@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, ChevronDown, ChevronUp, Volume2 } from 'lucide-react'
+import { Search, ChevronDown, ChevronUp, Volume2, Sparkles, Lightbulb, BookOpen, PenLine, Check, X } from 'lucide-react'
 import { speak } from '@/lib/speech'
 
 interface GrammarCard {
@@ -12,6 +12,16 @@ interface GrammarCard {
   rule: string
   examples: Array<{ correct: string; wrong: string; note: string }>
   tip: string
+}
+
+interface GrammarAIState {
+  loading: boolean
+  activeType: 'explain' | 'examples' | 'exercise' | null
+  explanation?: { explanation: string; tip: string; common_mistake: string }
+  extraExamples?: Array<{ english: string; russian: string }>
+  exercise?: { sentence: string; answer: string; explanation: string }
+  exerciseInput: string
+  exerciseChecked: boolean
 }
 
 const GRAMMAR_CARDS: GrammarCard[] = [
@@ -278,10 +288,15 @@ const LEVEL_COLORS: Record<string, string> = {
 
 const LEVELS = ['All', 'A1', 'A2', 'B1', 'B2', 'C1']
 
+function makeAIState(): GrammarAIState {
+  return { loading: false, activeType: null, exerciseInput: '', exerciseChecked: false }
+}
+
 export default function GrammarPage() {
   const [filter, setFilter] = useState('All')
   const [search, setSearch] = useState('')
   const [expanded, setExpanded] = useState<string | null>(null)
+  const [aiStates, setAIStates] = useState<Record<string, GrammarAIState>>({})
 
   const filtered = GRAMMAR_CARDS.filter(c => {
     const matchLevel = filter === 'All' || c.level === filter
@@ -289,12 +304,46 @@ export default function GrammarPage() {
     return matchLevel && matchSearch
   })
 
+  function getAI(id: string): GrammarAIState {
+    return aiStates[id] ?? makeAIState()
+  }
+
+  function setAI(id: string, patch: Partial<GrammarAIState>) {
+    setAIStates(s => ({ ...s, [id]: { ...(s[id] ?? makeAIState()), ...patch } }))
+  }
+
+  async function fetchGrammarAI(card: GrammarCard, type: 'explain' | 'examples' | 'exercise') {
+    const ai = getAI(card.id)
+    if (ai.activeType === type) {
+      setAI(card.id, { activeType: null })
+      return
+    }
+    setAI(card.id, { activeType: type, loading: true })
+    try {
+      const res = await fetch('/api/ai/grammar-examples', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic: card.title, level: card.level, type }),
+      })
+      const data = await res.json()
+      if (type === 'explain') {
+        setAI(card.id, { loading: false, explanation: data })
+      } else if (type === 'examples') {
+        setAI(card.id, { loading: false, extraExamples: data.examples ?? [] })
+      } else if (type === 'exercise') {
+        setAI(card.id, { loading: false, exercise: data, exerciseInput: '', exerciseChecked: false })
+      }
+    } catch {
+      setAI(card.id, { loading: false, activeType: null })
+    }
+  }
+
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-white">Грамматический справочник</h1>
-        <p className="text-[#64748b] text-sm">25 ключевых правил от A1 до C1 с примерами ошибок</p>
+        <p className="text-[#64748b] text-sm">25 ключевых правил от A1 до C1 + AI-объяснения</p>
       </div>
 
       {/* Search + filter */}
@@ -309,7 +358,7 @@ export default function GrammarPage() {
           {LEVELS.map(l => (
             <button key={l} onClick={() => setFilter(l)}
               className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${filter === l
-                ? l === 'All' ? 'border-[#6366f1] bg-[#6366f1]/20 text-white' : `border-[${LEVEL_COLORS[l]}] text-white`
+                ? l === 'All' ? 'border-[#6366f1] bg-[#6366f1]/20 text-white' : ''
                 : 'border-white/10 text-[#64748b] hover:text-white'}`}
               style={filter === l && l !== 'All'
                 ? { borderColor: LEVEL_COLORS[l], backgroundColor: `${LEVEL_COLORS[l]}20`, color: LEVEL_COLORS[l] }
@@ -324,37 +373,39 @@ export default function GrammarPage() {
 
       {/* Cards */}
       <div className="space-y-3">
-        {filtered.map(card => (
-          <div key={card.id} className="bg-white/[0.04] border border-white/10 rounded-2xl overflow-hidden transition-all">
-            <button onClick={() => setExpanded(e => e === card.id ? null : card.id)}
-              className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-white/[0.02] transition-colors">
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-bold px-2 py-0.5 rounded-lg flex-shrink-0"
-                  style={{ backgroundColor: `${LEVEL_COLORS[card.level]}20`, color: LEVEL_COLORS[card.level] }}>
-                  {card.level}
-                </span>
-                <span className="text-white font-medium">{card.title}</span>
-              </div>
-              {expanded === card.id ? <ChevronUp className="w-4 h-4 text-[#475569]" /> : <ChevronDown className="w-4 h-4 text-[#475569]" />}
-            </button>
+        {filtered.map(card => {
+          const ai = getAI(card.id)
+          const color = LEVEL_COLORS[card.level]
+          return (
+            <div key={card.id} className="bg-white/[0.04] border border-white/10 rounded-2xl overflow-hidden transition-all">
+              <button onClick={() => setExpanded(e => e === card.id ? null : card.id)}
+                className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-white/[0.02] transition-colors">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-lg flex-shrink-0"
+                    style={{ backgroundColor: `${color}20`, color }}>
+                    {card.level}
+                  </span>
+                  <span className="text-white font-medium">{card.title}</span>
+                </div>
+                {expanded === card.id ? <ChevronUp className="w-4 h-4 text-[#475569]" /> : <ChevronDown className="w-4 h-4 text-[#475569]" />}
+              </button>
 
-            <AnimatePresence>
-              {expanded === card.id && (
-                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
-                  className="overflow-hidden border-t border-white/[0.06]">
-                  <div className="px-5 py-4 space-y-4">
-                    {/* Rule */}
-                    <p className="text-[#94a3b8] text-sm leading-relaxed">{card.rule}</p>
+              <AnimatePresence>
+                {expanded === card.id && (
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
+                    className="overflow-hidden border-t border-white/[0.06]">
+                    <div className="px-5 py-4 space-y-4">
+                      {/* Rule */}
+                      <p className="text-[#94a3b8] text-sm leading-relaxed">{card.rule}</p>
 
-                    {/* Examples */}
-                    <div>
-                      <h4 className="text-white text-xs font-semibold uppercase tracking-wider mb-2">Примеры</h4>
-                      <div className="space-y-2.5">
-                        {card.examples.map((ex, i) => (
-                          <div key={i} className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3">
-                            <div className="flex items-start justify-between gap-2 mb-1">
-                              <div className="space-y-0.5">
+                      {/* Examples */}
+                      <div>
+                        <h4 className="text-white text-xs font-semibold uppercase tracking-wider mb-2">Примеры</h4>
+                        <div className="space-y-2.5">
+                          {card.examples.map((ex, i) => (
+                            <div key={i} className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3">
+                              <div className="space-y-0.5 mb-1">
                                 <div className="flex items-center gap-1.5">
                                   <span className="text-[#10b981] text-xs">✓</span>
                                   <span className="text-[#10b981] text-sm">{ex.correct.split(' → ')[0]}</span>
@@ -368,24 +419,157 @@ export default function GrammarPage() {
                                   <span className="text-[#ef4444]/70 line-through text-sm">{ex.wrong.split(' → ')[0]}</span>
                                 </div>
                               </div>
+                              <p className="text-[#475569] text-xs mt-1">{ex.note}</p>
                             </div>
-                            <p className="text-[#475569] text-xs mt-1">{ex.note}</p>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Tip */}
+                      <div className="bg-[#f59e0b]/10 border border-[#f59e0b]/20 rounded-xl px-4 py-3">
+                        <span className="text-[#f59e0b] text-xs font-semibold">💡 Совет: </span>
+                        <span className="text-[#94a3b8] text-xs">{card.tip}</span>
+                      </div>
+
+                      {/* AI Tools */}
+                      <div className="pt-1">
+                        <div className="flex items-center gap-1 mb-2">
+                          <Sparkles className="w-3.5 h-3.5 text-[#6366f1]" />
+                          <span className="text-[#6366f1] text-xs font-semibold">AI-помощник</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            onClick={() => fetchGrammarAI(card, 'explain')}
+                            disabled={ai.loading}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all disabled:opacity-50 ${ai.activeType === 'explain' ? 'border-[#8b5cf6] bg-[#8b5cf6]/20 text-[#c4b5fd]' : 'border-white/10 text-[#94a3b8] hover:text-white hover:border-white/20'}`}>
+                            <Lightbulb className="w-3 h-3" />
+                            {ai.loading && ai.activeType === 'explain' ? 'Загрузка...' : 'Объяснить по-русски'}
+                          </button>
+                          <button
+                            onClick={() => fetchGrammarAI(card, 'examples')}
+                            disabled={ai.loading}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all disabled:opacity-50 ${ai.activeType === 'examples' ? 'border-[#3b82f6] bg-[#3b82f6]/20 text-[#93c5fd]' : 'border-white/10 text-[#94a3b8] hover:text-white hover:border-white/20'}`}>
+                            <BookOpen className="w-3 h-3" />
+                            {ai.loading && ai.activeType === 'examples' ? 'Загрузка...' : 'Ещё примеры'}
+                          </button>
+                          <button
+                            onClick={() => fetchGrammarAI(card, 'exercise')}
+                            disabled={ai.loading}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all disabled:opacity-50 ${ai.activeType === 'exercise' ? 'border-[#10b981] bg-[#10b981]/20 text-[#6ee7b7]' : 'border-white/10 text-[#94a3b8] hover:text-white hover:border-white/20'}`}>
+                            <PenLine className="w-3 h-3" />
+                            {ai.loading && ai.activeType === 'exercise' ? 'Загрузка...' : 'Упражнение'}
+                          </button>
+                        </div>
+
+                        <AnimatePresence>
+                          {/* Explanation panel */}
+                          {ai.activeType === 'explain' && !ai.loading && ai.explanation && (
+                            <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                              className="mt-3 space-y-2">
+                              <div className="bg-[#8b5cf6]/10 border border-[#8b5cf6]/20 rounded-xl p-4">
+                                <p className="text-[#c4b5fd] text-xs font-semibold mb-1">Объяснение</p>
+                                <p className="text-[#e2e8f0] text-sm leading-relaxed">{ai.explanation.explanation}</p>
+                              </div>
+                              {ai.explanation.tip && (
+                                <div className="bg-[#6366f1]/10 border border-[#6366f1]/20 rounded-xl px-4 py-2.5">
+                                  <p className="text-[#a5b4fc] text-xs font-semibold mb-0.5">Подсказка</p>
+                                  <p className="text-[#94a3b8] text-xs">{ai.explanation.tip}</p>
+                                </div>
+                              )}
+                              {ai.explanation.common_mistake && (
+                                <div className="bg-[#ef4444]/10 border border-[#ef4444]/20 rounded-xl px-4 py-2.5">
+                                  <p className="text-[#fca5a5] text-xs font-semibold mb-0.5">Частая ошибка</p>
+                                  <p className="text-[#94a3b8] text-xs">{ai.explanation.common_mistake}</p>
+                                </div>
+                              )}
+                            </motion.div>
+                          )}
+
+                          {/* Extra examples panel */}
+                          {ai.activeType === 'examples' && !ai.loading && ai.extraExamples && (
+                            <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                              className="mt-3 bg-[#3b82f6]/10 border border-[#3b82f6]/20 rounded-xl p-4 space-y-2.5">
+                              <p className="text-[#93c5fd] text-xs font-semibold">Дополнительные примеры</p>
+                              {ai.extraExamples.map((ex, i) => (
+                                <div key={i} className="space-y-0.5">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-white text-sm">{ex.english}</span>
+                                    <button onClick={() => speak(ex.english, { rate: 0.9 })}
+                                      className="text-[#475569] hover:text-[#3b82f6] transition-colors flex-shrink-0">
+                                      <Volume2 className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                  <p className="text-[#64748b] text-xs">{ex.russian}</p>
+                                </div>
+                              ))}
+                            </motion.div>
+                          )}
+
+                          {/* Exercise panel */}
+                          {ai.activeType === 'exercise' && !ai.loading && ai.exercise && (
+                            <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                              className="mt-3 bg-[#10b981]/10 border border-[#10b981]/20 rounded-xl p-4 space-y-3">
+                              <p className="text-[#6ee7b7] text-xs font-semibold">Упражнение</p>
+                              <p className="text-white text-sm">{ai.exercise.sentence}</p>
+                              <div className="flex gap-2">
+                                <input
+                                  value={ai.exerciseInput}
+                                  onChange={e => setAI(card.id, { exerciseInput: e.target.value, exerciseChecked: false })}
+                                  placeholder="Введи ответ..."
+                                  disabled={ai.exerciseChecked}
+                                  className="flex-1 bg-white/[0.06] border border-white/10 rounded-xl px-3 py-2 text-white text-sm placeholder-[#3f4a5a] outline-none focus:border-[#10b981]/50 transition-colors disabled:opacity-60"
+                                  onKeyDown={e => { if (e.key === 'Enter' && !ai.exerciseChecked) setAI(card.id, { exerciseChecked: true }) }}
+                                />
+                                {!ai.exerciseChecked ? (
+                                  <button
+                                    onClick={() => setAI(card.id, { exerciseChecked: true })}
+                                    disabled={!ai.exerciseInput.trim()}
+                                    className="px-4 py-2 rounded-xl bg-[#10b981]/20 border border-[#10b981]/30 text-[#6ee7b7] text-sm font-medium hover:bg-[#10b981]/30 transition-colors disabled:opacity-40">
+                                    Проверить
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={() => setAI(card.id, { exerciseInput: '', exerciseChecked: false })}
+                                    className="px-4 py-2 rounded-xl bg-white/[0.06] border border-white/10 text-[#94a3b8] text-sm hover:text-white transition-colors">
+                                    Сброс
+                                  </button>
+                                )}
+                              </div>
+                              <AnimatePresence>
+                                {ai.exerciseChecked && ai.exercise && (
+                                  <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
+                                    {ai.exerciseInput.trim().toLowerCase() === ai.exercise.answer.toLowerCase() ? (
+                                      <div className="flex items-start gap-2 bg-[#10b981]/15 border border-[#10b981]/30 rounded-xl px-3 py-2.5">
+                                        <Check className="w-4 h-4 text-[#10b981] flex-shrink-0 mt-0.5" />
+                                        <p className="text-[#10b981] text-sm">Верно! Отличная работа!</p>
+                                      </div>
+                                    ) : (
+                                      <div className="space-y-1.5">
+                                        <div className="flex items-start gap-2 bg-[#ef4444]/15 border border-[#ef4444]/30 rounded-xl px-3 py-2.5">
+                                          <X className="w-4 h-4 text-[#f87171] flex-shrink-0 mt-0.5" />
+                                          <div>
+                                            <p className="text-[#f87171] text-sm">Правильный ответ: <strong>{ai.exercise!.answer}</strong></p>
+                                            {ai.exercise!.explanation && (
+                                              <p className="text-[#94a3b8] text-xs mt-1">{ai.exercise!.explanation}</p>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
                     </div>
-
-                    {/* Tip */}
-                    <div className="bg-[#f59e0b]/10 border border-[#f59e0b]/20 rounded-xl px-4 py-3">
-                      <span className="text-[#f59e0b] text-xs font-semibold">💡 Совет: </span>
-                      <span className="text-[#94a3b8] text-xs">{card.tip}</span>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )
+        })}
       </div>
 
       {filtered.length === 0 && (

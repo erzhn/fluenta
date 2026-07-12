@@ -157,6 +157,98 @@ export const VOCABULARY: VocabWord[] = [
   { id: 'v-a1-3-15-6', lessonId: 'a1-3-15', word: 'notice', translation: 'замечать', example: 'I am noticing something strange.', exampleTranslation: 'Я замечаю что-то странное.' },
   { id: 'v-a1-3-15-7', lessonId: 'a1-3-15', word: 'listen', translation: 'слушать', example: 'Are you listening to music?', exampleTranslation: 'Ты слушаешь музыку?' },
   { id: 'v-a1-3-15-8', lessonId: 'a1-3-15', word: 'talk', translation: 'разговаривать', example: 'They are talking on the phone.', exampleTranslation: 'Они разговаривают по телефону.' },
+
+  // ── Extended words (7 per lesson, lessons a1-1-1 to a1-2-10) ──
+
+  // a1-1-1 extra (9-15)
+  { id: 'v-a1-1-1-9', lessonId: 'a1-1-1', word: 'excited', translation: 'взволнованный', example: 'I am excited about the trip.', exampleTranslation: 'Я взволнован из-за поездки.' },
+  { id: 'v-a1-1-1-10', lessonId: 'a1-1-1', word: 'sad', translation: 'грустный', example: 'She is sad today.', exampleTranslation: 'Сегодня она грустная.' },
+  { id: 'v-a1-1-1-11', lessonId: 'a1-1-1', word: 'angry', translation: 'злой', example: 'He is angry with his brother.', exampleTranslation: 'Он злится на своего брата.' },
+  { id: 'v-a1-1-1-12', lessonId: 'a1-1-1', word: 'tall', translation: 'высокий', example: 'My father is very tall.', exampleTranslation: 'Мой отец очень высокий.' },
+  { id: 'v-a1-1-1-13', lessonId: 'a1-1-1', word: 'young', translation: 'молодой', example: 'She is young and energetic.', exampleTranslation: 'Она молодая и энергичная.' },
+  { id: 'v-a1-1-1-14', lessonId: 'a1-1-1', word: 'old', translation: 'старый', example: 'This building is very old.', exampleTranslation: 'Это здание очень старое.' },
+  { id: 'v-a1-1-1-15', lessonId: 'a1-1-1', word: 'strong', translation: 'сильный', example: 'He is strong and healthy.', exampleTranslation: 'Он сильный и здоровый.' },
+
+  // a1-1-2 extra (9-15)
+  { id: 'v-a1-1-2-9', lessonId: 'a1-1-2', word: 'introduce', translation: 'представить', example: 'Let me introduce my friend.', exampleTranslation: 'Позвольте представить моего друга.' },
+  { id: 'v-a1-1-2-10', lessonId: 'a1-1-2', word: 'nationality', translation: 'национальность', example: 'What is your nationality?', exampleTranslation: 'Какая у тебя национальность?' },
+  { id: 'v-a1-1-2-11', lessonId: 'a1-1-2', word: 'profession', translation: 'профессия', example: 'What is your profession?', exampleTranslation: 'Какая у вас профессия?' },
+  { id: 'v-a1-1-2-12', lessonId: 'a1-1-2', word: 'surname', translation: 'фамилия', example: 'What is your surname?', exampleTranslation: 'Какая у вас фамилия?' },
+  { id: 'v-a1-1-2-13', lessonId: 'a1-1-2', word: 'hobby', translation: 'хобби', example: 'My hobby is reading books.', exampleTranslation: 'Моё хобби — чтение книг.' },
+  { id: 'v-a1-1-2-14', lessonId: 'a1-1-2', word: 'married', translation: 'женатый / замужем', example: 'Are you married or single?', exampleTranslation: 'Вы женаты или не замужем?' },
+  { id: 'v-a1-1-2-15', lessonId: 'a1-1-2', word: 'single', translation: 'холостой / незамужняя', example: 'He has been single for years.', exampleTranslation: 'Он не женат уже несколько лет.' },
+
+  // a1-1-3 extra (9-15)
+  { id: 'v-a1-1-3-9', lessonId: 'a1-1-3', word: 'dozen', translation: 'дюжина', example: 'I bought a dozen eggs.', exampleTranslation: 'Я купил дюжину яиц.' },
+  { id: 'v-a1-1-3-10', lessonId: 'a1-1-3', word: 'million', translation: 'миллион', example: 'There are a million people here.', exampleTranslation: 'Здесь миллион человек.' },
+  { id: 'v-a1-1-3-11', lessonId: 'a1-1-3', word: 'half', translation: 'половина', example: 'I ate half of the pizza.', exampleTranslation: 'Я съел половину пиццы.' },
+  { id: 'v-a1-1-3-12', lessonId: 'a1-1-3', word: 'quarter', translation: 'четверть', example: 'It is quarter past three.', exampleTranslation: 'Сейчас четверть четвёртого.' },
+  { id: 'v-a1-1-3-13', lessonId: 'a1-1-3', word: 'percent', translation: 'процент', example: 'Ten percent of students failed.', exampleTranslation: 'Десять процентов студентов не сдали.' },
+  { id: 'v-a1-1-3-14', lessonId: 'a1-1-3', word: 'digit', translation: 'цифра', example: 'Enter a four-digit code.', exampleTranslation: 'Введите четырёхзначный код.' },
+  { id: 'v-a1-1-3-15', lessonId: 'a1-1-3', word: 'double', translation: 'двойной', example: 'I\'d like a double room, please.', exampleTranslation: 'Пожалуйста, двухместный номер.' },
+
+  // a1-1-4 extra (9-15)
+  { id: 'v-a1-1-4-9', lessonId: 'a1-1-4', word: 'month', translation: 'месяц', example: 'January is the first month of the year.', exampleTranslation: 'Январь — первый месяц года.' },
+  { id: 'v-a1-1-4-10', lessonId: 'a1-1-4', word: 'season', translation: 'сезон', example: 'Summer is my favourite season.', exampleTranslation: 'Лето — мой любимый сезон.' },
+  { id: 'v-a1-1-4-11', lessonId: 'a1-1-4', word: 'spring', translation: 'весна', example: 'Flowers bloom in spring.', exampleTranslation: 'Весной цветут цветы.' },
+  { id: 'v-a1-1-4-12', lessonId: 'a1-1-4', word: 'summer', translation: 'лето', example: 'We go to the beach in summer.', exampleTranslation: 'Летом мы ходим на пляж.' },
+  { id: 'v-a1-1-4-13', lessonId: 'a1-1-4', word: 'autumn', translation: 'осень', example: 'The leaves fall in autumn.', exampleTranslation: 'Осенью листья падают.' },
+  { id: 'v-a1-1-4-14', lessonId: 'a1-1-4', word: 'diary', translation: 'дневник', example: 'I write in my diary every day.', exampleTranslation: 'Я пишу в дневник каждый день.' },
+  { id: 'v-a1-1-4-15', lessonId: 'a1-1-4', word: 'cancel', translation: 'отменить', example: 'We had to cancel the meeting.', exampleTranslation: 'Нам пришлось отменить встречу.' },
+
+  // a1-1-5 extra (9-15)
+  { id: 'v-a1-1-5-9', lessonId: 'a1-1-5', word: 'shade', translation: 'оттенок', example: 'I like this shade of blue.', exampleTranslation: 'Мне нравится этот оттенок синего.' },
+  { id: 'v-a1-1-5-10', lessonId: 'a1-1-5', word: 'pale', translation: 'бледный', example: 'She looked pale and tired.', exampleTranslation: 'Она выглядела бледной и уставшей.' },
+  { id: 'v-a1-1-5-11', lessonId: 'a1-1-5', word: 'vivid', translation: 'яркий', example: 'The painting has vivid colours.', exampleTranslation: 'На картине яркие цвета.' },
+  { id: 'v-a1-1-5-12', lessonId: 'a1-1-5', word: 'pattern', translation: 'узор', example: 'Her dress has a flower pattern.', exampleTranslation: 'На её платье цветочный узор.' },
+  { id: 'v-a1-1-5-13', lessonId: 'a1-1-5', word: 'turquoise', translation: 'бирюзовый', example: 'The sea is turquoise here.', exampleTranslation: 'Море здесь бирюзовое.' },
+  { id: 'v-a1-1-5-14', lessonId: 'a1-1-5', word: 'silver', translation: 'серебряный', example: 'She has a silver necklace.', exampleTranslation: 'У неё серебряное ожерелье.' },
+  { id: 'v-a1-1-5-15', lessonId: 'a1-1-5', word: 'golden', translation: 'золотой', example: 'The sunset was golden.', exampleTranslation: 'Закат был золотым.' },
+
+  // a1-2-6 extra (9-15)
+  { id: 'v-a1-2-6-9', lessonId: 'a1-2-6', word: 'possess', translation: 'владеть', example: 'He possesses great knowledge.', exampleTranslation: 'Он обладает большими знаниями.' },
+  { id: 'v-a1-2-6-10', lessonId: 'a1-2-6', word: 'collect', translation: 'собирать', example: 'She collects old stamps.', exampleTranslation: 'Она собирает старые марки.' },
+  { id: 'v-a1-2-6-11', lessonId: 'a1-2-6', word: 'lose', translation: 'терять', example: 'Don\'t lose your keys!', exampleTranslation: 'Не теряй ключи!' },
+  { id: 'v-a1-2-6-12', lessonId: 'a1-2-6', word: 'find', translation: 'найти', example: 'Did you find your wallet?', exampleTranslation: 'Ты нашёл свой кошелёк?' },
+  { id: 'v-a1-2-6-13', lessonId: 'a1-2-6', word: 'store', translation: 'хранить', example: 'I store my photos online.', exampleTranslation: 'Я храню фотографии в интернете.' },
+  { id: 'v-a1-2-6-14', lessonId: 'a1-2-6', word: 'contain', translation: 'содержать', example: 'This box contains books.', exampleTranslation: 'В этой коробке книги.' },
+  { id: 'v-a1-2-6-15', lessonId: 'a1-2-6', word: 'give', translation: 'давать', example: 'She gave me a gift.', exampleTranslation: 'Она подарила мне подарок.' },
+
+  // a1-2-7 extra (9-15)
+  { id: 'v-a1-2-7-9', lessonId: 'a1-2-7', word: 'nephew', translation: 'племянник', example: 'My nephew is five years old.', exampleTranslation: 'Моему племяннику пять лет.' },
+  { id: 'v-a1-2-7-10', lessonId: 'a1-2-7', word: 'niece', translation: 'племянница', example: 'My niece loves dancing.', exampleTranslation: 'Моя племянница любит танцевать.' },
+  { id: 'v-a1-2-7-11', lessonId: 'a1-2-7', word: 'stepmother', translation: 'мачеха', example: 'His stepmother is very kind.', exampleTranslation: 'Его мачеха очень добрая.' },
+  { id: 'v-a1-2-7-12', lessonId: 'a1-2-7', word: 'stepfather', translation: 'отчим', example: 'Her stepfather cooks dinner.', exampleTranslation: 'Её отчим готовит ужин.' },
+  { id: 'v-a1-2-7-13', lessonId: 'a1-2-7', word: 'adopt', translation: 'усыновить', example: 'They decided to adopt a child.', exampleTranslation: 'Они решили усыновить ребёнка.' },
+  { id: 'v-a1-2-7-14', lessonId: 'a1-2-7', word: 'relative', translation: 'родственник', example: 'We visit relatives at Christmas.', exampleTranslation: 'На Рождество мы навещаем родственников.' },
+  { id: 'v-a1-2-7-15', lessonId: 'a1-2-7', word: 'generation', translation: 'поколение', example: 'Three generations live together.', exampleTranslation: 'Три поколения живут вместе.' },
+
+  // a1-2-8 extra (9-15)
+  { id: 'v-a1-2-8-9', lessonId: 'a1-2-8', word: 'ceiling', translation: 'потолок', example: 'The ceiling is very high.', exampleTranslation: 'Потолок очень высокий.' },
+  { id: 'v-a1-2-8-10', lessonId: 'a1-2-8', word: 'roof', translation: 'крыша', example: 'The roof needs repairing.', exampleTranslation: 'Крыша требует ремонта.' },
+  { id: 'v-a1-2-8-11', lessonId: 'a1-2-8', word: 'garage', translation: 'гараж', example: 'The car is in the garage.', exampleTranslation: 'Машина в гараже.' },
+  { id: 'v-a1-2-8-12', lessonId: 'a1-2-8', word: 'cellar', translation: 'подвал', example: 'We store wine in the cellar.', exampleTranslation: 'Мы храним вино в подвале.' },
+  { id: 'v-a1-2-8-13', lessonId: 'a1-2-8', word: 'attic', translation: 'чердак', example: 'Old boxes are in the attic.', exampleTranslation: 'Старые коробки на чердаке.' },
+  { id: 'v-a1-2-8-14', lessonId: 'a1-2-8', word: 'curtain', translation: 'занавеска', example: 'Please close the curtains.', exampleTranslation: 'Пожалуйста, закрой шторы.' },
+  { id: 'v-a1-2-8-15', lessonId: 'a1-2-8', word: 'carpet', translation: 'ковёр', example: 'We have a red carpet in the hall.', exampleTranslation: 'В прихожей у нас красный ковёр.' },
+
+  // a1-2-9 extra (9-15)
+  { id: 'v-a1-2-9-9', lessonId: 'a1-2-9', word: 'above', translation: 'над', example: 'The lamp is above the table.', exampleTranslation: 'Лампа над столом.' },
+  { id: 'v-a1-2-9-10', lessonId: 'a1-2-9', word: 'below', translation: 'под / ниже', example: 'The temperature is below zero.', exampleTranslation: 'Температура ниже нуля.' },
+  { id: 'v-a1-2-9-11', lessonId: 'a1-2-9', word: 'around', translation: 'вокруг', example: 'There are trees around the house.', exampleTranslation: 'Вокруг дома деревья.' },
+  { id: 'v-a1-2-9-12', lessonId: 'a1-2-9', word: 'through', translation: 'через', example: 'Walk through the park.', exampleTranslation: 'Пройди через парк.' },
+  { id: 'v-a1-2-9-13', lessonId: 'a1-2-9', word: 'across', translation: 'напротив / через', example: 'The shop is across the street.', exampleTranslation: 'Магазин через улицу.' },
+  { id: 'v-a1-2-9-14', lessonId: 'a1-2-9', word: 'along', translation: 'вдоль', example: 'Walk along the river.', exampleTranslation: 'Иди вдоль реки.' },
+  { id: 'v-a1-2-9-15', lessonId: 'a1-2-9', word: 'towards', translation: 'к / по направлению к', example: 'She walked towards the door.', exampleTranslation: 'Она пошла к двери.' },
+
+  // a1-2-10 extra (9-15)
+  { id: 'v-a1-2-10-9', lessonId: 'a1-2-10', word: 'appear', translation: 'появляться', example: 'A new shop appeared on the street.', exampleTranslation: 'На улице появился новый магазин.' },
+  { id: 'v-a1-2-10-10', lessonId: 'a1-2-10', word: 'remain', translation: 'оставаться', example: 'Some problems remain unsolved.', exampleTranslation: 'Некоторые проблемы остаются нерешёнными.' },
+  { id: 'v-a1-2-10-11', lessonId: 'a1-2-10', word: 'provide', translation: 'обеспечивать', example: 'The school provides free meals.', exampleTranslation: 'Школа обеспечивает бесплатное питание.' },
+  { id: 'v-a1-2-10-12', lessonId: 'a1-2-10', word: 'offer', translation: 'предлагать', example: 'They offer good prices.', exampleTranslation: 'Они предлагают хорошие цены.' },
+  { id: 'v-a1-2-10-13', lessonId: 'a1-2-10', word: 'include', translation: 'включать', example: 'The price includes breakfast.', exampleTranslation: 'Цена включает завтрак.' },
+  { id: 'v-a1-2-10-14', lessonId: 'a1-2-10', word: 'consist', translation: 'состоять', example: 'The team consists of ten people.', exampleTranslation: 'Команда состоит из десяти человек.' },
+  { id: 'v-a1-2-10-15', lessonId: 'a1-2-10', word: 'require', translation: 'требовать', example: 'This job requires experience.', exampleTranslation: 'Эта работа требует опыта.' },
 ]
 
 export function getVocabByLesson(lessonId: string): VocabWord[] {
@@ -165,4 +257,13 @@ export function getVocabByLesson(lessonId: string): VocabWord[] {
 
 export function getVocabById(id: string): VocabWord | undefined {
   return VOCABULARY.find(w => w.id === id)
+}
+
+export function getWordsForLesson(lessonId: string, count: number = 8): VocabWord[] {
+  const all = VOCABULARY.filter(w => w.lessonId === lessonId)
+  return [...all].sort(() => Math.random() - 0.5).slice(0, count)
+}
+
+export function getAllWordsForLesson(lessonId: string): VocabWord[] {
+  return VOCABULARY.filter(w => w.lessonId === lessonId)
 }

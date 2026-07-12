@@ -2,78 +2,21 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Play, Square, Eye, EyeOff, Volume2, RefreshCw } from 'lucide-react'
+import { Play, Square, Eye, EyeOff, Volume2, RefreshCw, Sparkles } from 'lucide-react'
 import { speak, stopSpeaking } from '@/lib/speech'
-
-interface ListeningText {
-  level: string
-  title: string
-  text: string
-  questions: { q: string; options: string[]; answer: string }[]
-}
-
-const TEXTS: ListeningText[] = [
-  {
-    level: 'A1',
-    title: 'At the café',
-    text: "Hello! Can I help you? Yes, please. I'd like a coffee and a sandwich. Of course. What kind of sandwich? Chicken, please. And a large coffee with milk. That's four pounds fifty, please. Here you are. Thank you. Enjoy your coffee!",
-    questions: [
-      { q: 'Where are they?', options: ['In a café', 'In a shop', 'At home', 'In a school'], answer: 'In a café' },
-      { q: 'What does the customer order?', options: ['Tea and cake', 'Coffee and sandwich', 'Juice and burger', 'Water and salad'], answer: 'Coffee and sandwich' },
-      { q: 'How much does it cost?', options: ['£3.50', '£4.00', '£4.50', '£5.00'], answer: '£4.50' },
-    ],
-  },
-  {
-    level: 'A2',
-    title: 'A Weekend Plan',
-    text: "Hey Sarah, what are you doing this weekend? I'm not sure yet. I was thinking about going to the cinema. Oh nice! What do you want to see? There's a new action film on. I've heard it's really good. Do you want to come? That sounds great! What time does it start? There's a showing at 7 PM. We could have dinner before. Perfect. Let's meet at the Italian restaurant at 5:30. Great, see you Saturday!",
-    questions: [
-      { q: 'What do they decide to do?', options: ['Go shopping', 'Watch a film', 'Stay home', 'Go to a concert'], answer: 'Watch a film' },
-      { q: 'What time is the film?', options: ['5:30', '6:00', '7:00', '8:00'], answer: '7:00' },
-      { q: 'Where will they meet first?', options: ['At the cinema', 'At home', 'At an Italian restaurant', 'At a café'], answer: 'At an Italian restaurant' },
-    ],
-  },
-  {
-    level: 'B1',
-    title: 'The Benefits of Exercise',
-    text: 'Regular exercise has many benefits for both physical and mental health. Studies show that people who exercise at least three times a week are less likely to suffer from depression and anxiety. Exercise releases endorphins, which are natural mood-boosters. It also improves sleep quality and increases energy levels during the day. For physical health, even moderate exercise like walking for thirty minutes can reduce the risk of heart disease and diabetes. The key is to find an activity you enjoy, whether it\'s swimming, cycling, or dancing, so that you stick to it long-term.',
-    questions: [
-      { q: 'How often should people exercise according to the text?', options: ['Every day', 'Once a week', 'At least three times a week', 'Twice a month'], answer: 'At least three times a week' },
-      { q: 'What do endorphins do?', options: ['Help you sleep', 'Boost your mood', 'Build muscles', 'Reduce hunger'], answer: 'Boost your mood' },
-      { q: 'What is the key to sticking with exercise?', options: ['Having a gym membership', 'Exercising with a friend', 'Choosing an activity you enjoy', 'Exercising in the morning'], answer: 'Choosing an activity you enjoy' },
-    ],
-  },
-  {
-    level: 'B2',
-    title: 'The Gig Economy',
-    text: 'The rise of the gig economy has fundamentally transformed the way people work. Rather than traditional nine-to-five employment, millions of workers now take on short-term contracts or freelance work through digital platforms. Proponents argue that this model offers unparalleled flexibility, allowing individuals to choose when and where they work. However, critics point out significant drawbacks. Gig workers typically lack employment benefits such as sick pay, holiday pay, and pension contributions. Furthermore, income can be highly unpredictable, making it difficult to plan for the future. Governments around the world are now grappling with how to regulate this sector to protect workers while preserving the innovation that makes it so appealing.',
-    questions: [
-      { q: 'What is the main advantage of the gig economy according to supporters?', options: ['Higher salaries', 'Better benefits', 'Flexibility', 'Job security'], answer: 'Flexibility' },
-      { q: 'Which benefit do gig workers typically NOT receive?', options: ['Salary', 'Sick pay', 'Work experience', 'Digital tools'], answer: 'Sick pay' },
-      { q: 'What challenge do governments face?', options: ['Creating more jobs', 'Taxing companies fairly', 'Regulating the sector while keeping innovation', 'Reducing working hours'], answer: 'Regulating the sector while keeping innovation' },
-    ],
-  },
-  {
-    level: 'C1',
-    title: 'The Philosophy of Language',
-    text: 'Language is not merely a tool for communication; it fundamentally shapes our perception of reality. The Sapir-Whorf hypothesis, also known as linguistic relativity, posits that the structure of a language influences the way its speakers conceptualise the world. For instance, research has demonstrated that speakers of languages with numerous colour terms can distinguish between shades more readily than those whose languages have fewer distinctions. Similarly, languages that lack a future tense may correlate with speakers who plan more effectively for the future, having no grammatical reason to separate tomorrow from today. While the strong version of this hypothesis — that language entirely determines thought — has largely been discredited, the weaker version, that language influences thought, continues to attract considerable empirical support.',
-    questions: [
-      { q: 'What does the Sapir-Whorf hypothesis propose?', options: ['Language determines intelligence', 'Language influences how we perceive the world', 'All languages are equally complex', 'Thought exists independently of language'], answer: 'Language influences how we perceive the world' },
-      { q: 'What example is given about colour terms?', options: ['People with more colour terms see more colours', 'People with more colour terms distinguish shades more easily', 'Colour terms vary between cultures', 'Some languages have no colour terms'], answer: 'People with more colour terms distinguish shades more easily' },
-      { q: 'What is the current academic view of the strong Sapir-Whorf hypothesis?', options: ['Widely accepted', 'Largely discredited', 'Under investigation', 'Proven correct'], answer: 'Largely discredited' },
-    ],
-  },
-]
+import { getListeningTexts, type ListeningText } from '@/lib/listening-data'
 
 const LEVEL_COLORS: Record<string, string> = {
   A1: '#10b981', A2: '#3b82f6', B1: '#8b5cf6', B2: '#f59e0b', C1: '#ef4444',
 }
 
+const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1']
 const SPEEDS = [0.8, 1.0, 1.2]
 const SPEED_LABELS: Record<number, string> = { 0.8: '0.8×', 1.0: '1×', 1.2: '1.2×' }
 
 export default function ListeningPage() {
   const [activeLevel, setActiveLevel] = useState('A1')
+  const [entry, setEntry] = useState<ListeningText>(() => getListeningTexts('A1', 1)[0])
   const [speed, setSpeed] = useState(1.0)
   const [playing, setPlaying] = useState(false)
   const [played, setPlayed] = useState(false)
@@ -81,13 +24,25 @@ export default function ListeningPage() {
   const [showQuestions, setShowQuestions] = useState(false)
   const [answers, setAnswers] = useState<Record<number, string>>({})
   const [checked, setChecked] = useState(false)
+  const [generatingAI, setGeneratingAI] = useState(false)
 
-  const entry = TEXTS.find(t => t.level === activeLevel)!
   const color = LEVEL_COLORS[activeLevel]
 
   function selectLevel(level: string) {
     stopSpeaking()
     setActiveLevel(level)
+    setEntry(getListeningTexts(level, 1)[0])
+    setPlaying(false)
+    setPlayed(false)
+    setShowText(false)
+    setShowQuestions(false)
+    setAnswers({})
+    setChecked(false)
+  }
+
+  function nextText() {
+    stopSpeaking()
+    setEntry(getListeningTexts(activeLevel, 1)[0])
     setPlaying(false)
     setPlayed(false)
     setShowText(false)
@@ -110,13 +65,36 @@ export default function ListeningPage() {
     })
   }
 
-  function handleReplay() {
-    stopSpeaking()
-    setPlaying(false)
-    setTimeout(() => {
-      setPlaying(true)
-      speak(entry.text, { rate: speed, onEnd: () => setPlaying(false) })
-    }, 100)
+  async function generateAI() {
+    setGeneratingAI(true)
+    try {
+      const res = await fetch('/api/ai/generate-listening', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ level: activeLevel }),
+      })
+      const data = await res.json()
+      if (data.title && data.text && data.questions) {
+        stopSpeaking()
+        setEntry({
+          id: `ai-${Date.now()}`,
+          level: activeLevel as 'A1' | 'A2' | 'B1' | 'B2' | 'C1',
+          title: data.title,
+          text: data.text,
+          questions: data.questions,
+        })
+        setPlaying(false)
+        setPlayed(false)
+        setShowText(false)
+        setShowQuestions(false)
+        setAnswers({})
+        setChecked(false)
+      }
+    } catch {
+      // ignore
+    } finally {
+      setGeneratingAI(false)
+    }
   }
 
   const allAnswered = entry.questions.every((_, i) => answers[i] !== undefined)
@@ -130,29 +108,39 @@ export default function ListeningPage() {
       </div>
 
       {/* Level tabs */}
-      <div className="flex gap-2">
-        {TEXTS.map(t => (
-          <button key={t.level} onClick={() => selectLevel(t.level)}
+      <div className="flex gap-2 flex-wrap">
+        {LEVELS.map(l => (
+          <button key={l} onClick={() => selectLevel(l)}
             className="px-4 py-2 rounded-xl text-sm font-semibold border transition-all"
-            style={activeLevel === t.level
-              ? { borderColor: LEVEL_COLORS[t.level], backgroundColor: `${LEVEL_COLORS[t.level]}20`, color: LEVEL_COLORS[t.level] }
+            style={activeLevel === l
+              ? { borderColor: LEVEL_COLORS[l], backgroundColor: `${LEVEL_COLORS[l]}20`, color: LEVEL_COLORS[l] }
               : { borderColor: 'rgba(255,255,255,0.1)', color: '#64748b' }}>
-            {t.level}
+            {l}
           </button>
         ))}
       </div>
 
       <AnimatePresence mode="wait">
-        <motion.div key={activeLevel} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-4">
+        <motion.div key={entry.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-4">
           {/* Player card */}
           <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-start justify-between mb-6">
               <div>
                 <h2 className="text-white font-bold text-lg">{entry.title}</h2>
                 <span className="text-xs font-bold px-2 py-0.5 rounded-lg mt-1 inline-block"
                   style={{ backgroundColor: `${color}20`, color }}>
                   {entry.level}
                 </span>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={nextText}
+                  className="px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 text-[#94a3b8] hover:text-white text-xs transition-colors flex items-center gap-1">
+                  <RefreshCw className="w-3 h-3" /> Другой
+                </button>
+                <button onClick={generateAI} disabled={generatingAI}
+                  className="px-3 py-1.5 rounded-xl bg-[#6366f1]/15 border border-[#6366f1]/30 text-[#a5b4fc] hover:text-white text-xs transition-colors flex items-center gap-1 disabled:opacity-50">
+                  <Sparkles className="w-3 h-3" /> {generatingAI ? 'AI...' : 'AI текст'}
+                </button>
               </div>
             </div>
 
@@ -184,12 +172,6 @@ export default function ListeningPage() {
                 className={`flex-1 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all ${playing ? 'bg-[#ef4444]/15 border border-[#ef4444]/30 text-[#f87171]' : 'bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white shadow-lg shadow-[#6366f1]/25'}`}>
                 {playing ? <><Square className="w-4 h-4" /> Стоп</> : <><Volume2 className="w-4 h-4" /> {played ? 'Слушать снова' : 'Слушать'}</>}
               </button>
-              {played && !playing && (
-                <button onClick={handleReplay}
-                  className="px-4 py-3 rounded-2xl bg-white/[0.06] border border-white/10 text-[#94a3b8] hover:text-white transition-colors">
-                  <RefreshCw className="w-4 h-4" />
-                </button>
-              )}
             </div>
 
             {/* Show text toggle */}
@@ -202,7 +184,7 @@ export default function ListeningPage() {
               {showText && (
                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
                   className="mt-3 overflow-hidden">
-                  <p className="text-[#94a3b8] text-sm leading-relaxed p-3 bg-white/[0.03] rounded-xl border border-white/[0.06] italic">
+                  <p className="text-[#94a3b8] text-sm leading-relaxed p-3 bg-white/[0.03] rounded-xl border border-white/[0.06] italic whitespace-pre-line">
                     {entry.text}
                   </p>
                 </motion.div>
@@ -225,7 +207,7 @@ export default function ListeningPage() {
                 <h3 className="text-white font-semibold">Вопросы</h3>
                 {entry.questions.map((q, qi) => (
                   <div key={qi}>
-                    <p className="text-[#94a3b8] text-sm mb-2">{qi + 1}. {q.q}</p>
+                    <p className="text-[#94a3b8] text-sm mb-2">{qi + 1}. {q.question}</p>
                     <div className="space-y-2">
                       {q.options.map(opt => {
                         let cls = 'border-white/10 bg-white/[0.04] text-[#94a3b8] hover:border-[#6366f1]/50 hover:text-white'
