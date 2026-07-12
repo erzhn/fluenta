@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import Link from 'next/link'
 import { Search, ChevronDown, ChevronUp, Volume2, Sparkles, Lightbulb, BookOpen, PenLine, Check, X } from 'lucide-react'
 import { speak } from '@/lib/speech'
 import { supabase } from '@/lib/supabase'
@@ -473,6 +474,10 @@ export default function GrammarPage() {
                             <PenLine className="w-3 h-3" />
                             {ai.loading && ai.activeType === 'exercise' ? 'Загрузка...' : 'Упражнение'}
                           </button>
+                          <Link href={`/grammar-exercises`}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-[#6366f1]/30 text-[#818cf8] hover:bg-[#6366f1]/10 transition-all">
+                            📝 Упражнения →
+                          </Link>
                         </div>
 
                         <AnimatePresence>

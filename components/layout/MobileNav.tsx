@@ -11,17 +11,21 @@ import {
   Layers,
   TrendingUp,
   Award,
+  Volume2,
+  AlignLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 
 const NAV_ITEMS = [
-  { href: "/dashboard",  icon: LayoutDashboard, label: "Главная",  badge: null },
-  { href: "/ai-tutor",   icon: Brain,           label: "AI",       badge: null },
-  { href: "/lessons",    icon: BookOpen,        label: "Уроки",    badge: null },
-  { href: "/vocabulary",    icon: Layers,          label: "Словарь",      badge: "vocab" },
-  { href: "/achievements",  icon: Award,           label: "Награды",      badge: null },
-  { href: "/progress",      icon: TrendingUp,      label: "Прогресс",     badge: null },
+  { href: "/dashboard",        icon: LayoutDashboard, label: "Главная",  badge: null },
+  { href: "/ai-tutor",         icon: Brain,           label: "AI",       badge: null },
+  { href: "/lessons",          icon: BookOpen,        label: "Уроки",    badge: null },
+  { href: "/vocabulary",       icon: Layers,          label: "Словарь",  badge: "vocab" },
+  { href: "/dictation",        icon: Volume2,         label: "Диктант",  badge: null },
+  { href: "/sentence-builder", icon: AlignLeft,       label: "Слова",    badge: null },
+  { href: "/achievements",     icon: Award,           label: "Награды",  badge: null },
+  { href: "/progress",         icon: TrendingUp,      label: "Прогресс", badge: null },
 ];
 
 export function MobileNav() {

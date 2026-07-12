@@ -29,6 +29,8 @@ import {
   Trophy,
   Link2,
   Award,
+  AlignLeft,
+  Volume2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getLevelFromXP } from "@/lib/gamification";
@@ -45,8 +47,11 @@ const NAV_ITEMS = [
   { href: "/reading",      icon: FileText,        label: "Чтение",       badge: null },
   { href: "/writing",      icon: PenLine,         label: "Письмо",       badge: null },
   { href: "/grammar",        icon: GraduationCap,   label: "Грамматика",         badge: null },
-  { href: "/phrasal-verbs", icon: Link2,           label: "Фразовые глаголы",   badge: null },
-  { href: "/modules",       icon: Trophy,          label: "Модули",             badge: null },
+  { href: "/phrasal-verbs",    icon: Link2,      label: "Фразовые глаголы",   badge: null },
+  { href: "/dictation",        icon: Volume2,    label: "Диктант",            badge: null },
+  { href: "/sentence-builder", icon: AlignLeft,  label: "Предложения",        badge: null },
+  { href: "/grammar-exercises",icon: BookOpen,   label: "Упражнения",         badge: null },
+  { href: "/modules",          icon: Trophy,     label: "Модули",             badge: null },
   { href: "/achievements",  icon: Award,           label: "Достижения",   badge: null },
   { href: "/level-test",   icon: BarChart2,       label: "Тест уровня",  badge: null },
   { href: "/progress",     icon: TrendingUp,      label: "Прогресс",     badge: null },
