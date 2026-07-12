@@ -9,7 +9,7 @@ import {
   Sparkles, ChevronRight,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { StreakWidget } from '@/components/StreakWidget'
+import { StreakWidget, loadStreak, type StreakData } from '@/components/StreakWidget'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface Profile {
@@ -73,10 +73,24 @@ export default function DashboardPage() {
   const [recentConvs, setRecentConvs] = useState<RecentConv[]>([])
   const [loading, setLoading] = useState(true)
   const [localLevel, setLocalLevel] = useState<string | null>(null)
+  const [streakData, setStreakData] = useState<StreakData | null>(null)
+  const [vocabDue, setVocabDue] = useState(0)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setLocalLevel(localStorage.getItem('fluenta_user_level'))
+      setStreakData(loadStreak())
+      // Count vocab due today
+      try {
+        const raw = localStorage.getItem('fluenta_vocab_srs')
+        if (raw) {
+          const srs = JSON.parse(raw)
+          const today = new Date().toISOString().slice(0, 10)
+          const due = Object.values(srs as Record<string, { box: number; nextReview: string }>)
+            .filter(v => v.box < 5 && v.nextReview <= today).length
+          setVocabDue(due)
+        }
+      } catch { /* ignore */ }
     }
   }, [])
 
@@ -134,21 +148,33 @@ export default function DashboardPage() {
 
       {/* ── 1. Welcome header ──────────────────────────────────────────────── */}
       <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-2">
           <div>
             <h1 className="text-2xl sm:text-3xl font-black text-white">
-              {greeting()}, {name}! 👋
+              Привет, {name}! 👋
             </h1>
             <p className="text-[#64748b] text-sm mt-1">
-              {streak > 0
-                ? `You're on a ${streak}-day streak 🔥 Keep it up!`
-                : "You're on a 0-day streak. Start today to build your habit!"}
+              {localLevel
+                ? `Твой уровень: ${localLevel} · ${streak > 0 ? `${streak}-дневный стрик 🔥` : 'Начни учиться!'}`
+                : streak > 0 ? `${streak}-дневный стрик 🔥 Продолжай!` : 'Начни учиться сегодня!'}
             </p>
           </div>
           <div className={`${glass} rounded-xl px-4 py-2.5 text-sm text-[#64748b] shrink-0`}>
             📅 {todayLabel()}
           </div>
         </div>
+        {!localLevel && (
+          <Link href="/level-test">
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#6366f1]/10 border border-[#6366f1]/25 hover:bg-[#6366f1]/15 transition-colors cursor-pointer">
+              <span className="text-lg">📊</span>
+              <div className="flex-1">
+                <p className="text-white text-sm font-semibold">Определи свой уровень</p>
+                <p className="text-[#64748b] text-xs">20 вопросов · ~5 минут · от A1 до C1</p>
+              </div>
+              <span className="text-[#818cf8] text-sm font-medium">Пройти тест →</span>
+            </div>
+          </Link>
+        )}
       </motion.div>
 
       {/* ── 2. Stats row ───────────────────────────────────────────────────── */}
@@ -168,6 +194,78 @@ export default function DashboardPage() {
           </motion.div>
         ))}
       </div>
+
+      {/* ── 2b. XP Chart ───────────────────────────────────────────────────── */}
+      {streakData && (
+        <motion.div custom={5} variants={fadeUp} initial="hidden" animate="visible">
+          <div className={`${glass} rounded-2xl p-5`}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-white font-bold text-sm">Активность за 7 дней</h2>
+              <span className="text-[#64748b] text-xs">{streakData.currentStreak} 🔥 день подряд</span>
+            </div>
+            {(() => {
+              const days = Array.from({ length: 7 }, (_, i) => {
+                const d = new Date()
+                d.setDate(d.getDate() - (6 - i))
+                const iso = d.toISOString().slice(0, 10)
+                const dayName = d.toLocaleDateString('ru-RU', { weekday: 'short' }).slice(0, 2)
+                const mins = streakData.history[iso] ?? 0
+                return { iso, dayName, mins }
+              })
+              const maxMins = Math.max(...days.map(d => d.mins), 1)
+              return (
+                <div className="flex items-end gap-2 h-20">
+                  {days.map((d) => (
+                    <div key={d.iso} className="flex-1 flex flex-col items-center gap-1">
+                      <div className="w-full flex items-end justify-center" style={{ height: 56 }}>
+                        <div
+                          className="w-full rounded-t-lg transition-all duration-500"
+                          style={{
+                            height: d.mins > 0 ? `${Math.max(8, Math.round((d.mins / maxMins) * 56))}px` : '4px',
+                            background: d.mins > 0
+                              ? 'linear-gradient(180deg, #8b5cf6, #6366f1)'
+                              : 'rgba(255,255,255,0.06)',
+                          }}
+                        />
+                      </div>
+                      <span className="text-[10px] text-[#475569]">{d.dayName}</span>
+                    </div>
+                  ))}
+                </div>
+              )
+            })()}
+          </div>
+        </motion.div>
+      )}
+
+      {/* ── 2c. Today's recommendations ────────────────────────────────────── */}
+      <motion.div custom={5.5} variants={fadeUp} initial="hidden" animate="visible">
+        <div className={`${glass} rounded-2xl p-5`}>
+          <h2 className="text-white font-bold text-sm mb-3">Сегодня</h2>
+          <div className="space-y-2">
+            {[
+              { emoji: '📖', text: 'Продолжи урок', sub: 'Следующий незавершённый урок', href: '/lessons', color: '#6366f1' },
+              { emoji: '🔤', text: `Словарный запас${vocabDue > 0 ? `: ${vocabDue} слов к повторению` : ''}`, sub: vocabDue > 0 ? 'Пора повторить!' : 'Все слова изучены', href: '/vocabulary', color: '#8b5cf6' },
+              { emoji: '✍️', text: 'Практика письма', sub: 'Напиши текст — ИИ проверит', href: '/writing', color: '#10b981' },
+              { emoji: '🎧', text: 'Аудирование', sub: 'Слушай и отвечай на вопросы', href: '/listening', color: '#3b82f6' },
+            ].map(item => (
+              <Link key={item.href} href={item.href}>
+                <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.04] transition-colors cursor-pointer group">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0"
+                    style={{ backgroundColor: `${item.color}15` }}>
+                    {item.emoji}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-medium">{item.text}</p>
+                    <p className="text-[#64748b] text-xs">{item.sub}</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-[#334155] group-hover:text-white transition-colors shrink-0" />
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </motion.div>
 
       {/* ── 3 + 5. Main two-column area ────────────────────────────────────── */}
       <div className="grid lg:grid-cols-3 gap-4">

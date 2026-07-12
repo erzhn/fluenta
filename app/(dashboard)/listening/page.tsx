@@ -2,105 +2,99 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Play, Square, RefreshCw, ChevronLeft, ChevronRight, Volume2 } from 'lucide-react'
+import { Play, Square, Eye, EyeOff, Volume2, RefreshCw } from 'lucide-react'
 import { speak, stopSpeaking } from '@/lib/speech'
 
-interface ListeningExercise {
-  id: string
+interface ListeningText {
   level: string
   title: string
   text: string
-  speed: number
-  question: string
-  options: string[]
-  answer: string
-  hint: string
+  questions: { q: string; options: string[]; answer: string }[]
 }
 
-const EXERCISES: ListeningExercise[] = [
+const TEXTS: ListeningText[] = [
   {
-    id: 'l1', level: 'A1', title: 'At the café',
-    text: 'Hello. Can I have a coffee, please? Yes, of course. Would you like milk? Yes, please. And a piece of cake. That is four pounds fifty.',
-    speed: 0.8, question: 'How much does the order cost?',
-    options: ['Three pounds fifty', 'Four pounds', 'Four pounds fifty', 'Five pounds'],
-    answer: 'Four pounds fifty',
-    hint: 'Listen for the price at the end.',
+    level: 'A1',
+    title: 'At the café',
+    text: "Hello! Can I help you? Yes, please. I'd like a coffee and a sandwich. Of course. What kind of sandwich? Chicken, please. And a large coffee with milk. That's four pounds fifty, please. Here you are. Thank you. Enjoy your coffee!",
+    questions: [
+      { q: 'Where are they?', options: ['In a café', 'In a shop', 'At home', 'In a school'], answer: 'In a café' },
+      { q: 'What does the customer order?', options: ['Tea and cake', 'Coffee and sandwich', 'Juice and burger', 'Water and salad'], answer: 'Coffee and sandwich' },
+      { q: 'How much does it cost?', options: ['£3.50', '£4.00', '£4.50', '£5.00'], answer: '£4.50' },
+    ],
   },
   {
-    id: 'l2', level: 'A1', title: 'The weather',
-    text: 'Today the weather is cold and cloudy. It is raining in the morning but sunny in the afternoon. The temperature is twelve degrees.',
-    speed: 0.85, question: 'What is the temperature?',
-    options: ['Ten degrees', 'Twelve degrees', 'Twenty degrees', 'Fifteen degrees'],
-    answer: 'Twelve degrees',
-    hint: 'Listen for the number of degrees.',
+    level: 'A2',
+    title: 'A Weekend Plan',
+    text: "Hey Sarah, what are you doing this weekend? I'm not sure yet. I was thinking about going to the cinema. Oh nice! What do you want to see? There's a new action film on. I've heard it's really good. Do you want to come? That sounds great! What time does it start? There's a showing at 7 PM. We could have dinner before. Perfect. Let's meet at the Italian restaurant at 5:30. Great, see you Saturday!",
+    questions: [
+      { q: 'What do they decide to do?', options: ['Go shopping', 'Watch a film', 'Stay home', 'Go to a concert'], answer: 'Watch a film' },
+      { q: 'What time is the film?', options: ['5:30', '6:00', '7:00', '8:00'], answer: '7:00' },
+      { q: 'Where will they meet first?', options: ['At the cinema', 'At home', 'At an Italian restaurant', 'At a café'], answer: 'At an Italian restaurant' },
+    ],
   },
   {
-    id: 'l3', level: 'A2', title: 'Weekend plans',
-    text: 'On Saturday morning I\'m going to visit my grandmother. In the afternoon my friends and I are playing football in the park. On Sunday I\'m staying at home and watching a film.',
-    speed: 0.9, question: 'What is the speaker doing on Saturday morning?',
-    options: ['Playing football', 'Watching a film', 'Visiting grandmother', 'Staying at home'],
-    answer: 'Visiting grandmother',
-    hint: 'The activities happen at different times of the weekend.',
+    level: 'B1',
+    title: 'The Benefits of Exercise',
+    text: 'Regular exercise has many benefits for both physical and mental health. Studies show that people who exercise at least three times a week are less likely to suffer from depression and anxiety. Exercise releases endorphins, which are natural mood-boosters. It also improves sleep quality and increases energy levels during the day. For physical health, even moderate exercise like walking for thirty minutes can reduce the risk of heart disease and diabetes. The key is to find an activity you enjoy, whether it\'s swimming, cycling, or dancing, so that you stick to it long-term.',
+    questions: [
+      { q: 'How often should people exercise according to the text?', options: ['Every day', 'Once a week', 'At least three times a week', 'Twice a month'], answer: 'At least three times a week' },
+      { q: 'What do endorphins do?', options: ['Help you sleep', 'Boost your mood', 'Build muscles', 'Reduce hunger'], answer: 'Boost your mood' },
+      { q: 'What is the key to sticking with exercise?', options: ['Having a gym membership', 'Exercising with a friend', 'Choosing an activity you enjoy', 'Exercising in the morning'], answer: 'Choosing an activity you enjoy' },
+    ],
   },
   {
-    id: 'l4', level: 'A2', title: 'At the train station',
-    text: 'The next train to Edinburgh leaves at two fifteen from platform three. The journey takes approximately four hours. Tickets are available from the machine on the left or from the ticket office.',
-    speed: 0.9, question: 'Where can you buy tickets?',
-    options: ['Only at the office', 'Only from the machine', 'From the machine or the office', 'On the train'],
-    answer: 'From the machine or the office',
-    hint: 'Listen for the word "or".',
+    level: 'B2',
+    title: 'The Gig Economy',
+    text: 'The rise of the gig economy has fundamentally transformed the way people work. Rather than traditional nine-to-five employment, millions of workers now take on short-term contracts or freelance work through digital platforms. Proponents argue that this model offers unparalleled flexibility, allowing individuals to choose when and where they work. However, critics point out significant drawbacks. Gig workers typically lack employment benefits such as sick pay, holiday pay, and pension contributions. Furthermore, income can be highly unpredictable, making it difficult to plan for the future. Governments around the world are now grappling with how to regulate this sector to protect workers while preserving the innovation that makes it so appealing.',
+    questions: [
+      { q: 'What is the main advantage of the gig economy according to supporters?', options: ['Higher salaries', 'Better benefits', 'Flexibility', 'Job security'], answer: 'Flexibility' },
+      { q: 'Which benefit do gig workers typically NOT receive?', options: ['Salary', 'Sick pay', 'Work experience', 'Digital tools'], answer: 'Sick pay' },
+      { q: 'What challenge do governments face?', options: ['Creating more jobs', 'Taxing companies fairly', 'Regulating the sector while keeping innovation', 'Reducing working hours'], answer: 'Regulating the sector while keeping innovation' },
+    ],
   },
   {
-    id: 'l5', level: 'B1', title: 'Job interview',
-    text: 'Thank you for coming in today. I\'ve read your CV and I\'m impressed with your experience. Can you tell me why you want to work for our company? I\'ve always admired your products and I believe my background in marketing would be a great match for this role.',
-    speed: 0.95, question: 'Why does the candidate want this job?',
-    options: ['Higher salary', 'Admires the products and has relevant experience', 'Location is convenient', 'They know the manager'],
-    answer: 'Admires the products and has relevant experience',
-    hint: 'The candidate gives two reasons.',
-  },
-  {
-    id: 'l6', level: 'B1', title: 'Radio news',
-    text: 'Scientists have announced a new study suggesting that regular exercise can significantly improve mental health. Participants who exercised three times a week reported fifty percent fewer symptoms of anxiety compared to those who did not exercise.',
-    speed: 1.0, question: 'How often did participants exercise in the study?',
-    options: ['Once a week', 'Every day', 'Three times a week', 'Twice a week'],
-    answer: 'Three times a week',
-    hint: 'Pay attention to the frequency mentioned.',
-  },
-  {
-    id: 'l7', level: 'B2', title: 'Lecture extract',
-    text: 'The concept of cognitive bias refers to systematic patterns of deviation from rationality in judgement. These biases arise because the brain uses mental shortcuts to process information efficiently. While often useful, they can lead to errors in thinking, particularly in complex decision-making scenarios.',
-    speed: 1.0, question: 'Why does the brain use mental shortcuts?',
-    options: ['To avoid making decisions', 'To process information efficiently', 'To create biases intentionally', 'To improve memory'],
-    answer: 'To process information efficiently',
-    hint: 'The speaker explains the reason directly.',
-  },
-  {
-    id: 'l8', level: 'B2', title: 'Debate extract',
-    text: 'While proponents of universal basic income argue it would reduce poverty and provide financial security, critics contend that it would discourage work and place an unsustainable burden on government finances. The debate remains deeply polarised.',
-    speed: 1.0, question: 'What is one argument AGAINST universal basic income?',
-    options: ['It reduces poverty', 'It is too expensive to administer', 'It would discourage people from working', 'It requires international cooperation'],
-    answer: 'It would discourage people from working',
-    hint: 'Listen for the critics\' arguments, not the supporters\'.',
+    level: 'C1',
+    title: 'The Philosophy of Language',
+    text: 'Language is not merely a tool for communication; it fundamentally shapes our perception of reality. The Sapir-Whorf hypothesis, also known as linguistic relativity, posits that the structure of a language influences the way its speakers conceptualise the world. For instance, research has demonstrated that speakers of languages with numerous colour terms can distinguish between shades more readily than those whose languages have fewer distinctions. Similarly, languages that lack a future tense may correlate with speakers who plan more effectively for the future, having no grammatical reason to separate tomorrow from today. While the strong version of this hypothesis — that language entirely determines thought — has largely been discredited, the weaker version, that language influences thought, continues to attract considerable empirical support.',
+    questions: [
+      { q: 'What does the Sapir-Whorf hypothesis propose?', options: ['Language determines intelligence', 'Language influences how we perceive the world', 'All languages are equally complex', 'Thought exists independently of language'], answer: 'Language influences how we perceive the world' },
+      { q: 'What example is given about colour terms?', options: ['People with more colour terms see more colours', 'People with more colour terms distinguish shades more easily', 'Colour terms vary between cultures', 'Some languages have no colour terms'], answer: 'People with more colour terms distinguish shades more easily' },
+      { q: 'What is the current academic view of the strong Sapir-Whorf hypothesis?', options: ['Widely accepted', 'Largely discredited', 'Under investigation', 'Proven correct'], answer: 'Largely discredited' },
+    ],
   },
 ]
 
 const LEVEL_COLORS: Record<string, string> = {
-  A1: '#10b981', A2: '#3b82f6', B1: '#8b5cf6', B2: '#f59e0b',
+  A1: '#10b981', A2: '#3b82f6', B1: '#8b5cf6', B2: '#f59e0b', C1: '#ef4444',
 }
 
-const SPEED_OPTIONS = [0.6, 0.8, 1.0, 1.2]
-const SPEED_LABELS: Record<number, string> = { 0.6: 'Очень медленно', 0.8: 'Медленно', 1.0: 'Нормально', 1.2: 'Быстро' }
+const SPEEDS = [0.8, 1.0, 1.2]
+const SPEED_LABELS: Record<number, string> = { 0.8: '0.8×', 1.0: '1×', 1.2: '1.2×' }
 
 export default function ListeningPage() {
-  const [idx, setIdx] = useState(0)
-  const [speedMult, setSpeedMult] = useState(1.0)
+  const [activeLevel, setActiveLevel] = useState('A1')
+  const [speed, setSpeed] = useState(1.0)
   const [playing, setPlaying] = useState(false)
-  const [selected, setSelected] = useState<string | null>(null)
-  const [checked, setChecked] = useState(false)
-  const [showHint, setShowHint] = useState(false)
+  const [played, setPlayed] = useState(false)
   const [showText, setShowText] = useState(false)
-  const [plays, setPlays] = useState(0)
-  const ex = EXERCISES[idx]
+  const [showQuestions, setShowQuestions] = useState(false)
+  const [answers, setAnswers] = useState<Record<number, string>>({})
+  const [checked, setChecked] = useState(false)
+
+  const entry = TEXTS.find(t => t.level === activeLevel)!
+  const color = LEVEL_COLORS[activeLevel]
+
+  function selectLevel(level: string) {
+    stopSpeaking()
+    setActiveLevel(level)
+    setPlaying(false)
+    setPlayed(false)
+    setShowText(false)
+    setShowQuestions(false)
+    setAnswers({})
+    setChecked(false)
+  }
 
   async function handlePlay() {
     if (playing) {
@@ -109,174 +103,164 @@ export default function ListeningPage() {
       return
     }
     setPlaying(true)
-    setPlays(p => p + 1)
-    await speak(ex.text, {
-      rate: ex.speed * speedMult,
+    setPlayed(true)
+    await speak(entry.text, {
+      rate: speed,
       onEnd: () => setPlaying(false),
     })
   }
 
-  function goTo(i: number) {
-    stopSpeaking()
-    setIdx(i)
-    setSelected(null)
-    setChecked(false)
-    setShowHint(false)
-    setShowText(false)
-    setPlaying(false)
-    setPlays(0)
-  }
-
-  function handleCheck() {
-    if (!selected) return
-    setChecked(true)
+  function handleReplay() {
     stopSpeaking()
     setPlaying(false)
+    setTimeout(() => {
+      setPlaying(true)
+      speak(entry.text, { rate: speed, onEnd: () => setPlaying(false) })
+    }, 100)
   }
 
-  const isCorrect = selected === ex.answer
+  const allAnswered = entry.questions.every((_, i) => answers[i] !== undefined)
+  const correctCount = entry.questions.filter((q, i) => answers[i] === q.answer).length
 
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-6">
-      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-white">Аудирование</h1>
-        <p className="text-[#64748b] text-sm">Слушай и отвечай на вопросы (Web Speech API)</p>
+        <p className="text-[#64748b] text-sm">Слушай тексты и отвечай на вопросы</p>
       </div>
 
       {/* Level tabs */}
-      <div className="flex gap-2 flex-wrap">
-        {['A1', 'A2', 'B1', 'B2'].map(lvl => {
-          const first = EXERCISES.findIndex(e => e.level === lvl)
-          return (
-            <button key={lvl} onClick={() => goTo(first)}
-              className={`px-3 py-1.5 rounded-xl text-sm font-medium border transition-all`}
-              style={EXERCISES[idx].level === lvl
-                ? { borderColor: LEVEL_COLORS[lvl], backgroundColor: `${LEVEL_COLORS[lvl]}20`, color: LEVEL_COLORS[lvl] }
-                : { borderColor: 'rgba(255,255,255,0.1)', color: '#64748b' }}>
-              {lvl}
-            </button>
-          )
-        })}
+      <div className="flex gap-2">
+        {TEXTS.map(t => (
+          <button key={t.level} onClick={() => selectLevel(t.level)}
+            className="px-4 py-2 rounded-xl text-sm font-semibold border transition-all"
+            style={activeLevel === t.level
+              ? { borderColor: LEVEL_COLORS[t.level], backgroundColor: `${LEVEL_COLORS[t.level]}20`, color: LEVEL_COLORS[t.level] }
+              : { borderColor: 'rgba(255,255,255,0.1)', color: '#64748b' }}>
+            {t.level}
+          </button>
+        ))}
       </div>
 
       <AnimatePresence mode="wait">
-        <motion.div key={ex.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-4">
+        <motion.div key={activeLevel} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-4">
           {/* Player card */}
           <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6">
-            <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-white font-bold text-lg">{ex.title}</h2>
+                <h2 className="text-white font-bold text-lg">{entry.title}</h2>
                 <span className="text-xs font-bold px-2 py-0.5 rounded-lg mt-1 inline-block"
-                  style={{ backgroundColor: `${LEVEL_COLORS[ex.level]}20`, color: LEVEL_COLORS[ex.level] }}>
-                  {ex.level}
+                  style={{ backgroundColor: `${color}20`, color }}>
+                  {entry.level}
                 </span>
               </div>
-              {plays > 0 && <span className="text-[#475569] text-xs">{plays} прослушивание{plays > 1 ? 'й' : ''}</span>}
             </div>
 
-            {/* Waveform bars animation */}
-            <div className="flex items-center justify-center gap-1 h-12 mb-5">
-              {Array.from({ length: 20 }, (_, i) => (
-                <motion.div key={i}
-                  className="w-1.5 rounded-full"
-                  style={{ backgroundColor: LEVEL_COLORS[ex.level] ?? '#6366f1' }}
-                  animate={playing ? {
-                    height: [8, 16 + Math.sin(i * 0.8) * 20, 8],
-                    opacity: [0.4, 0.9, 0.4],
-                  } : { height: 4, opacity: 0.2 }}
-                  transition={playing ? { duration: 0.8 + i * 0.05, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.3 }} />
+            {/* Waveform */}
+            <div className="flex items-center justify-center gap-1 h-10 mb-6">
+              {Array.from({ length: 24 }, (_, i) => (
+                <motion.div key={i} className="w-1.5 rounded-full"
+                  style={{ backgroundColor: color }}
+                  animate={playing
+                    ? { height: [4, 12 + Math.sin(i * 0.7) * 18, 4], opacity: [0.3, 0.9, 0.3] }
+                    : { height: 4, opacity: 0.2 }}
+                  transition={playing ? { duration: 0.7 + i * 0.04, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.3 }} />
               ))}
             </div>
 
-            {/* Speed selector */}
+            {/* Speed */}
             <div className="flex gap-2 justify-center mb-5">
-              {SPEED_OPTIONS.map(s => (
-                <button key={s} onClick={() => setSpeedMult(s)}
-                  className={`px-3 py-1 rounded-lg text-xs font-medium border transition-all ${speedMult === s ? 'border-[#6366f1] bg-[#6366f1]/20 text-white' : 'border-white/10 text-[#64748b] hover:text-white'}`}>
-                  ×{s}
+              {SPEEDS.map(s => (
+                <button key={s} onClick={() => setSpeed(s)}
+                  className={`px-4 py-1.5 rounded-lg text-sm font-medium border transition-all ${speed === s ? 'border-[#6366f1] bg-[#6366f1]/20 text-white' : 'border-white/10 text-[#64748b] hover:text-white'}`}>
+                  {SPEED_LABELS[s]}
                 </button>
               ))}
             </div>
-            <p className="text-center text-[#475569] text-xs mb-4">{SPEED_LABELS[speedMult]}</p>
 
-            {/* Play / Stop button */}
-            <button onClick={handlePlay}
-              className={`w-full py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all ${playing ? 'bg-[#ef4444]/20 border border-[#ef4444]/40 text-[#f87171]' : 'bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white shadow-lg shadow-[#6366f1]/30'}`}>
-              {playing ? <><Square className="w-4 h-4" /> Остановить</> : <><Volume2 className="w-4 h-4" /> {plays > 0 ? 'Слушать снова' : 'Слушать'}</>}
-            </button>
-
-            {/* Hint / Script buttons */}
-            <div className="flex gap-2 mt-3">
-              <button onClick={() => setShowHint(v => !v)}
-                className="flex-1 py-2 rounded-xl text-sm border border-white/10 text-[#64748b] hover:text-white transition-colors">
-                💡 Подсказка
+            {/* Controls */}
+            <div className="flex gap-3">
+              <button onClick={handlePlay}
+                className={`flex-1 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all ${playing ? 'bg-[#ef4444]/15 border border-[#ef4444]/30 text-[#f87171]' : 'bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white shadow-lg shadow-[#6366f1]/25'}`}>
+                {playing ? <><Square className="w-4 h-4" /> Стоп</> : <><Volume2 className="w-4 h-4" /> {played ? 'Слушать снова' : 'Слушать'}</>}
               </button>
-              {checked && (
-                <button onClick={() => setShowText(v => !v)}
-                  className="flex-1 py-2 rounded-xl text-sm border border-white/10 text-[#64748b] hover:text-white transition-colors">
-                  📄 Текст
+              {played && !playing && (
+                <button onClick={handleReplay}
+                  className="px-4 py-3 rounded-2xl bg-white/[0.06] border border-white/10 text-[#94a3b8] hover:text-white transition-colors">
+                  <RefreshCw className="w-4 h-4" />
                 </button>
               )}
             </div>
-            {showHint && <p className="text-[#94a3b8] text-sm mt-2 px-1">{ex.hint}</p>}
-            {showText && checked && (
-              <p className="text-[#64748b] text-sm mt-2 px-1 italic leading-relaxed">{ex.text}</p>
-            )}
+
+            {/* Show text toggle */}
+            <button onClick={() => setShowText(v => !v)}
+              className="mt-3 w-full py-2.5 rounded-xl border border-white/10 text-[#64748b] hover:text-white text-sm flex items-center justify-center gap-2 transition-colors">
+              {showText ? <><EyeOff className="w-4 h-4" /> Скрыть текст</> : <><Eye className="w-4 h-4" /> Показать текст</>}
+            </button>
+
+            <AnimatePresence>
+              {showText && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                  className="mt-3 overflow-hidden">
+                  <p className="text-[#94a3b8] text-sm leading-relaxed p-3 bg-white/[0.03] rounded-xl border border-white/[0.06] italic">
+                    {entry.text}
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
-          {/* Question */}
-          <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
-            <p className="text-white font-semibold mb-4">{ex.question}</p>
-            <div className="space-y-2.5">
-              {ex.options.map(opt => {
-                let cls = 'border-white/10 bg-white/[0.04] text-[#94a3b8] hover:border-[#6366f1]/50 hover:text-white'
-                if (checked) {
-                  if (opt === ex.answer) cls = 'border-[#10b981] bg-[#10b981]/15 text-[#10b981]'
-                  else if (opt === selected && opt !== ex.answer) cls = 'border-[#ef4444] bg-[#ef4444]/15 text-[#ef4444]'
-                  else cls = 'border-white/5 bg-white/[0.02] text-[#475569]'
-                } else if (selected === opt) {
-                  cls = 'border-[#6366f1] bg-[#6366f1]/15 text-white'
-                }
-                return (
-                  <button key={opt} disabled={checked}
-                    onClick={() => setSelected(opt)}
-                    className={`w-full text-left px-4 py-3 rounded-xl border text-sm transition-all ${cls}`}>
-                    {opt}
+          {/* Questions trigger */}
+          {!showQuestions && (
+            <button onClick={() => setShowQuestions(true)}
+              className="w-full py-3 rounded-2xl border border-white/10 text-[#94a3b8] hover:text-white hover:border-white/20 text-sm font-medium transition-all">
+              Ответить на вопросы →
+            </button>
+          )}
+
+          {/* Questions */}
+          <AnimatePresence>
+            {showQuestions && (
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 space-y-5">
+                <h3 className="text-white font-semibold">Вопросы</h3>
+                {entry.questions.map((q, qi) => (
+                  <div key={qi}>
+                    <p className="text-[#94a3b8] text-sm mb-2">{qi + 1}. {q.q}</p>
+                    <div className="space-y-2">
+                      {q.options.map(opt => {
+                        let cls = 'border-white/10 bg-white/[0.04] text-[#94a3b8] hover:border-[#6366f1]/50 hover:text-white'
+                        if (checked) {
+                          if (opt === q.answer) cls = 'border-[#10b981] bg-[#10b981]/15 text-[#10b981]'
+                          else if (opt === answers[qi]) cls = 'border-[#ef4444] bg-[#ef4444]/15 text-[#ef4444]'
+                          else cls = 'border-white/5 bg-white/[0.02] text-[#475569]'
+                        } else if (answers[qi] === opt) {
+                          cls = 'border-[#6366f1] bg-[#6366f1]/15 text-white'
+                        }
+                        return (
+                          <button key={opt} disabled={checked}
+                            onClick={() => setAnswers(a => ({ ...a, [qi]: opt }))}
+                            className={`w-full text-left px-4 py-2.5 rounded-xl border text-sm transition-all ${cls}`}>
+                            {opt}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ))}
+
+                {!checked ? (
+                  <button disabled={!allAnswered} onClick={() => setChecked(true)}
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white font-semibold disabled:opacity-40 hover:opacity-90 transition-opacity">
+                    Проверить
                   </button>
-                )
-              })}
-            </div>
-
-            {!checked ? (
-              <button disabled={!selected || plays === 0}
-                onClick={handleCheck}
-                className="mt-4 w-full py-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white font-semibold disabled:opacity-40 hover:opacity-90 transition-opacity">
-                Проверить
-              </button>
-            ) : (
-              <div className={`mt-4 px-4 py-3 rounded-xl text-sm font-medium text-center ${isCorrect ? 'bg-[#10b981]/10 text-[#10b981] border border-[#10b981]/20' : 'bg-[#ef4444]/10 text-[#f87171] border border-[#ef4444]/20'}`}>
-                {isCorrect ? '🎉 Правильно!' : `✗ Неверно. Правильный ответ: "${ex.answer}"`}
-              </div>
+                ) : (
+                  <div className={`px-4 py-3 rounded-xl text-sm font-semibold text-center ${correctCount === 3 ? 'bg-[#10b981]/10 text-[#10b981] border border-[#10b981]/20' : correctCount >= 2 ? 'bg-[#f59e0b]/10 text-[#f59e0b] border border-[#f59e0b]/20' : 'bg-[#ef4444]/10 text-[#f87171] border border-[#ef4444]/20'}`}>
+                    {correctCount === 3 ? `🎉 Отлично! ${correctCount}/3 правильно` : correctCount >= 2 ? `👍 Молодец! ${correctCount}/3 правильно` : `${correctCount}/3 — Попробуй ещё раз`}
+                  </div>
+                )}
+              </motion.div>
             )}
-
-            {plays === 0 && !checked && (
-              <p className="text-[#475569] text-xs mt-2 text-center">Сначала прослушай текст</p>
-            )}
-          </div>
-
-          {/* Navigation */}
-          <div className="flex items-center justify-between">
-            <button onClick={() => goTo(idx - 1)} disabled={idx === 0}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-[#94a3b8] hover:text-white transition-colors disabled:opacity-30 text-sm">
-              <ChevronLeft className="w-4 h-4" /> Назад
-            </button>
-            <span className="text-[#475569] text-sm">{idx + 1} / {EXERCISES.length}</span>
-            <button onClick={() => goTo(idx + 1)} disabled={idx === EXERCISES.length - 1}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-[#94a3b8] hover:text-white transition-colors disabled:opacity-30 text-sm">
-              Далее <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
+          </AnimatePresence>
         </motion.div>
       </AnimatePresence>
     </div>

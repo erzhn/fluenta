@@ -3,28 +3,29 @@ import { NextResponse } from 'next/server'
 export const runtime = 'edge'
 
 export async function POST(req: Request) {
-  const { text, prompt } = await req.json()
+  const { text, level, topic } = await req.json()
 
   if (!text || typeof text !== 'string' || text.trim().length < 10) {
     return NextResponse.json({ error: 'Text too short' }, { status: 400 })
   }
 
-  const systemPrompt = `You are an English language teacher. Analyze the student's writing and return a JSON object with this exact structure:
+  const systemPrompt = `You are an English writing tutor. The student's level is ${level ?? 'B1'}. They wrote about: ${topic ?? 'a general topic'}.
+Analyze their text and return JSON:
 {
-  "score": <number 0-100>,
-  "level": "<A1|A2|B1|B2|C1>",
-  "overall": "<2-3 sentence overall feedback in Russian>",
-  "errors": [
-    { "original": "<the error phrase>", "correction": "<corrected version>", "explanation": "<brief explanation in Russian>" }
+  "overallScore": <number 0-100>,
+  "corrections": [
+    {
+      "original": "exact text from student",
+      "corrected": "correct version",
+      "explanation": "short explanation in Russian",
+      "type": "grammar" | "vocabulary" | "style" | "spelling"
+    }
   ],
-  "strengths": ["<strength 1 in Russian>", "<strength 2 in Russian>"],
-  "suggestions": ["<suggestion 1 in Russian>", "<suggestion 2 in Russian>"]
+  "positives": ["thing done well 1", "thing done well 2"],
+  "suggestion": "one main improvement tip in Russian",
+  "rewrittenVersion": "polished version of the text"
 }
-Keep errors array to max 5 most important errors. Return ONLY valid JSON, no markdown.`
-
-  const userMsg = prompt
-    ? `Task: "${prompt}"\n\nStudent's writing:\n${text}`
-    : `Student's writing:\n${text}`
+Keep corrections to max 5 most important. Return ONLY valid JSON, no markdown.`
 
   try {
     const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -37,9 +38,9 @@ Keep errors array to max 5 most important errors. Return ONLY valid JSON, no mar
         model: 'llama-3.1-8b-instant',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: userMsg },
+          { role: 'user', content: `Student's writing:\n${text}` },
         ],
-        max_tokens: 800,
+        max_tokens: 1200,
         temperature: 0.3,
       }),
     })
@@ -52,7 +53,13 @@ Keep errors array to max 5 most important errors. Return ONLY valid JSON, no mar
       result = JSON.parse(raw)
     } catch {
       const match = raw.match(/\{[\s\S]*\}/)
-      result = match ? JSON.parse(match[0]) : { score: 0, overall: 'Ошибка анализа', errors: [], strengths: [], suggestions: [] }
+      result = match ? JSON.parse(match[0]) : {
+        overallScore: 0,
+        corrections: [],
+        positives: [],
+        suggestion: 'Ошибка анализа',
+        rewrittenVersion: '',
+      }
     }
 
     return NextResponse.json(result)

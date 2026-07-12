@@ -1,79 +1,75 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Send, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react'
 
-interface WritingTask {
-  id: string
-  level: string
-  title: string
-  prompt: string
-  example: string
-  minWords: number
+const TOPICS: Record<string, string[]> = {
+  A1: ['My family', 'My home', 'My daily routine', 'My favourite food', 'My weekend'],
+  A2: ['My last holiday', 'My job', 'My city', 'A film I liked', 'My best friend'],
+  B1: ['Technology in my life', 'The environment', 'Health and lifestyle', 'Travel experiences', 'Social media'],
+  B2: ['Work-life balance', 'Education systems', 'Cultural differences', 'The future of AI', 'Urban vs rural life'],
+  C1: ['Globalisation impacts', 'Ethical dilemmas in technology', 'The role of arts in society', 'Economic inequality', 'Climate change solutions'],
 }
 
-const TASKS: WritingTask[] = [
-  {
-    id: 'w1', level: 'A1', title: 'Расскажи о себе',
-    prompt: 'Write a short paragraph about yourself. Mention your name, age, where you are from, and what you like to do.',
-    example: 'My name is Anna. I am twenty years old. I am from Moscow, Russia. I like reading books and listening to music.',
-    minWords: 30,
-  },
-  {
-    id: 'w2', level: 'A2', title: 'Мой обычный день',
-    prompt: 'Describe your typical weekday. What do you usually do in the morning, afternoon, and evening?',
-    example: 'I usually wake up at seven o\'clock. I have breakfast and go to work by bus. In the afternoon I have lunch in the office. In the evening I cook dinner and watch TV.',
-    minWords: 50,
-  },
-  {
-    id: 'w3', level: 'B1', title: 'Плюсы и минусы социальных сетей',
-    prompt: 'Write about the advantages and disadvantages of social media. Give your opinion at the end.',
-    example: 'Social media has changed the way we communicate. On the positive side, it helps us stay connected with friends and family around the world...',
-    minWords: 80,
-  },
-  {
-    id: 'w4', level: 'B2', title: 'Влияние технологий на работу',
-    prompt: 'Discuss how technology has changed the modern workplace. Consider both positive developments and potential challenges.',
-    example: 'Over the past two decades, technology has fundamentally transformed the way we work. Automation has taken over many repetitive tasks, freeing workers to focus on creative and analytical challenges...',
-    minWords: 120,
-  },
-  {
-    id: 'w5', level: 'C1', title: 'Образование vs. опыт',
-    prompt: 'To what extent do you agree that practical experience is more valuable than formal education in today\'s job market? Support your argument with examples.',
-    example: 'The debate over the relative merits of formal education and practical experience has intensified in an era when technological disruption regularly renders specific qualifications obsolete...',
-    minWords: 150,
-  },
-]
+const MIN_WORDS: Record<string, number> = {
+  A1: 100, A2: 200, B1: 300, B2: 300, C1: 300,
+}
 
 const LEVEL_COLORS: Record<string, string> = {
   A1: '#10b981', A2: '#3b82f6', B1: '#8b5cf6', B2: '#f59e0b', C1: '#ef4444',
 }
 
+const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1']
+
+const ERROR_TYPES: Record<string, { label: string; color: string }> = {
+  grammar: { label: 'Грамматика', color: '#ef4444' },
+  vocabulary: { label: 'Словарь', color: '#f59e0b' },
+  style: { label: 'Стиль', color: '#8b5cf6' },
+  spelling: { label: 'Орфография', color: '#3b82f6' },
+}
+
+interface Correction {
+  original: string
+  corrected: string
+  explanation: string
+  type: 'grammar' | 'vocabulary' | 'style' | 'spelling'
+}
+
 interface CheckResult {
-  score: number
-  level: string
-  overall: string
-  errors: Array<{ original: string; correction: string; explanation: string }>
-  strengths: string[]
-  suggestions: string[]
+  overallScore: number
+  corrections: Correction[]
+  positives: string[]
+  suggestion: string
+  rewrittenVersion: string
 }
 
 function wordCount(text: string) {
   return text.trim().split(/\s+/).filter(Boolean).length
 }
 
+function scoreColor(s: number) {
+  if (s >= 80) return '#10b981'
+  if (s >= 60) return '#f59e0b'
+  return '#ef4444'
+}
+
 export default function WritingPage() {
-  const [taskIdx, setTaskIdx] = useState(0)
+  const [level, setLevel] = useState('A1')
+  const [topic, setTopic] = useState(TOPICS['A1'][0])
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<CheckResult | null>(null)
-  const [showExample, setShowExample] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showRewrite, setShowRewrite] = useState(false)
 
-  const task = TASKS[taskIdx]
+  useEffect(() => {
+    setTopic(TOPICS[level][0])
+  }, [level])
+
   const words = wordCount(text)
-  const enoughWords = words >= task.minWords
+  const minWords = MIN_WORDS[level]
+  const enoughWords = words >= minWords
 
   async function handleCheck() {
     if (!enoughWords || loading) return
@@ -84,7 +80,7 @@ export default function WritingPage() {
       const res = await fetch('/api/ai/writing-check', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, prompt: task.prompt }),
+        body: JSON.stringify({ text, level, topic }),
       })
       if (!res.ok) throw new Error('Server error')
       const data = await res.json()
@@ -100,85 +96,79 @@ export default function WritingPage() {
     setText('')
     setResult(null)
     setError(null)
-    setShowExample(false)
+    setShowRewrite(false)
   }
-
-  function selectTask(i: number) {
-    setTaskIdx(i)
-    reset()
-  }
-
-  const scoreColor = (s: number) => s >= 80 ? '#10b981' : s >= 60 ? '#f59e0b' : '#ef4444'
 
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
-      {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-white">Письмо</h1>
-        <p className="text-[#64748b] text-sm">Пиши тексты — ИИ проверит грамматику и стиль</p>
+        <h1 className="text-2xl font-bold text-white">Практика письма</h1>
+        <p className="text-[#64748b] text-sm">Выбери уровень и тему, напиши текст — ИИ проверит и даст рекомендации</p>
       </div>
 
-      {/* Task tabs */}
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {TASKS.map((t, i) => (
-          <button key={t.id} onClick={() => selectTask(i)}
-            className={`flex-shrink-0 px-3 py-1.5 rounded-xl text-sm font-medium border transition-all ${i === taskIdx ? 'border-[#6366f1] bg-[#6366f1]/15 text-white' : 'border-white/10 text-[#64748b] hover:text-white'}`}>
-            <span className="mr-1.5" style={{ color: LEVEL_COLORS[t.level] }}>{t.level}</span>{t.title}
-          </button>
-        ))}
-      </div>
-
-      {/* Task card */}
-      <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
-        <div className="flex items-start justify-between mb-2">
-          <h2 className="text-white font-semibold">{task.title}</h2>
-          <span className="text-xs font-bold px-2 py-0.5 rounded-lg"
-            style={{ backgroundColor: `${LEVEL_COLORS[task.level]}20`, color: LEVEL_COLORS[task.level] }}>
-            {task.level}
-          </span>
-        </div>
-        <p className="text-[#94a3b8] text-sm leading-relaxed mb-3">{task.prompt}</p>
-        <p className="text-[#475569] text-xs">Минимум {task.minWords} слов</p>
-
-        <button onClick={() => setShowExample(v => !v)}
-          className="flex items-center gap-1.5 text-xs text-[#6366f1] hover:text-[#818cf8] mt-2 transition-colors">
-          {showExample ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-          {showExample ? 'Скрыть пример' : 'Показать пример'}
-        </button>
-        {showExample && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
-            className="mt-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-            <p className="text-[#64748b] text-sm italic leading-relaxed">{task.example}</p>
-          </motion.div>
-        )}
-      </div>
-
-      {/* Editor */}
       {!result && (
-        <div className="bg-white/[0.04] border border-white/10 rounded-2xl overflow-hidden">
-          <textarea
-            value={text}
-            onChange={e => setText(e.target.value)}
-            placeholder="Начни писать здесь..."
-            rows={10}
-            className="w-full bg-transparent text-white placeholder-[#3f4a5a] p-5 resize-none outline-none text-sm leading-relaxed"
-          />
-          <div className="flex items-center justify-between px-5 py-3 border-t border-white/[0.06]">
-            <div className="flex items-center gap-2">
-              <span className={`text-sm font-medium ${enoughWords ? 'text-[#10b981]' : 'text-[#64748b]'}`}>
-                {words} слов{words !== 1 ? '' : ''}
-              </span>
-              {!enoughWords && (
-                <span className="text-xs text-[#475569]">/ нужно {task.minWords}</span>
-              )}
+        <>
+          {/* Level selector */}
+          <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
+            <label className="text-white text-sm font-semibold mb-3 block">Твой уровень</label>
+            <div className="flex gap-2 flex-wrap">
+              {LEVELS.map(l => (
+                <button key={l} onClick={() => setLevel(l)}
+                  className="px-4 py-2 rounded-xl text-sm font-semibold border transition-all"
+                  style={level === l
+                    ? { borderColor: LEVEL_COLORS[l], backgroundColor: `${LEVEL_COLORS[l]}20`, color: LEVEL_COLORS[l] }
+                    : { borderColor: 'rgba(255,255,255,0.1)', color: '#64748b' }}>
+                  {l}
+                </button>
+              ))}
             </div>
-            <button onClick={handleCheck} disabled={!enoughWords || loading}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white text-sm font-semibold disabled:opacity-40 hover:opacity-90 transition-opacity">
-              {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-              {loading ? 'Проверяю...' : 'Проверить'}
-            </button>
           </div>
-        </div>
+
+          {/* Topic selector */}
+          <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
+            <label className="text-white text-sm font-semibold mb-3 block">Тема</label>
+            <div className="flex flex-col gap-2">
+              {TOPICS[level].map(t => (
+                <button key={t} onClick={() => setTopic(t)}
+                  className={`text-left px-4 py-2.5 rounded-xl border text-sm transition-all ${topic === t ? 'border-[#6366f1] bg-[#6366f1]/15 text-white' : 'border-white/10 text-[#64748b] hover:text-white hover:border-white/20'}`}>
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Editor */}
+          <div className="bg-white/[0.04] border border-white/10 rounded-2xl overflow-hidden">
+            <div className="px-5 pt-4 pb-2">
+              <p className="text-[#64748b] text-xs">
+                Тема: <span className="text-[#818cf8] font-medium">{topic}</span>
+                <span className="ml-3 text-[#475569]">· Минимум {minWords} слов</span>
+              </p>
+            </div>
+            <textarea
+              value={text}
+              onChange={e => setText(e.target.value)}
+              placeholder="Начни писать здесь..."
+              rows={10}
+              className="w-full bg-transparent text-white placeholder-[#3f4a5a] px-5 py-3 resize-none outline-none text-sm leading-relaxed"
+            />
+            <div className="flex items-center justify-between px-5 py-3 border-t border-white/[0.06]">
+              <div className="flex items-center gap-2">
+                <span className={`text-sm font-medium ${enoughWords ? 'text-[#10b981]' : 'text-[#64748b]'}`}>
+                  {words} слов
+                </span>
+                {!enoughWords && (
+                  <span className="text-xs text-[#475569]">/ нужно {minWords}</span>
+                )}
+              </div>
+              <button onClick={handleCheck} disabled={!enoughWords || loading}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white text-sm font-semibold disabled:opacity-40 hover:opacity-90 transition-opacity">
+                {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                {loading ? 'Проверяю...' : 'Проверить текст'}
+              </button>
+            </div>
+          </div>
+        </>
       )}
 
       {error && (
@@ -197,78 +187,97 @@ export default function WritingPage() {
                 <h3 className="text-white font-bold text-lg">Результат</h3>
                 <button onClick={reset}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 text-[#94a3b8] hover:text-white text-sm transition-colors">
-                  <RefreshCw className="w-3.5 h-3.5" /> Попробовать снова
+                  <RefreshCw className="w-3.5 h-3.5" /> Написать снова
                 </button>
               </div>
               <div className="flex items-center gap-4 mb-4">
-                <div className="text-5xl font-extrabold" style={{ color: scoreColor(result.score) }}>{result.score}</div>
+                <div className="text-5xl font-extrabold" style={{ color: scoreColor(result.overallScore) }}>
+                  {result.overallScore}
+                </div>
                 <div>
                   <div className="text-white font-semibold">из 100 баллов</div>
-                  <div className="text-xs px-2 py-0.5 rounded-lg mt-1 inline-block"
-                    style={{ backgroundColor: `${LEVEL_COLORS[result.level] ?? '#6366f1'}20`, color: LEVEL_COLORS[result.level] ?? '#6366f1' }}>
-                    Уровень: {result.level}
-                  </div>
+                  <div className="text-xs text-[#64748b] mt-0.5">Тема: {topic} · {level}</div>
                 </div>
               </div>
               <div className="h-2 bg-white/[0.06] rounded-full overflow-hidden">
                 <motion.div className="h-full rounded-full" initial={{ width: 0 }}
-                  animate={{ width: `${result.score}%` }} transition={{ duration: 0.8 }}
-                  style={{ backgroundColor: scoreColor(result.score) }} />
+                  animate={{ width: `${result.overallScore}%` }} transition={{ duration: 0.8 }}
+                  style={{ backgroundColor: scoreColor(result.overallScore) }} />
               </div>
-              <p className="text-[#94a3b8] text-sm mt-3 leading-relaxed">{result.overall}</p>
             </div>
 
-            {/* Original text */}
-            <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
-              <h4 className="text-white font-semibold mb-2 text-sm">Твой текст</h4>
-              <p className="text-[#64748b] text-sm leading-relaxed whitespace-pre-wrap">{text}</p>
-            </div>
+            {/* Positives */}
+            {result.positives.length > 0 && (
+              <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
+                <h4 className="text-[#10b981] font-semibold mb-3 flex items-center gap-2">
+                  ✅ Что хорошо
+                </h4>
+                <ul className="space-y-1.5">
+                  {result.positives.map((p, i) => (
+                    <li key={i} className="text-[#94a3b8] text-sm flex gap-2">
+                      <span className="text-[#10b981] shrink-0">✓</span>{p}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
-            {/* Errors */}
-            {result.errors.length > 0 && (
+            {/* Corrections */}
+            {result.corrections.length > 0 && (
               <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
                 <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-[#ef4444]/20 text-[#f87171] text-xs flex items-center justify-center">{result.errors.length}</span>
-                  Ошибки
+                  <span className="w-5 h-5 rounded-full bg-[#ef4444]/20 text-[#f87171] text-xs flex items-center justify-center">
+                    {result.corrections.length}
+                  </span>
+                  Исправления
                 </h4>
                 <div className="space-y-3">
-                  {result.errors.map((e, i) => (
-                    <div key={i} className="bg-[#ef4444]/5 border border-[#ef4444]/15 rounded-xl p-3">
-                      <div className="flex flex-col sm:flex-row sm:items-start gap-1.5 mb-1.5">
-                        <span className="line-through text-[#f87171] text-sm">{e.original}</span>
-                        <span className="text-[#475569]">→</span>
-                        <span className="text-[#10b981] text-sm font-medium">{e.correction}</span>
+                  {result.corrections.map((c, i) => {
+                    const typeInfo = ERROR_TYPES[c.type] ?? ERROR_TYPES.grammar
+                    return (
+                      <div key={i} className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3.5">
+                        <div className="flex items-start gap-2 mb-1.5 flex-wrap">
+                          <span className="line-through text-[#f87171] text-sm">{c.original}</span>
+                          <span className="text-[#475569] text-sm">→</span>
+                          <span className="text-[#10b981] text-sm font-medium">{c.corrected}</span>
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded ml-auto"
+                            style={{ backgroundColor: `${typeInfo.color}20`, color: typeInfo.color }}>
+                            {typeInfo.label}
+                          </span>
+                        </div>
+                        <p className="text-[#64748b] text-xs">{c.explanation}</p>
                       </div>
-                      <p className="text-[#64748b] text-xs">{e.explanation}</p>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             )}
 
-            {/* Strengths + suggestions */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {result.strengths.length > 0 && (
-                <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-4">
-                  <h4 className="text-[#10b981] font-semibold mb-2 text-sm">Сильные стороны</h4>
-                  <ul className="space-y-1">
-                    {result.strengths.map((s, i) => (
-                      <li key={i} className="text-[#94a3b8] text-xs flex gap-1.5"><span>✓</span>{s}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {result.suggestions.length > 0 && (
-                <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-4">
-                  <h4 className="text-[#f59e0b] font-semibold mb-2 text-sm">Рекомендации</h4>
-                  <ul className="space-y-1">
-                    {result.suggestions.map((s, i) => (
-                      <li key={i} className="text-[#94a3b8] text-xs flex gap-1.5"><span>→</span>{s}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
+            {/* Rewritten version */}
+            {result.rewrittenVersion && (
+              <div className="bg-white/[0.04] border border-white/10 rounded-2xl overflow-hidden">
+                <button onClick={() => setShowRewrite(v => !v)}
+                  className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-white/[0.02] transition-colors">
+                  <span className="text-white font-semibold text-sm">Улучшенная версия</span>
+                  {showRewrite ? <ChevronUp className="w-4 h-4 text-[#475569]" /> : <ChevronDown className="w-4 h-4 text-[#475569]" />}
+                </button>
+                <AnimatePresence>
+                  {showRewrite && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden border-t border-white/[0.06]">
+                      <p className="text-[#94a3b8] text-sm leading-relaxed p-5 italic">{result.rewrittenVersion}</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
+
+            {/* Main tip */}
+            {result.suggestion && (
+              <div className="bg-[#f59e0b]/10 border border-[#f59e0b]/20 rounded-2xl px-5 py-4">
+                <p className="text-[#fbbf24] text-sm">💡 {result.suggestion}</p>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
