@@ -5,6 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Volume2, Plus, X, Check, RefreshCw, Sparkles } from 'lucide-react'
 import { speak, stopSpeaking } from '@/lib/speech'
 import { getReadingTexts, type ReadingText } from '@/lib/reading-data'
+import { supabase } from '@/lib/supabase'
+import { toast } from '@/components/ui/Toast'
+import { SkeletonCard } from '@/components/ui/Skeleton'
 
 interface VocabItem {
   word: string
@@ -126,11 +129,21 @@ export default function ReadingPage() {
   async function generateAI() {
     setGeneratingAI(true)
     try {
+      const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch('/api/ai/generate-reading', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token ?? ''}`,
+        },
         body: JSON.stringify({ level: activeLevel }),
       })
+      if (!res.ok) {
+        if (res.status === 429) toast('Слишком много запросов. Подожди минуту.', 'error')
+        else if (res.status === 401) toast('Необходимо войти в систему', 'error')
+        else toast('Что-то пошло не так. Попробуй ещё раз.', 'error')
+        return
+      }
       const data = await res.json()
       if (data.title && data.text) {
         stopSpeaking()
@@ -151,7 +164,7 @@ export default function ReadingPage() {
         setSpeaking(false)
       }
     } catch {
-      // ignore
+      toast('Ошибка соединения', 'error')
     } finally {
       setGeneratingAI(false)
     }
@@ -166,6 +179,8 @@ export default function ReadingPage() {
         <h1 className="text-2xl font-bold text-white">Чтение</h1>
         <p className="text-[#64748b] text-sm">Читай, учи слова, отвечай на вопросы</p>
       </div>
+
+      {generatingAI && <SkeletonCard />}
 
       {/* Level tabs */}
       <div className="flex gap-2 flex-wrap">

@@ -1,15 +1,40 @@
 import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 
-export const runtime = 'edge'
+const VALID_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1']
 
 export async function POST(req: Request) {
-  const { text, level, topic } = await req.json()
-
-  if (!text || typeof text !== 'string' || text.trim().length < 10) {
-    return NextResponse.json({ error: 'Text too short' }, { status: 400 })
+  const authHeader = req.headers.get('Authorization')
+  const token = authHeader?.replace('Bearer ', '')
+  if (!token) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { global: { headers: { Authorization: `Bearer ${token}` } } }
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const systemPrompt = `You are an English writing tutor. The student's level is ${level ?? 'B1'}. They wrote about: ${topic ?? 'a general topic'}.
+  const body = await req.json()
+  const text = typeof body.text === 'string' ? body.text.trim() : ''
+  const level = typeof body.level === 'string' ? body.level.trim() : ''
+  const topic = typeof body.topic === 'string' ? body.topic.trim() : ''
+
+  if (!text || text.length < 10) {
+    return NextResponse.json({ error: 'Text too short' }, { status: 400 })
+  }
+  if (text.length > 5000) {
+    return NextResponse.json({ error: 'Text too long' }, { status: 400 })
+  }
+  if (level && !VALID_LEVELS.includes(level)) {
+    return NextResponse.json({ error: 'Invalid level' }, { status: 400 })
+  }
+
+  const systemPrompt = `You are an English writing tutor. The student's level is ${level || 'B1'}. They wrote about: ${topic || 'a general topic'}.
 Analyze their text and return JSON:
 {
   "overallScore": <number 0-100>,

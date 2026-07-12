@@ -9,6 +9,7 @@ import type { Lesson } from '@/lib/lessons-data'
 import { MODULES } from '@/lib/modules-data'
 import type { ModuleLesson, ModuleId } from '@/lib/modules-data'
 import SpeakingExercise from '@/components/lessons/SpeakingExercise'
+import { supabase } from '@/lib/supabase'
 
 // в”Ђв”Ђв”Ђ Progress в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 interface LessonResult { score: number; completedAt: string }
@@ -541,8 +542,26 @@ export default function LessonsPage() {
   const [activeModule, setActiveModule] = useState<ModuleId | null>(initModule)
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null)
   const [progress, setProgress] = useState<Progress>({ completedLessons: {}, totalXP: 0 })
+  const [isGuest, setIsGuest] = useState(false)
+  const [showDemoModal, setShowDemoModal] = useState(false)
 
   useEffect(() => { setProgress(loadProgress()) }, [])
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setIsGuest(!user)
+    })
+  }, [])
+
+  const DEMO_LESSON_ID = LESSONS[0]?.id
+
+  function handleLessonClick(lesson: Lesson) {
+    if (isGuest && lesson.id !== DEMO_LESSON_ID) {
+      setShowDemoModal(true)
+      return
+    }
+    setActiveLesson(lesson)
+  }
 
   const handleComplete = useCallback((lesson: Lesson, score: number) => {
     setProgress(prev => {
@@ -646,7 +665,7 @@ export default function LessonsPage() {
                             unlocked={isModuleLessonUnlocked(lesson, moduleLessons, progress)}
                             completed={!!progress.completedLessons[lesson.id]}
                             current={false}
-                            onClick={() => setActiveLesson(lesson)}
+                            onClick={() => handleLessonClick(lesson)}
                           />
                         ))}
                       </div>
@@ -697,10 +716,10 @@ export default function LessonsPage() {
                             <LessonCard
                               key={lesson.id}
                               lesson={lesson}
-                              unlocked={isUnlocked(lesson, progress)}
+                              unlocked={isGuest ? lesson.id === DEMO_LESSON_ID : isUnlocked(lesson, progress)}
                               completed={!!progress.completedLessons[lesson.id]}
                               current={lesson.id === currentLesson?.id}
-                              onClick={() => setActiveLesson(lesson)}
+                              onClick={() => handleLessonClick(lesson)}
                             />
                           ))}
                         </div>
@@ -710,6 +729,33 @@ export default function LessonsPage() {
                 </div>
               </>
             )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Demo mode modal */}
+      <AnimatePresence>
+        {showDemoModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={() => setShowDemoModal(false)}>
+            <motion.div initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl">
+              <div className="text-5xl mb-4">🔒</div>
+              <h2 className="text-white font-bold text-xl mb-2">Зарегистрируйся бесплатно</h2>
+              <p className="text-[#64748b] text-sm mb-6">Чтобы продолжить обучение, создай бесплатный аккаунт и получи доступ ко всем 95 урокам</p>
+              <div className="flex flex-col gap-3">
+                <a href="/auth/login"
+                  className="block w-full py-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white font-semibold hover:opacity-90 transition-opacity">
+                  Войти / Зарегистрироваться
+                </a>
+                <button onClick={() => setShowDemoModal(false)}
+                  className="text-[#475569] hover:text-white text-sm transition-colors">
+                  Продолжить демо
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

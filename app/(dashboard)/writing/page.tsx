@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Send, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import { toast } from '@/components/ui/Toast'
 
 const TOPICS: Record<string, string[]> = {
   A1: ['My family', 'My home', 'My daily routine', 'My favourite food', 'My weekend'],
@@ -77,14 +79,24 @@ export default function WritingPage() {
     setResult(null)
     setError(null)
     try {
+      const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch('/api/ai/writing-check', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token ?? ''}`,
+        },
         body: JSON.stringify({ text, level, topic }),
       })
-      if (!res.ok) throw new Error('Server error')
+      if (!res.ok) {
+        if (res.status === 429) toast('Слишком много запросов. Подожди минуту.', 'error')
+        else if (res.status === 401) toast('Необходимо войти в систему', 'error')
+        else toast('Что-то пошло не так. Попробуй ещё раз.', 'error')
+        throw new Error(`HTTP ${res.status}`)
+      }
       const data = await res.json()
       setResult(data)
+      toast('Текст проверен!', 'success')
     } catch {
       setError('Не удалось получить ответ. Проверь соединение.')
     } finally {

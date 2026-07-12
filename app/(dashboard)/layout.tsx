@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { TopBar } from "@/components/layout/TopBar";
 import { MobileNav } from "@/components/layout/MobileNav";
+import { ToastContainer } from "@/components/ui/Toast";
 import { supabase } from "@/lib/supabase";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -18,7 +19,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     async function checkAuth() {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      if (!user && !pathname.startsWith('/lessons')) {
         router.replace("/auth/login");
         return;
       }
@@ -77,6 +78,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
 
       <MobileNav />
+      <ToastContainer />
     </div>
   );
 }

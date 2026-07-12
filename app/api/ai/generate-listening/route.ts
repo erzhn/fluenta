@@ -1,7 +1,31 @@
 import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+
+const VALID_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1']
 
 export async function POST(req: Request) {
-  const { level } = await req.json()
+  const authHeader = req.headers.get('Authorization')
+  const token = authHeader?.replace('Bearer ', '')
+  if (!token) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { global: { headers: { Authorization: `Bearer ${token}` } } }
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const body = await req.json()
+  const level = typeof body.level === 'string' ? body.level.trim() : ''
+
+  if (!level || !VALID_LEVELS.includes(level)) {
+    return NextResponse.json({ error: 'Invalid level' }, { status: 400 })
+  }
+
   const prompt = `Generate an English listening exercise for level ${level}.
 Return ONLY valid JSON:
 {

@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, ChevronDown, ChevronUp, Volume2, Sparkles, Lightbulb, BookOpen, PenLine, Check, X } from 'lucide-react'
 import { speak } from '@/lib/speech'
+import { supabase } from '@/lib/supabase'
+import { toast } from '@/components/ui/Toast'
 
 interface GrammarCard {
   id: string
@@ -320,11 +322,22 @@ export default function GrammarPage() {
     }
     setAI(card.id, { activeType: type, loading: true })
     try {
+      const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch('/api/ai/grammar-examples', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token ?? ''}`,
+        },
         body: JSON.stringify({ topic: card.title, level: card.level, type }),
       })
+      if (!res.ok) {
+        if (res.status === 429) toast('Слишком много запросов. Подожди минуту.', 'error')
+        else if (res.status === 401) toast('Необходимо войти в систему', 'error')
+        else toast('Что-то пошло не так. Попробуй ещё раз.', 'error')
+        setAI(card.id, { loading: false, activeType: null })
+        return
+      }
       const data = await res.json()
       if (type === 'explain') {
         setAI(card.id, { loading: false, explanation: data })
@@ -334,6 +347,7 @@ export default function GrammarPage() {
         setAI(card.id, { loading: false, exercise: data, exerciseInput: '', exerciseChecked: false })
       }
     } catch {
+      toast('Ошибка соединения', 'error')
       setAI(card.id, { loading: false, activeType: null })
     }
   }

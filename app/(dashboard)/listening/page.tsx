@@ -5,6 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Play, Square, Eye, EyeOff, Volume2, RefreshCw, Sparkles } from 'lucide-react'
 import { speak, stopSpeaking } from '@/lib/speech'
 import { getListeningTexts, type ListeningText } from '@/lib/listening-data'
+import { supabase } from '@/lib/supabase'
+import { toast } from '@/components/ui/Toast'
+import { SkeletonCard } from '@/components/ui/Skeleton'
 
 const LEVEL_COLORS: Record<string, string> = {
   A1: '#10b981', A2: '#3b82f6', B1: '#8b5cf6', B2: '#f59e0b', C1: '#ef4444',
@@ -68,11 +71,21 @@ export default function ListeningPage() {
   async function generateAI() {
     setGeneratingAI(true)
     try {
+      const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch('/api/ai/generate-listening', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token ?? ''}`,
+        },
         body: JSON.stringify({ level: activeLevel }),
       })
+      if (!res.ok) {
+        if (res.status === 429) toast('Слишком много запросов. Подожди минуту.', 'error')
+        else if (res.status === 401) toast('Необходимо войти в систему', 'error')
+        else toast('Что-то пошло не так. Попробуй ещё раз.', 'error')
+        return
+      }
       const data = await res.json()
       if (data.title && data.text && data.questions) {
         stopSpeaking()
@@ -91,7 +104,7 @@ export default function ListeningPage() {
         setChecked(false)
       }
     } catch {
-      // ignore
+      toast('Ошибка соединения', 'error')
     } finally {
       setGeneratingAI(false)
     }
@@ -119,6 +132,8 @@ export default function ListeningPage() {
           </button>
         ))}
       </div>
+
+      {generatingAI && <SkeletonCard />}
 
       <AnimatePresence mode="wait">
         <motion.div key={entry.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-4">

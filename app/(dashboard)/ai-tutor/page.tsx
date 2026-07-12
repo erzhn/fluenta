@@ -6,6 +6,8 @@ import { Send, RotateCcw, Mic, MicOff } from 'lucide-react'
 import { ChatMessage } from '@/components/ai-tutor/ChatMessage'
 import type { Message } from '@/types'
 import { createRecognition, isSpeechRecognitionSupported } from '@/lib/speech'
+import { supabase } from '@/lib/supabase'
+import { toast } from '@/components/ui/Toast'
 
 type ChatMode = 'tutor' | 'conversation'
 
@@ -65,17 +67,27 @@ export default function AITutorPage() {
       setLoading(true)
 
       try {
+        const { data: { session } } = await supabase.auth.getSession()
         const res = await fetch('/api/ai/chat', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token ?? ''}`,
+          },
           body: JSON.stringify({
             messages: newHistory.map((m) => ({ role: m.role, content: m.content })),
             mode,
           }),
         })
 
+        if (!res.ok) {
+          if (res.status === 429) toast('Слишком много запросов. Подожди минуту.', 'error')
+          else if (res.status === 401) toast('Необходимо войти в систему', 'error')
+          else toast('Что-то пошло не так. Попробуй ещё раз.', 'error')
+          throw new Error(`HTTP ${res.status}`)
+        }
+
         const data = await res.json()
-        if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
 
         setMessages((prev) => [
           ...prev,

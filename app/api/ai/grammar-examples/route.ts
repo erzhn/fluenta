@@ -1,7 +1,39 @@
 import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+
+const VALID_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1']
+const VALID_TYPES = ['explain', 'examples', 'exercise']
 
 export async function POST(req: Request) {
-  const { topic, level, type } = await req.json()
+  const authHeader = req.headers.get('Authorization')
+  const token = authHeader?.replace('Bearer ', '')
+  if (!token) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { global: { headers: { Authorization: `Bearer ${token}` } } }
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const body = await req.json()
+  const topic = typeof body.topic === 'string' ? body.topic.trim() : ''
+  const level = typeof body.level === 'string' ? body.level.trim() : ''
+  const type = typeof body.type === 'string' ? body.type.trim() : ''
+
+  if (!topic || topic.length > 200) {
+    return NextResponse.json({ error: 'Invalid topic' }, { status: 400 })
+  }
+  if (!level || !VALID_LEVELS.includes(level)) {
+    return NextResponse.json({ error: 'Invalid level' }, { status: 400 })
+  }
+  if (!type || !VALID_TYPES.includes(type)) {
+    return NextResponse.json({ error: 'Invalid type' }, { status: 400 })
+  }
 
   const prompts: Record<string, string> = {
     examples: `Generate 4 fresh example sentences for the grammar topic "${topic}" at ${level} level.
