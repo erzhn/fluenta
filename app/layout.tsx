@@ -75,6 +75,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru" className={`${inter.variable} ${spaceGrotesk.variable} h-full antialiased dark`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function() {
+            try {
+              var t = localStorage.getItem('fluenta_theme');
+              if (t === 'light') {
+                document.documentElement.classList.remove('dark');
+                document.documentElement.classList.add('light');
+              } else {
+                document.documentElement.classList.add('dark');
+              }
+            } catch(e) {}
+          })();
+        ` }} />
+      </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <ThemeProvider>
         {children}

@@ -13,6 +13,7 @@ import { StreakWidget, loadStreak, type StreakData } from '@/components/StreakWi
 import { LESSONS, LEVEL_COLORS, type Lesson } from '@/lib/lessons-data'
 import { getLessonCompletions } from '@/lib/progress'
 import { DailyReview } from '@/components/DailyReview'
+import { WordOfDay } from '@/components/WordOfDay'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface Profile {
@@ -256,7 +257,12 @@ export default function DashboardPage() {
         )}
       </motion.div>
 
-      {/* ── 1c. Daily SR review ───────────────────────────────────────────── */}
+      {/* ── 1c. Word of the day ──────────────────────────────────────────── */}
+      <motion.div custom={0.7} variants={fadeUp} initial="hidden" animate="visible">
+        <WordOfDay />
+      </motion.div>
+
+      {/* ── 1d. Daily SR review ───────────────────────────────────────────── */}
       <motion.div custom={0.8} variants={fadeUp} initial="hidden" animate="visible">
         <DailyReview />
       </motion.div>

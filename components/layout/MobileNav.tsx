@@ -13,6 +13,7 @@ import {
   Award,
   Volume2,
   AlignLeft,
+  MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
@@ -24,6 +25,7 @@ const NAV_ITEMS = [
   { href: "/vocabulary",       icon: Layers,          label: "Словарь",  badge: "vocab" },
   { href: "/dictation",        icon: Volume2,         label: "Диктант",  badge: null },
   { href: "/sentence-builder", icon: AlignLeft,       label: "Слова",    badge: null },
+  { href: "/idioms",           icon: MessageSquare,   label: "Идиомы",   badge: null },
   { href: "/achievements",     icon: Award,           label: "Награды",  badge: null },
   { href: "/progress",         icon: TrendingUp,      label: "Прогресс", badge: null },
 ];

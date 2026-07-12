@@ -9,8 +9,9 @@ import { createRecognition, isSpeechRecognitionSupported } from '@/lib/speech'
 import { supabase } from '@/lib/supabase'
 import { toast } from '@/components/ui/Toast'
 import { saveChatMessage, newSessionId } from '@/lib/chat-history'
+import { SCENARIOS, type Scenario } from '@/lib/roleplay-scenarios'
 
-type ChatMode = 'tutor' | 'conversation'
+type ChatMode = 'tutor' | 'conversation' | 'roleplay'
 
 const WELCOME: Message = {
   id: 'welcome',
@@ -32,6 +33,7 @@ export default function AITutorPage() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [mode, setMode] = useState<ChatMode>('tutor')
+  const [activeScenario, setActiveScenario] = useState<Scenario | null>(null)
   const [listening, setListening] = useState(false)
   const [sessionId] = useState(() => newSessionId())
   const [userId, setUserId] = useState<string | null>(null)
@@ -89,6 +91,7 @@ export default function AITutorPage() {
           body: JSON.stringify({
             messages: newHistory.map((m) => ({ role: m.role, content: m.content })),
             mode,
+            ...(activeScenario ? { customSystemPrompt: activeScenario.systemPrompt } : {}),
           }),
         })
 
@@ -127,16 +130,19 @@ export default function AITutorPage() {
         setLoading(false)
       }
     },
-    [messages, loading, mode]
+    [messages, loading, mode, activeScenario]
   )
 
   const toggleMode = (next: ChatMode) => {
     setMode(next)
-    const welcome: Message = next === 'conversation'
-      ? { id: 'welcome', role: 'assistant', content: "Hey! I'm Zhan 😊 Let's just chat — what's on your mind?", timestamp: new Date().toISOString() }
-      : { ...WELCOME, timestamp: new Date().toISOString() }
-    setMessages([welcome])
-    setInput('')
+    setActiveScenario(null)
+    if (next !== 'roleplay') {
+      const welcome: Message = next === 'conversation'
+        ? { id: 'welcome', role: 'assistant', content: "Hey! I'm Zhan 😊 Let's just chat — what's on your mind?", timestamp: new Date().toISOString() }
+        : { ...WELCOME, timestamp: new Date().toISOString() }
+      setMessages([welcome])
+      setInput('')
+    }
   }
 
   const startListening = () => {
@@ -219,7 +225,26 @@ export default function AITutorPage() {
             >
               💬 Разговор
             </button>
+            <button
+              onClick={() => toggleMode('roleplay')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                mode === 'roleplay'
+                  ? 'bg-[#6366F1] text-white shadow-sm'
+                  : 'text-[#475569] hover:text-[#94A3B8]'
+              }`}
+            >
+              🎭 Ролевая игра
+            </button>
           </div>
+
+          {/* Active scenario badge */}
+          {activeScenario && (
+            <div className="flex items-center gap-2 ml-1">
+              <span className="text-sm">{activeScenario.emoji}</span>
+              <span className="text-white text-xs font-medium">{activeScenario.title}</span>
+              <button onClick={() => { setActiveScenario(null) }} className="text-[#64748b] text-xs hover:text-white">✕</button>
+            </div>
+          )}
 
           <button
             onClick={handleReset}
@@ -232,7 +257,43 @@ export default function AITutorPage() {
         </div>
       </div>
 
+      {/* ── Scenario Picker ───────────────────────────────────────────────── */}
+      {mode === 'roleplay' && !activeScenario && (
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-5 min-h-0">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-white font-semibold">Выбери сценарий</h2>
+            <button onClick={() => toggleMode('tutor')} className="text-[#64748b] text-sm hover:text-white transition-colors">
+              ← Обычный чат
+            </button>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {SCENARIOS.map(s => (
+              <button key={s.id}
+                onClick={() => {
+                  setActiveScenario(s)
+                  setMessages([{
+                    id: 'roleplay-open',
+                    role: 'assistant',
+                    content: s.openingLine,
+                    timestamp: new Date().toISOString(),
+                  }])
+                }}
+                className="p-4 bg-white/[0.04] border border-white/10 rounded-2xl text-left
+                  hover:border-[#6366f1]/40 hover:bg-white/[0.06] transition-all">
+                <span className="text-3xl block mb-2">{s.emoji}</span>
+                <p className="text-white text-sm font-medium">{s.title}</p>
+                <p className="text-[#64748b] text-xs mt-1">{s.description}</p>
+                <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded-full bg-[#6366f1]/10 text-[#6366f1]">
+                  {s.level}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ── Messages ───────────────────────────────────────────────────────── */}
+      {(mode !== 'roleplay' || activeScenario) && (
       <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-5 space-y-5 min-h-0">
 
         {/* Quick-start chips — only before first user message */}
@@ -304,6 +365,7 @@ export default function AITutorPage() {
 
         <div ref={bottomRef} />
       </div>
+      )}
 
       {/* ── Input bar ──────────────────────────────────────────────────────── */}
       <div className="shrink-0 border-t border-[#1E293B] bg-[#0A1628] px-4 sm:px-6 pb-4 pt-3">

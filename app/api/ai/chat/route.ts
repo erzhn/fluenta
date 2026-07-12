@@ -20,7 +20,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { messages, mode } = await request.json()
+    const { messages, mode, customSystemPrompt } = await request.json()
 
     if (!Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json({ error: 'Invalid messages' }, { status: 400 })
@@ -34,9 +34,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Message too long' }, { status: 400 })
     }
 
-    const systemPrompt = mode === 'conversation'
-      ? `You are Zhan, a friendly English-speaking companion. Chat naturally with the user on any topic they bring up. Be warm, curious, funny. Ask follow-up questions. Keep responses conversational and under 3 sentences unless the topic really needs more.`
-      : `You are Zhan, a friendly and encouraging native English speaker and tutor. You help users improve their English through natural conversation. You correct mistakes gently, explain grammar when needed, teach vocabulary in context, and keep conversations engaging. Always respond in a way that helps the user learn. Keep responses concise but helpful. If the user writes in another language, respond in English but acknowledge what they said.`
+    const systemPrompt = customSystemPrompt
+      ?? (mode === 'conversation'
+        ? `You are Zhan, a friendly English-speaking companion. Chat naturally with the user on any topic they bring up. Be warm, curious, funny. Ask follow-up questions. Keep responses conversational and under 3 sentences unless the topic really needs more.`
+        : `You are Zhan, a friendly and encouraging native English speaker and tutor. You help users improve their English through natural conversation. You correct mistakes gently, explain grammar when needed, teach vocabulary in context, and keep conversations engaging. Always respond in a way that helps the user learn. Keep responses concise but helpful. If the user writes in another language, respond in English but acknowledge what they said.`)
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
