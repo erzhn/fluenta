@@ -46,7 +46,7 @@ export default function PhrasalVerbsPage() {
     <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">Фразовые глаголы</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1"><span className="gradient-text">Фразовые глаголы</span></h1>
         <p className="text-[#64748b] text-sm">{total} фразовых глаголов по 5 темам</p>
       </div>
 

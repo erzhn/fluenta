@@ -58,10 +58,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         onMobileClose={() => setMobileDrawerOpen(false)}
       />
 
-      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0 relative">
+        {/* Ambient background orbs */}
+        <div aria-hidden="true">
+          <div className="orb orb-1" />
+          <div className="orb orb-2" />
+          <div className="orb orb-3" />
+        </div>
+
         <TopBar onMenuClick={() => setMobileDrawerOpen(true)} />
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 relative z-10">
           <AnimatePresence mode="wait">
             <motion.div
               key={pathname}

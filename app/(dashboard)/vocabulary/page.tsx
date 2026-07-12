@@ -173,7 +173,7 @@ export default function VocabularyPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Словарь</h1>
+          <h1 className="text-2xl font-bold text-white"><span className="gradient-text">Словарь</span></h1>
           <p className="text-[#64748b] text-sm">{VOCABULARY.length} слов • Метод Leitner</p>
         </div>
         <div className="flex items-center gap-2">

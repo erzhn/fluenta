@@ -25,6 +25,10 @@ export const metadata: Metadata = {
     "fluenta",
   ],
   manifest: "/manifest.json",
+  icons: {
+    icon: '/logo-icon.svg',
+    apple: '/logo-icon.svg',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",

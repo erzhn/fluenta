@@ -356,7 +356,7 @@ export default function GrammarPage() {
     <div className="max-w-3xl mx-auto p-6 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-white">Грамматический справочник</h1>
+        <h1 className="text-2xl font-bold text-white"><span className="gradient-text">Грамматический справочник</span></h1>
         <p className="text-[#64748b] text-sm">25 ключевых правил от A1 до C1 + AI-объяснения</p>
       </div>
 

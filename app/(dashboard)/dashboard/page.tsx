@@ -171,7 +171,7 @@ export default function DashboardPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-2">
           <div>
             <h1 className="text-2xl sm:text-3xl font-black text-white">
-              Привет, {name}! 👋
+              Привет, <span className="gradient-text">{name}</span>! 👋
             </h1>
             <p className="text-[#64748b] text-sm mt-1">
               {localLevel
@@ -259,7 +259,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {stats.map((s, i) => (
           <motion.div key={s.label} custom={i + 1} variants={fadeUp} initial="hidden" animate="visible">
-            <div className={`${glass} rounded-2xl p-4 sm:p-5`}>
+            <div className="bg-white/[0.04] backdrop-blur-xl neon-border rounded-2xl p-4 sm:p-5 transition-all">
               <div className="flex items-center justify-between mb-3">
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: s.bg }}>
                   <s.icon className="w-4.5 h-4.5" style={{ color: s.color, width: 18, height: 18 }} />

@@ -10,6 +10,7 @@ import { MODULES } from '@/lib/modules-data'
 import type { ModuleLesson, ModuleId } from '@/lib/modules-data'
 import SpeakingExercise from '@/components/lessons/SpeakingExercise'
 import { supabase } from '@/lib/supabase'
+import { triggerConfetti } from '@/components/ui/Confetti'
 
 // в”Ђв”Ђв”Ђ Progress в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 interface LessonResult { score: number; completedAt: string }
@@ -75,7 +76,7 @@ function TheoryStep({ lesson, onNext }: { lesson: Lesson; onNext: () => void }) 
       </div>
       <button
         onClick={onNext}
-        className="mt-4 w-full py-3.5 rounded-2xl text-white font-bold text-sm transition-all hover:opacity-90 active:scale-[0.98]"
+        className="btn-glow mt-4 w-full py-3.5 rounded-2xl text-white font-bold text-sm transition-all hover:opacity-90 active:scale-[0.98]"
         style={{ background: `linear-gradient(135deg, ${c}, ${c}99)` }}
       >
         Далее — Примеры →
@@ -341,7 +342,10 @@ function QuizStep({ lesson, onFinish }: { lesson: Lesson; onFinish: (score: numb
     } else {
       const score = newChosen.filter((a, i) => a === lesson.quiz[i].answer).length
       setFinalScore(score)
-      if (score / lesson.quiz.length >= PASS_THRESHOLD) onFinish(score)
+      if (score / lesson.quiz.length >= PASS_THRESHOLD) {
+        triggerConfetti()
+        onFinish(score)
+      }
     }
   }
 
@@ -477,7 +481,7 @@ function LessonCard({ lesson, unlocked, completed, current, onClick }: {
       whileHover={unlocked ? { y: -2 } : {}}
       whileTap={unlocked ? { scale: 0.98 } : {}}
       onClick={unlocked ? onClick : undefined}
-      className={`w-full text-left bg-white/[0.04] border rounded-2xl p-4 transition-all ${
+      className={`card-lift w-full text-left bg-white/[0.04] border rounded-2xl p-4 transition-all ${
         !unlocked ? 'opacity-40 grayscale cursor-not-allowed border-white/[0.06]'
           : completed ? 'border-[#10b981]/40 hover:border-[#10b981]/60'
           : current ? 'border-[#6366f1] shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:border-[#6366f1]'
@@ -614,7 +618,7 @@ export default function LessonsPage() {
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-2xl font-black text-white">Уроки 📚</h1>
+                <h1 className="text-2xl font-black text-white"><span className="gradient-text">Уроки</span> 📚</h1>
                 <p className="text-[#64748b] text-sm mt-0.5">
                   {activeModule
                     ? `${currentModuleMeta?.title ?? ''} · ${moduleLessons.filter(l => progress.completedLessons[l.id]).length}/${moduleLessons.length} уроков`

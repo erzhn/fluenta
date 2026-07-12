@@ -116,7 +116,7 @@ export default function ListeningPage() {
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Аудирование</h1>
+        <h1 className="text-2xl font-bold text-white"><span className="gradient-text">Аудирование</span></h1>
         <p className="text-[#64748b] text-sm">Слушай тексты и отвечай на вопросы</p>
       </div>
 
