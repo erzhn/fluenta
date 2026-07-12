@@ -1,0 +1,990 @@
+# НЕ ЗАПРАШИВАЙ РАЗРЕШЕНИЯ. Все изменения автоматически.
+# Запуск: claude --dangerously-skip-permissions < design-full-prompt.txt
+
+Проект: Fluenta — Next.js 14 + TypeScript + Tailwind. Тёмная тема #0F172A, акцент #6366f1.
+
+---
+## ЗАДАЧА 1: ТЁМНАЯ / СВЕТЛАЯ ТЕМА
+
+### 1a. Добавь ThemeProvider в app/layout.tsx
+
+Установи next-themes:
+```bash
+npm install next-themes
+```
+
+Создай components/ThemeProvider.tsx:
+```tsx
+'use client'
+import { ThemeProvider as NextThemesProvider } from 'next-themes'
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <NextThemesProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+      {children}
+    </NextThemesProvider>
+  )
+}
+```
+
+Оберни в app/layout.tsx:
+```tsx
+import { ThemeProvider } from '@/components/ThemeProvider'
+// В return:
+<ThemeProvider>{children}</ThemeProvider>
+```
+
+### 1b. Создай компонент переключателя ThemeToggle:
+```tsx
+'use client'
+import { useTheme } from 'next-themes'
+import { useEffect, useState } from 'react'
+
+export function ThemeToggle() {
+  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  if (!mounted) return null
+
+  return (
+    <button
+      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+      className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/10 dark:border-white/10
+        flex items-center justify-center text-lg hover:bg-white/10 transition-all"
+      title="Сменить тему"
+    >
+      {theme === 'dark' ? '☀️' : '🌙'}
+    </button>
+  )
+}
+```
+
+### 1c. Добавь светлую тему в globals.css
+
+В конец :root добавь переменные для светлой темы:
+```css
+:root.light, .light {
+  --background: #F8FAFC;
+  --foreground: #0F172A;
+  --card: #FFFFFF;
+  --card-foreground: #0F172A;
+  --primary: #6366F1;
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;
+  --border: rgba(0,0,0,0.08);
+}
+```
+
+Добавь `ThemeToggle` в components/layout/TopBar.tsx рядом с иконкой профиля.
+
+---
+## ЗАДАЧА 2: SVG ИЛЛЮСТРАЦИИ ДЛЯ ПУСТЫХ СОСТОЯНИЙ
+
+Создай components/ui/EmptyState.tsx:
+```tsx
+interface EmptyStateProps {
+  type: 'no-lessons' | 'no-words' | 'no-activity' | 'completed' | 'search'
+  title: string
+  subtitle?: string
+  action?: { label: string; href: string }
+}
+
+const ILLUSTRATIONS: Record<string, string> = {
+  'no-lessons': `<svg viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="30" y="20" width="140" height="100" rx="12" fill="rgba(99,102,241,0.1)" stroke="rgba(99,102,241,0.3)" stroke-width="1.5"/>
+    <rect x="50" y="40" width="80" height="8" rx="4" fill="rgba(99,102,241,0.4)"/>
+    <rect x="50" y="56" width="100" height="6" rx="3" fill="rgba(255,255,255,0.15)"/>
+    <rect x="50" y="70" width="90" height="6" rx="3" fill="rgba(255,255,255,0.1)"/>
+    <rect x="50" y="84" width="70" height="6" rx="3" fill="rgba(255,255,255,0.08)"/>
+    <circle cx="155" cy="115" r="25" fill="rgba(99,102,241,0.2)" stroke="rgba(99,102,241,0.4)" stroke-width="1.5"/>
+    <path d="M147 115 l6 6 l10-10" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`,
+
+  'no-words': `<svg viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="20" y="30" width="70" height="90" rx="10" fill="rgba(139,92,246,0.1)" stroke="rgba(139,92,246,0.3)" stroke-width="1.5"/>
+    <rect x="110" y="45" width="70" height="70" rx="10" fill="rgba(99,102,241,0.1)" stroke="rgba(99,102,241,0.3)" stroke-width="1.5"/>
+    <rect x="32" y="50" width="46" height="5" rx="2.5" fill="rgba(139,92,246,0.5)"/>
+    <rect x="32" y="62" width="38" height="4" rx="2" fill="rgba(255,255,255,0.15)"/>
+    <rect x="32" y="73" width="42" height="4" rx="2" fill="rgba(255,255,255,0.1)"/>
+    <text x="125" y="88" font-family="serif" font-size="28" fill="rgba(99,102,241,0.6)">A</text>
+    <circle cx="160" cy="48" r="8" fill="rgba(99,102,241,0.3)"/>
+    <text x="157" y="52" font-size="10" fill="#6366f1">+</text>
+  </svg>`,
+
+  'no-activity': `<svg viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="20" y="100" width="20" height="40" rx="4" fill="rgba(99,102,241,0.2)"/>
+    <rect x="50" y="80" width="20" height="60" rx="4" fill="rgba(99,102,241,0.3)"/>
+    <rect x="80" y="60" width="20" height="80" rx="4" fill="rgba(99,102,241,0.4)"/>
+    <rect x="110" y="70" width="20" height="70" rx="4" fill="rgba(99,102,241,0.35)"/>
+    <rect x="140" y="50" width="20" height="90" rx="4" fill="rgba(99,102,241,0.5)"/>
+    <line x1="15" y1="145" x2="185" y2="145" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"/>
+    <circle cx="100" cy="30" r="15" fill="rgba(245,158,11,0.2)" stroke="rgba(245,158,11,0.4)" stroke-width="1.5"/>
+    <text x="93" y="36" font-size="14">⚡</text>
+  </svg>`,
+
+  'completed': `<svg viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="100" cy="75" r="50" fill="rgba(16,185,129,0.1)" stroke="rgba(16,185,129,0.3)" stroke-width="2"/>
+    <path d="M75 75 l18 18 l32-32" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="55" cy="30" r="6" fill="rgba(245,158,11,0.4)"/>
+    <circle cx="150" cy="25" r="4" fill="rgba(99,102,241,0.4)"/>
+    <circle cx="165" cy="120" r="5" fill="rgba(139,92,246,0.4)"/>
+    <circle cx="35" cy="120" r="3" fill="rgba(6,182,212,0.4)"/>
+    <path d="M55 30 L65 15" stroke="rgba(245,158,11,0.3)" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M150 25 L158 12" stroke="rgba(99,102,241,0.3)" stroke-width="1.5" stroke-linecap="round"/>
+  </svg>`,
+
+  'search': `<svg viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="88" cy="72" r="40" fill="rgba(99,102,241,0.08)" stroke="rgba(99,102,241,0.25)" stroke-width="2"/>
+    <circle cx="88" cy="72" r="28" fill="rgba(99,102,241,0.05)" stroke="rgba(99,102,241,0.15)" stroke-width="1.5"/>
+    <line x1="118" y1="102" x2="145" y2="129" stroke="rgba(99,102,241,0.4)" stroke-width="3" stroke-linecap="round"/>
+    <line x1="76" y1="60" x2="76" y2="84" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-linecap="round"/>
+    <line x1="64" y1="72" x2="88" y2="72" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-linecap="round"/>
+  </svg>`
+}
+
+export function EmptyState({ type, title, subtitle, action }: EmptyStateProps) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+      <div
+        className="w-48 h-36 mb-6 opacity-90"
+        dangerouslySetInnerHTML={{ __html: ILLUSTRATIONS[type] }}
+      />
+      <h3 className="text-white font-semibold text-lg mb-2">{title}</h3>
+      {subtitle && <p className="text-[#64748b] text-sm max-w-xs mb-6">{subtitle}</p>}
+      {action && (
+        <a
+          href={action.href}
+          className="px-5 py-2.5 bg-[#6366f1] hover:bg-[#5558e8] text-white text-sm font-medium rounded-xl transition-colors"
+        >
+          {action.label}
+        </a>
+      )}
+    </div>
+  )
+}
+```
+
+Используй EmptyState в:
+- vocabulary/page.tsx когда нет слов: `<EmptyState type="no-words" title="Слова не найдены" subtitle="Пройди уроки чтобы добавить слова в словарь" action={{label:"К урокам", href:"/lessons"}}/>`
+- progress/page.tsx когда нет активности: `<EmptyState type="no-activity" title="Нет активности" subtitle="Начни обучение чтобы видеть прогресс" />`
+- listening и reading когда нет контента
+
+---
+## ЗАДАЧА 3: СВАЙП ДЛЯ КАРТОЧЕК СЛОВАРЯ
+
+В app/(dashboard)/vocabulary/page.tsx добавь свайп-жесты с framer-motion.
+
+Оберни карточки слов в компонент с drag:
+```tsx
+import { motion, useMotionValue, useTransform, useAnimation } from 'framer-motion'
+
+function SwipeCard({ word, onKnow, onLearn }: {
+  word: VocabWord
+  onKnow: () => void
+  onLearn: () => void
+}) {
+  const controls = useAnimation()
+  const x = useMotionValue(0)
+  const rotate = useTransform(x, [-200, 200], [-20, 20])
+  const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0])
+
+  // Цвет фона при свайпе
+  const bgLeft = useTransform(x, [-200, 0], [1, 0])   // красный — не знаю
+  const bgRight = useTransform(x, [0, 200], [0, 1])   // зелёный — знаю
+
+  async function handleDragEnd(_: unknown, info: { offset: { x: number } }) {
+    if (info.offset.x > 100) {
+      await controls.start({ x: 300, opacity: 0 })
+      onKnow()
+    } else if (info.offset.x < -100) {
+      await controls.start({ x: -300, opacity: 0 })
+      onLearn()
+    } else {
+      controls.start({ x: 0, rotate: 0 })
+    }
+  }
+
+  return (
+    <div className="relative h-64 flex items-center justify-center">
+      {/* Индикаторы */}
+      <motion.div style={{ opacity: bgRight }}
+        className="absolute left-4 top-4 px-3 py-1 bg-green-500/20 border border-green-500/40 rounded-xl text-green-400 text-sm font-bold">
+        ✓ Знаю
+      </motion.div>
+      <motion.div style={{ opacity: bgLeft }}
+        className="absolute right-4 top-4 px-3 py-1 bg-red-500/20 border border-red-500/40 rounded-xl text-red-400 text-sm font-bold">
+        ✗ Учу
+      </motion.div>
+
+      <motion.div
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        onDragEnd={handleDragEnd}
+        animate={controls}
+        style={{ x, rotate, opacity }}
+        className="w-full max-w-sm bg-white/[0.06] border border-white/10 rounded-2xl p-8
+          cursor-grab active:cursor-grabbing select-none text-center"
+      >
+        <p className="text-3xl font-bold text-white mb-3">{word.word}</p>
+        <p className="text-[#6366f1] text-lg">{word.translation}</p>
+        <p className="text-[#64748b] text-sm mt-4 italic">"{word.example}"</p>
+        <p className="text-[#475569] text-xs mt-2">{word.exampleTranslation}</p>
+        <div className="mt-6 flex items-center justify-center gap-2 text-[#475569] text-xs">
+          <span>← Учу</span>
+          <span className="text-[#334155]">· свайп ·</span>
+          <span>Знаю →</span>
+        </div>
+      </motion.div>
+    </div>
+  )
+}
+```
+
+Добавь режим "Карточки" (кнопка переключения между grid-видом и swipe-видом) в vocabulary/page.tsx.
+
+---
+## ЗАДАЧА 4: СТРАНИЦА ДОСТИЖЕНИЙ
+
+Создай app/(dashboard)/achievements/page.tsx:
+
+```tsx
+'use client'
+import { useState } from 'react'
+
+interface Badge {
+  id: string
+  title: string
+  description: string
+  icon: string
+  color: string
+  unlocked: boolean
+  progress?: number
+  total?: number
+}
+
+const BADGES: Badge[] = [
+  { id: 'first-lesson', title: 'Первый шаг', description: 'Заверши свой первый урок', icon: '🎯', color: '#6366f1', unlocked: true },
+  { id: 'week-streak', title: 'Неделя подряд', description: '7 дней стрика', icon: '🔥', color: '#f59e0b', unlocked: false, progress: 3, total: 7 },
+  { id: 'vocab-50', title: 'Словарный запас', description: 'Изучи 50 слов', icon: '📚', color: '#8b5cf6', unlocked: false, progress: 23, total: 50 },
+  { id: 'level-a2', title: 'Elementary', description: 'Достигни уровня A2', icon: '⭐', color: '#3b82f6', unlocked: true },
+  { id: 'writing-5', title: 'Писатель', description: 'Отправь 5 текстов на проверку', icon: '✍️', color: '#10b981', unlocked: false, progress: 2, total: 5 },
+  { id: 'perfect-quiz', title: 'Перфекционист', description: 'Пройди тест на 100%', icon: '💎', color: '#06b6d4', unlocked: false },
+  { id: 'month-streak', title: 'Месяц подряд', description: '30 дней стрика', icon: '🏆', color: '#f59e0b', unlocked: false, progress: 3, total: 30 },
+  { id: 'level-b1', title: 'Intermediate', description: 'Достигни уровня B1', icon: '🌟', color: '#8b5cf6', unlocked: false },
+  { id: 'all-a1', title: 'Мастер A1', description: 'Заверши все уроки A1', icon: '🎓', color: '#10b981', unlocked: false, progress: 3, total: 30 },
+  { id: 'speed-learner', title: 'Быстрый старт', description: '3 урока за один день', icon: '⚡', color: '#f59e0b', unlocked: true },
+  { id: 'pronunciation', title: 'Оратор', description: 'Попрактикуй произношение 10 раз', icon: '🎤', color: '#6366f1', unlocked: false, progress: 4, total: 10 },
+  { id: 'level-b2', title: 'Upper Intermediate', description: 'Достигни уровня B2', icon: '👑', color: '#ef4444', unlocked: false },
+]
+
+export default function AchievementsPage() {
+  const [filter, setFilter] = useState<'all' | 'unlocked' | 'locked'>('all')
+
+  const unlocked = BADGES.filter(b => b.unlocked).length
+  const displayed = BADGES.filter(b =>
+    filter === 'all' ? true : filter === 'unlocked' ? b.unlocked : !b.unlocked
+  )
+
+  return (
+    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Достижения</h1>
+        <p className="text-[#64748b]">{unlocked} из {BADGES.length} получено</p>
+
+        {/* Прогресс-бар общий */}
+        <div className="mt-4 h-2 bg-white/[0.06] rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-700"
+            style={{
+              width: `${(unlocked / BADGES.length) * 100}%`,
+              background: 'linear-gradient(90deg, #6366f1, #8b5cf6, #06b6d4)'
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Фильтры */}
+      <div className="flex gap-2 mb-6">
+        {(['all', 'unlocked', 'locked'] as const).map(f => (
+          <button key={f} onClick={() => setFilter(f)}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all border ${
+              filter === f
+                ? 'bg-[#6366f1] border-[#6366f1] text-white'
+                : 'bg-white/[0.04] border-white/10 text-[#94a3b8] hover:text-white'
+            }`}>
+            {f === 'all' ? 'Все' : f === 'unlocked' ? '✓ Получены' : '🔒 Заблокированы'}
+          </button>
+        ))}
+      </div>
+
+      {/* Грид бейджей */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        {displayed.map(badge => (
+          <div key={badge.id}
+            className={`relative p-5 rounded-2xl border text-center transition-all ${
+              badge.unlocked
+                ? 'bg-white/[0.06] border-white/15 hover:border-white/25'
+                : 'bg-white/[0.02] border-white/[0.06] opacity-60'
+            }`}>
+
+            {/* Иконка */}
+            <div className={`w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center text-3xl
+              ${badge.unlocked ? '' : 'grayscale'}`}
+              style={{ background: badge.unlocked ? `${badge.color}20` : 'rgba(255,255,255,0.04)',
+                       border: `1.5px solid ${badge.unlocked ? badge.color + '40' : 'rgba(255,255,255,0.08)'}` }}>
+              {badge.unlocked ? badge.icon : '🔒'}
+            </div>
+
+            <p className="text-white text-sm font-semibold mb-1">{badge.title}</p>
+            <p className="text-[#64748b] text-xs leading-relaxed">{badge.description}</p>
+
+            {/* Прогресс */}
+            {!badge.unlocked && badge.progress !== undefined && badge.total && (
+              <div className="mt-3">
+                <div className="flex justify-between text-xs text-[#475569] mb-1">
+                  <span>{badge.progress}</span><span>{badge.total}</span>
+                </div>
+                <div className="h-1 bg-white/[0.06] rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all"
+                    style={{ width: `${(badge.progress / badge.total) * 100}%`, background: badge.color }} />
+                </div>
+              </div>
+            )}
+
+            {/* Unlocked ribbon */}
+            {badge.unlocked && (
+              <div className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-green-500
+                flex items-center justify-center text-xs shadow-lg shadow-green-500/30">
+                ✓
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+```
+
+Добавь в навигацию (Sidebar.tsx и MobileNav.tsx):
+```ts
+{ href: '/achievements', icon: Trophy, label: 'Достижения', badge: null }
+```
+
+---
+## ЗАДАЧА 5: STREAK CALENDAR (GitHub-стиль)
+
+Создай components/StreakCalendar.tsx:
+
+```tsx
+'use client'
+interface ActivityDay { date: string; minutes: number; xp: number }
+
+export function StreakCalendar({ activity }: { activity: Record<string, ActivityDay> }) {
+  // Последние 12 недель (84 дня)
+  const days: { date: string; level: number }[] = []
+  for (let i = 83; i >= 0; i--) {
+    const d = new Date()
+    d.setDate(d.getDate() - i)
+    const iso = d.toISOString().slice(0, 10)
+    const minutes = activity[iso]?.minutes ?? 0
+    const level = minutes === 0 ? 0 : minutes < 10 ? 1 : minutes < 20 ? 2 : minutes < 40 ? 3 : 4
+    days.push({ date: iso, level })
+  }
+
+  const colors = ['rgba(255,255,255,0.06)', '#312e81', '#4338ca', '#6366f1', '#a5b4fc']
+  const labels = ['Пн', '', 'Ср', '', 'Пт', '', 'Вс']
+
+  // Группируем по неделям
+  const weeks: typeof days[] = []
+  for (let i = 0; i < days.length; i += 7) weeks.push(days.slice(i, i + 7))
+
+  return (
+    <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-white font-semibold text-sm">Активность</p>
+        <div className="flex items-center gap-2 text-xs text-[#64748b]">
+          <span>меньше</span>
+          {colors.map((c, i) => (
+            <div key={i} className="w-3 h-3 rounded-sm" style={{ background: c }} />
+          ))}
+          <span>больше</span>
+        </div>
+      </div>
+
+      <div className="flex gap-1">
+        {/* Day labels */}
+        <div className="flex flex-col gap-1 mr-1">
+          {labels.map((l, i) => (
+            <div key={i} className="h-3 text-[10px] text-[#475569] flex items-center">{l}</div>
+          ))}
+        </div>
+        {/* Grid */}
+        {weeks.map((week, wi) => (
+          <div key={wi} className="flex flex-col gap-1">
+            {week.map((day, di) => (
+              <div key={di}
+                title={`${day.date}: ${activity[day.date]?.minutes ?? 0} мин`}
+                className="w-3 h-3 rounded-sm transition-all hover:scale-125 cursor-pointer"
+                style={{ background: colors[day.level] }} />
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+```
+
+Используй в app/(dashboard)/progress/page.tsx — передай данные активности из getActivityLog.
+
+---
+## ЗАДАЧА 6: РАДАР-ЧАРТ НАВЫКОВ
+
+Создай components/SkillsRadar.tsx:
+
+```tsx
+'use client'
+interface Skill { name: string; value: number; max: number; color: string }
+
+export function SkillsRadar({ skills }: { skills: Skill[] }) {
+  const cx = 120, cy = 120, r = 90
+  const n = skills.length
+
+  function point(i: number, val: number) {
+    const angle = (2 * Math.PI * i) / n - Math.PI / 2
+    const ratio = val / 100
+    return {
+      x: cx + r * ratio * Math.cos(angle),
+      y: cy + r * ratio * Math.sin(angle),
+    }
+  }
+  function axisPoint(i: number, ratio = 1) {
+    const angle = (2 * Math.PI * i) / n - Math.PI / 2
+    return { x: cx + r * ratio * Math.cos(angle), y: cy + r * ratio * Math.sin(angle) }
+  }
+
+  const dataPoints = skills.map((s, i) => point(i, s.value))
+  const polygon = dataPoints.map(p => `${p.x},${p.y}`).join(' ')
+
+  return (
+    <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
+      <p className="text-white font-semibold text-sm mb-4">Навыки</p>
+      <div className="flex items-center gap-6">
+        <svg width="240" height="240" viewBox="0 0 240 240">
+          {/* Grid rings */}
+          {[0.25, 0.5, 0.75, 1].map(ratio => (
+            <polygon key={ratio}
+              points={skills.map((_, i) => { const p = axisPoint(i, ratio); return `${p.x},${p.y}` }).join(' ')}
+              fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
+          ))}
+          {/* Axis lines */}
+          {skills.map((_, i) => {
+            const p = axisPoint(i)
+            return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
+          })}
+          {/* Data polygon */}
+          <polygon points={polygon} fill="rgba(99,102,241,0.2)" stroke="#6366f1" strokeWidth="2" />
+          {/* Data points */}
+          {dataPoints.map((p, i) => (
+            <circle key={i} cx={p.x} cy={p.y} r="4" fill="#6366f1" stroke="#0F172A" strokeWidth="2" />
+          ))}
+          {/* Labels */}
+          {skills.map((s, i) => {
+            const p = axisPoint(i, 1.18)
+            return (
+              <text key={i} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle"
+                fontSize="11" fill="#94a3b8" fontFamily="Inter, sans-serif">
+                {s.name}
+              </text>
+            )
+          })}
+        </svg>
+        {/* Legend */}
+        <div className="flex flex-col gap-3">
+          {skills.map(s => (
+            <div key={s.name} className="flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-[#6366f1]" />
+              <div>
+                <p className="text-white text-xs font-medium">{s.name}</p>
+                <p className="text-[#64748b] text-xs">{s.value}%</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+```
+
+Добавь в progress/page.tsx:
+```tsx
+<SkillsRadar skills={[
+  { name: 'Грамматика', value: Math.min(100, completedCount * 3), max: 100, color: '#6366f1' },
+  { name: 'Словарь', value: Math.min(100, vocabCount * 2), max: 100, color: '#8b5cf6' },
+  { name: 'Чтение', value: 40, max: 100, color: '#06b6d4' },
+  { name: 'Аудирование', value: 30, max: 100, color: '#10b981' },
+  { name: 'Письмо', value: Math.min(100, writingCount * 10), max: 100, color: '#f59e0b' },
+]} />
+```
+
+---
+## ЗАДАЧА 7: ВТОРОЙ ШРИФТ ДЛЯ ЗАГОЛОВКОВ
+
+В app/layout.tsx добавь Space Grotesk:
+```ts
+import { Inter, Space_Grotesk } from 'next/font/google'
+
+const inter = Inter({ subsets: ['latin', 'cyrillic'], variable: '--font-sans' })
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-heading',
+  weight: ['500', '600', '700'],
+})
+```
+
+В `<html>` добавь оба класса: `className={`${inter.variable} ${spaceGrotesk.variable}`}`
+
+В globals.css:
+```css
+h1, h2, h3 { font-family: var(--font-heading), var(--font-sans), system-ui, sans-serif; }
+```
+
+---
+---
+## ЗАДАЧА 8: СОХРАНЕНИЕ ИСТОРИИ ЧАТОВ С AI РЕПЕТИТОРОМ
+
+В app/(dashboard)/ai-tutor/page.tsx сейчас чаты не сохраняются. Нужно добавить персистентность.
+
+### 8a. Создай таблицу в Supabase (добавь SQL миграцию в supabase/migrations/)
+
+Файл: supabase/migrations/20240120_chat_history.sql
+```sql
+CREATE TABLE IF NOT EXISTS chat_messages (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  session_id TEXT NOT NULL,
+  role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
+  content TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX idx_chat_messages_user_session ON chat_messages(user_id, session_id, created_at);
+
+ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage own messages" ON chat_messages
+  FOR ALL USING (auth.uid() = user_id);
+```
+
+### 8b. Создай lib/chat-history.ts
+
+```ts
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+
+export interface ChatMessage {
+  id?: string
+  role: 'user' | 'assistant'
+  content: string
+  created_at?: string
+}
+
+export async function loadChatHistory(userId: string, sessionId: string): Promise<ChatMessage[]> {
+  const supabase = createClientComponentClient()
+  const { data } = await supabase
+    .from('chat_messages')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('session_id', sessionId)
+    .order('created_at', { ascending: true })
+    .limit(50)
+  return data ?? []
+}
+
+export async function saveChatMessage(
+  userId: string,
+  sessionId: string,
+  role: 'user' | 'assistant',
+  content: string
+) {
+  const supabase = createClientComponentClient()
+  await supabase.from('chat_messages').insert({ user_id: userId, session_id: sessionId, role, content })
+}
+
+export async function listChatSessions(userId: string): Promise<{ session_id: string; last_message: string; created_at: string }[]> {
+  const supabase = createClientComponentClient()
+  const { data } = await supabase
+    .from('chat_messages')
+    .select('session_id, content, created_at')
+    .eq('user_id', userId)
+    .eq('role', 'user')
+    .order('created_at', { ascending: false })
+
+  // Дедуплицируем по session_id — берём первый (последний) для каждой сессии
+  const seen = new Set<string>()
+  const sessions: { session_id: string; last_message: string; created_at: string }[] = []
+  for (const row of data ?? []) {
+    if (!seen.has(row.session_id)) {
+      seen.add(row.session_id)
+      sessions.push({ session_id: row.session_id, last_message: row.content.slice(0, 60), created_at: row.created_at })
+    }
+  }
+  return sessions
+}
+
+export function newSessionId() {
+  return `session_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
+}
+```
+
+### 8c. Обнови app/(dashboard)/ai-tutor/page.tsx
+
+Добавь:
+- При загрузке: `loadChatHistory(userId, currentSessionId)` → заполни messages[]
+- После каждого user сообщения: `saveChatMessage(userId, sessionId, 'user', text)`
+- После ответа AI: `saveChatMessage(userId, sessionId, 'assistant', reply)`
+- sessionId хранится в state, при "New chat" генерируй новый через `newSessionId()`
+- Панель истории чатов (слева или в дропдауне): `listChatSessions(userId)` → список сессий по дате
+
+Для незалогиненных — fallback на localStorage (ключ `fluenta_chat_${sessionId}`).
+
+### 8d. Кнопка "New chat" — уже есть в интерфейсе
+
+При клике:
+```ts
+setCurrentSessionId(newSessionId())
+setMessages([{ role: 'assistant', content: "Hey! I'm Zhan, your personal English tutor 👋 What would you like to practice today?" }])
+```
+
+---
+## ЗАДАЧА 9: ИСПРАВЬ КНОПКУ "AI ТЕКСТ" НА СТРАНИЦЕ ЧТЕНИЯ
+
+Файл: app/(dashboard)/reading/page.tsx
+
+Кнопка "AI текст" должна вызывать Groq API для генерации нового текста по уровню пользователя.
+
+Найди обработчик кнопки "AI текст" (или добавь если отсутствует):
+
+```tsx
+async function handleGenerateAIText() {
+  setIsGenerating(true)
+  setError(null)
+  try {
+    const response = await fetch('/api/ai/generate-reading', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ level: selectedLevel, topic: getRandomTopic() }),
+    })
+    if (!response.ok) throw new Error('Ошибка генерации')
+    const data = await response.json()
+    setCurrentText(data.text)
+    setCurrentTitle(data.title)
+    setHighlightedWords(data.keywords ?? [])
+    setQuestions(data.questions ?? [])
+  } catch (e) {
+    setError('Что-то пошло не так. Попробуй ещё раз.')
+  } finally {
+    setIsGenerating(false)
+  }
+}
+```
+
+Создай app/api/ai/generate-reading/route.ts:
+```ts
+import { NextRequest, NextResponse } from 'next/server'
+import Groq from 'groq-sdk'
+
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
+
+const TOPICS = ['Technology', 'Travel', 'Food & Culture', 'Science', 'Environment', 'Sports', 'History', 'Business', 'Health', 'Art']
+
+export async function POST(req: NextRequest) {
+  const { level = 'A2', topic } = await req.json()
+  const chosenTopic = topic ?? TOPICS[Math.floor(Math.random() * TOPICS.length)]
+
+  const levelDescriptions: Record<string, string> = {
+    A1: 'very simple sentences, basic vocabulary, 80-100 words',
+    A2: 'simple text, common vocabulary, 120-150 words',
+    B1: 'intermediate, varied vocabulary, 180-220 words',
+    B2: 'upper-intermediate, complex sentences, 220-280 words',
+    C1: 'advanced, sophisticated vocabulary, 280-350 words',
+  }
+
+  const prompt = `Write an English reading text for level ${level} (${levelDescriptions[level] ?? '150 words'}).
+Topic: ${chosenTopic}
+Return JSON only:
+{
+  "title": "Text title",
+  "text": "Full text here...",
+  "keywords": ["word1", "word2", "word3", "word4", "word5"],
+  "questions": [
+    {"question": "Question 1?", "answer": "Answer 1"},
+    {"question": "Question 2?", "answer": "Answer 2"},
+    {"question": "Question 3?", "answer": "Answer 3"}
+  ]
+}`
+
+  const completion = await groq.chat.completions.create({
+    model: 'llama-3.1-8b-instant',
+    messages: [{ role: 'user', content: prompt }],
+    response_format: { type: 'json_object' },
+    temperature: 0.8,
+  })
+
+  const result = JSON.parse(completion.choices[0].message.content ?? '{}')
+  return NextResponse.json(result)
+}
+```
+
+Убедись что кнопка "AI текст" вызывает `handleGenerateAIText()`, показывает спиннер во время загрузки, и обновляет текст на странице когда приходит ответ.
+
+---
+## ЗАДАЧА 10: ЕЖЕДНЕВНЫЕ СЛОВА + ИНТЕРВАЛЬНОЕ ПОВТОРЕНИЕ (SPACED REPETITION)
+
+### 10a. Создай lib/spaced-repetition.ts
+
+```ts
+export interface SRCard {
+  wordId: string
+  word: string
+  translation: string
+  example?: string
+  // SM-2 алгоритм
+  easeFactor: number   // default 2.5
+  interval: number     // дней до следующего показа, default 1
+  repetitions: number  // сколько раз правильно подряд
+  dueDate: string      // ISO date YYYY-MM-DD
+  nextReview?: string
+}
+
+// SM-2 алгоритм: качество 0-5 (0-2 = неправильно, 3-5 = правильно)
+export function sm2(card: SRCard, quality: 0|1|2|3|4|5): SRCard {
+  let { easeFactor, interval, repetitions } = card
+
+  if (quality >= 3) {
+    if (repetitions === 0) interval = 1
+    else if (repetitions === 1) interval = 6
+    else interval = Math.round(interval * easeFactor)
+    repetitions++
+  } else {
+    repetitions = 0
+    interval = 1
+  }
+
+  easeFactor = Math.max(1.3, easeFactor + 0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02))
+
+  const due = new Date()
+  due.setDate(due.getDate() + interval)
+
+  return {
+    ...card,
+    easeFactor,
+    interval,
+    repetitions,
+    dueDate: due.toISOString().slice(0, 10),
+  }
+}
+
+export function isDue(card: SRCard): boolean {
+  const today = new Date().toISOString().slice(0, 10)
+  return card.dueDate <= today
+}
+
+// Получить карточки на сегодня (до 10 штук)
+export function getDueCards(cards: SRCard[], limit = 10): SRCard[] {
+  return cards.filter(isDue).slice(0, limit)
+}
+
+// Получить новые слова на сегодня (5 штук)
+export function getNewWordsForToday(
+  allWords: { id: string; word: string; translation: string; example?: string }[],
+  knownIds: Set<string>,
+  limit = 5
+): SRCard[] {
+  return allWords
+    .filter(w => !knownIds.has(w.id))
+    .slice(0, limit)
+    .map(w => ({
+      wordId: w.id,
+      word: w.word,
+      translation: w.translation,
+      example: w.example,
+      easeFactor: 2.5,
+      interval: 1,
+      repetitions: 0,
+      dueDate: new Date().toISOString().slice(0, 10),
+    }))
+}
+
+// Сохранить/загрузить из localStorage
+export function loadSRCards(): SRCard[] {
+  try {
+    return JSON.parse(localStorage.getItem('fluenta_sr_cards') ?? '[]')
+  } catch { return [] }
+}
+
+export function saveSRCards(cards: SRCard[]) {
+  localStorage.setItem('fluenta_sr_cards', JSON.stringify(cards))
+}
+```
+
+### 10b. Создай компонент DailyReview: components/DailyReview.tsx
+
+```tsx
+'use client'
+import { useState, useEffect } from 'react'
+import { SRCard, sm2, getDueCards, loadSRCards, saveSRCards } from '@/lib/spaced-repetition'
+
+export function DailyReview() {
+  const [cards, setCards] = useState<SRCard[]>([])
+  const [current, setCurrent] = useState(0)
+  const [showAnswer, setShowAnswer] = useState(false)
+  const [done, setDone] = useState(false)
+  const [todayCount, setTodayCount] = useState(0)
+
+  useEffect(() => {
+    const all = loadSRCards()
+    const due = getDueCards(all)
+    setCards(due)
+    setTodayCount(due.length)
+  }, [])
+
+  if (cards.length === 0) return null
+
+  const card = cards[current]
+
+  function handleAnswer(quality: 0|1|2|3|4|5) {
+    const all = loadSRCards()
+    const idx = all.findIndex(c => c.wordId === card.wordId)
+    const updated = sm2(card, quality)
+    if (idx >= 0) all[idx] = updated
+    else all.push(updated)
+    saveSRCards(all)
+
+    if (current + 1 >= cards.length) {
+      setDone(true)
+    } else {
+      setCurrent(c => c + 1)
+      setShowAnswer(false)
+    }
+  }
+
+  if (done) {
+    return (
+      <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-5 text-center">
+        <p className="text-2xl mb-2">🎉</p>
+        <p className="text-white font-semibold">Повторение завершено!</p>
+        <p className="text-[#64748b] text-sm">{todayCount} карточек повторено сегодня</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-white font-semibold text-sm">Ежедневное повторение</p>
+        <span className="text-[#64748b] text-xs">{current + 1} / {cards.length}</span>
+      </div>
+
+      {/* Progress */}
+      <div className="h-1 bg-white/[0.06] rounded-full mb-5 overflow-hidden">
+        <div className="h-full bg-[#6366f1] rounded-full transition-all"
+          style={{ width: `${(current / cards.length) * 100}%` }} />
+      </div>
+
+      {/* Card */}
+      <div className="text-center py-6 px-4 bg-white/[0.03] rounded-xl mb-5 min-h-[120px] flex flex-col items-center justify-center">
+        <p className="text-white text-2xl font-bold mb-1">{card.word}</p>
+        {showAnswer ? (
+          <>
+            <p className="text-[#6366f1] text-lg mt-2">{card.translation}</p>
+            {card.example && <p className="text-[#64748b] text-sm mt-3 italic">"{card.example}"</p>}
+          </>
+        ) : (
+          <button onClick={() => setShowAnswer(true)}
+            className="mt-3 px-4 py-2 bg-white/[0.06] hover:bg-white/10 text-[#94a3b8] text-sm rounded-xl transition-colors">
+            Показать перевод
+          </button>
+        )}
+      </div>
+
+      {/* Answer buttons */}
+      {showAnswer && (
+        <div className="grid grid-cols-3 gap-2">
+          <button onClick={() => handleAnswer(1)}
+            className="py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium hover:bg-red-500/20 transition-colors">
+            ✗ Не знаю
+          </button>
+          <button onClick={() => handleAnswer(3)}
+            className="py-2.5 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-sm font-medium hover:bg-yellow-500/20 transition-colors">
+            ~ Сомневаюсь
+          </button>
+          <button onClick={() => handleAnswer(5)}
+            className="py-2.5 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-sm font-medium hover:bg-green-500/20 transition-colors">
+            ✓ Знаю
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+```
+
+### 10c. Покажи DailyReview на дашборде
+
+В app/(dashboard)/dashboard/page.tsx добавь:
+```tsx
+import { DailyReview } from '@/components/DailyReview'
+
+// В JSX после карточки "Продолжить обучение":
+<DailyReview />
+```
+
+### 10d. Интеграция с словарём
+
+В app/(dashboard)/vocabulary/page.tsx когда пользователь нажимает "Изучить" на слово:
+```ts
+import { loadSRCards, saveSRCards, getNewWordsForToday } from '@/lib/spaced-repetition'
+
+function addWordToSR(word: VocabWord) {
+  const cards = loadSRCards()
+  const alreadyAdded = cards.some(c => c.wordId === word.id)
+  if (alreadyAdded) return
+
+  const newCard = {
+    wordId: word.id,
+    word: word.word,
+    translation: word.translation,
+    example: word.example,
+    easeFactor: 2.5,
+    interval: 1,
+    repetitions: 0,
+    dueDate: new Date().toISOString().slice(0, 10),
+  }
+  saveSRCards([...cards, newCard])
+}
+```
+
+Вызывай `addWordToSR(word)` когда слово отмечается как "в изучение".
+
+Также добавь в vocabulary/page.tsx секцию "Слова на сегодня" которая показывает 5 новых слов из текущего урока, предлагая добавить их в повторение.
+
+### 10e. Фразовые глаголы тоже в SR
+
+В app/(dashboard)/phrasal-verbs/page.tsx аналогично — кнопка "Учить" добавляет фразовый глагол в SR карточки:
+```ts
+addToSR({
+  wordId: `pv_${verb.verb.replace(/\s+/g, '_')}`,
+  word: verb.verb,
+  translation: verb.translation,
+  example: verb.example,
+  easeFactor: 2.5, interval: 1, repetitions: 0,
+  dueDate: new Date().toISOString().slice(0, 10),
+})
+```
+
+---
+## ФИНАЛ
+1. npm install next-themes framer-motion
+2. Запусти SQL миграцию в Supabase Dashboard → SQL Editor: скопируй содержимое supabase/migrations/20240120_chat_history.sql
+3. npx tsc --noEmit — исправь все TypeScript ошибки
+4. git add -A && git commit -m "feat: light/dark theme, empty states, swipe cards, achievements, streak calendar, skills radar, Space Grotesk font, chat history persistence, AI reading text generation fix, spaced repetition daily review (SM-2)" && git push

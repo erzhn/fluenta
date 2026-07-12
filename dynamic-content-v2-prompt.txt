@@ -1,0 +1,995 @@
+# НЕ ЗАПРАШИВАЙ РАЗРЕШЕНИЯ. Все изменения автоматически.
+# Запуск: claude --dangerously-skip-permissions < dynamic-content-v2-prompt.txt
+
+Проект: Fluenta — Next.js 14 + TypeScript + Groq API (llama-3.1-8b-instant).
+Groq API key: process.env.GROQ_API_KEY
+
+---
+## ЗАДАЧА 1: ТЕСТ УРОВНЯ — 100 вопросов, каждый раз случайные 20
+
+Перепиши app/(dashboard)/level-test/page.tsx полностью.
+
+### Функция shuffle:
+```ts
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+```
+
+### Пул из 100 вопросов (20 на уровень):
+
+```ts
+const POOL = [
+  // ── A1 (20) ──
+  { q:"She ___ a teacher.", o:["is","are","am","be"], a:"is", lvl:"A1" },
+  { q:"I ___ got two sisters.", o:["have","has","am","do"], a:"have", lvl:"A1" },
+  { q:"They ___ playing football now.", o:["is","am","are","be"], a:"are", lvl:"A1" },
+  { q:"Did you ___ the film last night?", o:["see","saw","seen","seeing"], a:"see", lvl:"A1" },
+  { q:"He ___ to school every day.", o:["go","goes","going","gone"], a:"goes", lvl:"A1" },
+  { q:"I ___ born in 1998.", o:["was","were","am","be"], a:"was", lvl:"A1" },
+  { q:"There ___ three books on the table.", o:["is","are","am","has"], a:"are", lvl:"A1" },
+  { q:"___ you like coffee?", o:["Do","Does","Are","Is"], a:"Do", lvl:"A1" },
+  { q:"She ___ like fish.", o:["don't","doesn't","isn't","aren't"], a:"doesn't", lvl:"A1" },
+  { q:"I have two ___.", o:["childs","childrens","children","child"], a:"children", lvl:"A1" },
+  { q:"He ___ TV every evening.", o:["watch","watches","watching","watched"], a:"watches", lvl:"A1" },
+  { q:"What time ___ it?", o:["is","are","am","was"], a:"is", lvl:"A1" },
+  { q:"Look! She ___ a red dress.", o:["wear","wears","is wearing","wore"], a:"is wearing", lvl:"A1" },
+  { q:"___ your father a doctor?", o:["Is","Are","Am","Be"], a:"Is", lvl:"A1" },
+  { q:"We ___ in a flat near the park.", o:["live","lives","living","lived"], a:"live", lvl:"A1" },
+  { q:"The cat ___ on the mat.", o:["sit","sits","sitting","sat"], a:"sits", lvl:"A1" },
+  { q:"I ___ twelve years old.", o:["am","is","are","be"], a:"am", lvl:"A1" },
+  { q:"This is ___ book.", o:["a","an","the","—"], a:"a", lvl:"A1" },
+  { q:"She can ___ very fast.", o:["run","runs","running","ran"], a:"run", lvl:"A1" },
+  { q:"___ is your name?", o:["What","Who","Where","Which"], a:"What", lvl:"A1" },
+
+  // ── A2 (20) ──
+  { q:"I ___ here since 2020.", o:["live","lived","have lived","was living"], a:"have lived", lvl:"A2" },
+  { q:"If it rains, I ___ stay home.", o:["will","would","shall","should"], a:"will", lvl:"A2" },
+  { q:"She used to ___ in Paris.", o:["live","lived","living","lives"], a:"live", lvl:"A2" },
+  { q:"The book was ___ by Tolstoy.", o:["wrote","writing","written","write"], a:"written", lvl:"A2" },
+  { q:"I've been waiting ___ two hours.", o:["since","for","during","from"], a:"for", lvl:"A2" },
+  { q:"Have you ___ eaten sushi?", o:["ever","never","already","yet"], a:"ever", lvl:"A2" },
+  { q:"She ___ be at home — her car is there.", o:["must","can","should","would"], a:"must", lvl:"A2" },
+  { q:"I ___ to London last year.", o:["have gone","went","go","was going"], a:"went", lvl:"A2" },
+  { q:"He's taller ___ his brother.", o:["than","then","that","as"], a:"than", lvl:"A2" },
+  { q:"Could you ___ me the salt?", o:["pass","to pass","passing","passed"], a:"pass", lvl:"A2" },
+  { q:"She ___ working when I called.", o:["is","was","has been","were"], a:"was", lvl:"A2" },
+  { q:"I've already ___ my homework.", o:["do","did","done","doing"], a:"done", lvl:"A2" },
+  { q:"We're going ___ France next summer.", o:["to","in","at","on"], a:"to", lvl:"A2" },
+  { q:"He ___ play tennis very well.", o:["can","is","does","has"], a:"can", lvl:"A2" },
+  { q:"I don't know ___ to do.", o:["what","how","which","where"], a:"what", lvl:"A2" },
+  { q:"She hasn't phoned me ___.", o:["already","yet","still","ever"], a:"yet", lvl:"A2" },
+  { q:"___ oldest building in town is the church.", o:["A","An","The","—"], a:"The", lvl:"A2" },
+  { q:"They ___ football when it started to rain.", o:["played","were playing","have played","play"], a:"were playing", lvl:"A2" },
+  { q:"He ___ me he was tired.", o:["said","told","spoke","talked"], a:"told", lvl:"A2" },
+  { q:"I'd like ___ coffee, please.", o:["a","an","some","any"], a:"some", lvl:"A2" },
+
+  // ── B1 (20) ──
+  { q:"When I arrived, she ___ already left.", o:["has","had","was","did"], a:"had", lvl:"B1" },
+  { q:"He said he ___ tired.", o:["is","was","has been","will be"], a:"was", lvl:"B1" },
+  { q:"If I ___ rich, I would travel the world.", o:["am","was","were","be"], a:"were", lvl:"B1" },
+  { q:"The package ___ delivered tomorrow.", o:["will","will be","is","was"], a:"will be", lvl:"B1" },
+  { q:"I wish I ___ speak Japanese.", o:["can","could","would","will"], a:"could", lvl:"B1" },
+  { q:"She ___ have called — it's already midnight.", o:["should","would","must","can"], a:"should", lvl:"B1" },
+  { q:"He asked me where I ___.", o:["live","lived","was living","have lived"], a:"lived", lvl:"B1" },
+  { q:"This bridge ___ in 1850.", o:["built","was built","has built","builds"], a:"was built", lvl:"B1" },
+  { q:"I ___ for three hours when she finally called.", o:["waited","was waiting","had been waiting","have waited"], a:"had been waiting", lvl:"B1" },
+  { q:"He denied ___ the money.", o:["take","to take","taking","took"], a:"taking", lvl:"B1" },
+  { q:"The letter had been sent ___ she arrived.", o:["when","before","until","while"], a:"before", lvl:"B1" },
+  { q:"No sooner ___ I sat down than the phone rang.", o:["had","did","was","have"], a:"had", lvl:"B1" },
+  { q:"She suggested ___ to the cinema.", o:["go","to go","going","went"], a:"going", lvl:"B1" },
+  { q:"It's time we ___ home.", o:["go","went","have gone","going"], a:"went", lvl:"B1" },
+  { q:"Despite ___ tired, she finished the project.", o:["be","being","been","was"], a:"being", lvl:"B1" },
+  { q:"He ___ rather not discuss it.", o:["would","will","could","should"], a:"would", lvl:"B1" },
+  { q:"They made him ___ the report again.", o:["rewrite","to rewrite","rewriting","rewrote"], a:"rewrite", lvl:"B1" },
+  { q:"I'm used to ___ early.", o:["wake","waking","woken","woke"], a:"waking", lvl:"B1" },
+  { q:"By next year, I ___ here for a decade.", o:["will live","will have lived","live","have lived"], a:"will have lived", lvl:"B1" },
+  { q:"The more you practice, ___ better you get.", o:["a","the","—","an"], a:"the", lvl:"B1" },
+
+  // ── B2 (20) ──
+  { q:"Not only ___ she arrive late, but she forgot her bag.", o:["did","was","has","had"], a:"did", lvl:"B2" },
+  { q:"She should ___ told me earlier.", o:["have","has","had","be"], a:"have", lvl:"B2" },
+  { q:"It was John ___ called me, not Peter.", o:["who","which","that","whom"], a:"who", lvl:"B2" },
+  { q:"Having ___ the report, she sent it immediately.", o:["finish","finishing","finished","finishes"], a:"finished", lvl:"B2" },
+  { q:"Never ___ I seen such a beautiful sunset.", o:["have","had","did","was"], a:"have", lvl:"B2" },
+  { q:"He must ___ left already — his coat is gone.", o:["have","has","had","be"], a:"have", lvl:"B2" },
+  { q:"My sister, ___ lives in Paris, is a doctor.", o:["who","which","that","whose"], a:"who", lvl:"B2" },
+  { q:"I couldn't ___ done it without your help.", o:["have","has","had","be"], a:"have", lvl:"B2" },
+  { q:"Were I in your position, I ___ think carefully.", o:["will","would","should","shall"], a:"would", lvl:"B2" },
+  { q:"The report needs to be ___ by Friday.", o:["submit","submitting","submitted","submission"], a:"submitted", lvl:"B2" },
+  { q:"It is high time we ___ a decision.", o:["make","made","have made","making"], a:"made", lvl:"B2" },
+  { q:"She ___ that she had never met him before.", o:["told","said","spoke","talked"], a:"said", lvl:"B2" },
+  { q:"Seldom ___ I meet someone so talented.", o:["do","have","did","had"], a:"do", lvl:"B2" },
+  { q:"The results, ___ were unexpected, changed everything.", o:["that","who","which","whose"], a:"which", lvl:"B2" },
+  { q:"___ to popular belief, most sharks are harmless.", o:["Contrary","According","Due","Owing"], a:"Contrary", lvl:"B2" },
+  { q:"No sooner had he left ___ it started raining.", o:["than","when","that","as"], a:"than", lvl:"B2" },
+  { q:"He is said ___ in three languages.", o:["to speak","to have spoken","speaking","speak"], a:"to speak", lvl:"B2" },
+  { q:"The project was ___ due to lack of funds.", o:["called off","called on","called out","called up"], a:"called off", lvl:"B2" },
+  { q:"___ have been better to phone first.", o:["It would","There would","It should have","It would have"], a:"It would have", lvl:"B2" },
+  { q:"I'd rather you ___ smoke in here.", o:["don't","didn't","won't","not"], a:"didn't", lvl:"B2" },
+
+  // ── C1 (20) ──
+  { q:"Had I ___ about the problem, I would have helped.", o:["know","knew","known","knowing"], a:"known", lvl:"C1" },
+  { q:"It is essential that he ___ present at the meeting.", o:["is","be","was","will be"], a:"be", lvl:"C1" },
+  { q:"The rapid ___ of technology has changed communication.", o:["develop","developed","developer","development"], a:"development", lvl:"C1" },
+  { q:"Not until he arrived ___ we start.", o:["did","had","was","were"], a:"did", lvl:"C1" },
+  { q:"She suggested ___ the meeting to next week.", o:["postpone","to postpone","postponing","postponed"], a:"postponing", lvl:"C1" },
+  { q:"But ___ your help, I couldn't have finished.", o:["for","with","by","from"], a:"for", lvl:"C1" },
+  { q:"___ it not for modern medicine, many lives would be lost.", o:["Were","Was","Had","Should"], a:"Were", lvl:"C1" },
+  { q:"The findings lend ___ to the theory.", o:["credence","credit","credibility","belief"], a:"credence", lvl:"C1" },
+  { q:"This phenomenon ___ to broader questions of inequality.", o:["speaks","talks","refers","tells"], a:"speaks", lvl:"C1" },
+  { q:"He is known to ___ a difficult childhood.", o:["have had","had had","have","has"], a:"have had", lvl:"C1" },
+  { q:"The legislation was enacted ___ considerable opposition.", o:["despite","although","however","nevertheless"], a:"despite", lvl:"C1" },
+  { q:"Should you ___ any assistance, do not hesitate to call.", o:["require","required","requiring","have required"], a:"require", lvl:"C1" },
+  { q:"The paper ___ to have been peer-reviewed before publication.", o:["is said","says","was saying","said"], a:"is said", lvl:"C1" },
+  { q:"___ to the data, inequality has widened significantly.", o:["According","Contrary","Owing","Referring"], a:"According", lvl:"C1" },
+  { q:"He spoke with such ___ that everyone was convinced.", o:["conviction","convince","convincing","convinced"], a:"conviction", lvl:"C1" },
+  { q:"The policy was designed to ___ social mobility.", o:["foster","found","force","forward"], a:"foster", lvl:"C1" },
+  { q:"There is little doubt ___ climate change is accelerating.", o:["whether","that","if","which"], a:"that", lvl:"C1" },
+  { q:"She is ___ to have pioneered the technique.", o:["credited","crediting","credit","creditable"], a:"credited", lvl:"C1" },
+  { q:"The results ran ___ to all our predictions.", o:["counter","contrary","opposite","against"], a:"counter", lvl:"C1" },
+  { q:"___ the complexity of the issue, a quick solution seems unlikely.", o:["Given","Despite","Although","However"], a:"Given", lvl:"C1" },
+]
+```
+
+### Логика подсчёта результата:
+При старте: `const questions = shuffle(POOL).slice(0, 20)`
+Подсчёт: общий score 0-20:
+- 0-4 → A1, 5-8 → A2, 9-12 → B1, 13-16 → B2, 17-20 → C1
+
+Покажи прогресс-бар "Вопрос X из 20" и результат в конце с рекомендацией урока.
+Кнопка "Пройти снова" — пересортировать и начать заново.
+
+---
+## ЗАДАЧА 2: СТАТИЧНЫЙ ПУЛ + AI ДЛЯ АУДИРОВАНИЯ
+
+### 2a. Создай lib/listening-data.ts со статичным пулом из 25 текстов (5 на уровень).
+
+```ts
+export interface ListeningText {
+  id: string
+  level: 'A1'|'A2'|'B1'|'B2'|'C1'
+  title: string
+  text: string
+  questions: { question: string; options: string[]; answer: string }[]
+}
+
+export const LISTENING_POOL: ListeningText[] = [
+  // ── A1 (5 текстов) ──
+  {
+    id:'l-a1-1', level:'A1', title:'At the Café',
+    text:'Tom: Hello! Can I have a coffee, please?\nWaiter: Of course. Milk and sugar?\nTom: Just milk, thank you. How much is it?\nWaiter: It\'s two pounds fifty.\nTom: Here you are. Thank you!\nWaiter: You\'re welcome. Enjoy your coffee!',
+    questions:[
+      {question:'What does Tom order?', options:['Tea','Coffee','Juice','Water'], answer:'Coffee'},
+      {question:'What does Tom want in his drink?', options:['Sugar','Milk','Nothing','Both'], answer:'Milk'},
+      {question:'How much does the drink cost?', options:['£1.50','£2.00','£2.50','£3.00'], answer:'£2.50'},
+    ]
+  },
+  {
+    id:'l-a1-2', level:'A1', title:'My Family',
+    text:'Hi! My name is Emma. I am ten years old. I have a big family. My mother is a teacher. My father is a doctor. I have one brother. His name is Sam. He is seven. We have a dog. His name is Max. We are very happy!',
+    questions:[
+      {question:'How old is Emma?', options:['Seven','Eight','Ten','Twelve'], answer:'Ten'},
+      {question:'What is Emma\'s mother\'s job?', options:['Doctor','Teacher','Nurse','Driver'], answer:'Teacher'},
+      {question:'What pet does the family have?', options:['Cat','Bird','Dog','Fish'], answer:'Dog'},
+    ]
+  },
+  {
+    id:'l-a1-3', level:'A1', title:'The Weather Today',
+    text:'It is Monday morning. The weather is cold and cloudy. It is raining outside. Anna is at home. She is wearing a warm jumper and jeans. She wants to go to the park, but she cannot. She is watching TV and drinking hot tea.',
+    questions:[
+      {question:'What day is it?', options:['Sunday','Saturday','Monday','Friday'], answer:'Monday'},
+      {question:'What is the weather like?', options:['Hot and sunny','Cold and cloudy','Warm and windy','Cold and snowy'], answer:'Cold and cloudy'},
+      {question:'What is Anna doing?', options:['Reading a book','Sleeping','Watching TV','Cooking'], answer:'Watching TV'},
+    ]
+  },
+  {
+    id:'l-a1-4', level:'A1', title:'At the Supermarket',
+    text:'Maria is at the supermarket. She needs bread, milk, and apples. The bread is on the second shelf. The milk is near the door. The apples are in the fruit section. Maria pays fifteen pounds at the checkout. She is very happy with her shopping.',
+    questions:[
+      {question:'Where is the milk?', options:['On the second shelf','Near the door','In the fruit section','At the checkout'], answer:'Near the door'},
+      {question:'How much does Maria pay?', options:['£10','£12','£15','£20'], answer:'£15'},
+      {question:'Which of these does Maria NOT buy?', options:['Bread','Milk','Apples','Oranges'], answer:'Oranges'},
+    ]
+  },
+  {
+    id:'l-a1-5', level:'A1', title:'My Daily Routine',
+    text:'My name is Jake. I wake up at seven o\'clock every morning. I have breakfast at half past seven. I go to school at eight. School finishes at three o\'clock in the afternoon. After school I play football with my friends. At nine o\'clock I go to bed.',
+    questions:[
+      {question:'What time does Jake wake up?', options:['6:00','7:00','7:30','8:00'], answer:'7:00'},
+      {question:'What does Jake do after school?', options:['Reads books','Watches TV','Plays football','Studies'], answer:'Plays football'},
+      {question:'What time does Jake go to bed?', options:['8:00','9:00','10:00','9:30'], answer:'9:00'},
+    ]
+  },
+
+  // ── A2 (5 текстов) ──
+  {
+    id:'l-a2-1', level:'A2', title:'Planning a Holiday',
+    text:'Sarah: I\'d like to book a holiday. Where do you recommend?\nAgent: How about Spain? The weather is lovely in July.\nSarah: Sounds great! How long are the flights?\nAgent: About two and a half hours from London.\nSarah: And what\'s the price for two adults, one week?\nAgent: We have a special offer — eight hundred pounds per person, including the hotel.\nSarah: That\'s a bit expensive. Do you have anything cheaper?\nAgent: I can offer you a four-star hotel for six hundred and fifty per person.',
+    questions:[
+      {question:'Where does the agent recommend?', options:['France','Italy','Spain','Portugal'], answer:'Spain'},
+      {question:'How long is the flight?', options:['1 hour','2 hours','2.5 hours','3 hours'], answer:'2.5 hours'},
+      {question:'What is the cheaper hotel option per person?', options:['£600','£650','£700','£800'], answer:'£650'},
+    ]
+  },
+  {
+    id:'l-a2-2', level:'A2', title:'A Phone Call',
+    text:'Mike left his phone at a restaurant yesterday evening. He called the restaurant this morning. The manager said they found a black phone near table seven. Mike was relieved. He asked if he could collect it today. The manager said yes, but only after twelve o\'clock because they were cleaning in the morning.',
+    questions:[
+      {question:'Where did Mike leave his phone?', options:['At a shop','At a restaurant','At school','At the cinema'], answer:'At a restaurant'},
+      {question:'What colour is Mike\'s phone?', options:['White','Silver','Black','Blue'], answer:'Black'},
+      {question:'When can Mike collect his phone?', options:['In the morning','Before 12:00','After 12:00','The next day'], answer:'After 12:00'},
+    ]
+  },
+  {
+    id:'l-a2-3', level:'A2', title:'Learning to Cook',
+    text:'Last Saturday, Clara decided to cook dinner for her family for the first time. She wanted to make pasta. She watched a video online and bought the ingredients at the supermarket. She spent two hours in the kitchen. The pasta was a little salty, but her family said it was delicious. Clara was proud of herself and decided to cook every Sunday.',
+    questions:[
+      {question:'What day did Clara cook?', options:['Friday','Sunday','Saturday','Monday'], answer:'Saturday'},
+      {question:'What did Clara cook?', options:['Pizza','Soup','Pasta','Rice'], answer:'Pasta'},
+      {question:'How did her family react?', options:['They were unhappy','They said it was too salty','They said it was delicious','They didn\'t eat it'], answer:'They said it was delicious'},
+    ]
+  },
+  {
+    id:'l-a2-4', level:'A2', title:'Job Interview',
+    text:'Anna had a job interview yesterday at a marketing company. She arrived ten minutes early. The interviewer asked about her previous experience and why she wanted the job. Anna said she had worked at a small agency for two years and was looking for new challenges. The interviewer seemed impressed. Anna will find out the result next week.',
+    questions:[
+      {question:'What kind of company was the interview at?', options:['Design','Technology','Marketing','Finance'], answer:'Marketing'},
+      {question:'How long had Anna worked at her previous job?', options:['One year','Two years','Three years','Six months'], answer:'Two years'},
+      {question:'When will Anna know the result?', options:['Today','Tomorrow','Next week','Next month'], answer:'Next week'},
+    ]
+  },
+  {
+    id:'l-a2-5', level:'A2', title:'The New Neighbour',
+    text:'A new family moved into our street last week. They have two children, a boy and a girl. The parents are both teachers. Yesterday they knocked on our door and introduced themselves. Their names are David and Lisa. They seem very friendly. My mum invited them for dinner on Friday. I am excited to meet the children.',
+    questions:[
+      {question:'How many children does the new family have?', options:['One','Two','Three','Four'], answer:'Two'},
+      {question:'What do the parents do for work?', options:['Doctors','Engineers','Teachers','Lawyers'], answer:'Teachers'},
+      {question:'When is the dinner invitation for?', options:['Thursday','Friday','Saturday','Sunday'], answer:'Friday'},
+    ]
+  },
+
+  // ── B1 (5 текстов) ──
+  {
+    id:'l-b1-1', level:'B1', title:'The Sharing Economy',
+    text:'In recent years, the sharing economy has transformed the way people travel and work. Platforms like Airbnb allow homeowners to rent out spare rooms, while apps like Uber connect drivers with passengers. Supporters argue that these services are more affordable and flexible than traditional options. Critics, however, point out that workers in the gig economy often lack job security and benefits. Governments around the world are now trying to regulate these industries without stifling innovation.',
+    questions:[
+      {question:'What does Airbnb allow people to do?', options:['Book flights','Rent out rooms','Share cars','Find jobs'], answer:'Rent out rooms'},
+      {question:'What do critics say about gig economy workers?', options:['They earn too much','They work too few hours','They lack security and benefits','They are highly skilled'], answer:'They lack security and benefits'},
+      {question:'What are governments trying to do?', options:['Ban sharing platforms','Regulate without stifling innovation','Promote traditional taxis','Increase house prices'], answer:'Regulate without stifling innovation'},
+    ]
+  },
+  {
+    id:'l-b1-2', level:'B1', title:'A Career Change',
+    text:'At the age of 35, Daniel decided to leave his well-paid banking job to become a primary school teacher. His friends and family thought he was making a huge mistake. However, Daniel had always been passionate about education. He spent a year retraining and qualified as a teacher last summer. Although he earns less money now, he says he has never been happier. He feels that his work makes a real difference to children\'s lives.',
+    questions:[
+      {question:'What was Daniel\'s previous job?', options:['Lawyer','Doctor','Banker','Engineer'], answer:'Banker'},
+      {question:'How long did his retraining take?', options:['Six months','One year','Two years','Three years'], answer:'One year'},
+      {question:'How does Daniel feel about his new career?', options:['Regretful','Uncertain','Very happy','Disappointed'], answer:'Very happy'},
+    ]
+  },
+  {
+    id:'l-b1-3', level:'B1', title:'Sleep and Health',
+    text:'Scientists have long known that sleep is essential for good health, but recent research suggests the connection is even stronger than previously thought. Adults who regularly sleep fewer than six hours a night are more likely to develop heart disease, diabetes, and depression. During sleep, the brain clears toxins that build up during the day. Experts recommend between seven and nine hours per night for most adults. Despite this, millions of people worldwide report difficulty sleeping, often due to stress and excessive screen time.',
+    questions:[
+      {question:'What happens in the brain during sleep?', options:['It creates new memories','It clears toxins','It processes emotions','It grows new cells'], answer:'It clears toxins'},
+      {question:'How much sleep do experts recommend for adults?', options:['5-6 hours','6-7 hours','7-9 hours','9-10 hours'], answer:'7-9 hours'},
+      {question:'What is a common cause of sleep difficulty?', options:['Exercise','Good diet','Stress and screen time','Fresh air'], answer:'Stress and screen time'},
+    ]
+  },
+  {
+    id:'l-b1-4', level:'B1', title:'Urban Farming',
+    text:'Growing food in cities is becoming increasingly popular. Urban farms can be found on rooftops, in converted warehouses, and even underground. These spaces use innovative techniques such as hydroponics, which grows plants in water without soil, and vertical farming, which stacks crops in layers to save space. Supporters say urban farming reduces food miles, creates local jobs, and can provide fresh produce in areas where supermarkets are far away. However, setting up these farms requires significant investment and expertise.',
+    questions:[
+      {question:'What is hydroponics?', options:['Growing plants on rooftops','Growing plants without soil','Growing crops underground','Stacking crops in layers'], answer:'Growing plants without soil'},
+      {question:'What is one benefit of urban farming mentioned?', options:['It is always cheaper','It reduces food miles','It requires no investment','It replaces supermarkets'], answer:'It reduces food miles'},
+      {question:'What challenge does urban farming face?', options:['Lack of sunlight','Water shortages','High investment needed','Government bans'], answer:'High investment needed'},
+    ]
+  },
+  {
+    id:'l-b1-5', level:'B1', title:'A Gap Year',
+    text:'More and more young people are choosing to take a gap year between school and university. During this time, they might travel, volunteer, or work to save money. Proponents argue that a gap year helps students develop independence, life skills, and a clearer sense of what they want to study. Some universities actually encourage it. Critics worry that students lose momentum and find it harder to return to academic study. Research suggests that gap year students often perform slightly better at university than those who went straight from school.',
+    questions:[
+      {question:'What do some students do during a gap year?', options:['Repeat exams','Travel or volunteer','Start university early','Study online'], answer:'Travel or volunteer'},
+      {question:'What do critics worry about?', options:['High costs','Losing academic momentum','Not finding work','Poor health'], answer:'Losing academic momentum'},
+      {question:'What does research suggest about gap year students?', options:['They fail more','They perform slightly better at university','They take longer to graduate','They change their subject'], answer:'They perform slightly better at university'},
+    ]
+  },
+
+  // ── B2 (5 текстов) ──
+  {
+    id:'l-b2-1', level:'B2', title:'The Psychology of Habit Formation',
+    text:'Habits are formed through a neurological loop consisting of three elements: a cue, a routine, and a reward. When a behaviour is repeated consistently in response to a cue, the brain gradually automates it, reducing cognitive load. This is why habits are so persistent — even when we consciously decide to change, the neural pathways remain. Research by Phillippa Lally at University College London found that forming a new habit takes an average of 66 days, not the commonly cited 21. The most effective strategy for breaking bad habits is replacing the routine while keeping the cue and reward intact.',
+    questions:[
+      {question:'What are the three elements of the habit loop?', options:['Goal, action, result','Cue, routine, reward','Trigger, behaviour, consequence','Thought, action, feeling'], answer:'Cue, routine, reward'},
+      {question:'How many days does research say it takes to form a habit?', options:['21','30','66','90'], answer:'66'},
+      {question:'What is the best strategy for breaking bad habits according to the text?', options:['Removing the cue','Replacing the routine','Eliminating the reward','Starting fresh'], answer:'Replacing the routine'},
+    ]
+  },
+  {
+    id:'l-b2-2', level:'B2', title:'Remote Work: A Permanent Shift?',
+    text:'The COVID-19 pandemic forced millions of employees to work from home almost overnight, triggering what many economists describe as the most significant shift in working patterns since the Industrial Revolution. While productivity studies have yielded mixed results, surveys consistently show that the majority of knowledge workers prefer hybrid arrangements. Companies that mandate full-time office return have faced increased staff turnover, particularly among high performers who have multiple job offers. However, critics argue that remote work disadvantages younger employees who lack the mentorship and spontaneous collaboration that office environments provide.',
+    questions:[
+      {question:'What event triggered the shift to remote work?', options:['The financial crisis','Industrial Revolution','COVID-19 pandemic','A government policy'], answer:'COVID-19 pandemic'},
+      {question:'What happens at companies that demand full office return?', options:['Productivity increases','Staff turnover increases','Employee satisfaction rises','Costs decrease'], answer:'Staff turnover increases'},
+      {question:'Who may be disadvantaged by remote work?', options:['Senior managers','Older employees','Younger employees','Part-time workers'], answer:'Younger employees'},
+    ]
+  },
+  {
+    id:'l-b2-3', level:'B2', title:'Rewilding Britain',
+    text:'Rewilding — the large-scale restoration of ecosystems — is gaining momentum across Britain. Advocates propose reintroducing species such as beavers, lynx, and even wolves to restore ecological balance. Beavers, already reintroduced in several river systems, have proven remarkably effective at flood management, creating wetland habitats and improving water quality. The lynx proposal is more contentious; farmers fear for their livestock, while ecologists argue the cats would control deer populations that are currently devastating native woodland. The debate highlights the tension between conservation ambitions and the economic interests of rural communities.',
+    questions:[
+      {question:'What have beavers proven effective at?', options:['Controlling deer','Flood management','Reducing pollution','Replanting trees'], answer:'Flood management'},
+      {question:'Why do farmers oppose reintroducing lynx?', options:['They damage crops','They fear for their livestock','They destroy rivers','They spread disease'], answer:'They fear for their livestock'},
+      {question:'What tension does the debate highlight?', options:['Urban vs rural','Conservation vs economic interests','Science vs government','Tourism vs farming'], answer:'Conservation vs economic interests'},
+    ]
+  },
+  {
+    id:'l-b2-4', level:'B2', title:'Algorithmic Bias',
+    text:'As artificial intelligence becomes embedded in decision-making across sectors from recruitment to criminal justice, concerns about algorithmic bias have intensified. Algorithms trained on historical data can perpetuate and amplify existing inequalities; a hiring algorithm trained on a company\'s past appointments may systematically disadvantage women or minority candidates simply because they were historically underrepresented. A landmark 2019 study found a widely-used healthcare algorithm was less likely to recommend Black patients for additional care, despite them being sicker than white patients who received the same score. Regulators are now demanding greater transparency and accountability from developers of high-stakes AI systems.',
+    questions:[
+      {question:'Why can algorithms perpetuate inequality?', options:['They are programmed to discriminate','They are trained on historical data','They are controlled by biased humans','They ignore certain languages'], answer:'They are trained on historical data'},
+      {question:'What did the 2019 healthcare study find?', options:['AI was more accurate than doctors','Black patients were less likely to be recommended additional care','White patients received less care','Algorithms improved health outcomes'], answer:'Black patients were less likely to be recommended additional care'},
+      {question:'What are regulators demanding?', options:['Banning AI in healthcare','Greater transparency and accountability','Slower AI development','More diverse training teams'], answer:'Greater transparency and accountability'},
+    ]
+  },
+  {
+    id:'l-b2-5', level:'B2', title:'The Four-Day Work Week',
+    text:'A growing number of companies worldwide are trialling a four-day work week without cutting pay, based on the premise that productivity depends more on focus than hours. Iceland ran the largest trial between 2015 and 2019, involving thousands of public sector workers. The results were overwhelmingly positive: productivity remained stable or improved, while employee wellbeing, work-life balance, and sick leave rates all improved significantly. Critics caution that the model works better in some industries than others — it is easier to implement in office environments than in hospitality or healthcare, where round-the-clock coverage is essential.',
+    questions:[
+      {question:'What country ran the largest four-day week trial?', options:['UK','Norway','Iceland','Sweden'], answer:'Iceland'},
+      {question:'What happened to productivity during the trial?', options:['It fell significantly','It stayed the same or improved','It was not measured','It declined slightly'], answer:'It stayed the same or improved'},
+      {question:'Where is the four-day week harder to implement?', options:['Law firms','Tech companies','Hospitality and healthcare','Finance'], answer:'Hospitality and healthcare'},
+    ]
+  },
+
+  // ── C1 (5 текстов) ──
+  {
+    id:'l-c1-1', level:'C1', title:'The Epistemology of Fake News',
+    text:'The proliferation of misinformation in digital environments raises profound questions about the nature of knowledge and epistemic authority. Unlike traditional gatekeeping models, in which credentialed experts and editorial processes filtered information, social media platforms prioritise engagement over accuracy, creating what researchers term "epistemic bubbles" — environments where users are exposed exclusively to information that confirms their existing beliefs. The problem is compounded by the fact that emotionally charged content spreads significantly faster than factual corrections. Some philosophers argue that the solution lies not in greater censorship but in fostering epistemic virtues — intellectual humility, curiosity, and the disposition to revise beliefs in the light of evidence.',
+    questions:[
+      {question:'What do social media platforms prioritise over accuracy?', options:['Speed','Safety','Engagement','Revenue'], answer:'Engagement'},
+      {question:'What is an "epistemic bubble"?', options:['A fact-checking tool','An environment confirming existing beliefs','A type of misinformation','A philosophical concept'], answer:'An environment confirming existing beliefs'},
+      {question:'What do some philosophers propose as a solution?', options:['Greater censorship','Banning social media','Fostering epistemic virtues','Returning to print media'], answer:'Fostering epistemic virtues'},
+    ]
+  },
+  {
+    id:'l-c1-2', level:'C1', title:'Neuroplasticity and Identity',
+    text:'The discovery that the adult brain retains significant plasticity — the capacity to reorganise its structure and function in response to experience — has profound implications for our understanding of identity and selfhood. For centuries, Western philosophy operated on the assumption that the self is a fixed essence. Contemporary neuroscience challenges this: the neural correlates of our personality, values, and memories are in a state of perpetual, if gradual, flux. This has practical implications for psychotherapy; interventions such as cognitive behavioural therapy are effective partly because they physically alter neural pathways. It also raises thorny ethical questions about the boundaries of moral responsibility if our behaviour is subject to biological change.',
+    questions:[
+      {question:'What has neuroscience challenged?', options:['The existence of consciousness','The idea of a fixed self','The effectiveness of therapy','The role of genetics'], answer:'The idea of a fixed self'},
+      {question:'Why is CBT effective according to the text?', options:['It changes behaviour quickly','It physically alters neural pathways','It helps people understand their past','It improves emotional intelligence'], answer:'It physically alters neural pathways'},
+      {question:'What ethical question does neuroplasticity raise?', options:['Whether therapy is necessary','Boundaries of moral responsibility','Funding for neuroscience','Privacy of brain data'], answer:'Boundaries of moral responsibility'},
+    ]
+  },
+  {
+    id:'l-c1-3', level:'C1', title:'The Economics of Attention',
+    text:'In an age of information abundance, scarcity has migrated from content to attention. Economists such as Herbert Simon were among the first to recognise that in an information-rich world, the wealth of information creates a poverty of attention. Social media companies have built trillion-dollar businesses by commodifying human attention, using sophisticated behavioural design — variable reward schedules, social validation loops, and infinite scroll — to maximise the time users spend on their platforms. Critics argue this constitutes a form of exploitation, particularly given growing evidence of links between heavy social media use and deteriorating mental health, especially among adolescents. Proposals for reform include data portability, stricter age verification, and algorithmic transparency requirements.',
+    questions:[
+      {question:'What has become scarce in the modern world according to the text?', options:['Information','Content','Attention','Technology'], answer:'Attention'},
+      {question:'Which design mechanism is mentioned as keeping users on platforms?', options:['Advertising','Variable reward schedules','Subscription models','News feeds'], answer:'Variable reward schedules'},
+      {question:'What group is particularly affected by heavy social media use?', options:['Elderly people','Politicians','Adolescents','Teachers'], answer:'Adolescents'},
+    ]
+  },
+  {
+    id:'l-c1-4', level:'C1', title:'Language and Thought',
+    text:'The Sapir-Whorf hypothesis, or linguistic relativity, posits that the language we speak shapes the way we perceive and think about the world. In its strong form — linguistic determinism — it holds that our thoughts are entirely constrained by our linguistic categories. While the strong version is widely rejected, the weaker hypothesis has gained empirical support. Research has shown, for instance, that speakers of languages with grammatical gender tend to attribute gender-specific qualities to objects, and that languages with different spatial reference systems influence the way speakers navigate and conceptualise space. These findings suggest that while language may not imprison thought, it does create pathways that make certain conceptual structures more cognitively accessible than others.',
+    questions:[
+      {question:'What is the Sapir-Whorf hypothesis about?', options:['How children learn language','Whether language shapes thought','The origins of grammar','Translation between languages'], answer:'Whether language shapes thought'},
+      {question:'Which version of the hypothesis is widely rejected?', options:['Linguistic relativity','Weak hypothesis','Linguistic determinism','Cultural relativity'], answer:'Linguistic determinism'},
+      {question:'What do languages with grammatical gender affect?', options:['Spatial navigation','Mathematical thinking','Qualities attributed to objects','Reading speed'], answer:'Qualities attributed to objects'},
+    ]
+  },
+  {
+    id:'l-c1-5', level:'C1', title:'Carbon Pricing Mechanisms',
+    text:'Carbon pricing — placing an explicit cost on greenhouse gas emissions — is widely regarded by economists as the most efficient mechanism for driving the transition to a low-carbon economy. Two principal models exist: a carbon tax, which sets a fixed price per tonne of emissions, and cap-and-trade systems, which establish an overall emissions ceiling and allow firms to buy and sell permits. Sweden\'s carbon tax, introduced in 1991 at around $30 per tonne and now exceeding $130, has successfully decoupled economic growth from emissions without damaging the economy. Critics, however, argue that carbon pricing is regressive — falling disproportionately on lower-income households — and that without dividend mechanisms, it lacks political sustainability.',
+    questions:[
+      {question:'What does a cap-and-trade system do?', options:['Sets a fixed price per tonne','Bans all carbon emissions','Allows firms to buy and sell permits','Taxes fuel directly'], answer:'Allows firms to buy and sell permits'},
+      {question:'What has Sweden\'s carbon tax demonstrated?', options:['Economic growth always falls','Growth can decouple from emissions','Carbon taxes are unpopular','Industry cannot adapt'], answer:'Growth can decouple from emissions'},
+      {question:'Why do critics call carbon pricing regressive?', options:['It harms large corporations','It costs too much to administer','It falls disproportionately on lower-income households','It does not reduce emissions'], answer:'It falls disproportionately on lower-income households'},
+    ]
+  },
+]
+
+export function getListeningTexts(level: string, count: number = 3): ListeningText[] {
+  const filtered = LISTENING_POOL.filter(t => t.level === level)
+  const shuffled = [...filtered].sort(() => Math.random() - 0.5)
+  return shuffled.slice(0, count)
+}
+```
+
+### 2b. Обнови app/(dashboard)/listening/page.tsx
+
+- При выборе уровня: `const texts = getListeningTexts(level)` — каждый раз случайные из пула
+- Добавь кнопку "✨ Сгенерировать AI текст"
+- Кнопка вызывает POST /api/ai/generate-listening с { level } и Groq генерирует ещё один текст сверху
+
+### 2c. Создай app/api/ai/generate-listening/route.ts
+
+```ts
+import { NextResponse } from 'next/server'
+
+export async function POST(req: Request) {
+  const { level } = await req.json()
+  const prompt = `Generate an English listening exercise for level ${level}.
+Return ONLY valid JSON:
+{
+  "title": "short title",
+  "text": "the listening text (dialogue or monologue, 6-10 sentences)",
+  "questions": [
+    {"question":"...","options":["a","b","c","d"],"answer":"correct option"},
+    {"question":"...","options":["a","b","c","d"],"answer":"correct option"},
+    {"question":"...","options":["a","b","c","d"],"answer":"correct option"}
+  ]
+}
+Level guidelines: A1=very simple dialogue. A2=everyday situation. B1=slightly complex topic. B2=article/lecture excerpt. C1=complex discussion.
+All wrong options must be plausible. Questions must test comprehension, not memory.`
+
+  const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':`Bearer ${process.env.GROQ_API_KEY}`},
+    body:JSON.stringify({model:'llama-3.1-8b-instant',messages:[{role:'user',content:prompt}],max_tokens:800,temperature:0.85})
+  })
+  const data = await resp.json()
+  const raw = data.choices?.[0]?.message?.content ?? '{}'
+  try {
+    const match = raw.match(/\{[\s\S]*\}/)
+    return NextResponse.json(JSON.parse(match?.[0] ?? raw))
+  } catch { return NextResponse.json({error:'Parse error'},{status:500}) }
+}
+```
+
+---
+## ЗАДАЧА 3: СТАТИЧНЫЙ ПУЛ + AI ДЛЯ ЧТЕНИЯ
+
+### 3a. Создай lib/reading-data.ts со статичным пулом из 25 текстов (5 на уровень).
+
+```ts
+export interface ReadingText {
+  id: string
+  level: 'A1'|'A2'|'B1'|'B2'|'C1'
+  title: string
+  text: string
+  highlightWords: string[]
+  vocabulary: Record<string,string>
+  questions: { question: string; options: string[]; answer: string }[]
+}
+
+export const READING_POOL: ReadingText[] = [
+  // ── A1 (5 текстов) ──
+  {
+    id:'r-a1-1', level:'A1', title:'My Bedroom',
+    text:'This is my bedroom. It is small but nice. I have a bed, a desk, and a wardrobe. On my desk, there is a computer and some books. My favourite colour is blue, so my walls are blue. I have a big window. I can see the garden from my window. I love my bedroom!',
+    highlightWords:['wardrobe','desk','favourite','window','garden'],
+    vocabulary:{'wardrobe':'шкаф','desk':'стол','favourite':'любимый','window':'окно','garden':'сад'},
+    questions:[
+      {question:'What colour are the walls?', options:['Green','Yellow','Blue','White'], answer:'Blue'},
+      {question:'What is on the desk?', options:['A bed and books','A computer and books','A wardrobe and books','Books only'], answer:'A computer and books'},
+      {question:'What can the person see from the window?', options:['The street','The park','The garden','The school'], answer:'The garden'},
+    ]
+  },
+  {
+    id:'r-a1-2', level:'A1', title:'My Best Friend',
+    text:'My best friend is Lucy. She is thirteen years old. She has long brown hair and green eyes. She is funny and very kind. We go to the same school. We always sit together in class. After school, we walk home together and talk about everything. On Saturdays, we go to the cinema or the park. I am very happy that Lucy is my friend.',
+    highlightWords:['funny','kind','together','cinema','happy'],
+    vocabulary:{'funny':'смешной','kind':'добрый','together':'вместе','cinema':'кино','happy':'счастливый'},
+    questions:[
+      {question:'How old is Lucy?', options:['Eleven','Twelve','Thirteen','Fourteen'], answer:'Thirteen'},
+      {question:'What do they do after school?', options:['Play sport','Watch TV','Walk home together','Do homework'], answer:'Walk home together'},
+      {question:'Where do they go on Saturdays?', options:['The library or café','The gym or pool','The cinema or park','The mall or museum'], answer:'The cinema or park'},
+    ]
+  },
+  {
+    id:'r-a1-3', level:'A1', title:'Animals on the Farm',
+    text:'There are many animals on our farm. We have ten cows, twenty chickens, and five horses. The cows give us milk every day. The chickens give us eggs in the morning. The horses are very big and strong. We also have two dogs. The dogs help us with the cows. Life on the farm is hard but I love it.',
+    highlightWords:['cows','chickens','horses','eggs','strong'],
+    vocabulary:{'cows':'коровы','chickens':'курицы','horses':'лошади','eggs':'яйца','strong':'сильный'},
+    questions:[
+      {question:'How many chickens are there?', options:['Ten','Fifteen','Twenty','Twenty-five'], answer:'Twenty'},
+      {question:'What do the cows give?', options:['Eggs','Milk','Meat','Wool'], answer:'Milk'},
+      {question:'What do the dogs do?', options:['Guard the house','Help with the cows','Play with children','Run races'], answer:'Help with the cows'},
+    ]
+  },
+  {
+    id:'r-a1-4', level:'A1', title:'A Visit to the Doctor',
+    text:'Tom is at the doctor\'s. He has a bad cold. He has a headache and a sore throat. The doctor looks at his throat and takes his temperature. His temperature is 38 degrees. The doctor says Tom needs to rest and drink a lot of water. She gives him some medicine. Tom needs to take two tablets three times a day. He will feel better in three days.',
+    highlightWords:['headache','throat','temperature','medicine','tablets'],
+    vocabulary:{'headache':'головная боль','throat':'горло','temperature':'температура','medicine':'лекарство','tablets':'таблетки'},
+    questions:[
+      {question:'What is Tom\'s temperature?', options:['37°','37.5°','38°','39°'], answer:'38°'},
+      {question:'What does the doctor tell Tom to do?', options:['Go to hospital','Take a walk','Rest and drink water','Eat more food'], answer:'Rest and drink water'},
+      {question:'How often should Tom take the tablets?', options:['Once a day','Twice a day','Three times a day','Four times a day'], answer:'Three times a day'},
+    ]
+  },
+  {
+    id:'r-a1-5', level:'A1', title:'A Postcard from London',
+    text:'Dear Maria, I am in London! It is a very big and busy city. Today I visited the British Museum. It was amazing! There are many old things from all over the world. Then I walked to Trafalgar Square. I saw the famous fountains and the big lions. In the evening, I had fish and chips. They were delicious! Tomorrow I am going to the Tower of London. I miss you! Love, Elena',
+    highlightWords:['museum','amazing','famous','fountains','delicious'],
+    vocabulary:{'museum':'музей','amazing':'удивительный','famous':'знаменитый','fountains':'фонтаны','delicious':'вкусный'},
+    questions:[
+      {question:'Where did Elena go today?', options:['The Tower of London','Hyde Park','The British Museum','Buckingham Palace'], answer:'The British Museum'},
+      {question:'What did she eat in the evening?', options:['Pizza','Fish and chips','Pasta','Sandwiches'], answer:'Fish and chips'},
+      {question:'Where is she going tomorrow?', options:['The British Museum','Trafalgar Square','The Tower of London','Hyde Park'], answer:'The Tower of London'},
+    ]
+  },
+
+  // ── A2 (5 текстов) ──
+  {
+    id:'r-a2-1', level:'A2', title:'Social Media and Teenagers',
+    text:'Many teenagers today spend several hours a day on social media. They use apps like Instagram, TikTok, and Snapchat to share photos and videos and stay in touch with friends. Some young people say that social media helps them feel connected and find communities with similar interests. However, experts are worried that too much screen time can affect sleep and mental health. Some schools have banned phones during lessons to help students concentrate. Parents often try to set limits on how long their children can use these apps.',
+    highlightWords:['teenagers','connected','mental health','concentrate','limits'],
+    vocabulary:{'teenagers':'подростки','connected':'связанный','mental health':'психическое здоровье','concentrate':'концентрироваться','limits':'ограничения'},
+    questions:[
+      {question:'What do some schools do about phones?', options:['Give students phones','Ban phones during lessons','Allow unlimited use','Provide phone apps'], answer:'Ban phones during lessons'},
+      {question:'What are experts worried about?', options:['Low grades','Too much sport','Screen time affecting sleep and mental health','Students not using technology'], answer:'Screen time affecting sleep and mental health'},
+      {question:'What do some teenagers say about social media?', options:['It wastes time','It helps them feel connected','It is boring','It is too expensive'], answer:'It helps them feel connected'},
+    ]
+  },
+  {
+    id:'r-a2-2', level:'A2', title:'Working from Home',
+    text:'Since the pandemic, millions of people around the world have started working from home. Many workers say they enjoy not having to travel to the office every day. They save time and money on commuting. They can also spend more time with their families. However, some people find it difficult to concentrate at home because of noise and distractions. Others miss the social side of office life. Many companies now offer a hybrid model, where employees work partly at home and partly in the office.',
+    highlightWords:['commuting','distractions','hybrid','employees','pandemic'],
+    vocabulary:{'commuting':'поездки на работу','distractions':'отвлечения','hybrid':'гибридный','employees':'сотрудники','pandemic':'пандемия'},
+    questions:[
+      {question:'What do workers save by working from home?', options:['Money on food','Time and money on commuting','Office rent','Healthcare costs'], answer:'Time and money on commuting'},
+      {question:'Why do some people find it hard to work at home?', options:['Bad internet','Noise and distractions','Uncomfortable chairs','Lack of equipment'], answer:'Noise and distractions'},
+      {question:'What is the hybrid model?', options:['Working only at home','Working only in the office','Working partly at home and partly in the office','Working for two companies'], answer:'Working partly at home and partly in the office'},
+    ]
+  },
+  {
+    id:'r-a2-3', level:'A2', title:'Street Food Around the World',
+    text:'Street food is popular in cities all over the world. In Mexico, you can find delicious tacos filled with meat, cheese, and salsa. In Thailand, vendors sell pad thai, a fried noodle dish with prawns and peanuts. In India, people love to eat spicy samosas, which are small pastries filled with potatoes and vegetables. Japan is famous for takoyaki — small round balls made with octopus. Street food is usually cheap and gives you a great taste of local culture. Many tourists say that the best food they eat on holiday is from street stalls.',
+    highlightWords:['vendors','pastries','spicy','octopus','culture'],
+    vocabulary:{'vendors':'продавцы','pastries':'выпечка','spicy':'острый','octopus':'осьминог','culture':'культура'},
+    questions:[
+      {question:'What is pad thai?', options:['A rice dish','A soup','A fried noodle dish','A type of pastry'], answer:'A fried noodle dish'},
+      {question:'What is takoyaki made with?', options:['Shrimp','Octopus','Tofu','Chicken'], answer:'Octopus'},
+      {question:'What do many tourists say about street food?', options:['It is too spicy','It is expensive','It is the best food they eat on holiday','It is hard to find'], answer:'It is the best food they eat on holiday'},
+    ]
+  },
+  {
+    id:'r-a2-4', level:'A2', title:'The History of Coffee',
+    text:'Coffee is one of the most popular drinks in the world. It was first discovered in Ethiopia around a thousand years ago. According to legend, a goat herder noticed his goats were very energetic after eating certain berries. He tried the berries himself and felt more awake. People later learned to roast the beans and make a hot drink. Coffee spread to Arabia in the 15th century, and by the 17th century it had reached Europe. Today, more than two billion cups of coffee are drunk every day around the world.',
+    highlightWords:['discovered','legend','energetic','roast','spread'],
+    vocabulary:{'discovered':'обнаружен','legend':'легенда','energetic':'энергичный','roast':'обжаривать','spread':'распространился'},
+    questions:[
+      {question:'Where was coffee first discovered?', options:['Arabia','Brazil','Ethiopia','India'], answer:'Ethiopia'},
+      {question:'What did the goat herder notice?', options:['The berries tasted sweet','His goats were very energetic','The beans smelled nice','The water changed colour'], answer:'His goats were very energetic'},
+      {question:'When did coffee reach Europe?', options:['15th century','16th century','17th century','18th century'], answer:'17th century'},
+    ]
+  },
+  {
+    id:'r-a2-5', level:'A2', title:'Volunteering',
+    text:'Volunteering means working without pay to help others or your community. Many people volunteer at hospitals, food banks, animal shelters, or schools. Some volunteers help elderly people with shopping or housework. Others teach reading to children or adults. Volunteers often say that helping others makes them feel happy and gives them a sense of purpose. Many employers look positively at volunteering experience on a CV because it shows that a person is motivated and caring. Young people especially can benefit by gaining skills and making friends.',
+    highlightWords:['volunteering','community','elderly','purpose','motivated'],
+    vocabulary:{'volunteering':'волонтёрство','community':'сообщество','elderly':'пожилые люди','purpose':'цель','motivated':'мотивированный'},
+    questions:[
+      {question:'Where do some volunteers work?', options:['Banks and airports','Hospitals and food banks','Hotels and restaurants','Offices and schools only'], answer:'Hospitals and food banks'},
+      {question:'Why do employers like volunteering experience?', options:['It shows creativity','It shows motivation and caring','It increases salary','It replaces qualifications'], answer:'It shows motivation and caring'},
+      {question:'How do volunteers often feel?', options:['Tired and stressed','Bored and underpaid','Happy with a sense of purpose','Confused and overwhelmed'], answer:'Happy with a sense of purpose'},
+    ]
+  },
+
+  // ── B1 (5 текстов) ──
+  {
+    id:'r-b1-1', level:'B1', title:'Minimalism: Living with Less',
+    text:'Minimalism is a lifestyle philosophy that encourages people to own fewer possessions and focus on what truly matters. Its modern revival was largely driven by the 2011 documentary "Minimalism" and books such as Marie Kondo\'s "The Life-Changing Magic of Tidying Up". Proponents argue that owning less reduces stress, saves money, and forces you to prioritise experiences over things. In a culture that constantly encourages consumption, minimalism represents a deliberate pushback. Critics, however, point out that it can be a privilege — it is easier to choose to own less when you have always had enough.',
+    highlightWords:['possessions','revival','prioritise','consumption','privilege'],
+    vocabulary:{'possessions':'имущество','revival':'возрождение','prioritise':'расставлять приоритеты','consumption':'потребление','privilege':'привилегия'},
+    questions:[
+      {question:'What helped revive minimalism?', options:['A television series','Social media trends','A documentary and books','Government campaigns'], answer:'A documentary and books'},
+      {question:'What do minimalists prioritise over things?', options:['Money','Experiences','Work','Relationships'], answer:'Experiences'},
+      {question:'What do critics say about minimalism?', options:['It is too expensive','It is anti-social','It can be a privilege','It is scientifically flawed'], answer:'It can be a privilege'},
+    ]
+  },
+  {
+    id:'r-b1-2', level:'B1', title:'The Benefits of Bilingualism',
+    text:'Speaking more than one language does more than just help you communicate with people from other countries. Research suggests that bilingual people have stronger executive function — the ability to switch tasks, focus attention, and suppress irrelevant information. Bilingualism may also delay the onset of dementia by several years. This is thought to be because managing two languages creates additional neural connections, essentially exercising the brain. Children who grow up bilingual often struggle initially with vocabulary in each language but typically catch up with monolingual peers by school age. Exposure to a second language, even informally, appears to provide cognitive benefits.',
+    highlightWords:['bilingualism','executive function','dementia','neural','monolingual'],
+    vocabulary:{'bilingualism':'двуязычие','executive function':'исполнительные функции','dementia':'деменция','neural':'нейронный','monolingual':'одноязычный'},
+    questions:[
+      {question:'What may bilingualism delay?', options:['Language learning','The onset of dementia','Reading development','Executive function'], answer:'The onset of dementia'},
+      {question:'Why does managing two languages benefit the brain?', options:['It increases vocabulary','It creates additional neural connections','It improves memory directly','It reduces stress'], answer:'It creates additional neural connections'},
+      {question:'How do bilingual children compare to monolingual peers at school age?', options:['They typically fall behind','They typically catch up','They are always more advanced','They have larger vocabularies'], answer:'They typically catch up'},
+    ]
+  },
+  {
+    id:'r-b1-3', level:'B1', title:'The Rise of Podcasts',
+    text:'Podcasts have experienced remarkable growth over the past decade. In 2006, fewer than a million people regularly listened to podcasts; today, that number exceeds 450 million globally. The format\'s flexibility is key to its appeal — listeners can consume content while commuting, exercising, or doing household chores. Unlike broadcast radio, podcasts cater to extraordinarily niche interests, from true crime to medieval history to specific technical fields. The advertising model has made many podcasters financially viable, and some independent creators rival traditional media outlets in audience size. However, discoverability remains a challenge in an increasingly crowded market.',
+    highlightWords:['remarkable','flexibility','niche','financially viable','discoverability'],
+    vocabulary:{'remarkable':'замечательный','flexibility':'гибкость','niche':'нишевый','financially viable':'финансово жизнеспособный','discoverability':'возможность найти'},
+    questions:[
+      {question:'How many people listen to podcasts globally today?', options:['Under a million','Around 100 million','Over 450 million','Around 2 billion'], answer:'Over 450 million'},
+      {question:'What makes podcasts appealing?', options:['They are always free','Their flexibility and niche topics','Their celebrity presenters','Their live format'], answer:'Their flexibility and niche topics'},
+      {question:'What challenge do podcasters face?', options:['Lack of topics','Poor audio quality','Discoverability in a crowded market','No advertising revenue'], answer:'Discoverability in a crowded market'},
+    ]
+  },
+  {
+    id:'r-b1-4', level:'B1', title:'Ocean Plastic',
+    text:'Every year, around eight million tonnes of plastic waste enters the world\'s oceans. Once there, it does not biodegrade but breaks into smaller and smaller pieces called microplastics, which are now found everywhere — from the deepest ocean trenches to Arctic ice cores. Marine animals frequently mistake plastic for food; sea turtles, for example, often confuse plastic bags with jellyfish. Scientists have also found microplastics in human blood, raising concerns about long-term health effects. International efforts to address the problem include treaties banning single-use plastics and projects to collect ocean plastic, though experts warn that prevention is far more effective than cleanup.',
+    highlightWords:['biodegrade','microplastics','trenches','confuse','prevention'],
+    vocabulary:{'biodegrade':'разлагаться','microplastics':'микропластик','trenches':'впадины','confuse':'путать','prevention':'предотвращение'},
+    questions:[
+      {question:'What are microplastics?', options:['New plastic products','Tiny pieces of broken-down plastic','Special biodegradable plastics','Ocean creatures'], answer:'Tiny pieces of broken-down plastic'},
+      {question:'What do sea turtles confuse plastic bags with?', options:['Fish','Seaweed','Jellyfish','Coral'], answer:'Jellyfish'},
+      {question:'What do experts say about cleanup vs prevention?', options:['Cleanup is more effective','They are equally effective','Prevention is far more effective','Neither works well'], answer:'Prevention is far more effective'},
+    ]
+  },
+  {
+    id:'r-b1-5', level:'B1', title:'Why We Dream',
+    text:'Despite decades of research, scientists still do not fully understand why we dream. Several theories exist. One influential view, proposed by Freud, suggested that dreams represent unconscious wishes and desires. Modern neuroscience offers different explanations: some researchers believe dreaming helps the brain process and consolidate memories from the day, while others argue it serves an emotional regulation function, allowing us to rehearse responses to threatening scenarios in a safe environment. REM sleep, the stage most associated with vivid dreaming, is also linked to creativity and problem-solving. Some studies show that people who are woken during REM sleep struggle more with complex tasks the following day.',
+    highlightWords:['unconscious','consolidate','regulation','rehearse','creativity'],
+    vocabulary:{'unconscious':'бессознательный','consolidate':'закреплять','regulation':'регуляция','rehearse':'репетировать','creativity':'творчество'},
+    questions:[
+      {question:'What did Freud believe dreams represent?', options:['Random brain activity','Future predictions','Unconscious wishes and desires','Memories only'], answer:'Unconscious wishes and desires'},
+      {question:'What is one modern theory about dreaming?', options:['Dreams have no purpose','Dreams predict the future','Dreaming helps consolidate memories','Dreams only occur in children'], answer:'Dreaming helps consolidate memories'},
+      {question:'What happens to people woken during REM sleep?', options:['They feel refreshed','They remember more dreams','They struggle with complex tasks','They sleep longer'], answer:'They struggle with complex tasks'},
+    ]
+  },
+
+  // ── B2 (5 текстов) ──
+  {
+    id:'r-b2-1', level:'B2', title:'The Economics of Happiness',
+    text:'For much of the twentieth century, economists treated GDP per capita as a reliable proxy for human wellbeing. However, a body of research accumulated since the 1970s — often called the Easterlin Paradox — revealed that beyond a certain income threshold, additional wealth does not correlate with increased happiness. Countries such as Denmark and Finland consistently top global happiness indices not because of their wealth alone, but due to high levels of social trust, robust welfare systems, work-life balance, and perceived freedom. The emerging field of happiness economics advocates reorienting policy targets away from growth metrics toward direct measures of subjective wellbeing.',
+    highlightWords:['proxy','threshold','correlate','paradox','reorienting'],
+    vocabulary:{'proxy':'показатель','threshold':'порог','correlate':'коррелировать','paradox':'парадокс','reorienting':'переориентация'},
+    questions:[
+      {question:'What did the Easterlin Paradox reveal?', options:['Money always increases happiness','GDP is the best measure of wellbeing','Extra wealth above a threshold does not increase happiness','Poorer countries are happier'], answer:'Extra wealth above a threshold does not increase happiness'},
+      {question:'Why do countries like Denmark top happiness indices?', options:['Because of high GDP alone','Due to social trust, welfare systems, and work-life balance','Because of low taxes','Due to good weather'], answer:'Due to social trust, welfare systems, and work-life balance'},
+      {question:'What does happiness economics advocate?', options:['Maximising GDP growth','Measuring subjective wellbeing instead of growth','Reducing government spending','Increasing income inequality'], answer:'Measuring subjective wellbeing instead of growth'},
+    ]
+  },
+  {
+    id:'r-b2-2', level:'B2', title:'The Architecture of Cities',
+    text:'The built environment profoundly shapes human behaviour, social interaction, and even mental health. Jane Jacobs, the urban theorist, argued in her landmark 1961 work that the vibrancy of cities depends on density, mixed land use, short blocks, and buildings of varying ages — conditions that enable the spontaneous street life she called the "ballet of the sidewalk". Contemporary neuroscience is beginning to provide empirical support for such intuitions: studies show that exposure to high-rise environments correlates with increased stress hormones, while access to green spaces and walkable neighbourhoods is associated with lower rates of depression and anxiety.',
+    highlightWords:['vibrancy','density','spontaneous','empirical','correlates'],
+    vocabulary:{'vibrancy':'живость','density':'плотность','spontaneous':'стихийный','empirical':'эмпирический','correlates':'коррелирует'},
+    questions:[
+      {question:'What did Jane Jacobs argue creates vibrant cities?', options:['Wide roads and car parks','Density, mixed use, short blocks, and varied buildings','Tall buildings and modern design','Separation of residential and commercial areas'], answer:'Density, mixed use, short blocks, and varied buildings'},
+      {question:'What does exposure to high-rise environments correlate with?', options:['Lower stress levels','Increased creativity','Increased stress hormones','Better social interaction'], answer:'Increased stress hormones'},
+      {question:'What is associated with lower rates of depression?', options:['High-rise buildings','Long commutes','Green spaces and walkable neighbourhoods','Large shopping malls'], answer:'Green spaces and walkable neighbourhoods'},
+    ]
+  },
+  {
+    id:'r-b2-3', level:'B2', title:'CRISPR and the Ethics of Gene Editing',
+    text:'CRISPR-Cas9, the gene-editing technology developed in the early 2010s, has the potential to eliminate hereditary diseases by precisely modifying DNA sequences. In medicine, early clinical trials have shown remarkable results for conditions such as sickle cell disease and certain cancers. However, the technology raises profound ethical questions that the scientific community is still grappling with. The most contentious application is germline editing — modifying embryos in ways that would be inherited by future generations. Critics argue this crosses a fundamental boundary, potentially opening the door to designer babies and exacerbating genetic inequality. In 2018, the case of Chinese scientist He Jiankui, who claimed to have created the first gene-edited babies, sparked international outrage and calls for a global moratorium.',
+    highlightWords:['hereditary','germline','contentious','moratorium','exacerbating'],
+    vocabulary:{'hereditary':'наследственный','germline':'зародышевая линия','contentious':'спорный','moratorium':'мораторий','exacerbating':'усугубляющий'},
+    questions:[
+      {question:'What conditions have CRISPR trials shown results for?', options:['Cancer and diabetes only','Sickle cell disease and certain cancers','Heart disease and obesity','Alzheimer\'s and Parkinson\'s'], answer:'Sickle cell disease and certain cancers'},
+      {question:'What is germline editing?', options:['Editing DNA in adults only','Modifying embryos in heritable ways','Treating genetic diseases in children','Testing gene therapies on animals'], answer:'Modifying embryos in heritable ways'},
+      {question:'What did He Jiankui\'s case lead to?', options:['Nobel Prize nominations','New CRISPR techniques','International outrage and calls for a moratorium','Government funding increases'], answer:'International outrage and calls for a moratorium'},
+    ]
+  },
+  {
+    id:'r-b2-4', level:'B2', title:'Inflation: Causes and Consequences',
+    text:'Inflation — the general rise in the price level of goods and services — erodes purchasing power, meaning that a given sum of money buys progressively less over time. Economists distinguish between demand-pull inflation, which occurs when aggregate demand exceeds supply, and cost-push inflation, which arises from increased production costs such as rising energy prices or supply chain disruptions. Central banks typically counter inflation by raising interest rates, which increases borrowing costs and cools consumer spending. However, this remedy carries risks: if rates rise too steeply, credit conditions tighten severely and the economy may contract. The challenge for policymakers is navigating between the twin dangers of runaway inflation and recession.',
+    highlightWords:['erodes','aggregate','disruptions','remedy','recession'],
+    vocabulary:{'erodes':'подрывает','aggregate':'совокупный','disruptions':'перебои','remedy':'средство','recession':'рецессия'},
+    questions:[
+      {question:'What is demand-pull inflation?', options:['Inflation from rising costs','Inflation when demand exceeds supply','Inflation from supply chain problems','Inflation from interest rate increases'], answer:'Inflation when demand exceeds supply'},
+      {question:'How do central banks typically counter inflation?', options:['Lowering taxes','Printing more money','Raising interest rates','Increasing government spending'], answer:'Raising interest rates'},
+      {question:'What risk comes from raising rates too steeply?', options:['Higher inflation','Loss of currency value','Economic contraction','Lower employment'], answer:'Economic contraction'},
+    ]
+  },
+  {
+    id:'r-b2-5', level:'B2', title:'Dark Tourism',
+    text:'Dark tourism — travel to sites associated with death, tragedy, or atrocity — is a growing segment of the global travel industry. Sites such as Auschwitz, Chernobyl, and Ground Zero attract millions of visitors annually. Proponents argue that such visits serve an important educational and commemorative function, ensuring that past atrocities are not forgotten. Others contend that commercial tourism transforms trauma into spectacle, trivialising suffering and disrespecting victims. The ethical debate intensified when Netflix\'s "Chernobyl" series triggered a surge in visitor numbers, prompting Ukrainian authorities to develop official tourist routes. Researchers suggest that visitor motivations are complex and rarely reducible to mere morbid curiosity.',
+    highlightWords:['atrocity','commemorative','trivialising','morbid','surge'],
+    vocabulary:{'atrocity':'зверство','commemorative':'памятный','trivialising':'тривиализирующий','morbid':'болезненный','surge':'резкий рост'},
+    questions:[
+      {question:'What is dark tourism?', options:['Night-time sightseeing','Travel to dangerous countries','Travel to sites of death or tragedy','Budget travel in dark regions'], answer:'Travel to sites of death or tragedy'},
+      {question:'What argument do proponents make?', options:['It is profitable','It serves educational and commemorative purposes','It is exciting','It creates jobs'], answer:'It serves educational and commemorative purposes'},
+      {question:'What triggered a surge in Chernobyl visitors?', options:['A new documentary','A Netflix series','A travel website','A government campaign'], answer:'A Netflix series'},
+    ]
+  },
+
+  // ── C1 (5 текстов) ──
+  {
+    id:'r-c1-1', level:'C1', title:'The Attention Economy and Democratic Discourse',
+    text:'The commodification of attention by digital platforms has generated externalities that extend well beyond individual wellbeing into the fabric of democratic society. By optimising for engagement rather than accuracy or deliberation, recommendation algorithms systematically amplify outrage, tribalism, and polarisation — qualities that keep users scrolling but corrode the epistemic conditions necessary for meaningful civic participation. Cass Sunstein\'s concept of the "echo chamber", in which individuals are exposed exclusively to information confirming prior beliefs, has gained empirical traction, though subsequent research suggests the phenomenon is more nuanced than initially hypothesised. The central normative question is whether the architecture of information environments constitutes a legitimate subject of democratic governance or whether such regulation inevitably imperils free expression.',
+    highlightWords:['commodification','externalities','tribalism','epistemic','normative'],
+    vocabulary:{'commodification':'коммодификация','externalities':'внешние эффекты','tribalism':'трибализм','epistemic':'эпистемический','normative':'нормативный'},
+    questions:[
+      {question:'What do recommendation algorithms optimise for?', options:['Accuracy and deliberation','User education','Engagement','Democratic participation'], answer:'Engagement'},
+      {question:'What does Sunstein\'s "echo chamber" concept describe?', options:['Loud online arguments','Exposure only to confirming information','Government censorship','Social media addiction'], answer:'Exposure only to confirming information'},
+      {question:'What is the central normative question raised?', options:['How to increase engagement','Whether to ban social media','Whether to regulate information environments democratically','How to improve algorithms'], answer:'Whether to regulate information environments democratically'},
+    ]
+  },
+  {
+    id:'r-c1-2', level:'C1', title:'Posthumanism and the Body',
+    text:'Posthumanist philosophy challenges the Enlightenment conception of a stable, bounded human subject by interrogating the boundary between the natural and the technological. As prosthetics become increasingly sophisticated, as neural interfaces like Neuralink move from science fiction to clinical trial, and as genetic engineering opens the prospect of heritable enhancement, the category of "the human" becomes philosophically unstable. Donna Haraway\'s "A Cyborg Manifesto" argued provocatively that the breakdown of boundaries between organism and machine need not be mourned as a loss of essence but embraced as a liberatory possibility. Critics, including bioethicists and disability scholars, warn that enhancement technologies risk deepening inequalities and encoding existing social hierarchies into the biological.',
+    highlightWords:['interrogating','heritable','enhancement','hierarchies','liberatory'],
+    vocabulary:{'interrogating':'ставить под сомнение','heritable':'передаваемый по наследству','enhancement':'улучшение','hierarchies':'иерархии','liberatory':'освобождающий'},
+    questions:[
+      {question:'What does posthumanist philosophy challenge?', options:['Scientific progress','The stable conception of the human subject','Technological development','Environmental ethics'], answer:'The stable conception of the human subject'},
+      {question:'How does Haraway view the breakdown of human-machine boundaries?', options:['As a catastrophe','As inevitable','As a liberatory possibility','As morally wrong'], answer:'As a liberatory possibility'},
+      {question:'What do critics warn about enhancement technologies?', options:['They are scientifically unsound','They risk deepening inequalities','They are too expensive','They are philosophically trivial'], answer:'They risk deepening inequalities'},
+    ]
+  },
+  {
+    id:'r-c1-3', level:'C1', title:'The Rule of Law Under Strain',
+    text:'Liberal democracies depend not merely on formal legal codes but on a set of informal norms, institutions, and shared understandings that constitute the rule of law. Political scientists have observed with growing alarm a phenomenon they term "democratic backsliding" — the incremental erosion of these norms through mechanisms that are individually legal but cumulatively corrosive: the packing of courts with partisan judges, the delegitimisation of independent media, the weaponisation of anti-corruption laws against political opponents. Unlike the dramatic coups of the twentieth century, this form of democratic decay is frequently invisible to populations until it is well advanced. The challenge for constitutional designers is creating systems robust enough to withstand not only overt authoritarianism but the subtler forms of institutional capture.',
+    highlightWords:['erosion','corrosive','delegitimisation','backsliding','authoritarianism'],
+    vocabulary:{'erosion':'эрозия','corrosive':'разрушительный','delegitimisation':'делегитимизация','backsliding':'откат','authoritarianism':'авторитаризм'},
+    questions:[
+      {question:'What do political scientists call the incremental erosion of democratic norms?', options:['Constitutional crisis','Democratic backsliding','Institutional capture','Political polarisation'], answer:'Democratic backsliding'},
+      {question:'What makes this form of decay particularly dangerous?', options:['It happens very quickly','It involves military force','It is often invisible until advanced','It targets only media'], answer:'It is often invisible until advanced'},
+      {question:'What challenge do constitutional designers face?', options:['Writing clear laws','Creating systems resistant to subtle institutional capture','Improving voter turnout','Reducing political polarisation'], answer:'Creating systems resistant to subtle institutional capture'},
+    ]
+  },
+  {
+    id:'r-c1-4', level:'C1', title:'Quantum Computing: Promise and Peril',
+    text:'Classical computers store information as bits — binary units of zero or one. Quantum computers exploit the principles of superposition and entanglement to process qubits, which can represent zero and one simultaneously, enabling certain calculations to be performed exponentially faster. The implications are transformative: quantum computers could simulate molecular interactions with unprecedented precision, revolutionising drug discovery; they could optimise logistics networks in ways classical systems cannot approach; they could break the encryption standards that currently protect financial transactions, communications, and state secrets. This last capability has prompted governments and cybersecurity experts to begin the transition to post-quantum cryptography, though the timeline for quantum supremacy in cryptographic attacks remains contested.',
+    highlightWords:['superposition','entanglement','exponentially','cryptography','supremacy'],
+    vocabulary:{'superposition':'суперпозиция','entanglement':'квантовая запутанность','exponentially':'экспоненциально','cryptography':'криптография','supremacy':'превосходство'},
+    questions:[
+      {question:'What allows qubits to be more powerful than bits?', options:['Higher processing speed','Superposition — representing 0 and 1 simultaneously','Larger memory capacity','Better cooling systems'], answer:'Superposition — representing 0 and 1 simultaneously'},
+      {question:'What security risk do quantum computers pose?', options:['Hacking user passwords directly','Breaking current encryption standards','Spreading computer viruses','Crashing financial markets'], answer:'Breaking current encryption standards'},
+      {question:'What are governments transitioning to in response?', options:['Banning quantum research','Increasing classical computing','Post-quantum cryptography','Digital currencies'], answer:'Post-quantum cryptography'},
+    ]
+  },
+  {
+    id:'r-c1-5', level:'C1', title:'The Moral Philosophy of Effective Altruism',
+    text:'Effective altruism (EA) is a philosophical and social movement that applies evidence and rigorous analysis to the question of how to do the most good in the world. Drawing on utilitarian ethics, EA argues that we have strong moral obligations to improve the wellbeing of others, irrespective of geographical or relational proximity. This leads to counterintuitive conclusions: donating to a deworming programme in sub-Saharan Africa may save far more lives per dollar than funding a local hospice, making the former more "effective" by EA metrics. Critics argue that EA is overly quantitative, neglects structural causes of poverty and injustice, and can serve as a convenient rationalisation for the ultra-wealthy to perform charitable acts without addressing systemic inequalities. The movement has also been embroiled in controversy following high-profile cases of alleged misconduct among prominent adherents.',
+    highlightWords:['utilitarian','irrespective','counterintuitive','rationalisation','systemic'],
+    vocabulary:{'utilitarian':'утилитарный','irrespective':'независимо от','counterintuitive':'контринтуитивный','rationalisation':'рационализация','systemic':'системный'},
+    questions:[
+      {question:'What ethical tradition does EA draw on?', options:['Virtue ethics','Deontology','Utilitarianism','Natural law'], answer:'Utilitarianism'},
+      {question:'What does EA say about geographical proximity in moral decisions?', options:['Proximity makes obligations stronger','Proximity is irrelevant to moral obligation','Local causes should always be prioritised','Distance makes giving less valuable'], answer:'Proximity is irrelevant to moral obligation'},
+      {question:'What is one key criticism of EA?', options:['It is too focused on local causes','It is overly quantitative and neglects structural causes','It ignores scientific evidence','It only helps wealthy countries'], answer:'It is overly quantitative and neglects structural causes'},
+    ]
+  },
+]
+
+export function getReadingTexts(level: string, count: number = 2): ReadingText[] {
+  const filtered = READING_POOL.filter(t => t.level === level)
+  const shuffled = [...filtered].sort(() => Math.random() - 0.5)
+  return shuffled.slice(0, count)
+}
+```
+
+### 3b. Обнови app/(dashboard)/reading/page.tsx
+
+- При выборе уровня: `const texts = getReadingTexts(level)` — каждый раз случайные из пула
+- Добавь кнопку "✨ Сгенерировать AI текст" аналогично аудированию
+
+### 3c. Создай app/api/ai/generate-reading/route.ts
+
+```ts
+import { NextResponse } from 'next/server'
+
+export async function POST(req: Request) {
+  const { level } = await req.json()
+  const prompt = `Generate an English reading text for level ${level} language learners.
+Return ONLY valid JSON:
+{
+  "title": "text title",
+  "text": "2-4 paragraphs appropriate for the level",
+  "highlightWords": ["word1","word2","word3","word4","word5"],
+  "vocabulary": {"word1":"Russian translation","word2":"Russian translation","word3":"Russian translation","word4":"Russian translation","word5":"Russian translation"},
+  "questions": [
+    {"question":"...","options":["a","b","c","d"],"answer":"correct"},
+    {"question":"...","options":["a","b","c","d"],"answer":"correct"},
+    {"question":"...","options":["a","b","c","d"],"answer":"correct"}
+  ]
+}
+Level: A1=very simple. A2=everyday topics. B1=intermediate. B2=semi-academic. C1=complex analytical.
+highlightWords MUST appear exactly in the text. Questions must genuinely test comprehension.`
+
+  const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':`Bearer ${process.env.GROQ_API_KEY}`},
+    body:JSON.stringify({model:'llama-3.1-8b-instant',messages:[{role:'user',content:prompt}],max_tokens:1000,temperature:0.85})
+  })
+  const data = await resp.json()
+  const raw = data.choices?.[0]?.message?.content ?? '{}'
+  try {
+    const match = raw.match(/\{[\s\S]*\}/)
+    return NextResponse.json(JSON.parse(match?.[0] ?? raw))
+  } catch { return NextResponse.json({error:'Parse error'},{status:500}) }
+}
+```
+
+---
+## ЗАДАЧА 4: РАСШИРЕННЫЙ СЛОВАРЬ — 15 слов на урок для первых 20 уроков
+
+Перепиши lib/vocabulary-data.ts — добавь слова к существующим 8 на урок, итого 15 слов на урок.
+
+Сохрани все существующие слова (id v-a1-1-1-1 до v-a1-1-4-8).
+Добавь слова с id v-a1-1-1-9 и выше.
+
+Новые слова (7 на урок, уроки a1-1-1 до a1-2-10):
+
+a1-1-1 (To Be): excited→взволнованный, sad→грустный, angry→злой, beautiful→красивый, tall→высокий, young→молодой, busy→занятой
+a1-1-2 (Знакомство): introduce→представить, nationality→национальность, profession→профессия, surname→фамилия, hobby→хобби, married→женатый, single→холостой
+a1-1-3 (Числа): dozen→дюжина, million→миллион, half→половина, quarter→четверть, percent→процент, digit→цифра, double→двойной
+a1-1-4 (Дни): month→месяц, season→сезон, spring→весна, summer→лето, autumn→осень, diary→дневник, cancel→отменить
+a1-1-5 (Цвета): shade→оттенок, pale→бледный, vivid→яркий, pattern→узор, turquoise→бирюзовый, silver→серебряный, golden→золотой
+a1-2-6 (Have got): possess→владеть, belong→принадлежать, collect→собирать, lose→терять, find→найти, store→хранить, contain→содержать
+a1-2-7 (Семья): nephew→племянник, niece→племянница, stepmother→мачеха, stepfather→отчим, adopt→усыновить, relative→родственник, generation→поколение
+a1-2-8 (Дом): ceiling→потолок, roof→крыша, garage→гараж, cellar→подвал, attic→чердак, curtain→занавеска, carpet→ковёр
+a1-2-9 (Предлоги): above→над, below→под, around→вокруг, through→через, across→через/напротив, along→вдоль, towards→к
+a1-2-10 (There is/are): exist→существовать, appear→появляться, remain→оставаться, provide→обеспечивать, offer→предлагать, include→включать, consist→состоять
+
+Для каждого слова добавь пример предложения на английском и перевод примера.
+
+После массива VOCABULARY добавь функцию:
+```ts
+export function getWordsForLesson(lessonId: string, count: number = 8): VocabWord[] {
+  const all = VOCABULARY.filter(w => w.lessonId === lessonId)
+  return [...all].sort(() => Math.random() - 0.5).slice(0, count)
+}
+
+export function getAllWordsForLesson(lessonId: string): VocabWord[] {
+  return VOCABULARY.filter(w => w.lessonId === lessonId)
+}
+```
+
+Обнови app/(dashboard)/vocabulary/page.tsx: вместо прямой фильтрации используй getWordsForLesson(lessonId, 8).
+Добавь кнопку "🔄 Показать другие слова" рядом с заголовком урока — при клике вызывает getWordsForLesson снова (ресортировка).
+
+---
+## ЗАДАЧА 5: ГРАММАТИКА — AI объясняет, даёт примеры и упражнения
+
+### 5a. Создай app/api/ai/grammar-examples/route.ts
+
+```ts
+import { NextResponse } from 'next/server'
+
+export async function POST(req: Request) {
+  const { topic, level, type } = await req.json()
+
+  const prompts: Record<string, string> = {
+    examples: `Generate 4 fresh example sentences for the grammar topic "${topic}" at ${level} level.
+Return ONLY valid JSON: {"examples":[{"english":"...","russian":"..."},{"english":"...","russian":"..."},{"english":"...","russian":"..."},{"english":"...","russian":"..."}]}
+Make examples varied: different subjects, tenses, contexts. Level-appropriate vocabulary.`,
+
+    exercise: `Create one fill-in-the-blank grammar exercise for "${topic}" at ${level} level.
+Return ONLY valid JSON: {"sentence":"He ___ (go) to school every day.","answer":"goes","explanation":"Объяснение на русском языке почему именно этот ответ."}
+Make the blank genuinely require knowledge of ${topic}.`,
+
+    explain: `Explain the English grammar rule "${topic}" for a Russian speaker at ${level} level.
+Return ONLY valid JSON: {"explanation":"Краткое объяснение на русском языке (2-3 предложения).","tip":"Один практический совет как запомнить или применить правило.","common_mistake":"Самая частая ошибка русскоязычных с этим правилом."}`
+  }
+
+  const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':`Bearer ${process.env.GROQ_API_KEY}`},
+    body:JSON.stringify({model:'llama-3.1-8b-instant',messages:[{role:'user',content:prompts[type]}],max_tokens:500,temperature:0.7})
+  })
+  const data = await resp.json()
+  const raw = data.choices?.[0]?.message?.content ?? '{}'
+  try {
+    const match = raw.match(/\{[\s\S]*\}/)
+    return NextResponse.json(JSON.parse(match?.[0] ?? raw))
+  } catch { return NextResponse.json({error:'Parse error'},{status:500}) }
+}
+```
+
+### 5b. Обнови app/(dashboard)/grammar/page.tsx
+
+В каждой раскрытой карточке грамматики добавь секцию с 3 кнопками:
+
+```tsx
+{/* AI Tools для каждой карточки */}
+<div className="mt-4 pt-4 border-t border-white/10">
+  <p className="text-xs text-[#64748b] mb-3">AI-помощник</p>
+  <div className="flex flex-wrap gap-2 mb-3">
+    <button onClick={() => fetchGrammarAI(topic, 'explain')}
+      disabled={loadingType === 'explain'}
+      className="text-xs px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/10 hover:border-[#6366f1]/40 text-[#94a3b8] hover:text-white transition-all">
+      {loadingType === 'explain' ? '⏳' : '💡'} Объяснить по-русски
+    </button>
+    <button onClick={() => fetchGrammarAI(topic, 'examples')}
+      disabled={loadingType === 'examples'}
+      className="text-xs px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/10 hover:border-[#6366f1]/40 text-[#94a3b8] hover:text-white transition-all">
+      {loadingType === 'examples' ? '⏳' : '➕'} Ещё примеры
+    </button>
+    <button onClick={() => fetchGrammarAI(topic, 'exercise')}
+      disabled={loadingType === 'exercise'}
+      className="text-xs px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/10 hover:border-[#6366f1]/40 text-[#94a3b8] hover:text-white transition-all">
+      {loadingType === 'exercise' ? '⏳' : '✏️'} Упражнение
+    </button>
+  </div>
+
+  {/* Объяснение */}
+  {explanation && (
+    <div className="p-3 rounded-xl bg-[#6366f1]/10 border border-[#6366f1]/20 space-y-2 mb-3">
+      <p className="text-sm text-[#a5b4fc]">{explanation.explanation}</p>
+      <p className="text-xs text-[#6366f1]">💡 {explanation.tip}</p>
+      {explanation.common_mistake && <p className="text-xs text-yellow-400/80">⚠️ {explanation.common_mistake}</p>}
+    </div>
+  )}
+
+  {/* Доп. примеры */}
+  {extraExamples.length > 0 && (
+    <div className="space-y-2 mb-3">
+      {extraExamples.map((ex, i) => (
+        <div key={i} className="p-2 rounded-lg bg-white/[0.03] border border-white/[0.08]">
+          <p className="text-sm text-white">{ex.english}</p>
+          <p className="text-xs text-[#64748b]">{ex.russian}</p>
+        </div>
+      ))}
+    </div>
+  )}
+
+  {/* Упражнение */}
+  {exercise && (
+    <div className="p-3 rounded-xl bg-green-500/10 border border-green-500/20">
+      <p className="text-sm text-white mb-2">{exercise.sentence}</p>
+      <input
+        type="text"
+        value={userAnswer}
+        onChange={e => setUserAnswer(e.target.value)}
+        placeholder="Введите ответ..."
+        className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white mb-2 outline-none focus:border-[#6366f1]/50"
+      />
+      <button
+        onClick={() => {
+          const correct = userAnswer.trim().toLowerCase() === exercise.answer.toLowerCase()
+          setAnswerResult(correct ? 'correct' : 'incorrect')
+        }}
+        className="text-xs px-3 py-1.5 rounded-lg bg-green-500/20 border border-green-500/40 text-green-400 hover:bg-green-500/30 transition-all"
+      >
+        Проверить
+      </button>
+      {answerResult && (
+        <div className={`mt-2 text-xs p-2 rounded-lg ${answerResult === 'correct' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+          {answerResult === 'correct' ? `✅ Правильно!` : `❌ Неправильно. Правильный ответ: "${exercise.answer}"`}
+          <p className="text-[#94a3b8] mt-1">{exercise.explanation}</p>
+        </div>
+      )}
+    </div>
+  )}
+</div>
+```
+
+Состояние для каждой карточки (используй Map по topic или отдельные useState с topic как ключ):
+```ts
+const [grammarStates, setGrammarStates] = useState<Record<string, {
+  explanation?: {explanation:string,tip:string,common_mistake:string}
+  extraExamples: {english:string,russian:string}[]
+  exercise?: {sentence:string,answer:string,explanation:string}
+  loadingType: string|null
+  userAnswer: string
+  answerResult: string|null
+}>>({})
+
+const getState = (topic: string) => grammarStates[topic] ?? {
+  extraExamples:[], loadingType:null, userAnswer:'', answerResult:null
+}
+
+const setState = (topic: string, patch: object) =>
+  setGrammarStates(prev => ({...prev, [topic]: {...getState(topic), ...patch}}))
+
+async function fetchGrammarAI(topic: string, type: string) {
+  setState(topic, {loadingType: type})
+  try {
+    const res = await fetch('/api/ai/grammar-examples', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({topic, level: userLevel ?? 'B1', type})
+    })
+    const data = await res.json()
+    if (type === 'explain') setState(topic, {explanation: data, loadingType: null})
+    if (type === 'examples') setState(topic, {extraExamples: data.examples ?? [], loadingType: null})
+    if (type === 'exercise') setState(topic, {exercise: data, loadingType: null, userAnswer:'', answerResult:null})
+  } catch {
+    setState(topic, {loadingType: null})
+  }
+}
+```
+
+---
+## ФИНАЛ
+1. npx tsc --noEmit — исправь все TypeScript ошибки
+2. git add -A
+3. git commit -m "feat: 100-question randomised level test, 25 static listening texts, 25 static reading texts, 400+ vocabulary words, AI grammar tools (explain/examples/exercise)"
+4. git push
+ENDOFPROMPT

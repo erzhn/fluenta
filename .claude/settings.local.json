@@ -15,7 +15,32 @@
       "Bash(git commit -m 'feat: OTP code login flow *)",
       "Bash(git commit -m 'fix: clear URL params on login page load *)",
       "Bash(rm -f .git/index.lock)",
-      "Bash(git commit -m 'fix: singleton supabase client, fix {} error display, better error messages *)"
+      "Bash(git commit -m 'fix: singleton supabase client, fix {} error display, better error messages *)",
+      "Bash(npx tsc *)",
+      "Bash(node -e \"const { LESSONS } = require\\('./lib/lessons-data.ts'\\); console.log\\(LESSONS.length\\)\")",
+      "Bash(git commit -m ' *)",
+      "Bash(Select-String -Path \"D:\\\\Projects with @\\\\fluenta\\\\lib\\\\modules-data.ts\" -Pattern \"_APPEND_SC_GD_\")",
+      "Bash(Select-Object LineNumber, Line)",
+      "PowerShell(New-Item *)",
+      "PowerShell($content = Get-Content \"D:\\\\Projects with @\\\\fluenta\\\\lib\\\\modules-data.ts\" -Encoding UTF8; $line = $content[941]; $line.Length; $line.Substring\\(0, [Math]::Min\\(50, $line.Length\\)\\))",
+      "PowerShell($content = Get-Content \"D:\\\\Projects with @\\\\fluenta\\\\lib\\\\modules-data.ts\" -Encoding UTF8; $line = $content[941]; $line.Substring\\($line.Length - 20\\))",
+      "PowerShell($content = Get-Content \"D:\\\\Projects with @\\\\fluenta\\\\lib\\\\modules-data.ts\" -Encoding UTF8; $line = $content[999]; $line.Substring\\($line.Length - 15\\))",
+      "PowerShell(cd \"D:\\\\Projects with @\\\\fluenta\"; git add lib/modules-data.ts lib/progress.ts hooks/useProgress.ts app/\\(dashboard\\)/modules/page.tsx app/\\(dashboard\\)/lessons/page.tsx components/layout/Sidebar.tsx; git status)",
+      "PowerShell(Set-Content *)",
+      "Bash(Get-Content \"D:\\\\Projects with @\\\\fluenta\\\\lib\\\\lessons-data.ts\")",
+      "Bash(Measure-Object -Line)",
+      "PowerShell(\\(Get-Content \"D:\\\\Projects with @\\\\fluenta\\\\lib\\\\lessons-data.ts\"\\).Count)",
+      "PowerShell(\\(Get-Content \"D:\\\\Projects with @\\\\fluenta\\\\lib\\\\lessons-data.ts\" | Select-Object -Last 5\\) -join \"`n\")",
+      "PowerShell(\\(Get-Content \"D:\\\\Projects with @\\\\fluenta\\\\lib\\\\lessons-data.ts\"\\).Count; \\(Get-Content \"D:\\\\Projects with @\\\\fluenta\\\\lib\\\\lessons-data.ts\" | Select-Object -Last 3\\) -join \"`n\")",
+      "Bash(git commit *)",
+      "Bash(npm run *)",
+      "Bash(git stash *)",
+      "Bash(Remove-Item -Recurse -Force .next)",
+      "PowerShell(cd \"D:\\\\Projects with @\\\\fluenta\"; git add app/\\(dashboard\\)/vocabulary/page.tsx app/\\(dashboard\\)/grammar/page.tsx app/\\(dashboard\\)/listening/page.tsx app/\\(dashboard\\)/reading/page.tsx app/\\(dashboard\\)/level-test/page.tsx lib/listening-data.ts lib/reading-data.ts lib/vocabulary-data.ts app/api/ai/generate-listening/route.ts app/api/ai/generate-reading/route.ts app/api/ai/grammar-examples/route.ts; git status)",
+      "PowerShell(python \"C:\\\\Users\\\\D3B8~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\D--Projects-with---fluenta\\\\681d2635-7ae1-4d63-95eb-d7db9f31cc31\\\\scratchpad\\\\fix_mojibake.py\" 2>&1)",
+      "PowerShell(python \"C:\\\\Users\\\\D3B8~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\D--Projects-with---fluenta\\\\681d2635-7ae1-4d63-95eb-d7db9f31cc31\\\\scratchpad\\\\fix_grammar.py\")",
+      "PowerShell(python \"C:\\\\Users\\\\D3B8~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\D--Projects-with---fluenta\\\\681d2635-7ae1-4d63-95eb-d7db9f31cc31\\\\scratchpad\\\\fix_grammar2.py\")",
+      "Bash(npm install *)"
     ]
   }
 }

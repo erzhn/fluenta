@@ -123,6 +123,18 @@
   --sidebar-ring: #6366F1;
 }
 
+/* ── Light theme overrides ── */
+:root.light, .light {
+  --background: #F8FAFC;
+  --foreground: #0F172A;
+  --card: #FFFFFF;
+  --card-foreground: #0F172A;
+  --primary: #6366F1;
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;
+  --border: rgba(0,0,0,0.08);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -133,6 +145,9 @@
   html {
     @apply font-sans;
     scroll-behavior: smooth;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-heading, var(--font-sans)), system-ui, sans-serif;
   }
 }
 

@@ -1,0 +1,300 @@
+# Запуск: claude --dangerously-skip-permissions < final-polish-prompt.txt
+# НЕ ЗАПРАШИВАЙ РАЗРЕШЕНИЯ. Все изменения — автоматически.
+
+Проект: Fluenta — Next.js 14 + TypeScript + Supabase + Groq API + Tailwind.
+Делаем финальную полировку: безопасность, UX, мобильная адаптация.
+
+---
+## ЧАСТЬ 1: БЕЗОПАСНОСТЬ
+
+### 1.1 Rate Limiting middleware
+Создай middleware.ts в корне проекта:
+```ts
+import { NextRequest, NextResponse } from 'next/server'
+
+// Simple in-memory rate limiter (per IP, resets on cold start)
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
+
+function rateLimit(ip: string, limit: number, windowMs: number): boolean {
+  const now = Date.now()
+  const entry = rateLimitMap.get(ip)
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + windowMs })
+    return true
+  }
+  if (entry.count >= limit) return false
+  entry.count++
+  return true
+}
+
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  // Security headers for all responses
+  const response = NextResponse.next()
+  response.headers.set('X-Frame-Options', 'DENY')
+  response.headers.set('X-Content-Type-Options', 'nosniff')
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  response.headers.set('Permissions-Policy', 'camera=(), microphone=(self), geolocation=()')
+
+  // Rate limit AI API routes
+  if (pathname.startsWith('/api/ai/') || pathname.startsWith('/api/ai-tutor')) {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0] ?? 
+               request.headers.get('x-real-ip') ?? 
+               '127.0.0.1'
+    
+    // 30 requests per minute per IP for AI routes
+    if (!rateLimit(ip, 30, 60_000)) {
+      return NextResponse.json(
+        { error: 'Слишком много запросов. Подождите минуту.' },
+        { status: 429 }
+      )
+    }
+  }
+
+  return response
+}
+
+export const config = {
+  matcher: ['/api/:path*', '/(dashboard)/:path*']
+}
+```
+
+### 1.2 Auth check в AI API routes
+Обнови app/api/ai/chat/route.ts — добавь в начало POST:
+```ts
+import { createClient } from '@supabase/supabase-js'
+
+// Verify user is authenticated
+const authHeader = request.headers.get('Authorization')
+const token = authHeader?.replace('Bearer ', '')
+if (!token) {
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+}
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  { global: { headers: { Authorization: `Bearer ${token}` } } }
+)
+const { data: { user } } = await supabase.auth.getUser()
+if (!user) {
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+}
+```
+Сделай то же самое для: app/api/ai/writing-check/route.ts, app/api/ai/generate-listening/route.ts, app/api/ai/generate-reading/route.ts, app/api/ai/grammar-examples/route.ts
+
+### 1.3 Input validation
+В каждом API route добавь валидацию перед обработкой:
+- Проверка что text/prompt не пустой и не > 5000 символов
+- Проверка что level один из ['A1','A2','B1','B2','C1']
+- Trim всех входящих строк
+
+### 1.4 Обнови клиентский код — передавай токен в API запросы
+В каждом fetch к /api/ai/* добавь Authorization header:
+```ts
+import { createClient } from '@/lib/supabase-client'
+const { data: { session } } = await createClient().auth.getSession()
+const token = session?.access_token
+
+// В fetch:
+headers: {
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${token ?? ''}`
+}
+```
+Обнови все fetch вызовы в: ai-tutor/page.tsx, writing/page.tsx, listening/page.tsx, reading/page.tsx, grammar/page.tsx
+
+### 1.5 Защита Dashboard на уровне сервера
+Создай app/(dashboard)/dashboard/middleware.ts — НЕТ, вместо этого обнови app/(dashboard)/layout.tsx:
+Добавь early return если Supabase env vars не настроены:
+```ts
+if (!supabaseUrl || !supabaseKey) {
+  return <div className="min-h-screen bg-[#0f0f1a] flex items-center justify-center text-white">
+    Конфигурация не найдена
+  </div>
+}
+```
+
+---
+## ЧАСТЬ 2: UX УЛУЧШЕНИЯ
+
+### 2.1 Создай компонент components/ui/Toast.tsx
+```tsx
+'use client'
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
+
+interface Toast { id: string; message: string; type: 'success'|'error'|'info'|'xp' }
+
+let addToastFn: ((toast: Omit<Toast,'id'>) => void) | null = null
+
+export function toast(message: string, type: Toast['type'] = 'success') {
+  addToastFn?.({ message, type })
+}
+
+export function ToastContainer() {
+  const [toasts, setToasts] = useState<Toast[]>([])
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => { setMounted(true) }, [])
+
+  useEffect(() => {
+    addToastFn = (t) => {
+      const id = Math.random().toString(36).slice(2)
+      setToasts(p => [...p, { ...t, id }])
+      setTimeout(() => setToasts(p => p.filter(x => x.id !== id)), 3000)
+    }
+    return () => { addToastFn = null }
+  }, [])
+
+  if (!mounted) return null
+
+  const colors = {
+    success: 'bg-green-500/20 border-green-500/40 text-green-400',
+    error: 'bg-red-500/20 border-red-500/40 text-red-400',
+    info: 'bg-[#6366f1]/20 border-[#6366f1]/40 text-[#a5b4fc]',
+    xp: 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400',
+  }
+  const icons = { success: '✅', error: '❌', info: 'ℹ️', xp: '⚡' }
+
+  return createPortal(
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none">
+      {toasts.map(t => (
+        <div key={t.id}
+          className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium 
+            backdrop-blur-sm shadow-lg animate-in slide-in-from-bottom-2 duration-200 ${colors[t.type]}`}>
+          <span>{icons[t.type]}</span>
+          <span>{t.message}</span>
+        </div>
+      ))}
+    </div>,
+    document.body
+  )
+}
+```
+
+Добавь `<ToastContainer />` в app/(dashboard)/layout.tsx.
+
+Используй toast() в ключевых местах:
+- После завершения урока: `toast('Урок завершён! +50 XP ⚡', 'xp')`
+- После проверки письма: `toast('Текст проверен!', 'success')`
+- При ошибке API: `toast('Ошибка соединения', 'error')`
+- При изучении слова: `toast('Слово добавлено в словарь', 'info')`
+
+### 2.2 Скелетон-загрузки
+Создай components/ui/Skeleton.tsx:
+```tsx
+export function Skeleton({ className = '' }: { className?: string }) {
+  return <div className={`animate-pulse bg-white/[0.06] rounded-lg ${className}`} />
+}
+
+export function SkeletonCard() {
+  return (
+    <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5 space-y-3">
+      <Skeleton className="h-4 w-2/3" />
+      <Skeleton className="h-3 w-full" />
+      <Skeleton className="h-3 w-4/5" />
+    </div>
+  )
+}
+
+export function SkeletonText({ lines = 3 }: { lines?: number }) {
+  return (
+    <div className="space-y-2">
+      {Array.from({length: lines}).map((_,i) => (
+        <Skeleton key={i} className={`h-3 ${i === lines-1 ? 'w-3/4' : 'w-full'}`} />
+      ))}
+    </div>
+  )
+}
+```
+
+Используй SkeletonCard в listening и reading пока AI генерирует контент.
+
+### 2.3 Страница ошибки для API
+В каждом месте где делается fetch к AI API — если ответ не ok, показывай человеческое сообщение:
+```ts
+if (!response.ok) {
+  if (response.status === 429) toast('Слишком много запросов. Подожди минуту.', 'error')
+  else if (response.status === 401) toast('Необходимо войти в систему', 'error')
+  else toast('Что-то пошло не так. Попробуй ещё раз.', 'error')
+  return
+}
+```
+
+---
+## ЧАСТЬ 3: МОБИЛЬНАЯ АДАПТАЦИЯ
+
+### 3.1 Проверь и исправь app/(dashboard)/layout.tsx
+Боковое меню должно на мобильных (< 768px) быть скрыто и открываться кнопкой-гамбургером.
+Если уже есть MobileNav компонент — убедись что он подключён.
+Если нет — создай простой:
+- На мобильных: фиксированное нижнее меню с иконками (max 5 пунктов: Главная, Уроки, Словарь, AI, Профиль)
+- Или гамбургер сверху который открывает sidebar overlay
+
+### 3.2 Убедись что все страницы имеют правильные breakpoints
+Проверь: lessons, vocabulary, writing, listening, reading, grammar, dashboard.
+Минимум: `p-4 sm:p-6 lg:p-8`, grid `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`
+Текст: `text-xl sm:text-2xl lg:text-3xl` для заголовков
+
+---
+## ЧАСТЬ 4: ПРОИЗВОДИТЕЛЬНОСТЬ И SEO
+
+### 4.1 Обнови app/layout.tsx — метаданные
+```ts
+export const metadata = {
+  title: 'Fluenta — AI English Learning Platform',
+  description: 'Учи английский язык с AI-тьютором. 95 уроков от A1 до C1, произношение, словарь, тесты IELTS/TOEFL.',
+  keywords: 'English learning, AI tutor, IELTS, TOEFL, английский язык, уроки английского',
+  openGraph: {
+    title: 'Fluenta — AI English Learning',
+    description: 'Учи английский с AI. A1→C1, IELTS, TOEFL, Business English.',
+    type: 'website',
+  }
+}
+```
+
+### 4.2 Создай app/manifest.ts — PWA манифест
+```ts
+import { MetadataRoute } from 'next'
+export default function manifest(): MetadataRoute.Manifest {
+  return {
+    name: 'Fluenta English',
+    short_name: 'Fluenta',
+    description: 'AI English Learning Platform',
+    start_url: '/dashboard',
+    display: 'standalone',
+    background_color: '#0f0f1a',
+    theme_color: '#6366f1',
+    icons: [
+      { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+  }
+}
+```
+
+### 4.3 Lazy loading для тяжёлых компонентов
+В app/(dashboard)/lessons/page.tsx:
+```ts
+import dynamic from 'next/dynamic'
+const LessonPlayer = dynamic(() => import('@/components/lessons/LessonPlayer'), {
+  loading: () => <SkeletonCard />
+})
+```
+
+---
+## ЧАСТЬ 5: ДЕМО-РЕЖИМ
+
+В app/(dashboard)/lessons/page.tsx:
+- Первый урок (a1-1-1 "To Be") всегда доступен без авторизации
+- Если пользователь не залогинен и пытается открыть второй урок — показать modal:
+  "Зарегистрируйся бесплатно чтобы продолжить обучение"
+  Кнопка "Войти / Зарегистрироваться" → /auth/login
+
+---
+## ФИНАЛ
+1. npx tsc --noEmit
+2. git add -A
+3. git commit -m "feat: security (rate limiting, auth headers, input validation), toast notifications, skeleton loading, mobile nav, PWA manifest, SEO meta, demo mode"
+4. git push

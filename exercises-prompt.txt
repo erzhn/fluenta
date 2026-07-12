@@ -1,0 +1,967 @@
+# НЕ ЗАПРАШИВАЙ РАЗРЕШЕНИЯ. Все изменения автоматически.
+# Запуск: claude --dangerously-skip-permissions < exercises-prompt.txt
+
+Проект: Fluenta — Next.js 14 + TypeScript + Tailwind + Supabase + Groq API.
+Акцент #6366f1. Web Speech API уже используется в проекте.
+
+---
+## ЗАДАЧА 1: ДИКТАНТ (DICTATION)
+
+Создай app/(dashboard)/dictation/page.tsx
+
+Принцип: AI произносит слово/фразу через Web Speech API (TTS), пользователь пишет что услышал, система проверяет.
+
+```tsx
+'use client'
+import { useState, useRef, useCallback } from 'react'
+
+// Слова для диктанта по уровням
+const DICTATION_WORDS: Record<string, { word: string; hint?: string }[]> = {
+  A1: [
+    { word: 'apple' }, { word: 'house' }, { word: 'water' }, { word: 'family' },
+    { word: 'school' }, { word: 'book' }, { word: 'friend' }, { word: 'happy' },
+    { word: 'morning' }, { word: 'telephone' }, { word: 'beautiful' }, { word: 'together' },
+    { word: 'yesterday' }, { word: 'important' }, { word: 'because' },
+  ],
+  A2: [
+    { word: 'comfortable' }, { word: 'interesting' }, { word: 'different' },
+    { word: 'government' }, { word: 'environment' }, { word: 'experience' },
+    { word: 'necessary' }, { word: 'opportunity' }, { word: 'definitely' },
+    { word: 'restaurant' }, { word: 'information' }, { word: 'understand' },
+    { word: 'communication' }, { word: 'entertainment' }, { word: 'relationship' },
+  ],
+  B1: [
+    { word: 'achievement' }, { word: 'approximately' }, { word: 'circumstances' },
+    { word: 'consequently' }, { word: 'contemporary' }, { word: 'controversy' },
+    { word: 'enthusiasm' }, { word: 'exaggerate' }, { word: 'extraordinary' },
+    { word: 'particularly' }, { word: 'phenomenon' }, { word: 'pronunciation' },
+    { word: 'sophisticated' }, { word: 'simultaneously' }, { word: 'unconscious' },
+  ],
+  B2: [
+    { word: 'accommodation' }, { word: 'acknowledgement' }, { word: 'conscientious' },
+    { word: 'entrepreneurial' }, { word: 'miscellaneous' }, { word: 'perseverance' },
+    { word: 'bureaucracy' }, { word: 'catastrophe' }, { word: 'surveillance' },
+    { word: 'meteorological' }, { word: 'psychological' }, { word: 'unprecedented' },
+    { word: 'pharmaceutical' }, { word: 'choreography' }, { word: 'reconnaissance' },
+  ],
+  C1: [
+    { word: 'idiosyncratic' }, { word: 'onomatopoeia' }, { word: 'ephemeral' },
+    { word: 'surreptitious' }, { word: 'perspicacious' }, { word: 'magnanimous' },
+    { word: 'serendipitous' }, { word: 'mellifluous' }, { word: 'ubiquitous' },
+    { word: 'labyrinthine' }, { word: 'quintessential' }, { word: 'loquacious' },
+    { word: 'perfunctory' }, { word: 'obsequious' }, { word: 'recalcitrant' },
+  ],
+}
+
+type Level = 'A1' | 'A2' | 'B1' | 'B2' | 'C1'
+
+interface Result { word: string; userAnswer: string; correct: boolean }
+
+export default function DictationPage() {
+  const [level, setLevel] = useState<Level>('A1')
+  const [started, setStarted] = useState(false)
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [userInput, setUserInput] = useState('')
+  const [results, setResults] = useState<Result[]>([])
+  const [showAnswer, setShowAnswer] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [finished, setFinished] = useState(false)
+  const [playCount, setPlayCount] = useState(0)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const words = DICTATION_WORDS[level]
+  const ROUND_SIZE = 10
+  const sessionWords = words.slice(0, ROUND_SIZE)
+  const current = sessionWords[currentIndex]
+
+  function speak(text: string, slow = false) {
+    if (typeof window === 'undefined') return
+    window.speechSynthesis.cancel()
+    const utter = new SpeechSynthesisUtterance(text)
+    utter.lang = 'en-US'
+    utter.rate = slow ? 0.6 : 0.9
+    utter.pitch = 1
+    // Предпочитаем женский голос
+    const voices = window.speechSynthesis.getVoices()
+    const preferred = voices.find(v => v.lang === 'en-US' && v.name.includes('Female'))
+      ?? voices.find(v => v.lang === 'en-US')
+    if (preferred) utter.voice = preferred
+    setIsPlaying(true)
+    utter.onend = () => setIsPlaying(false)
+    window.speechSynthesis.speak(utter)
+  }
+
+  function handlePlay() {
+    setPlayCount(c => c + 1)
+    speak(current.word)
+    setTimeout(() => inputRef.current?.focus(), 100)
+  }
+
+  function handlePlaySlow() {
+    speak(current.word, true)
+  }
+
+  function handleCheck() {
+    const correct = userInput.trim().toLowerCase() === current.word.toLowerCase()
+    setResults(r => [...r, { word: current.word, userAnswer: userInput.trim(), correct }])
+    setShowAnswer(true)
+  }
+
+  function handleNext() {
+    if (currentIndex + 1 >= sessionWords.length) {
+      setFinished(true)
+    } else {
+      setCurrentIndex(i => i + 1)
+      setUserInput('')
+      setShowAnswer(false)
+      setPlayCount(0)
+      // Автоматически произносим следующее слово через 500мс
+      setTimeout(() => {
+        speak(sessionWords[currentIndex + 1].word)
+        inputRef.current?.focus()
+      }, 500)
+    }
+  }
+
+  function handleStart() {
+    setStarted(true)
+    setCurrentIndex(0)
+    setResults([])
+    setUserInput('')
+    setShowAnswer(false)
+    setFinished(false)
+    setPlayCount(0)
+    setTimeout(() => {
+      speak(sessionWords[0].word)
+      inputRef.current?.focus()
+    }, 300)
+  }
+
+  function handleRestart() {
+    setStarted(false)
+    setFinished(false)
+    setResults([])
+    setCurrentIndex(0)
+    setUserInput('')
+    setShowAnswer(false)
+  }
+
+  const score = results.filter(r => r.correct).length
+
+  // Экран результатов
+  if (finished) {
+    return (
+      <div className="p-4 sm:p-8 max-w-2xl mx-auto">
+        <h1 className="text-2xl font-bold text-white mb-8">Диктант завершён</h1>
+        <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 mb-6 text-center">
+          <div className="text-5xl font-bold mb-2"
+            style={{ color: score >= 8 ? '#10b981' : score >= 5 ? '#f59e0b' : '#ef4444' }}>
+            {score}/{sessionWords.length}
+          </div>
+          <p className="text-[#64748b]">
+            {score >= 8 ? '🎉 Отлично! Ты великолепно справился!' :
+             score >= 5 ? '👍 Хороший результат, продолжай практиковаться!' :
+             '💪 Не сдавайся, повтори эти слова ещё раз!'}
+          </p>
+        </div>
+
+        {/* Разбор ошибок */}
+        <div className="space-y-2 mb-6">
+          {results.map((r, i) => (
+            <div key={i} className={`flex items-center justify-between p-3 rounded-xl border ${
+              r.correct
+                ? 'bg-green-500/5 border-green-500/20'
+                : 'bg-red-500/5 border-red-500/20'
+            }`}>
+              <span className="text-white font-medium">{r.word}</span>
+              <div className="flex items-center gap-3">
+                {!r.correct && (
+                  <span className="text-red-400 text-sm line-through">{r.userAnswer || '(пусто)'}</span>
+                )}
+                <span className={r.correct ? 'text-green-400' : 'text-[#64748b]'}>
+                  {r.correct ? '✓' : r.word}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex gap-3">
+          <button onClick={handleRestart}
+            className="flex-1 py-3 bg-[#6366f1] hover:bg-[#5558e8] text-white font-medium rounded-xl transition-colors">
+            Попробовать снова
+          </button>
+          <button onClick={() => setLevel(l => {
+            const levels: Level[] = ['A1','A2','B1','B2','C1']
+            const idx = levels.indexOf(l)
+            return levels[Math.min(idx + 1, 4)]
+          })}
+            className="flex-1 py-3 bg-white/[0.06] hover:bg-white/10 text-white font-medium rounded-xl transition-colors">
+            Следующий уровень →
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Экран выбора уровня
+  if (!started) {
+    return (
+      <div className="p-4 sm:p-8 max-w-2xl mx-auto">
+        <h1 className="text-2xl font-bold text-white mb-2">Диктант</h1>
+        <p className="text-[#64748b] mb-8">Прослушай слово и напиши его правильно</p>
+
+        <div className="grid grid-cols-5 gap-2 mb-8">
+          {(['A1','A2','B1','B2','C1'] as Level[]).map(l => (
+            <button key={l} onClick={() => setLevel(l)}
+              className={`py-3 rounded-xl font-semibold transition-all border ${
+                level === l
+                  ? 'bg-[#6366f1] border-[#6366f1] text-white'
+                  : 'bg-white/[0.04] border-white/10 text-[#94a3b8] hover:text-white'
+              }`}>
+              {l}
+            </button>
+          ))}
+        </div>
+
+        <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 mb-6">
+          <h3 className="text-white font-semibold mb-3">Как это работает</h3>
+          <div className="space-y-2 text-[#64748b] text-sm">
+            <p>🔊 Нажми "Воспроизвести" — AI произнесёт слово</p>
+            <p>✍️ Напиши что услышал в поле ввода</p>
+            <p>✓ Нажми "Проверить" для проверки</p>
+            <p>🐢 Можно прослушать медленно если не расслышал</p>
+          </div>
+        </div>
+
+        <button onClick={handleStart}
+          className="w-full py-4 bg-[#6366f1] hover:bg-[#5558e8] text-white font-semibold rounded-2xl text-lg transition-colors">
+          Начать диктант ({ROUND_SIZE} слов)
+        </button>
+      </div>
+    )
+  }
+
+  // Основной экран диктанта
+  return (
+    <div className="p-4 sm:p-8 max-w-2xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-xl font-bold text-white">Диктант · {level}</h1>
+        <span className="text-[#64748b] text-sm">{currentIndex + 1} / {sessionWords.length}</span>
+      </div>
+
+      {/* Прогресс */}
+      <div className="h-1.5 bg-white/[0.06] rounded-full mb-8 overflow-hidden">
+        <div className="h-full bg-[#6366f1] rounded-full transition-all duration-500"
+          style={{ width: `${(currentIndex / sessionWords.length) * 100}%` }} />
+      </div>
+
+      {/* Главная карточка */}
+      <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-8 mb-6 text-center">
+        {/* Кнопки воспроизведения */}
+        <div className="flex gap-3 justify-center mb-8">
+          <button onClick={handlePlay} disabled={isPlaying}
+            className="flex items-center gap-2 px-6 py-3 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-50
+              text-white font-medium rounded-xl transition-all">
+            {isPlaying ? (
+              <span className="flex gap-1">
+                <span className="w-1 h-4 bg-white rounded animate-bounce" style={{animationDelay:'0ms'}}/>
+                <span className="w-1 h-4 bg-white rounded animate-bounce" style={{animationDelay:'150ms'}}/>
+                <span className="w-1 h-4 bg-white rounded animate-bounce" style={{animationDelay:'300ms'}}/>
+              </span>
+            ) : '🔊'}
+            Воспроизвести
+            {playCount > 0 && <span className="text-white/60 text-xs">×{playCount}</span>}
+          </button>
+          <button onClick={handlePlaySlow} disabled={isPlaying}
+            className="flex items-center gap-2 px-4 py-3 bg-white/[0.06] hover:bg-white/10
+              text-[#94a3b8] font-medium rounded-xl transition-all border border-white/10">
+            🐢 Медленно
+          </button>
+        </div>
+
+        {/* Поле ввода */}
+        <input
+          ref={inputRef}
+          type="text"
+          value={userInput}
+          onChange={e => !showAnswer && setUserInput(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && !showAnswer && userInput && handleCheck()}
+          disabled={showAnswer}
+          placeholder="Напиши слово здесь..."
+          className={`w-full text-center text-xl font-medium bg-white/[0.06] border rounded-xl px-4 py-4
+            outline-none transition-all placeholder:text-[#334155] text-white
+            ${showAnswer
+              ? results[results.length-1]?.correct
+                ? 'border-green-500/50 bg-green-500/10'
+                : 'border-red-500/50 bg-red-500/10'
+              : 'border-white/10 focus:border-[#6366f1]/50'
+            }`}
+        />
+
+        {/* Результат проверки */}
+        {showAnswer && (
+          <div className="mt-4">
+            {results[results.length-1]?.correct ? (
+              <p className="text-green-400 font-semibold text-lg">✓ Правильно!</p>
+            ) : (
+              <div>
+                <p className="text-red-400 font-semibold text-lg mb-1">✗ Неправильно</p>
+                <p className="text-white text-lg">Правильно: <span className="text-[#6366f1] font-bold">{current.word}</span></p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Кнопки действий */}
+      {!showAnswer ? (
+        <button onClick={handleCheck} disabled={!userInput.trim()}
+          className="w-full py-4 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-40
+            text-white font-semibold rounded-2xl transition-colors">
+          Проверить
+        </button>
+      ) : (
+        <button onClick={handleNext}
+          className="w-full py-4 bg-white/[0.06] hover:bg-white/10 text-white font-semibold rounded-2xl transition-colors">
+          {currentIndex + 1 >= sessionWords.length ? 'Посмотреть результаты' : 'Следующее слово →'}
+        </button>
+      )}
+
+      {/* Мини-результаты */}
+      {results.length > 0 && (
+        <div className="flex gap-1.5 mt-4 justify-center flex-wrap">
+          {results.map((r, i) => (
+            <div key={i} className={`w-6 h-6 rounded-full flex items-center justify-center text-xs
+              ${r.correct ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+              {r.correct ? '✓' : '✗'}
+            </div>
+          ))}
+          {Array.from({ length: sessionWords.length - results.length }).map((_, i) => (
+            <div key={i} className="w-6 h-6 rounded-full bg-white/[0.06]" />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+```
+
+Добавь "Диктант" в навигацию (Sidebar.tsx и MobileNav.tsx):
+```ts
+{ href: '/dictation', icon: Headphones, label: 'Диктант' }
+```
+
+---
+## ЗАДАЧА 2: SENTENCE BUILDER (СОБЕРИ ПРЕДЛОЖЕНИЕ)
+
+Создай app/(dashboard)/sentence-builder/page.tsx
+
+Принцип: показываем слова в перемешанном порядке → пользователь нажимает на них в правильном порядке → проверка.
+
+```tsx
+'use client'
+import { useState, useEffect } from 'react'
+
+interface Sentence {
+  words: string[]
+  translation: string
+  level: string
+  tip?: string
+}
+
+const SENTENCES: Sentence[] = [
+  // A1
+  { words: ['I', 'am', 'a', 'student'], translation: 'Я студент', level: 'A1' },
+  { words: ['She', 'likes', 'coffee'], translation: 'Она любит кофе', level: 'A1' },
+  { words: ['We', 'live', 'in', 'a', 'big', 'city'], translation: 'Мы живём в большом городе', level: 'A1' },
+  { words: ['He', 'plays', 'football', 'every', 'day'], translation: 'Он играет в футбол каждый день', level: 'A1' },
+  { words: ['The', 'cat', 'is', 'on', 'the', 'table'], translation: 'Кошка на столе', level: 'A1' },
+  { words: ['I', 'do', 'not', 'speak', 'French'], translation: 'Я не говорю по-французски', level: 'A1' },
+  { words: ['What', 'is', 'your', 'name'], translation: 'Как тебя зовут?', level: 'A1' },
+  { words: ['They', 'are', 'very', 'happy', 'today'], translation: 'Они очень счастливы сегодня', level: 'A1' },
+  // A2
+  { words: ['I', 'have', 'been', 'waiting', 'for', 'an', 'hour'], translation: 'Я жду уже час', level: 'A2' },
+  { words: ['She', 'has', 'never', 'visited', 'London'], translation: 'Она никогда не бывала в Лондоне', level: 'A2' },
+  { words: ['Could', 'you', 'help', 'me', 'please'], translation: 'Не могли бы вы мне помочь?', level: 'A2' },
+  { words: ['He', 'was', 'reading', 'when', 'I', 'arrived'], translation: 'Он читал, когда я пришёл', level: 'A2' },
+  { words: ['I', 'would', 'like', 'to', 'order', 'a', 'coffee'], translation: 'Я хотел бы заказать кофе', level: 'A2' },
+  // B1
+  { words: ['If', 'I', 'had', 'more', 'time', 'I', 'would', 'travel'], translation: 'Если бы у меня было больше времени, я бы путешествовал', level: 'B1' },
+  { words: ['The', 'report', 'was', 'written', 'by', 'the', 'manager'], translation: 'Отчёт был написан менеджером', level: 'B1' },
+  { words: ['Despite', 'the', 'rain', 'we', 'enjoyed', 'the', 'trip'], translation: 'Несмотря на дождь, мы получили удовольствие от поездки', level: 'B1' },
+  { words: ['She', 'suggested', 'that', 'we', 'leave', 'early'], translation: 'Она предложила уйти пораньше', level: 'B1' },
+  // B2
+  { words: ['Had', 'I', 'known', 'I', 'would', 'have', 'acted', 'differently'], translation: 'Знай я это, поступил бы иначе', level: 'B2' },
+  { words: ['The', 'more', 'you', 'practice', 'the', 'better', 'you', 'become'], translation: 'Чем больше практикуешься, тем лучше становишься', level: 'B2' },
+  { words: ['Not', 'only', 'did', 'he', 'win', 'but', 'he', 'broke', 'the', 'record'], translation: 'Он не только победил, но и побил рекорд', level: 'B2' },
+  // C1
+  { words: ['Seldom', 'have', 'I', 'encountered', 'such', 'remarkable', 'talent'], translation: 'Редко я встречал такой замечательный талант', level: 'C1' },
+  { words: ['Were', 'it', 'not', 'for', 'your', 'help', 'I', 'would', 'have', 'failed'], translation: 'Если бы не твоя помощь, я бы провалился', level: 'C1' },
+]
+
+function shuffle<T>(arr: T[]): T[] {
+  return [...arr].sort(() => Math.random() - 0.5)
+}
+
+type Level = 'A1' | 'A2' | 'B1' | 'B2' | 'C1'
+
+export default function SentenceBuilderPage() {
+  const [level, setLevel] = useState<Level>('A1')
+  const [sentences] = useState(() => shuffle(SENTENCES))
+  const [currentIdx, setCurrentIdx] = useState(0)
+  const [available, setAvailable] = useState<{word: string; id: number}[]>([])
+  const [selected, setSelected] = useState<{word: string; id: number}[]>([])
+  const [checked, setChecked] = useState<boolean | null>(null)
+  const [score, setScore] = useState({ correct: 0, total: 0 })
+
+  const levelSentences = sentences.filter(s => s.level === level)
+  const current = levelSentences[currentIdx % levelSentences.length]
+
+  useEffect(() => {
+    resetSentence()
+  }, [currentIdx, level])
+
+  function resetSentence() {
+    const shuffled = shuffle(current.words).map((w, i) => ({ word: w, id: i }))
+    setAvailable(shuffled)
+    setSelected([])
+    setChecked(null)
+  }
+
+  function selectWord(item: {word: string; id: number}) {
+    if (checked !== null) return
+    setAvailable(a => a.filter(w => w.id !== item.id))
+    setSelected(s => [...s, item])
+  }
+
+  function deselectWord(item: {word: string; id: number}) {
+    if (checked !== null) return
+    setSelected(s => s.filter(w => w.id !== item.id))
+    setAvailable(a => [...a, item])
+  }
+
+  function handleCheck() {
+    const answer = selected.map(w => w.word).join(' ')
+    const correct = answer === current.words.join(' ')
+    setChecked(correct)
+    setScore(s => ({ correct: s.correct + (correct ? 1 : 0), total: s.total + 1 }))
+  }
+
+  function handleNext() {
+    setCurrentIdx(i => i + 1)
+  }
+
+  return (
+    <div className="p-4 sm:p-8 max-w-3xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Собери предложение</h1>
+          <p className="text-[#64748b] text-sm mt-1">Нажимай на слова в правильном порядке</p>
+        </div>
+        <div className="text-right">
+          <p className="text-white font-semibold">{score.correct}/{score.total}</p>
+          <p className="text-[#64748b] text-xs">правильно</p>
+        </div>
+      </div>
+
+      {/* Выбор уровня */}
+      <div className="flex gap-2 mb-6">
+        {(['A1','A2','B1','B2','C1'] as Level[]).map(l => (
+          <button key={l} onClick={() => { setLevel(l); setCurrentIdx(0) }}
+            className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-all border ${
+              level === l ? 'bg-[#6366f1] border-[#6366f1] text-white' : 'bg-white/[0.04] border-white/10 text-[#94a3b8] hover:text-white'
+            }`}>
+            {l}
+          </button>
+        ))}
+      </div>
+
+      {/* Перевод */}
+      <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5 mb-6">
+        <p className="text-[#64748b] text-xs uppercase tracking-wider mb-2">Переведи на английский:</p>
+        <p className="text-white text-xl font-semibold">{current.translation}</p>
+      </div>
+
+      {/* Зона сборки предложения */}
+      <div className={`min-h-[72px] border-2 border-dashed rounded-2xl p-4 mb-4 flex flex-wrap gap-2 items-center transition-colors ${
+        checked === null
+          ? 'border-white/10 bg-white/[0.02]'
+          : checked
+          ? 'border-green-500/40 bg-green-500/5'
+          : 'border-red-500/40 bg-red-500/5'
+      }`}>
+        {selected.length === 0 && (
+          <p className="text-[#334155] text-sm">Нажимай на слова снизу...</p>
+        )}
+        {selected.map(item => (
+          <button key={item.id}
+            onClick={() => deselectWord(item)}
+            className="px-4 py-2 bg-[#6366f1]/20 border border-[#6366f1]/40 text-white
+              rounded-xl text-sm font-medium hover:bg-[#6366f1]/30 transition-all active:scale-95">
+            {item.word}
+          </button>
+        ))}
+      </div>
+
+      {/* Результат */}
+      {checked !== null && (
+        <div className={`rounded-xl p-3 mb-4 text-center ${
+          checked ? 'bg-green-500/10 border border-green-500/20' : 'bg-red-500/10 border border-red-500/20'
+        }`}>
+          {checked ? (
+            <p className="text-green-400 font-semibold">✓ Правильно!</p>
+          ) : (
+            <>
+              <p className="text-red-400 font-semibold mb-1">✗ Неправильно</p>
+              <p className="text-[#94a3b8] text-sm">
+                Правильно: <span className="text-white font-medium">{current.words.join(' ')}</span>
+              </p>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Доступные слова */}
+      <div className="flex flex-wrap gap-2 mb-6 min-h-[48px]">
+        {available.map(item => (
+          <button key={item.id}
+            onClick={() => selectWord(item)}
+            className="px-4 py-2 bg-white/[0.06] border border-white/10 text-white
+              rounded-xl text-sm font-medium hover:bg-white/10 hover:border-white/20 transition-all active:scale-95">
+            {item.word}
+          </button>
+        ))}
+      </div>
+
+      {/* Кнопки */}
+      <div className="flex gap-3">
+        {checked === null ? (
+          <>
+            <button onClick={resetSentence}
+              className="px-5 py-3 bg-white/[0.06] hover:bg-white/10 text-[#94a3b8] font-medium rounded-xl transition-colors border border-white/10">
+              ↺ Сброс
+            </button>
+            <button onClick={handleCheck} disabled={selected.length === 0}
+              className="flex-1 py-3 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-40
+                text-white font-semibold rounded-xl transition-colors">
+              Проверить
+            </button>
+          </>
+        ) : (
+          <button onClick={handleNext}
+            className="flex-1 py-3 bg-[#6366f1] hover:bg-[#5558e8] text-white font-semibold rounded-xl transition-colors">
+            Следующее предложение →
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+```
+
+Добавь в навигацию (Sidebar.tsx и MobileNav.tsx):
+```ts
+{ href: '/sentence-builder', icon: AlignLeft, label: 'Предложения' }
+```
+
+---
+## ЗАДАЧА 3: GRAMMAR EXERCISES С AI-ПРОВЕРКОЙ
+
+### 3a. API endpoint для проверки грамматики
+
+Создай app/api/ai/check-grammar-exercise/route.ts:
+
+```ts
+import { NextRequest, NextResponse } from 'next/server'
+import Groq from 'groq-sdk'
+
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
+
+export async function POST(req: NextRequest) {
+  const { topic, userAnswer, exercise, correctAnswer } = await req.json()
+
+  const completion = await groq.chat.completions.create({
+    model: 'llama-3.1-8b-instant',
+    messages: [{
+      role: 'user',
+      content: `You are an English grammar teacher. Check the student's answer.
+
+Grammar topic: ${topic}
+Exercise: ${exercise}
+Correct answer: ${correctAnswer}
+Student's answer: ${userAnswer}
+
+Rules:
+- Minor spelling is OK if grammar structure is correct
+- Accept paraphrases that use the same grammar structure
+- Return JSON only
+
+{
+  "isCorrect": true/false,
+  "feedback": "Brief feedback in Russian (1-2 sentences)",
+  "explanation": "Grammar explanation in Russian if wrong (1 sentence)",
+  "betterAnswer": "Ideal answer if student was wrong or could improve"
+}`
+    }],
+    response_format: { type: 'json_object' },
+    temperature: 0.3,
+  })
+
+  return NextResponse.json(JSON.parse(completion.choices[0].message.content ?? '{}'))
+}
+```
+
+### 3b. API endpoint для генерации упражнений
+
+Создай app/api/ai/generate-grammar-exercise/route.ts:
+
+```ts
+import { NextRequest, NextResponse } from 'next/server'
+import Groq from 'groq-sdk'
+
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
+
+export async function POST(req: NextRequest) {
+  const { topic, level, exerciseType = 'fill-in' } = await req.json()
+
+  const types = {
+    'fill-in': 'Fill in the blank sentence with the correct form',
+    'transform': 'Transform the sentence according to the instruction',
+    'error-correction': 'Find and correct the grammar mistake in the sentence',
+    'multiple-choice': 'Choose the correct option (A, B, C, or D)',
+  }
+
+  const completion = await groq.chat.completions.create({
+    model: 'llama-3.1-8b-instant',
+    messages: [{
+      role: 'user',
+      content: `Create a grammar exercise for ${level} level on topic: ${topic}.
+Type: ${types[exerciseType as keyof typeof types] ?? types['fill-in']}
+
+Return JSON:
+{
+  "exercise": "The exercise text (use ___ for blanks)",
+  "instruction": "Brief instruction for the student in Russian",
+  "correctAnswer": "The correct answer",
+  "hint": "Optional hint in Russian",
+  "explanation": "Grammar rule explanation in Russian (1-2 sentences)"
+}`
+    }],
+    response_format: { type: 'json_object' },
+    temperature: 0.7,
+  })
+
+  return NextResponse.json(JSON.parse(completion.choices[0].message.content ?? '{}'))
+}
+```
+
+### 3c. Создай компонент упражнения: components/GrammarExercise.tsx
+
+```tsx
+'use client'
+import { useState } from 'react'
+
+interface Exercise {
+  exercise: string
+  instruction: string
+  correctAnswer: string
+  hint?: string
+  explanation?: string
+}
+
+interface CheckResult {
+  isCorrect: boolean
+  feedback: string
+  explanation?: string
+  betterAnswer?: string
+}
+
+interface GrammarExerciseProps {
+  topic: string
+  level: string
+  exercise: Exercise
+  onNext?: () => void
+  onCorrect?: () => void
+}
+
+export function GrammarExercise({ topic, level, exercise, onNext, onCorrect }: GrammarExerciseProps) {
+  const [userAnswer, setUserAnswer] = useState('')
+  const [result, setResult] = useState<CheckResult | null>(null)
+  const [checking, setChecking] = useState(false)
+  const [showHint, setShowHint] = useState(false)
+
+  async function handleCheck() {
+    if (!userAnswer.trim()) return
+    setChecking(true)
+    try {
+      const res = await fetch('/api/ai/check-grammar-exercise', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topic,
+          userAnswer: userAnswer.trim(),
+          exercise: exercise.exercise,
+          correctAnswer: exercise.correctAnswer,
+        }),
+      })
+      const data = await res.json()
+      setResult(data)
+      if (data.isCorrect) onCorrect?.()
+    } catch {
+      setResult({ isCorrect: false, feedback: 'Ошибка проверки. Попробуй снова.' })
+    } finally {
+      setChecking(false)
+    }
+  }
+
+  function handleNext() {
+    setUserAnswer('')
+    setResult(null)
+    setShowHint(false)
+    onNext?.()
+  }
+
+  // Подсветка пробела в упражнении
+  const exerciseDisplay = exercise.exercise.replace(
+    /___+/g,
+    '<span class="inline-block min-w-[80px] border-b-2 border-[#6366f1] text-center px-2 text-[#6366f1]">' +
+    (result ? exercise.correctAnswer : '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;') +
+    '</span>'
+  )
+
+  return (
+    <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6">
+      {/* Инструкция */}
+      <p className="text-[#64748b] text-sm mb-4">{exercise.instruction}</p>
+
+      {/* Упражнение */}
+      <div className="bg-white/[0.03] rounded-xl p-4 mb-5">
+        <p className="text-white text-lg leading-relaxed"
+          dangerouslySetInnerHTML={{ __html: exerciseDisplay }} />
+      </div>
+
+      {/* Объяснение (до начала) */}
+      {exercise.explanation && !result && (
+        <p className="text-[#475569] text-sm italic mb-4">📚 {exercise.explanation}</p>
+      )}
+
+      {/* Поле ввода */}
+      {!result && (
+        <>
+          <input
+            type="text"
+            value={userAnswer}
+            onChange={e => setUserAnswer(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleCheck()}
+            placeholder="Твой ответ..."
+            className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3
+              text-white placeholder:text-[#334155] outline-none focus:border-[#6366f1]/50 transition-colors mb-3"
+          />
+
+          {exercise.hint && (
+            <button onClick={() => setShowHint(!showHint)}
+              className="text-[#475569] text-xs hover:text-[#64748b] transition-colors mb-3 block">
+              {showHint ? '▼ Скрыть подсказку' : '▶ Показать подсказку'}
+            </button>
+          )}
+          {showHint && exercise.hint && (
+            <p className="text-[#64748b] text-sm bg-white/[0.03] rounded-lg px-3 py-2 mb-3">
+              💡 {exercise.hint}
+            </p>
+          )}
+
+          <button onClick={handleCheck} disabled={!userAnswer.trim() || checking}
+            className="w-full py-3 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-40
+              text-white font-semibold rounded-xl transition-colors">
+            {checking ? 'Проверяю...' : 'Проверить'}
+          </button>
+        </>
+      )}
+
+      {/* Результат проверки */}
+      {result && (
+        <div className={`rounded-xl p-4 mb-4 border ${
+          result.isCorrect ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/10 border-red-500/20'
+        }`}>
+          <p className={`font-semibold mb-1 ${result.isCorrect ? 'text-green-400' : 'text-red-400'}`}>
+            {result.isCorrect ? '✓ Правильно!' : '✗ Неправильно'}
+          </p>
+          <p className="text-[#94a3b8] text-sm">{result.feedback}</p>
+          {result.explanation && (
+            <p className="text-[#64748b] text-sm mt-2">📖 {result.explanation}</p>
+          )}
+          {result.betterAnswer && !result.isCorrect && (
+            <p className="text-[#94a3b8] text-sm mt-2">
+              Правильно: <span className="text-white font-medium">{result.betterAnswer}</span>
+            </p>
+          )}
+        </div>
+      )}
+
+      {result && (
+        <button onClick={handleNext}
+          className="w-full py-3 bg-white/[0.06] hover:bg-white/10 text-white font-medium rounded-xl transition-colors border border-white/10">
+          Следующее упражнение →
+        </button>
+      )}
+    </div>
+  )
+}
+```
+
+### 3d. Создай страницу Grammar Exercises
+
+Создай app/(dashboard)/grammar-exercises/page.tsx:
+
+```tsx
+'use client'
+import { useState, useEffect } from 'react'
+import { GrammarExercise } from '@/components/GrammarExercise'
+
+const GRAMMAR_TOPICS = [
+  { id: 'present-simple', label: 'Present Simple', level: 'A1' },
+  { id: 'present-continuous', label: 'Present Continuous', level: 'A1' },
+  { id: 'past-simple', label: 'Past Simple', level: 'A2' },
+  { id: 'present-perfect', label: 'Present Perfect', level: 'A2' },
+  { id: 'conditionals-1', label: 'First Conditional', level: 'B1' },
+  { id: 'conditionals-2', label: 'Second Conditional', level: 'B1' },
+  { id: 'passive-voice', label: 'Passive Voice', level: 'B1' },
+  { id: 'reported-speech', label: 'Reported Speech', level: 'B2' },
+  { id: 'conditionals-3', label: 'Third Conditional', level: 'B2' },
+  { id: 'subjunctive', label: 'Subjunctive Mood', level: 'C1' },
+  { id: 'inversion', label: 'Inversion', level: 'C1' },
+]
+
+const EXERCISE_TYPES = [
+  { id: 'fill-in', label: 'Вставь слово' },
+  { id: 'transform', label: 'Трансформация' },
+  { id: 'error-correction', label: 'Найди ошибку' },
+]
+
+interface ExerciseData {
+  exercise: string
+  instruction: string
+  correctAnswer: string
+  hint?: string
+  explanation?: string
+}
+
+export default function GrammarExercisesPage() {
+  const [selectedTopic, setSelectedTopic] = useState(GRAMMAR_TOPICS[0])
+  const [exerciseType, setExerciseType] = useState('fill-in')
+  const [exercise, setExercise] = useState<ExerciseData | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [score, setScore] = useState({ correct: 0, total: 0 })
+
+  async function loadExercise() {
+    setLoading(true)
+    setExercise(null)
+    try {
+      const res = await fetch('/api/ai/generate-grammar-exercise', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topic: selectedTopic.label,
+          level: selectedTopic.level,
+          exerciseType,
+        }),
+      })
+      const data = await res.json()
+      setExercise(data)
+    } catch {
+      setLoading(false)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadExercise()
+  }, [selectedTopic, exerciseType])
+
+  return (
+    <div className="p-4 sm:p-8 max-w-3xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Упражнения по грамматике</h1>
+          <p className="text-[#64748b] text-sm mt-1">AI проверяет твои ответы</p>
+        </div>
+        <div className="text-right">
+          <p className="text-white font-semibold">{score.correct}/{score.total}</p>
+          <p className="text-[#64748b] text-xs">правильно</p>
+        </div>
+      </div>
+
+      {/* Выбор темы */}
+      <div className="flex gap-2 flex-wrap mb-4">
+        {GRAMMAR_TOPICS.map(topic => (
+          <button key={topic.id}
+            onClick={() => setSelectedTopic(topic)}
+            className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-all border ${
+              selectedTopic.id === topic.id
+                ? 'bg-[#6366f1] border-[#6366f1] text-white'
+                : 'bg-white/[0.04] border-white/10 text-[#94a3b8] hover:text-white'
+            }`}>
+            {topic.label}
+            <span className="ml-1.5 text-[10px] opacity-60">{topic.level}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Тип упражнения */}
+      <div className="flex gap-2 mb-6">
+        {EXERCISE_TYPES.map(t => (
+          <button key={t.id}
+            onClick={() => setExerciseType(t.id)}
+            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all border ${
+              exerciseType === t.id
+                ? 'bg-white/10 border-white/20 text-white'
+                : 'bg-transparent border-white/[0.06] text-[#64748b] hover:text-[#94a3b8]'
+            }`}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Упражнение */}
+      {loading && (
+        <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-8 text-center">
+          <div className="w-8 h-8 border-2 border-[#6366f1] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-[#64748b] text-sm">Генерирую упражнение...</p>
+        </div>
+      )}
+
+      {!loading && exercise && (
+        <GrammarExercise
+          topic={selectedTopic.label}
+          level={selectedTopic.level}
+          exercise={exercise}
+          onNext={loadExercise}
+          onCorrect={() => setScore(s => ({ correct: s.correct + 1, total: s.total + 1 }))}
+        />
+      )}
+    </div>
+  )
+}
+```
+
+Добавь в навигацию (Sidebar.tsx и MobileNav.tsx):
+```ts
+{ href: '/grammar-exercises', icon: BookOpen, label: 'Упражнения' }
+```
+
+### 3e. Добавь кнопку "Упражнения" на страницу грамматики
+
+В app/(dashboard)/grammar/page.tsx добавь кнопку перехода рядом с каждой темой:
+```tsx
+<Link href={`/grammar-exercises?topic=${topic.id}`}
+  className="text-xs text-[#6366f1] hover:text-[#a5b4fc] transition-colors">
+  Упражнения →
+</Link>
+```
+
+---
+## ФИНАЛ
+1. npx tsc --noEmit — исправь все TypeScript ошибки
+2. git add -A && git commit -m "feat: dictation page (Web Speech API), sentence builder (drag-click words), grammar exercises with AI checking (SM-2)" && git push

@@ -1,0 +1,388 @@
+# НЕ ЗАПРАШИВАЙ РАЗРЕШЕНИЯ. Все изменения — автоматически.
+# Запуск: claude --dangerously-skip-permissions < fix-speech-prompt.txt
+
+Проект Fluenta. Нужно починить Web Speech API во всех местах.
+
+## ПРОБЛЕМА
+SpeechSynthesis (TTS) молчит потому что:
+1. `getVoices()` возвращает [] при первом вызове — голоса грузятся асинхронно
+2. Нужно ждать событие `voiceschanged`
+3. После `speechSynthesis.cancel()` иногда зависает — нужен небольшой timeout
+
+SpeechRecognition (STT) не работает потому что:
+1. Не обрабатывается `onend` — после паузы запись останавливается и не возобновляется
+2. Нужен `continuous: true` и `interimResults: true`
+
+---
+## ШАГ 1: Создай lib/speech.ts — единая утилита для всего проекта
+
+```ts
+'use client'
+
+// ─── TEXT TO SPEECH ───────────────────────────────────────────────
+
+let _voices: SpeechSynthesisVoice[] = []
+
+function loadVoices(): Promise<SpeechSynthesisVoice[]> {
+  return new Promise((resolve) => {
+    const voices = window.speechSynthesis.getVoices()
+    if (voices.length > 0) { _voices = voices; resolve(voices); return }
+    window.speechSynthesis.addEventListener('voiceschanged', () => {
+      _voices = window.speechSynthesis.getVoices()
+      resolve(_voices)
+    }, { once: true })
+  })
+}
+
+export function getBestEnglishVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | undefined {
+  // Предпочтения: US English female, затем любой US, затем любой English
+  return (
+    voices.find(v => v.lang === 'en-US' && v.name.toLowerCase().includes('female')) ||
+    voices.find(v => v.lang === 'en-US' && !v.name.toLowerCase().includes('male')) ||
+    voices.find(v => v.lang === 'en-US') ||
+    voices.find(v => v.lang.startsWith('en-GB')) ||
+    voices.find(v => v.lang.startsWith('en'))
+  )
+}
+
+export async function speak(
+  text: string,
+  options: { rate?: number; pitch?: number; onEnd?: () => void; onStart?: () => void } = {}
+): Promise<void> {
+  if (typeof window === 'undefined') return
+  
+  // Останови предыдущее
+  window.speechSynthesis.cancel()
+  
+  // Небольшая пауза после cancel (иначе Chrome иногда игнорирует следующий speak)
+  await new Promise(r => setTimeout(r, 100))
+  
+  const voices = _voices.length > 0 ? _voices : await loadVoices()
+  
+  const utterance = new SpeechSynthesisUtterance(text)
+  utterance.lang = 'en-US'
+  utterance.rate = options.rate ?? 1
+  utterance.pitch = options.pitch ?? 1
+  
+  const voice = getBestEnglishVoice(voices)
+  if (voice) utterance.voice = voice
+  
+  if (options.onStart) utterance.onstart = options.onStart
+  if (options.onEnd) utterance.onend = options.onEnd
+  
+  utterance.onerror = (e) => {
+    // 'interrupted' — нормально когда cancel() вызван, не логируй как ошибку
+    if (e.error !== 'interrupted') console.warn('TTS error:', e.error)
+    options.onEnd?.()
+  }
+  
+  window.speechSynthesis.speak(utterance)
+}
+
+export function stopSpeaking() {
+  if (typeof window !== 'undefined') window.speechSynthesis.cancel()
+}
+
+export function isSpeaking(): boolean {
+  if (typeof window === 'undefined') return false
+  return window.speechSynthesis.speaking
+}
+
+// ─── SPEECH RECOGNITION (STT) ─────────────────────────────────────
+
+type RecognitionCallback = (transcript: string, isFinal: boolean) => void
+
+export function createRecognition(onResult: RecognitionCallback, onEnd?: () => void) {
+  if (typeof window === 'undefined') return null
+  
+  const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+  if (!SpeechRec) return null
+  
+  const rec = new SpeechRec()
+  rec.lang = 'en-US'
+  rec.continuous = true
+  rec.interimResults = true
+  rec.maxAlternatives = 1
+  
+  rec.onresult = (event: any) => {
+    let interim = ''
+    let final = ''
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const t = event.results[i][0].transcript
+      if (event.results[i].isFinal) final += t
+      else interim += t
+    }
+    if (final) onResult(final, true)
+    else if (interim) onResult(interim, false)
+  }
+  
+  rec.onerror = (e: any) => {
+    if (e.error !== 'aborted' && e.error !== 'no-speech') {
+      console.warn('STT error:', e.error)
+    }
+  }
+  
+  rec.onend = () => onEnd?.()
+  
+  return rec
+}
+
+export function isSpeechRecognitionSupported(): boolean {
+  if (typeof window === 'undefined') return false
+  return !!(window as any).SpeechRecognition || !!(window as any).webkitSpeechRecognition
+}
+```
+
+---
+## ШАГ 2: Почини app/(dashboard)/vocabulary/page.tsx
+
+Найди кнопку "Послушать" / "Listen" / 🔊 и замени обработчик на:
+```ts
+import { speak, stopSpeaking } from '@/lib/speech'
+// ...
+// В компоненте:
+const [speaking, setSpeaking] = useState(false)
+
+async function handleListen(word: string) {
+  if (speaking) { stopSpeaking(); setSpeaking(false); return }
+  setSpeaking(true)
+  await speak(word, { 
+    rate: 0.9,
+    onEnd: () => setSpeaking(false)
+  })
+}
+```
+Кнопка должна показывать "⏹ Стоп" когда speaking=true, и "🔊 Послушать" когда false.
+
+---
+## ШАГ 3: Почини app/(dashboard)/listening/page.tsx
+
+Найди всю логику воспроизведения и замени на использование lib/speech.ts:
+
+```ts
+import { speak, stopSpeaking, isSpeaking } from '@/lib/speech'
+
+const [playing, setPlaying] = useState(false)
+const [currentRate, setCurrentRate] = useState(1)
+
+async function handlePlay() {
+  if (playing) {
+    stopSpeaking()
+    setPlaying(false)
+    return
+  }
+  setPlaying(true)
+  await speak(currentText, {
+    rate: currentRate,
+    onStart: () => setPlaying(true),
+    onEnd: () => setPlaying(false)
+  })
+}
+```
+
+Кнопка ▶️/⏹ переключается по состоянию `playing`.
+Скорость передаётся как `rate` в speak().
+
+---
+## ШАГ 4: Почини app/(dashboard)/reading/page.tsx
+
+Кнопка "🔊 Слушать" / "Слушать":
+```ts
+import { speak, stopSpeaking } from '@/lib/speech'
+
+const [speaking, setSpeaking] = useState(false)
+
+async function handleListen() {
+  if (speaking) { stopSpeaking(); setSpeaking(false); return }
+  setSpeaking(true)
+  await speak(articleText, {
+    rate: 0.95,
+    onEnd: () => setSpeaking(false)
+  })
+}
+```
+
+---
+## ШАГ 5: Почини app/(dashboard)/ai-tutor/page.tsx — микрофон
+
+Найди VoiceButton или кнопку микрофона. Замени логику на:
+
+```ts
+import { createRecognition, isSpeechRecognitionSupported } from '@/lib/speech'
+
+const [listening, setListening] = useState(false)
+const recRef = useRef<any>(null)
+
+function toggleMic() {
+  if (!isSpeechRecognitionSupported()) {
+    alert('Микрофон работает только в Chrome')
+    return
+  }
+  
+  if (listening) {
+    recRef.current?.stop()
+    setListening(false)
+    return
+  }
+  
+  setListening(true)
+  recRef.current = createRecognition(
+    (transcript, isFinal) => {
+      if (isFinal) {
+        setInput(prev => prev + ' ' + transcript)  // или setInput(transcript)
+      }
+    },
+    () => setListening(false)
+  )
+  recRef.current?.start()
+}
+```
+
+Кнопка микрофона: красная пульсирующая когда `listening`, обычная когда нет.
+CSS для пульсации: `animate-pulse bg-red-500`
+
+---
+## ШАГ 6: Добавь микрофон в Разговорный клуб (Speaking Club)
+
+В app/(dashboard)/lessons/page.tsx или где рендерятся уроки модуля Speaking Club —
+для уроков с module='speaking' добавь Speaking Exercise компонент:
+
+Создай components/lessons/SpeakingExercise.tsx:
+```tsx
+'use client'
+import { useState, useRef } from 'react'
+import { createRecognition, speak, isSpeechRecognitionSupported } from '@/lib/speech'
+import { Mic, MicOff, Volume2, CheckCircle } from 'lucide-react'
+
+interface Props {
+  prompt: string          // Что нужно сказать / тема для разговора
+  sampleAnswer?: string   // Образец ответа
+  onComplete?: () => void
+}
+
+export default function SpeakingExercise({ prompt, sampleAnswer, onComplete }: Props) {
+  const [phase, setPhase] = useState<'ready'|'listening'|'done'>('ready')
+  const [transcript, setTranscript] = useState('')
+  const [interimText, setInterimText] = useState('')
+  const recRef = useRef<any>(null)
+  const supported = isSpeechRecognitionSupported()
+
+  function startListening() {
+    if (!supported) return
+    setPhase('listening')
+    setTranscript('')
+    setInterimText('')
+    
+    recRef.current = createRecognition(
+      (text, isFinal) => {
+        if (isFinal) setTranscript(prev => prev + ' ' + text)
+        else setInterimText(text)
+      },
+      () => {
+        setPhase('done')
+        setInterimText('')
+      }
+    )
+    recRef.current?.start()
+  }
+
+  function stopListening() {
+    recRef.current?.stop()
+    setPhase('done')
+    setInterimText('')
+  }
+
+  async function listenSample() {
+    if (sampleAnswer) await speak(sampleAnswer, { rate: 0.9 })
+  }
+
+  const wordCount = transcript.trim().split(/\s+/).filter(Boolean).length
+
+  return (
+    <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 space-y-4">
+      {/* Prompt */}
+      <div className="bg-[#6366f1]/10 border border-[#6366f1]/30 rounded-xl p-4">
+        <p className="text-white text-sm font-medium mb-1">🗣️ Говори на тему:</p>
+        <p className="text-[#a5b4fc] text-base">{prompt}</p>
+      </div>
+
+      {/* Transcript */}
+      {(transcript || interimText) && (
+        <div className="bg-white/[0.03] rounded-xl p-4 min-h-[80px]">
+          <p className="text-white text-sm">{transcript}</p>
+          <p className="text-[#64748b] text-sm italic">{interimText}</p>
+        </div>
+      )}
+
+      {/* Controls */}
+      <div className="flex gap-3 flex-wrap">
+        {phase === 'ready' && (
+          <button onClick={startListening} disabled={!supported}
+            className="flex items-center gap-2 px-5 py-3 bg-[#6366f1] hover:bg-[#5558e8] text-white rounded-xl font-semibold transition-all disabled:opacity-40">
+            <Mic className="w-4 h-4" /> Начать говорить
+          </button>
+        )}
+
+        {phase === 'listening' && (
+          <button onClick={stopListening}
+            className="flex items-center gap-2 px-5 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-semibold transition-all animate-pulse">
+            <MicOff className="w-4 h-4" /> Остановить
+          </button>
+        )}
+
+        {phase === 'done' && (
+          <>
+            <button onClick={() => { setPhase('ready'); setTranscript('') }}
+              className="flex items-center gap-2 px-4 py-2.5 bg-white/[0.06] hover:bg-white/10 text-white rounded-xl text-sm transition-all">
+              <Mic className="w-4 h-4" /> Ещё раз
+            </button>
+            {sampleAnswer && (
+              <button onClick={listenSample}
+                className="flex items-center gap-2 px-4 py-2.5 bg-white/[0.06] hover:bg-white/10 text-white rounded-xl text-sm transition-all">
+                <Volume2 className="w-4 h-4" /> Образец ответа
+              </button>
+            )}
+            {wordCount >= 5 && (
+              <button onClick={onComplete}
+                className="flex items-center gap-2 px-4 py-2.5 bg-green-500/20 border border-green-500/40 text-green-400 rounded-xl text-sm transition-all">
+                <CheckCircle className="w-4 h-4" /> Засчитать ({wordCount} слов)
+              </button>
+            )}
+          </>
+        )}
+      </div>
+
+      {!supported && (
+        <p className="text-yellow-400 text-xs">⚠️ Микрофон работает только в Chrome</p>
+      )}
+
+      {phase === 'done' && wordCount > 0 && (
+        <div className="text-[#64748b] text-xs">
+          Произнесено слов: {wordCount} {wordCount < 10 ? '— попробуй сказать больше!' : '— отлично!'}
+        </div>
+      )}
+    </div>
+  )
+}
+```
+
+Подключи SpeakingExercise в уроки с module='speaking' (Speaking Club).
+В LessonPlayer или в app/(dashboard)/lessons/[id]/page.tsx:
+- Если урок из speaking club → после теории и примеров показывай SpeakingExercise
+- Prompt = тема из урока (lesson.title или специальный speaking prompt)
+- SampleAnswer = один из примеров урока
+
+---
+## ШАГ 7: Также почини кнопки озвучки в Grammar (грамматический справочник)
+
+В app/(dashboard)/grammar/page.tsx найди кнопку 🔊 и замени на:
+```ts
+import { speak } from '@/lib/speech'
+// onClick={() => speak(example, { rate: 0.9 })}
+```
+
+---
+## ФИНАЛ
+1. Убедись что lib/speech.ts не импортируется на сервере (везде 'use client' на страницах или динамический импорт)
+2. npx tsc --noEmit
+3. git add -A && git commit -m "fix: web speech API (TTS voices async load, STT continuous mode, mic in speaking club)" && git push

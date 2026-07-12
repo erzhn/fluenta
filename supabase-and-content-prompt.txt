@@ -1,0 +1,330 @@
+# НЕ ЗАПРАШИВАЙ РАЗРЕШЕНИЯ. Все изменения файлов — автоматически.
+# Запуск: claude --dangerously-skip-permissions < supabase-and-content-prompt.txt
+
+Проект: Fluenta — AI English Learning Platform (Next.js 14 + TypeScript + Supabase + Tailwind).
+Supabase таблицы уже созданы (SQL выполнен в Supabase Dashboard).
+
+Задача состоит из двух частей:
+1. Перенести весь прогресс из localStorage в Supabase
+2. Добавить новые модули: Business English, Academic Writing, IELTS, TOEFL
+
+---
+# ЧАСТЬ 1: SUPABASE MIGRATION
+
+## 1.1 Создай lib/progress.ts — единый слой работы с прогрессом
+
+```ts
+// Все функции работают с Supabase. Используют createClient из lib/supabase-client.ts
+// Если пользователь не авторизован — fallback на localStorage (ключи те же что были)
+
+export async function getUserProfile(userId: string)
+export async function updateUserXP(userId: string, xp: number)
+export async function completeLesson(userId: string, lessonId: string, score: number)
+export async function getLessonCompletions(userId: string): Promise<Record<string, {score: number, completedAt: string}>>
+export async function updateVocabWord(userId: string, wordId: string, box: number, intervalDays: number)
+export async function getVocabularyProgress(userId: string): Promise<Record<string, {box: number, intervalDays: number, dueDate: string, seen: boolean}>>
+export async function logActivity(userId: string, minutes: number, xp: number)
+export async function getActivityLog(userId: string, days: number): Promise<Record<string, {minutes: number, xp: number}>>
+export async function saveWritingSubmission(userId: string, data: {level: string, topic: string, text: string, score: number, feedback: object})
+export async function getWritingSubmissions(userId: string)
+export async function updateStreak(userId: string)
+export async function setUserLevel(userId: string, level: string, score: number)
+```
+
+Логика fallback:
+- Оборачивай каждый вызов в try/catch
+- Если Supabase недоступен или юзер не залогинен → читай/пиши localStorage с теми же ключами что были (fluenta_lesson_progress, fluenta_vocab_srs, fluenta_streak, итд)
+- Таким образом оффлайн режим работает
+
+## 1.2 Создай хук hooks/useProgress.ts
+
+```ts
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase-client'
+import * as progress from '@/lib/progress'
+
+export function useProgress() {
+  const [userId, setUserId] = useState<string|null>(null)
+  const [profile, setProfile] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getSession().then(({ data }) => {
+      const uid = data.session?.user?.id ?? null
+      setUserId(uid)
+      if (uid) {
+        progress.getUserProfile(uid).then(p => setProfile(p))
+      }
+      setLoading(false)
+    })
+  }, [])
+
+  return { userId, profile, loading,
+    completeLesson: (lessonId: string, score: number) => userId ? progress.completeLesson(userId, lessonId, score) : null,
+    updateVocabWord: (wordId: string, box: number, days: number) => userId ? progress.updateVocabWord(userId, wordId, box, days) : null,
+    logActivity: (mins: number, xp: number) => userId ? progress.logActivity(userId, mins, xp) : null,
+    setLevel: (level: string, score: number) => userId ? progress.setUserLevel(userId, level, score) : null,
+    refetchProfile: () => userId ? progress.getUserProfile(userId).then(setProfile) : null
+  }
+}
+```
+
+## 1.3 Обнови все страницы чтобы использовали useProgress вместо localStorage напрямую
+
+Замени прямые вызовы localStorage в этих файлах:
+- app/(dashboard)/lessons/page.tsx → используй progress.completeLesson() и progress.getLessonCompletions()
+- app/(dashboard)/vocabulary/page.tsx → используй progress.updateVocabWord() и progress.getVocabularyProgress()
+- app/(dashboard)/level-test/page.tsx → используй progress.setUserLevel()
+- app/(dashboard)/dashboard/page.tsx → используй useProgress() хук для всех данных
+- app/(dashboard)/writing/page.tsx → используй progress.saveWritingSubmission() после проверки
+- components/StreakWidget.tsx → используй progress.updateStreak() и progress.getActivityLog()
+
+## 1.4 Миграция существующих данных из localStorage
+
+В app/(dashboard)/dashboard/page.tsx добавь функцию migrateLocalStorageToSupabase():
+- Запускается один раз при первом входе (проверяй флаг 'fluenta_migrated' в localStorage)
+- Читает все старые данные из localStorage
+- Загружает их в Supabase через lib/progress.ts функции
+- После успеха ставит флаг fluenta_migrated = true
+
+---
+# ЧАСТЬ 2: НОВЫЕ МОДУЛИ
+
+## 2.1 Создай lib/modules-data.ts
+
+Добавь 4 новых модуля помимо основного курса. Каждый модуль — массив уроков с той же структурой что lib/lessons-data.ts (theory, exercises, quiz).
+
+### MODULE: Business English (20 уроков, B1-C1)
+
+Тип урока тот же: { id, level, module: 'business', block, blockName, order, title, duration, theory, exercises, quiz }
+
+Block 1 "Профессиональная коммуникация" (уроки be-1-1 по be-1-5):
+be-1-1 "Emails: структура и тон" (B1)
+Theory: Professional email structure: Subject line (specific, clear), Greeting (Dear Mr/Ms Smith, Hi [name] for informal), Opening line (I hope this email finds you well / I am writing to...), Body (paragraphs), Closing (Best regards, Kind regards, Yours sincerely), Signature.
+Phrases: I am writing to enquire about... / Please find attached... / I would be grateful if... / Please do not hesitate to contact me / I look forward to hearing from you / Further to our conversation...
+Exercises: 5 упражнений на выбор правильной фразы для email
+Quiz: 5 вопросов
+
+be-1-2 "Meetings: начало, ведение, итоги" (B1)
+Theory: Opening meeting: Shall we get started? / Let's begin. Chairing: Moving on to the next point... / Can I stop you there? / Let's keep to the agenda. Agreeing: That's a good point. / I couldn't agree more. Disagreeing politely: I see your point, but... / With respect, I think... Summarising: To sum up... / So, we've agreed that...
+Exercises: 5 упражнений match phrase to function
+Quiz: 5 вопросов
+
+be-1-3 "Presentations: структура" (B1)
+Theory: Opening: Good morning everyone. I'm here today to talk about... / I'll be covering three main areas. Signposting: First of all... / Moving on to... / As you can see from this slide... / To summarise... / I'd like to conclude by... Handling questions: That's a great question. / I'll come back to that. / Could you clarify what you mean?
+Exercises: 5 fill_blank с фразами презентации
+Quiz: 5 вопросов
+
+be-1-4 "Переговоры" (B2)
+Theory: Opening: What we're proposing is... / Our position is... Making offers: We'd be willing to... / How about if we...? Bargaining: If you could... then we could... / What if we...? Accepting: That sounds reasonable. / We can work with that. Refusing: I'm afraid that's not possible. / We can't go that far.
+Exercises: 5 multiple_choice ситуации
+Quiz: 5 вопросов
+
+be-1-5 "Телефонные разговоры" (B1)
+Theory: Answering: [Company name], [name] speaking. / How can I help you? Taking messages: I'm afraid he's not available. / Can I take a message? / I'll ask him to call you back. Phrasal verbs: hold on, put through, call back, hang up, get through, cut off.
+Exercises: 5 fill_blank
+Quiz: 5 вопросов
+
+Block 2 "Деловой язык" (уроки be-2-6 по be-2-10):
+be-2-6 "Финансовая лексика" (B2)
+Theory: Revenue, profit, loss, turnover, gross/net margin, cash flow, budget, forecast, deficit, surplus, ROI, break-even point, overhead costs, assets, liabilities. Verbs: to generate revenue, to cut costs, to exceed targets, to meet budget, to invest in.
+Examples: 6 предложений с финансовой лексикой
+Exercises: 5 fill_blank
+Quiz: 5
+
+be-2-7 "HR и собеседования" (B2)
+Theory: CV vocabulary: work experience, qualifications, skills, references, cover letter. Interview questions: Tell me about yourself. / What are your strengths and weaknesses? / Where do you see yourself in 5 years? / Why do you want to work here? Answers structure: STAR (Situation, Task, Action, Result).
+Exercises: 5 multiple_choice
+Quiz: 5
+
+be-2-8 "Маркетинг и брендинг" (B2)
+Theory: Marketing vocabulary: target audience, market share, brand awareness, campaign, conversion rate, engagement, ROI, USP (unique selling proposition), B2B/B2C, lead generation, customer retention.
+Exercises: 5 fill_blank
+Quiz: 5
+
+be-2-9 "Управление проектами" (B2)
+Theory: Project vocabulary: deadline, milestone, deliverable, stakeholder, scope creep, risk assessment, KPI, timeline, bottleneck, sign-off. Phrases: We're on track / We're behind schedule / This is a blocker / We need to escalate this.
+Exercises: 5 multiple_choice
+Quiz: 5
+
+be-2-10 "Деловая этика" (C1)
+Theory: Corporate social responsibility (CSR), whistleblowing, conflict of interest, transparency, accountability, due diligence, compliance, corporate governance. Discussion language: It can be argued that... / One could contend that... / There are ethical implications...
+Exercises: 5 fill_blank
+Quiz: 5
+
+Block 3 "Продвинутый деловой" (be-3-11 по be-3-15):
+be-3-11 "Отчёты и предложения" (B2)
+Theory: Report structure: Executive Summary, Introduction, Findings, Conclusion, Recommendations. Formal language: The data indicates... / It is recommended that... / This report aims to... / In light of the findings... / Subject to approval...
+Exercises: 5
+Quiz: 5
+
+be-3-12 "Данные и графики" (B2)
+Theory: Describing trends: rose sharply, fell slightly, remained stable, peaked at, hit a low of, fluctuated. Comparing: compared to / in contrast to / whereas. Describing charts: The bar chart shows... / As illustrated in the graph... / The pie chart represents...
+Exercises: 5
+Quiz: 5
+
+be-3-13 "Деловые поездки" (B1)
+Theory: Hotel: check in/out, reservation, room service. Airport: check in luggage, boarding pass, departure gate. Travel phrases: I have a reservation under... / Could I have a wake-up call? / My flight is delayed. / Is the meeting room available?
+Exercises: 5
+Quiz: 5
+
+be-3-14 "Кросс-культурная коммуникация" (C1)
+Theory: High-context vs low-context cultures, direct vs indirect communication styles, attitudes to hierarchy, formality levels, punctuality norms. Key phrases for cross-cultural situations: I want to make sure I understand correctly... / In my culture, we tend to... / I appreciate that we may have different approaches to...
+Exercises: 5
+Quiz: 5
+
+be-3-15 "Деловой C1: дискуссии" (C1)
+Theory: Advanced hedging: It could be argued... / There is a case to be made for... / One might contend... Conceding: While it is true that... / Granted that... / I take your point, however... Emphasising: What is particularly significant is... / Of paramount importance is...
+Exercises: 5
+Quiz: 5
+
+Block 4 "Карьера и развитие" (be-4-16 по be-4-20):
+be-4-16 "Нетворкинг" (B2): vocabulary and phrases for professional networking, LinkedIn language, small talk at events
+be-4-17 "Удалённая работа" (B2): remote work vocabulary, virtual meeting etiquette, async communication
+be-4-18 "Стартапы и инновации" (C1): startup vocabulary (pitch deck, MVP, funding rounds, pivot, unicorn, traction)
+be-4-19 "Деловые переговоры продвинутые" (C1): advanced negotiation tactics, BATNA, anchoring, win-win strategies
+be-4-20 "Деловой английский: итоговый" (C1): comprehensive review with case study exercise
+
+### MODULE: Academic Writing (15 уроков, B2-C1)
+
+Module id prefix: aw-
+
+Block 1 "Основы академического письма" (aw-1-1 по aw-1-5):
+aw-1-1 "Академический стиль" (B2)
+Theory: Academic writing characteristics: formal vocabulary, objective tone, hedging language, impersonal style, evidence-based arguments. Avoid: contractions (don't→do not), colloquial words (lots of→a significant number of), first person opinion (I think→It can be argued). Use: passive voice, nominalisation, formal connectors.
+Exercises: 5 (transform informal→formal sentence)
+Quiz: 5
+
+aw-1-2 "Структура эссе" (B2)
+Theory: Introduction: hook→background→thesis statement. Body paragraphs: topic sentence→evidence→analysis→link. Conclusion: restate thesis (not copy)→summary of points→final thought. Thesis statement must be debatable and specific. Example thesis: "Social media has fundamentally altered political discourse by creating echo chambers and enabling misinformation."
+Exercises: 5 put paragraph elements in order / identify thesis
+Quiz: 5
+
+aw-1-3 "Аргументативное эссе" (B2)
+Theory: Argumentative essay takes ONE position and defends it. Structure: Introduction with clear thesis→Point 1 (strongest)→Point 2→Counter-argument + refutation→Conclusion. Language: claim (It is evident that...), evidence (According to research...), analysis (This demonstrates that...), concession (Although critics argue...), refutation (Nevertheless, the evidence suggests...).
+Exercises: 5
+Quiz: 5
+
+aw-1-4 "Дискуссионное эссе" (B2)
+Theory: Discursive essay presents BOTH sides equally, then gives balanced conclusion. Structure: Introduction→Arguments for→Arguments against→Conclusion with your view. Difference from argumentative: you don't defend one side throughout. Language: On the one hand... / On the other hand... / Advocates of X argue that... / Opponents contend that...
+Exercises: 5
+Quiz: 5
+
+aw-1-5 "Академическая лексика" (B2)
+Theory: AWL (Academic Word List) — the 570 most common academic words. Categories: analyse, assess, evaluate, examine (critical thinking), indicate, demonstrate, suggest (evidence), significant, considerable, substantial (degree), whereas, although, despite (contrast), furthermore, moreover, consequently (connectors).
+Exercises: 5 fill_blank с AWL словами
+Quiz: 5
+
+Block 2 "IELTS Academic Writing" (aw-2-6 по aw-2-10):
+aw-2-6 "IELTS Task 1: Описание графиков" (B2)
+Theory: Task 1 Academic = describe a visual (graph, chart, table, diagram). Must include: overview paragraph (main trend, not details), specific data with figures. 150+ words, 20 minutes. Structure: Introduction (paraphrase prompt)→Overview (2 main features)→Details paragraph 1→Details paragraph 2. Key phrases: The graph shows... / Overall, it is clear that... / ... stood at / rose to / fell from... to... / The most striking feature is...
+Exercises: 5 practice describing mini-charts with sentence prompts
+Quiz: 5
+
+aw-2-7 "IELTS Task 1: типы заданий" (B2)
+Theory: Types: Line graph (trends over time)→Bar chart (comparisons)→Pie chart (proportions)→Table (data comparison)→Process diagram (stages/how something works)→Map (changes to location). For process/map: describe stages in order. NO opinion in Task 1. Key language for each type.
+Exercises: 5 identify type + choose correct language
+Quiz: 5
+
+aw-2-8 "IELTS Task 2: типы эссе" (B2/C1)
+Theory: 5 types: 1) Opinion (Do you agree/disagree?) 2) Discussion (Discuss both views) 3) Problem-Solution 4) Two-part question 5) Advantages/Disadvantages. Must identify TYPE correctly — affects structure. 250+ words, 40 min. Assessed on: Task Response, Coherence & Cohesion, Lexical Resource, Grammatical Range.
+Exercises: 5 identify essay type from question
+Quiz: 5
+
+aw-2-9 "IELTS Task 2: Band 7+ язык" (C1)
+Theory: Lexical resource for high band: collocations (address an issue, tackle a problem, have a profound impact), precise vocabulary (alleviate poverty, exacerbate inequality, foster innovation), hedging (tends to, is likely to, may well). Grammatical range: complex sentences, conditionals, relative clauses, passives all in ONE essay.
+Exercises: 5 improve sentences to B7+ level
+Quiz: 5
+
+aw-2-10 "IELTS Writing полный тест" (C1)
+Theory: Strategy: Task 2 first (more marks)→Task 1. Planning: 5 min per task. Checking: grammar, spelling, word count. Common mistakes: copying question words (paraphrase!), not giving examples, going off topic, too informal.
+Exercises: 2 полных Task 1 + Task 2 эссе с checklist
+Quiz: 5 вопросов про IELTS правила
+
+Block 3 "TOEFL Writing" (aw-3-11 по aw-3-15):
+aw-3-11 "TOEFL: структура теста" (B2)
+Theory: TOEFL iBT: Reading (54-72 min, academic passages)→Listening (41-57 min, lectures+conversations)→Speaking (17 min, 4 tasks)→Writing (50 min, 2 tasks). Writing Task 1 = Integrated (read passage 3 min → listen lecture → write 150-225 words how lecture relates to reading). Writing Task 2 = Independent (write opinion essay 300+ words in 30 min).
+Exercises: 5 вопросов на структуру TOEFL
+Quiz: 5
+
+aw-3-12 "TOEFL Integrated Writing" (B2/C1)
+Theory: Integrated task structure: Introduction (The reading argues X. However, the lecture challenges this by Y)→Point 1 (The reading states... However, the professor argues...)→Point 2→Point 3. KEY: always relate lecture BACK to reading. Do NOT include your opinion. Cast Doubt language: The professor challenges the claim that... / This undermines the reading's position that... / The lecture contradicts the reading by arguing...
+Exercises: 5 practice matching reading points to lecture challenges
+Quiz: 5
+
+aw-3-13 "TOEFL Independent Writing" (B2/C1)
+Theory: Independent task: Do you agree/disagree? OR Describe/explain OR Compare. 5-paragraph structure: Introduction (hook + clear thesis)→Body 1 (strongest point + example)→Body 2 (second point + example)→Body 3 (optional, or counter-argument)→Conclusion (restate, don't copy). Target: 400-500 words for 30/30. Clear position from the start.
+Exercises: 5 thesis statement practice
+Quiz: 5
+
+aw-3-14 "TOEFL Speaking" (B2/C1)
+Theory: 4 Speaking tasks. Task 1: Independent — express preference (45 sec to prepare, 60 sec to speak). Tasks 2-4: Integrated — read + listen + speak. Template Task 1: "I prefer X because of two reasons. First... Second... For these reasons, I believe X." Pronunciation tips: link words, stress key words, avoid "um/uh" — say "well, let me think".
+Exercises: 5 complete spoken response templates
+Quiz: 5
+
+aw-3-15 "TOEFL vs IELTS: сравнение" (C1)
+Theory: TOEFL: American English, computer-based, academic settings, 0-120 score. IELTS: British/International English, paper or computer, academic OR general training, 0-9 band. TOEFL preferred: USA/Canada universities. IELTS preferred: UK/Australia/Canada immigration. Key differences in writing task types, speaking format, reading passage style.
+Exercises: 5 вопросов на различия
+Quiz: 5
+
+### MODULE: Разговорный (Speaking Club) — 10 уроков, A2-C1
+Module id prefix: sc-
+
+sc-1-1 "Мнения и взгляды" (A2/B1): выражение мнения — I think/I believe/In my view/From my perspective/As I see it
+sc-1-2 "Истории из жизни" (B1): рассказ в прошедшем — narrative tenses + story linkers
+sc-1-3 "Описание людей" (A2/B1): внешность + характер + сравнения
+sc-1-4 "Аргументы за и против" (B1/B2): дискуссионные фразы + структура аргумента
+sc-1-5 "Гипотетические ситуации" (B2): What would you do if... / Suppose that... / Imagine you...
+sc-1-6 "Светские разговоры" (A2/B1): small talk — погода, выходные, работа, news
+sc-1-7 "Переговоры в повседневной жизни" (B1/B2): жалобы, просьбы, убеждение в магазине/с соседом
+sc-1-8 "Импровизация" (B2/C1): говори 1-2 минуты на любую тему без подготовки
+sc-1-9 "Идиомы в речи" (B2/C1): 20 самых частых идиом в разговоре
+sc-1-10 "Акцент и связная речь" (C1): connected speech — linking, assimilation, elision
+
+### MODULE: Grammar Deep Dive — 10 уроков, B2-C1
+Module id prefix: gd-
+
+gd-1-1 "Артикли: все случаи" (B2)
+gd-1-2 "Предлоги: полный разбор" (B2)
+gd-1-3 "Phrasal Verbs: топ 100" (B1/B2)
+gd-1-4 "Collocations: частые связки" (B2)
+gd-1-5 "False Friends: ложные друзья" (B1/B2): слова похожие на русские но другие
+gd-1-6 "Числительные и даты: все формы" (A2/B1)
+gd-1-7 "Пунктуация в английском" (B2)
+gd-1-8 "British vs American English" (B1)
+gd-1-9 "Формальный vs неформальный" (B2)
+gd-1-10 "Типичные ошибки русских" (B1/B2): the most common mistakes Russian speakers make
+
+## 2.2 Обнови app/(dashboard)/lessons/page.tsx
+
+Добавь Module Selector в верх страницы:
+- Tabs: 📚 Основной курс | 💼 Деловой | 🎓 Академическое | 🗣️ Разговорный | 🔤 Грамматика
+- Каждый модуль имеет свои уровни и уроки
+- Прогресс у каждого модуля независимый
+- В localStorage/Supabase ключ: `lesson_completions` содержит все модули (id урока уже уникален: be-1-1, aw-2-6 итд)
+
+## 2.3 Создай app/(dashboard)/modules/page.tsx
+
+Страница выбора модуля. Красивые карточки:
+- 📚 Основной курс CEFR — "A1 до C1, 95 уроков, грамматика, лексика"
+- 💼 Деловой английский — "B1-C1, 20 уроков, переговоры, презентации, email"
+- 🎓 Академическое письмо — "B2-C1, 15 уроков, IELTS, TOEFL, эссе"
+- 🗣️ Разговорный клуб — "A2-C1, 10 уроков, диалоги, идиомы, speaking"
+- 🔤 Grammar Deep Dive — "B1-C1, 10 уроков, артикли, предлоги, phrasal verbs"
+
+Каждая карточка показывает прогресс (X из Y уроков завершено).
+Клик → переходит на /lessons с выбранным модулем.
+
+---
+# ЧАСТЬ 3: НАВИГАЦИЯ
+
+Обнови app/(dashboard)/layout.tsx сайдбар:
+Добавь пункт "🏆 Модули" → /modules
+Переименуй "Уроки" → "📚 Уроки"
+
+---
+# ФИНАЛ
+
+1. Убедись что TypeScript компилируется без ошибок: npx tsc --noEmit
+2. git add -A && git commit -m "feat: supabase progress sync, business english, academic writing (IELTS/TOEFL), speaking club, grammar deep dive modules" && git push

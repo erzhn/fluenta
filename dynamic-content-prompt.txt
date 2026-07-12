@@ -1,0 +1,352 @@
+# НЕ ЗАПРАШИВАЙ РАЗРЕШЕНИЯ. Все изменения — автоматически.
+# Запуск: claude --dangerously-skip-permissions < dynamic-content-prompt.txt
+
+Fluenta — Next.js 14 + TypeScript + Groq API (llama-3.1-8b-instant).
+Env переменная: GROQ_API_KEY
+
+---
+## ЗАДАЧА 1: ТЕСТ УРОВНЯ — пул из 60 вопросов, каждый раз случайные 20
+
+Перепиши app/(dashboard)/level-test/page.tsx
+
+Создай массив QUESTION_POOL из 60 вопросов. При старте теста — shuffle и pick первые 20.
+Структура вопроса: { question: string, options: string[], answer: string, level: 'A1'|'A2'|'B1'|'B2'|'C1' }
+
+Пул вопросов (60 штук, по 12 на уровень):
+
+A1 (12 вопросов):
+{ q: "She ___ a teacher.", opts: ["is","are","am","be"], a: "is", lvl: "A1" }
+{ q: "I ___ got two sisters.", opts: ["have","has","am","do"], a: "have", lvl: "A1" }
+{ q: "They ___ playing football now.", opts: ["is","am","are","be"], a: "are", lvl: "A1" }
+{ q: "Did you ___ the film last night?", opts: ["see","saw","seen","seeing"], a: "see", lvl: "A1" }
+{ q: "He ___ to school every day.", opts: ["go","goes","going","gone"], a: "goes", lvl: "A1" }
+{ q: "I ___ born in 1998.", opts: ["was","were","am","be"], a: "was", lvl: "A1" }
+{ q: "There ___ three books on the table.", opts: ["is","are","am","has"], a: "are", lvl: "A1" }
+{ q: "___ you like coffee?", opts: ["Do","Does","Are","Is"], a: "Do", lvl: "A1" }
+{ q: "She ___ like fish.", opts: ["don't","doesn't","isn't","aren't"], a: "doesn't", lvl: "A1" }
+{ q: "I have two ___.", opts: ["childs","childrens","children","child"], a: "children", lvl: "A1" }
+{ q: "He ___ TV every evening.", opts: ["watch","watches","watching","watched"], a: "watches", lvl: "A1" }
+{ q: "What time ___ it?", opts: ["is","are","am","was"], a: "is", lvl: "A1" }
+
+A2 (12 вопросов):
+{ q: "I ___ here since 2020.", opts: ["live","lived","have lived","was living"], a: "have lived", lvl: "A2" }
+{ q: "If it rains, I ___ stay home.", opts: ["will","would","shall","should"], a: "will", lvl: "A2" }
+{ q: "She used to ___ in Paris.", opts: ["live","lived","living","lives"], a: "live", lvl: "A2" }
+{ q: "The book was ___ by Tolstoy.", opts: ["wrote","writing","written","write"], a: "written", lvl: "A2" }
+{ q: "I've been waiting ___ two hours.", opts: ["since","for","during","from"], a: "for", lvl: "A2" }
+{ q: "Have you ___ eaten sushi?", opts: ["ever","never","already","yet"], a: "ever", lvl: "A2" }
+{ q: "She ___ be at home — her car is there.", opts: ["must","can","should","would"], a: "must", lvl: "A2" }
+{ q: "I ___ to London last year.", opts: ["have gone","went","go","was going"], a: "went", lvl: "A2" }
+{ q: "He's taller ___ his brother.", opts: ["than","then","that","as"], a: "than", lvl: "A2" }
+{ q: "Could you ___ me the salt?", opts: ["pass","to pass","passing","passed"], a: "pass", lvl: "A2" }
+{ q: "She ___ working when I called.", opts: ["is","was","has been","were"], a: "was", lvl: "A2" }
+{ q: "I've already ___ my homework.", opts: ["do","did","done","doing"], a: "done", lvl: "A2" }
+
+B1 (12 вопросов):
+{ q: "When I arrived, she ___ already left.", opts: ["has","had","was","did"], a: "had", lvl: "B1" }
+{ q: "He said he ___ tired.", opts: ["is","was","has been","will be"], a: "was", lvl: "B1" }
+{ q: "If I ___ rich, I would travel the world.", opts: ["am","was","were","be"], a: "were", lvl: "B1" }
+{ q: "The package ___ delivered tomorrow.", opts: ["will","will be","is","was"], a: "will be", lvl: "B1" }
+{ q: "I wish I ___ speak Japanese.", opts: ["can","could","would","will"], a: "could", lvl: "B1" }
+{ q: "She ___ have called — it's already midnight.", opts: ["should","would","must","can"], a: "should", lvl: "B1" }
+{ q: "He asked me where I ___.", opts: ["live","lived","was living","have lived"], a: "lived", lvl: "B1" }
+{ q: "This bridge ___ in 1850.", opts: ["built","was built","has built","builds"], a: "was built", lvl: "B1" }
+{ q: "I ___ for three hours when she finally called.", opts: ["waited","was waiting","had been waiting","have waited"], a: "had been waiting", lvl: "B1" }
+{ q: "He denied ___ the money.", opts: ["take","to take","taking","took"], a: "taking", lvl: "B1" }
+{ q: "The letter had been sent ___ she arrived.", opts: ["when","before","until","while"], a: "before", lvl: "B1" }
+{ q: "No sooner ___ I sat down than the phone rang.", opts: ["had","did","was","have"], a: "had", lvl: "B1" }
+
+B2 (12 вопросов):
+{ q: "Not only ___ she arrive late, but she also forgot her bag.", opts: ["did","was","has","had"], a: "did", lvl: "B2" }
+{ q: "She should ___ told me earlier.", opts: ["have","has","had","be"], a: "have", lvl: "B2" }
+{ q: "It was John ___ called me, not Peter.", opts: ["who","which","that","whom"], a: "who", lvl: "B2" }
+{ q: "Having ___ the report, she sent it immediately.", opts: ["finish","finishing","finished","finishes"], a: "finished", lvl: "B2" }
+{ q: "Never ___ I seen such a beautiful sunset.", opts: ["have","had","did","was"], a: "have", lvl: "B2" }
+{ q: "He must ___ left already — his coat is gone.", opts: ["have","has","had","be"], a: "have", lvl: "B2" }
+{ q: "My sister, ___ lives in Paris, is a doctor.", opts: ["who","which","that","whose"], a: "who", lvl: "B2" }
+{ q: "I couldn't ___ done it without your help.", opts: ["have","has","had","be"], a: "have", lvl: "B2" }
+{ q: "Were I in your position, I ___ think carefully.", opts: ["will","would","should","shall"], a: "would", lvl: "B2" }
+{ q: "The report needs to be ___ by Friday.", opts: ["submit","submitting","submitted","submission"], a: "submitted", lvl: "B2" }
+{ q: "It is high time we ___ a decision.", opts: ["make","made","have made","making"], a: "made", lvl: "B2" }
+{ q: "She ___ that she had never met him before.", opts: ["told","said","spoke","talked"], a: "said", lvl: "B2" }
+
+C1 (12 вопросов):
+{ q: "Had I ___ about the problem, I would have helped.", opts: ["know","knew","known","knowing"], a: "known", lvl: "C1" }
+{ q: "It is essential that he ___ present at the meeting.", opts: ["is","be","was","will be"], a: "be", lvl: "C1" }
+{ q: "The rapid ___ of technology has changed communication.", opts: ["develop","developed","developer","development"], a: "development", lvl: "C1" }
+{ q: "Not until he arrived ___ we start.", opts: ["did","had","was","were"], a: "did", lvl: "C1" }
+{ q: "She suggested ___ the meeting to next week.", opts: ["postpone","to postpone","postponing","postponed"], a: "postponing", lvl: "C1" }
+{ q: "But ___ your help, I couldn't have finished.", opts: ["for","with","by","from"], a: "for", lvl: "C1" }
+{ q: "___ it not for modern medicine, many lives would be lost.", opts: ["Were","Was","Had","Should"], a: "Were", lvl: "C1" }
+{ q: "The findings lend ___ to the theory.", opts: ["credence","credit","credibility","belief"], a: "credence", lvl: "C1" }
+{ q: "This phenomenon ___ to broader questions of inequality.", opts: ["speaks","talks","refers","tells"], a: "speaks", lvl: "C1" }
+{ q: "He is known to ___ a difficult childhood.", opts: ["have had","had had","have","has"], a: "have had", lvl: "C1" }
+{ q: "The legislation was enacted ___ considerable opposition.", opts: ["despite","although","however","nevertheless"], a: "despite", lvl: "C1" }
+{ q: "Should you ___ any assistance, do not hesitate to call.", opts: ["require","required","requiring","have required"], a: "require", lvl: "C1" }
+
+Логика shuffle (добавь в файл):
+```ts
+function shuffleArray<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+```
+
+При старте теста: `const questions = shuffleArray(QUESTION_POOL).slice(0, 20)`
+Подсчёт уровня: считай правильные по уровням — побеждает тот уровень, где больше всего правильных плюс все предыдущие.
+
+Упрощённая логика: общий score 0-20:
+- 0-4 → A1, 5-8 → A2, 9-12 → B1, 13-16 → B2, 17-20 → C1
+
+---
+## ЗАДАЧА 2: АУДИРОВАНИЕ — Groq генерирует новые тексты
+
+### 2a. Создай app/api/ai/generate-listening/route.ts
+
+```ts
+import { NextResponse } from 'next/server'
+
+export async function POST(req: Request) {
+  const { level } = await req.json()
+  
+  const prompt = `Generate an English listening exercise for level ${level}.
+Return ONLY valid JSON (no markdown) with this exact structure:
+{
+  "title": "short title in English",
+  "text": "the text/dialogue to listen to (3-6 sentences for A1-A2, 6-10 for B1-B2, 8-12 for C1)",
+  "questions": [
+    { "question": "comprehension question", "options": ["a","b","c","d"], "answer": "correct option" },
+    { "question": "comprehension question", "options": ["a","b","c","d"], "answer": "correct option" },
+    { "question": "comprehension question", "options": ["a","b","c","d"], "answer": "correct option" }
+  ]
+}
+
+Rules:
+- A1: very simple dialogue (café, shop, meeting someone). Short sentences. Common vocabulary.
+- A2: everyday situation (travel, phone call, making plans). Some past tense.
+- B1: slightly complex topic (advice, news story, describing a problem). Mix of tenses.
+- B2: article or lecture excerpt (technology, society, environment). Academic-ish vocabulary.
+- C1: complex discussion or lecture (philosophy, economics, science). Sophisticated language.
+- Make questions genuinely test comprehension, not just copy sentences.
+- All 3 wrong options should be plausible.`
+
+  const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
+    body: JSON.stringify({
+      model: 'llama-3.1-8b-instant',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 800,
+      temperature: 0.85,
+    })
+  })
+  
+  const data = await resp.json()
+  const raw = data.choices?.[0]?.message?.content ?? '{}'
+  
+  try {
+    const match = raw.match(/\{[\s\S]*\}/)
+    const result = JSON.parse(match ? match[0] : raw)
+    return NextResponse.json(result)
+  } catch {
+    return NextResponse.json({ error: 'Parse error' }, { status: 500 })
+  }
+}
+```
+
+### 2b. Обнови app/(dashboard)/listening/page.tsx
+
+Добавь кнопку "✨ Новый текст" рядом с выбором уровня.
+
+При клике:
+1. Показать скелетон-загрузку (пульсирующие полосы)
+2. Fetch POST /api/ai/generate-listening с { level }
+3. Заменить текущий текст и вопросы на сгенерированные
+4. Сбросить состояние ответов
+
+Состояние: добавь `const [aiContent, setAiContent] = useState<{title,text,questions}|null>(null)`
+Если aiContent !== null — показывай его вместо статичного контента для выбранного уровня.
+
+Кнопка стиль: `px-4 py-2 bg-[#6366f1]/20 border border-[#6366f1]/40 text-[#a5b4fc] rounded-xl text-sm hover:bg-[#6366f1]/30 transition-all flex items-center gap-2`
+Текст кнопки: `✨ Новый текст` (когда loading: `⏳ Генерирую...` + disabled)
+
+---
+## ЗАДАЧА 3: ЧТЕНИЕ — Groq генерирует новые тексты
+
+### 3a. Создай app/api/ai/generate-reading/route.ts
+
+```ts
+import { NextResponse } from 'next/server'
+
+export async function POST(req: Request) {
+  const { level } = await req.json()
+  
+  const prompt = `Generate an English reading text for level ${level} language learners.
+Return ONLY valid JSON (no markdown):
+{
+  "title": "text title",
+  "text": "the reading text (2 paragraphs for A1-A2, 3 paragraphs for B1, 4 paragraphs for B2-C1)",
+  "highlightWords": ["word1","word2","word3","word4","word5"],
+  "vocabulary": { "word1": "Russian translation", "word2": "Russian translation", ... },
+  "questions": [
+    { "question": "question", "options": ["a","b","c","d"], "answer": "correct" },
+    { "question": "question", "options": ["a","b","c","d"], "answer": "correct" },
+    { "question": "question", "options": ["a","b","c","d"], "answer": "correct" }
+  ]
+}
+
+Rules:
+- A1: family, home, daily routine, hobbies. Very simple sentences. Present Simple mainly.
+- A2: travel, food, city, friends, jobs. Mix of tenses. Slightly more complex.
+- B1: society topics, environment, technology, health. Intermediate vocabulary.
+- B2: academic-style. Economics, psychology, culture, science. Formal register.
+- C1: complex analytical text. Philosophy, politics, neuroscience, linguistics. Sophisticated.
+- highlightWords: pick 5 words from the text that learners should know. These MUST appear exactly in the text.
+- vocabulary: Russian translations for those 5 words.
+- Questions must be genuinely comprehension-based.`
+
+  const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
+    body: JSON.stringify({
+      model: 'llama-3.1-8b-instant',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 1000,
+      temperature: 0.85,
+    })
+  })
+  
+  const data = await resp.json()
+  const raw = data.choices?.[0]?.message?.content ?? '{}'
+  
+  try {
+    const match = raw.match(/\{[\s\S]*\}/)
+    const result = JSON.parse(match ? match[0] : raw)
+    return NextResponse.json(result)
+  } catch {
+    return NextResponse.json({ error: 'Parse error' }, { status: 500 })
+  }
+}
+```
+
+### 3b. Обнови app/(dashboard)/reading/page.tsx
+
+Добавь кнопку "✨ Новый текст" рядом с табами уровней.
+Та же логика что в аудировании: fetch → skeleton → replace content.
+Если aiContent — используй его поверх статичного.
+
+---
+## ЗАДАЧА 4: СЛОВАРЬ — большой пул слов, каждый раз разные
+
+Перепиши lib/vocabulary-data.ts
+
+Расширь до 20 слов на урок для первых 15 уроков (a1-1-1 до a1-3-15).
+Итого: 300 слов вместо 120.
+
+Формат прежний: { id, lessonId, word, translation, example, exampleTranslation }
+
+Добавь по 12 новых слов к каждому уроку (оставь старые 8, добавь ещё 12):
+
+a1-1-1 (To Be) — добавь: excited, sad, angry, beautiful, terrible, strange, tall, short, young, old, busy, free
+a1-1-2 (Знакомство) — добавь: introduce, nationality, language, job, profession, surname, address, phone, email, hobby, married, single
+a1-1-3 (Числа) — добавь: dozen, score, million, billion, half, quarter, percent, digit, count, total, double, triple
+a1-1-4 (Дни) — добавь: week, month, season, spring, summer, autumn, winter, date, diary, schedule, plan, cancel
+a1-1-5 (Цвета) — добавь: shade, pale, vivid, colourful, pattern, stripe, spotted, plain, turquoise, silver, golden, navy
+a1-2-6 (Have got) — добавь: possess, belong, carry, hold, collect, lose, find, hide, store, contain, include, lack
+a1-2-7 (Семья) — добавь: nephew, niece, grandchildren, stepmother, stepfather, foster, adopt, divorce, widow, relative, generation, heritage
+a1-2-8 (Дом) — добавь: ceiling, floor, wall, roof, garage, cellar, attic, corridor, doorbell, curtain, carpet, radiator
+a1-2-9 (Предлоги) — добавь: above, below, around, through, across, along, towards, away from, inside, outside, throughout, beyond
+a1-2-10 (There is/are) — добавь: exist, appear, disappear, remain, lack, contain, provide, offer, include, exclude, feature, consist
+a1-3-11 (Present Simple) — добавь: commute, exercise, meditate, volunteer, socialise, practice, improve, achieve, succeed, fail, manage, struggle
+a1-3-12 (Наречия частоты) — добавь: constantly, continuously, periodically, occasionally, sporadically, consistently, daily, weekly, monthly, yearly, once, twice
+a1-3-13 (Время) — добавь: dawn, dusk, midday, midnight, noon, rush hour, overtime, deadline, punctual, delay, duration, period
+a1-3-14 (Глаголы действия) — добавь: commute, prepare, organise, tidy up, iron, vacuum, mow, fix, repair, check, review, plan
+a1-3-15 (Present Continuous) — добавь: observe, notice, realise, concentrate, focus, interrupt, disturb, bother, pause, continue, proceed, resume
+
+Для каждого нового слова создай качественный пример предложения и перевод.
+
+Добавь в vocabulary-data.ts функцию getWordsForLesson:
+```ts
+export function getWordsForLesson(lessonId: string, count: number = 8): VocabWord[] {
+  const all = VOCABULARY.filter(w => w.lessonId === lessonId)
+  // Shuffle для разнообразия каждой сессии
+  const shuffled = [...all].sort(() => Math.random() - 0.5)
+  return shuffled.slice(0, count)
+}
+```
+
+Используй getWordsForLesson(lessonId, 8) вместо прямой фильтрации в vocabulary/page.tsx.
+
+---
+## ЗАДАЧА 5: ГРАММАТИКА — AI объясняет и генерирует примеры
+
+### 5a. Создай app/api/ai/grammar-examples/route.ts
+
+```ts
+import { NextResponse } from 'next/server'
+
+export async function POST(req: Request) {
+  const { topic, level, type } = await req.json()
+  // type: 'examples' | 'exercise' | 'explain'
+  
+  const prompts = {
+    examples: `Generate 4 more varied example sentences for the grammar topic "${topic}" at ${level} level. 
+Return JSON: { "examples": [{"english": "...", "russian": "..."}] }
+Make them interesting and varied — different subjects, situations, registers.`,
+    
+    exercise: `Create a quick grammar exercise for "${topic}" at ${level} level.
+Return JSON: { "question": "fill in: He ___ (go) to school.", "answer": "goes", "explanation": "объяснение на русском" }
+Type: fill_blank. Make it level-appropriate.`,
+    
+    explain: `Explain the grammar rule "${topic}" for a Russian speaker at ${level} level.
+Return JSON: { "explanation": "объяснение на русском языке, 2-3 предложения", "tip": "один практический совет" }
+Be concise and clear.`
+  }
+  
+  const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
+    body: JSON.stringify({
+      model: 'llama-3.1-8b-instant',
+      messages: [{ role: 'user', content: prompts[type as keyof typeof prompts] }],
+      max_tokens: 400,
+      temperature: 0.7,
+    })
+  })
+  
+  const data = await resp.json()
+  const raw = data.choices?.[0]?.message?.content ?? '{}'
+  try {
+    const match = raw.match(/\{[\s\S]*\}/)
+    return NextResponse.json(JSON.parse(match ? match[0] : raw))
+  } catch {
+    return NextResponse.json({ error: 'Parse error' }, { status: 500 })
+  }
+}
+```
+
+### 5b. Обнови app/(dashboard)/grammar/page.tsx
+
+В каждой карточке грамматики добавь 3 кнопки:
+- "💡 Объяснить по-русски" → fetch type='explain' → показать popup/expand с объяснением
+- "➕ Ещё примеры" → fetch type='examples' → добавить 4 новых примера под существующими
+- "✏️ Упражнение" → fetch type='exercise' → показать fill-blank с проверкой
+
+Состояние карточки:
+```ts
+const [extraExamples, setExtraExamples] = useState<{english:string,russian:string}[]>([])
+const [explanation, setExplanation] = useState<{explanation:string,tip:string}|null>(null)
+const [exercise, setExercise] = useState<{question:string,answer:string,explanation:string}|null>(null)
+const [loadingType, setLoadingType] = useState<string|null>(null)
+```
+
+Кнопки стиль: маленькие, `text-xs px-3 py-1.5 rounded-lg border border-white/10 hover:border-white/20 text-[#64748b] hover:text-white transition-all`
+
+---
+## ФИНАЛ
+1. npx tsc --noEmit
+2. git add -A && git commit -m "feat: randomized level test (60 questions), AI-generated listening/reading, expanded vocabulary pool (300 words), dynamic grammar examples" && git push

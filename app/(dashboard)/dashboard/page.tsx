@@ -12,6 +12,7 @@ import { supabase } from '@/lib/supabase'
 import { StreakWidget, loadStreak, type StreakData } from '@/components/StreakWidget'
 import { LESSONS, LEVEL_COLORS, type Lesson } from '@/lib/lessons-data'
 import { getLessonCompletions } from '@/lib/progress'
+import { DailyReview } from '@/components/DailyReview'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface Profile {
@@ -253,6 +254,11 @@ export default function DashboardPage() {
             </div>
           </div>
         )}
+      </motion.div>
+
+      {/* ── 1c. Daily SR review ───────────────────────────────────────────── */}
+      <motion.div custom={0.8} variants={fadeUp} initial="hidden" animate="visible">
+        <DailyReview />
       </motion.div>
 
       {/* ── 2. Stats row ───────────────────────────────────────────────────── */}

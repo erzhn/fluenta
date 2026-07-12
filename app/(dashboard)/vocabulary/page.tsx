@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useMotionValue, useTransform, useAnimation } from 'framer-motion'
 import { RotateCcw, Volume2, Check, X, Layers, BookOpen } from 'lucide-react'
 import { VOCABULARY, getWordsForLesson, type VocabWord } from '@/lib/vocabulary-data'
 import { speak, stopSpeaking } from '@/lib/speech'
+import { addCardToSR } from '@/lib/spaced-repetition'
 
 const STORAGE_KEY = 'fluenta_vocab_srs'
 
@@ -61,6 +62,63 @@ function shuffle<T>(arr: T[]): T[] {
   return a
 }
 
+// ── SwipeCard ──────────────────────────────────────────────────────────────────
+function SwipeCard({ word, onKnow, onLearn }: {
+  word: VocabWord
+  onKnow: () => void
+  onLearn: () => void
+}) {
+  const controls = useAnimation()
+  const x = useMotionValue(0)
+  const rotate = useTransform(x, [-200, 200], [-20, 20])
+  const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0])
+  const bgRight = useTransform(x, [0, 200], [0, 1])
+  const bgLeft = useTransform(x, [-200, 0], [1, 0])
+
+  async function handleDragEnd(_: unknown, info: { offset: { x: number } }) {
+    if (info.offset.x > 100) {
+      await controls.start({ x: 300, opacity: 0 })
+      onKnow()
+    } else if (info.offset.x < -100) {
+      await controls.start({ x: -300, opacity: 0 })
+      onLearn()
+    } else {
+      controls.start({ x: 0 })
+    }
+  }
+
+  return (
+    <div className="relative h-64 flex items-center justify-center">
+      <motion.div style={{ opacity: bgRight }}
+        className="absolute left-4 top-4 px-3 py-1 bg-green-500/20 border border-green-500/40 rounded-xl text-green-400 text-sm font-bold z-10">
+        ✓ Знаю
+      </motion.div>
+      <motion.div style={{ opacity: bgLeft }}
+        className="absolute right-4 top-4 px-3 py-1 bg-red-500/20 border border-red-500/40 rounded-xl text-red-400 text-sm font-bold z-10">
+        ✗ Учу
+      </motion.div>
+      <motion.div
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        onDragEnd={handleDragEnd}
+        animate={controls}
+        style={{ x, rotate, opacity }}
+        className="w-full max-w-sm bg-white/[0.06] border border-white/10 rounded-2xl p-8
+          cursor-grab active:cursor-grabbing select-none text-center"
+      >
+        <p className="text-3xl font-bold text-white mb-3">{word.word}</p>
+        <p className="text-[#6366f1] text-lg">{word.translation}</p>
+        {word.example && <p className="text-[#64748b] text-sm mt-4 italic">&quot;{word.example}&quot;</p>}
+        <div className="mt-6 flex items-center justify-center gap-2 text-[#475569] text-xs">
+          <span>← Учу</span>
+          <span className="text-[#334155]">· свайп ·</span>
+          <span>Знаю →</span>
+        </div>
+      </motion.div>
+    </div>
+  )
+}
+
 const BOX_LABELS = ['Новые', 'День 1', 'День 3', 'Нед. 1', 'Нед. 2', 'Выучены']
 const BOX_COLORS = ['#ef4444', '#f59e0b', '#3b82f6', '#8b5cf6', '#10b981', '#10b981']
 
@@ -89,7 +147,9 @@ export default function VocabularyPage() {
   const [queue, setQueue] = useState<VocabWord[]>([])
   const [qIdx, setQIdx] = useState(0)
   const [flipped, setFlipped] = useState(false)
-  const [mode, setMode] = useState<'study' | 'stats' | 'lessons'>('study')
+  const [mode, setMode] = useState<'study' | 'stats' | 'lessons' | 'swipe'>('study')
+  const [swipeIdx, setSwipeIdx] = useState(0)
+  const [swipeQueue, setSwipeQueue] = useState<VocabWord[]>([])
   const [hydrated, setHydrated] = useState(false)
   const [selectedLesson, setSelectedLesson] = useState<string | null>(null)
   const [lessonWords, setLessonWords] = useState<VocabWord[]>([])
@@ -103,6 +163,7 @@ export default function VocabularyPage() {
     setSRS(loaded)
     const due = shuffle(getDueCards(VOCABULARY, loaded))
     setQueue(due.slice(0, 20))
+    setSwipeQueue(shuffle(VOCABULARY).slice(0, 20))
     setHydrated(true)
   }, [])
 
@@ -185,6 +246,10 @@ export default function VocabularyPage() {
             className={`px-3 py-1.5 rounded-xl text-sm border transition-all ${mode === 'lessons' ? 'border-[#6366f1] bg-[#6366f1]/20 text-white' : 'border-white/10 text-[#64748b]'}`}>
             По урокам
           </button>
+          <button onClick={() => setMode('swipe')}
+            className={`px-3 py-1.5 rounded-xl text-sm border transition-all ${mode === 'swipe' ? 'border-[#6366f1] bg-[#6366f1]/20 text-white' : 'border-white/10 text-[#64748b]'}`}>
+            Карточки
+          </button>
           <button onClick={() => setMode('stats')}
             className={`px-3 py-1.5 rounded-xl text-sm border transition-all ${mode === 'stats' ? 'border-[#6366f1] bg-[#6366f1]/20 text-white' : 'border-white/10 text-[#64748b]'}`}>
             Прогресс
@@ -223,6 +288,42 @@ export default function VocabularyPage() {
               ))}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ── SWIPE ── */}
+      {mode === 'swipe' && (
+        <div className="space-y-4">
+          {swipeIdx < swipeQueue.length ? (
+            <>
+              <div className="flex justify-between text-sm text-[#64748b]">
+                <span>Карточка {swipeIdx + 1} из {swipeQueue.length}</span>
+                <button onClick={() => { setSwipeIdx(0); setSwipeQueue(shuffle(VOCABULARY).slice(0, 20)) }}
+                  className="text-[#6366f1] hover:text-[#818cf8] transition-colors">
+                  <RotateCcw className="w-4 h-4" />
+                </button>
+              </div>
+              <SwipeCard
+                key={swipeIdx}
+                word={swipeQueue[swipeIdx]}
+                onKnow={() => {
+                  addCardToSR({ wordId: swipeQueue[swipeIdx].id, word: swipeQueue[swipeIdx].word, translation: swipeQueue[swipeIdx].translation, example: swipeQueue[swipeIdx].example })
+                  setSwipeIdx(i => i + 1)
+                }}
+                onLearn={() => setSwipeIdx(i => i + 1)}
+              />
+            </>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-3xl mb-3">🎉</p>
+              <p className="text-white font-semibold mb-1">Все карточки пройдены!</p>
+              <p className="text-[#64748b] text-sm mb-4">Слова добавлены в интервальное повторение</p>
+              <button onClick={() => { setSwipeIdx(0); setSwipeQueue(shuffle(VOCABULARY).slice(0, 20)) }}
+                className="px-5 py-2.5 bg-[#6366f1] hover:bg-[#5558e8] text-white rounded-xl text-sm font-medium transition-colors">
+                Ещё раз
+              </button>
+            </div>
+          )}
         </div>
       )}
 

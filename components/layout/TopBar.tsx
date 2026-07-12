@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Flame, Zap, Menu, User, Settings, LogOut, ChevronDown } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { Profile } from "@/types";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 const PAGE_TITLES: Record<string, string> = {
   "/dashboard":    "Главная",
@@ -86,7 +87,7 @@ export function TopBar({ onMenuClick }: TopBarProps) {
         <h1 className="hidden md:block text-lg font-bold text-white">{title}</h1>
       </div>
 
-      {/* Right: streak, XP, avatar */}
+      {/* Right: streak, XP, theme, avatar */}
       <div className="flex items-center gap-2">
         {/* Streak */}
         <div className="flex items-center gap-1.5 bg-[#0F172A] border border-[#334155] rounded-lg px-2.5 py-1.5">
@@ -103,6 +104,8 @@ export function TopBar({ onMenuClick }: TopBarProps) {
             {(profile?.xp ?? 0).toLocaleString()}
           </span>
         </div>
+
+        <ThemeToggle />
 
         {/* Avatar + dropdown */}
         <div className="relative" ref={dropdownRef}>

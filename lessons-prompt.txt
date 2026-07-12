@@ -1,0 +1,752 @@
+Rewrite the lessons system in the Fluenta Next.js project at D:\Projects with @\fluenta.
+
+Create file: lib/lessons-data.ts
+
+Each lesson has this TypeScript type:
+interface Lesson {
+  id: string
+  level: 'A1'|'A2'|'B1'|'B2'|'C1'
+  block: number
+  blockName: string
+  order: number
+  title: string
+  duration: string
+  theory: {
+    explanation: string
+    examples: Array<{ english: string; russian: string }>
+  }
+  exercises: Array<{
+    type: 'fill_blank' | 'multiple_choice' | 'build_sentence'
+    question: string
+    options?: string[]
+    words?: string[]
+    answer: string
+    hint?: string
+  }>
+  quiz: Array<{
+    question: string
+    options: string[]
+    answer: string
+  }>
+}
+
+export const LESSONS: Lesson[] = [ ... ]
+
+Generate ALL lessons below. Each lesson needs: 6 examples, 5 exercises (mix of fill_blank and multiple_choice), 5 quiz questions.
+
+═══════════════════════════════════
+A1 — Block 1 "Знакомство" (lessons 1-5)
+═══════════════════════════════════
+
+Lesson a1-1-1: "To Be: я есть"
+Theory: Explain the verb TO BE in all forms: I am, You are, He/She/It is, We/You/They are. Negative: I am not (I'm not), You are not (aren't), He is not (isn't). Questions: Am I? Are you? Is he?
+Examples: I am happy. / She is a teacher. / They are friends. / We are students. / Is he your brother? / I am not tired.
+Exercises: 5 fill_blank with TO BE forms
+Quiz: 5 multiple choice on TO BE
+
+Lesson a1-1-2: "Меня зовут..."
+Theory: Introduce yourself: My name is... / I'm from... / I'm ... years old. / I am a student/teacher/doctor. / Nice to meet you.
+Examples: My name is Anna. / I'm from Kazakhstan. / I'm 25 years old. / I am a student. / Nice to meet you! / Where are you from?
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+Lesson a1-1-3: "Числа 1-100"
+Theory: Cardinal numbers 1-20 (one, two, three... twenty), tens (thirty, forty, fifty, sixty, seventy, eighty, ninety, one hundred), compound numbers (twenty-one, thirty-five). Use: age, phone numbers, addresses.
+Examples: I am twenty years old. / My phone number is five five five. / There are thirty students. / I live at number forty-two. / She is fifteen. / One hundred people came.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson a1-1-4: "Дни и месяцы"
+Theory: Days of the week: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday. Months: January through December. Prepositions: ON Monday, IN January, IN summer.
+Examples: Today is Monday. / My birthday is in March. / The meeting is on Friday. / School starts in September. / We rest on Saturday and Sunday. / Christmas is in December.
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+Lesson a1-1-5: "Цвета и прилагательные"
+Theory: Colors: red, blue, green, yellow, white, black, orange, purple, pink, grey, brown. Basic adjectives: big/small, old/new, good/bad, hot/cold, fast/slow, tall/short. Word order: adjective BEFORE noun (a big house).
+Examples: I have a blue car. / She has long black hair. / This is a big old house. / The coffee is hot. / He is very tall. / I like cold weather.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+═══════════════════════════════════
+A1 — Block 2 "Семья и дом" (lessons 6-10)
+═══════════════════════════════════
+
+Lesson a1-2-6: "Have got"
+Theory: HAVE GOT = possession. I/You/We/They have got. He/She/It has got. Negative: haven't got / hasn't got. Question: Have you got? / Has she got? Short answers: Yes, I have. / No, she hasn't.
+Examples: I have got a dog. / She has got brown eyes. / Have you got a car? Yes, I have. / He hasn't got a brother. / We have got a big house. / Has she got a phone? No, she hasn't.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson a1-2-7: "Моя семья"
+Theory: Family vocabulary: mother/mum, father/dad, sister, brother, grandmother/grandma, grandfather/grandpa, aunt, uncle, cousin, husband, wife, son, daughter. Possessive 's: my mother's name, Anna's sister.
+Examples: My mother's name is Elena. / I have one brother and two sisters. / My grandfather is 70 years old. / Anna's husband is a doctor. / Her daughter is very cute. / His uncle lives in London.
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+Lesson a1-2-8: "Мой дом"
+Theory: Rooms: living room, bedroom, kitchen, bathroom, hall, garden, balcony. Furniture: sofa, table, chair, bed, wardrobe, shelf, lamp, mirror, fridge, washing machine.
+Examples: We have three bedrooms. / The kitchen is very small. / My sofa is in the living room. / There is a big mirror in the bathroom. / I sleep in the bedroom. / We eat in the kitchen.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson a1-2-9: "Предлоги места"
+Theory: Prepositions of place: in (inside), on (surface), under (below), next to (beside), behind (at the back), in front of (opposite of behind), between (in the middle of two things), near (close to).
+Examples: The book is on the table. / The cat is under the bed. / The bank is next to the supermarket. / My car is behind the house. / The children are in front of the school. / I live near the park.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson a1-2-10: "There is / There are"
+Theory: THERE IS = one thing exists. THERE ARE = multiple things exist. Negative: There isn't / There aren't. Question: Is there...? Are there...? Short answers: Yes, there is. / No, there aren't.
+Examples: There is a cat in the garden. / There are three books on the table. / Is there a bank near here? Yes, there is. / There aren't any chairs. / There is no milk in the fridge. / Are there any students? No, there aren't.
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+═══════════════════════════════════
+A1 — Block 3 "Распорядок дня" (lessons 11-15)
+═══════════════════════════════════
+
+Lesson a1-3-11: "Present Simple: привычки"
+Theory: Present Simple for habits and routines. I/You/We/They + verb. He/She/It + verb+s. Negative: don't / doesn't. Question: Do you...? Does he...? Use with: every day, always, usually, sometimes, never.
+Examples: I wake up at 7 every day. / She works in a hospital. / Do you drink coffee? Yes, I do. / He doesn't eat meat. / We study English on Mondays. / Does she live here? No, she doesn't.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson a1-3-12: "Наречия частоты"
+Theory: Adverbs of frequency: always (100%), usually (80%), often (60%), sometimes (40%), rarely/seldom (20%), never (0%). Word order: BEFORE the main verb but AFTER to be. I always drink coffee. She is never late.
+Examples: I always brush my teeth. / She usually walks to work. / We sometimes go to the cinema. / He rarely eats fast food. / I never drink alcohol. / She is always happy.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson a1-3-13: "Время"
+Theory: Asking time: What time is it? It's... Telling time: o'clock, half past, quarter past, quarter to. Prepositions of time: AT (specific time), IN (morning/afternoon/evening/month/year/season), ON (day/date).
+Examples: What time is it? It's half past eight. / I start work at nine o'clock. / She studies in the morning. / The party is on Saturday evening. / I was born in 1998. / School finishes at three o'clock.
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+Lesson a1-3-14: "Глаголы действия"
+Theory: Common action verbs: wake up, get up, have breakfast/lunch/dinner, go to work/school, come home, watch TV, read, listen to music, play sports, go to bed, sleep. Also: buy, sell, walk, run, swim, cook, clean.
+Examples: I wake up at 7 and have breakfast at 7:30. / She goes to work by bus. / We watch TV in the evening. / He plays football on weekends. / I cook dinner every night. / They go to bed at 11.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson a1-3-15: "Present Continuous"
+Theory: Present Continuous = action happening NOW. Form: am/is/are + verb-ing. I am eating. She is sleeping. They are playing. Negative: am not/isn't/aren't + ing. Question: Are you sleeping?
+Examples: I am reading a book now. / She is cooking dinner. / They are watching TV. / Is he sleeping? No, he isn't. / We are studying English right now. / It is raining outside.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+═══════════════════════════════════
+A1 — Block 4 "Прошлое" (lessons 16-20)
+═══════════════════════════════════
+
+Lesson a1-4-16: "Past Simple: To Be"
+Theory: Past of TO BE: I/He/She/It WAS. You/We/They WERE. Negative: wasn't / weren't. Question: Was he? Were they? Short answers: Yes, he was. / No, they weren't.
+Examples: I was very tired yesterday. / She was at home last night. / Were you at the party? Yes, I was. / They weren't happy. / The weather was beautiful. / Was he a good student? No, he wasn't.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson a1-4-17: "Past Simple: правильные глаголы"
+Theory: Regular past simple: verb + ED. work→worked, play→played, watch→watched, visit→visited, stop→stopped, study→studied. Negative: didn't + base verb. Question: Did you + base verb?
+Examples: I worked late last night. / She watched a film yesterday. / Did you visit London? Yes, I did. / We didn't play football. / He studied for three hours. / They didn't stop talking.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson a1-4-18: "Неправильные глаголы"
+Theory: Most common irregular verbs: go→went, have→had, see→saw, come→came, get→got, make→made, take→took, give→gave, know→knew, think→thought, buy→bought, eat→ate, drink→drank, say→said.
+Examples: I went to the cinema last week. / She had a headache yesterday. / We saw a great film. / He came home late. / I bought a new phone. / They ate pizza for dinner.
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+Lesson a1-4-19: "Вопросы в прошлом"
+Theory: Past simple questions with DID: Did + subject + base verb? Did you go? Did she call? Where did you go? What did he do? Who did you see? Why did they leave? When did it happen?
+Examples: Did you go to school yesterday? / Where did she go last weekend? / What did you eat for breakfast? / Why did he leave early? / Who did you see at the party? / When did they arrive?
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson a1-4-20: "Вопросительные слова"
+Theory: Question words: WHAT (что), WHERE (где), WHEN (когда), WHO (кто), WHY (почему), HOW (как), HOW MUCH (сколько - uncountable), HOW MANY (сколько - countable), WHICH (который), WHOSE (чей).
+Examples: What is your name? / Where do you live? / When does the bus come? / Who is your teacher? / Why are you late? / How many students are there? / Whose bag is this?
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+═══════════════════════════════════
+A1 — Block 5 "Еда и здоровье" (lessons 21-25)
+═══════════════════════════════════
+
+Lesson a1-5-21: "Еда и напитки"
+Theory: Food vocabulary: bread, rice, pasta, meat, chicken, fish, vegetables, fruit, salad, soup, cake, pizza, burger. Drinks: water, juice, tea, coffee, milk. Like/don't like: I like pizza. I don't like onions. Do you like coffee?
+Examples: I like pizza and pasta. / She doesn't like fish. / Do you drink coffee? Yes, I do. / We eat rice every day. / I'd like some water please. / He loves chocolate cake.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson a1-5-22: "Can / Can't"
+Theory: CAN = ability. I/You/He/She/We/They + can/can't + base verb. Question: Can you swim? Yes, I can. / No, I can't. Past: could/couldn't.
+Examples: I can speak English. / She can't drive a car. / Can you swim? Yes, I can. / He can play guitar. / We couldn't find the place. / Can they come tomorrow?
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson a1-5-23: "Would like"
+Theory: WOULD LIKE = want (polite). I'd like (= I would like). Would you like...? = Do you want...? (polite). Use in shops, restaurants, cafes.
+Examples: I'd like a coffee, please. / Would you like some tea? Yes, please. / She'd like to visit Paris. / Would you like to come? / I'd like the chicken, please. / We'd like two rooms.
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+Lesson a1-5-24: "Артикли a/an/the"
+Theory: A = one of many (a book). AN = before vowel sound (an apple, an hour). THE = specific thing we know (the book I told you about). No article: plural/uncountable general (I like books. I drink water.)
+Examples: I have a dog. / She is an engineer. / The dog is in the garden. / I like music. / Can you close the window? / He is a student at the university.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson a1-5-25: "Must / Mustn't"
+Theory: MUST = strong obligation (I think it's necessary). MUSTN'T = prohibition (it's not allowed). Must is the same for all persons. There is no past form — use HAD TO for past.
+Examples: You must study every day. / She must see a doctor. / You mustn't smoke here. / Students must arrive on time. / I must call my mother. / You mustn't use your phone in class.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+═══════════════════════════════════
+A1 — Block 6 "Будущее" (lessons 26-30)
+═══════════════════════════════════
+
+Lesson a1-6-26: "Going to"
+Theory: GOING TO = plans and intentions decided before. Am/Is/Are + going to + base verb. Also for predictions when we can see evidence: Look at those clouds — it's going to rain!
+Examples: I am going to visit my parents next weekend. / She is going to study medicine. / Are you going to come? Yes, I am. / We aren't going to watch TV tonight. / Look! It's going to rain. / He is going to buy a new car.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson a1-6-27: "Will"
+Theory: WILL = sudden decisions (decided at the moment of speaking), promises, offers, predictions. Will is the same for all persons. Contraction: I'll, she'll, they'll. Negative: won't.
+Examples: I'll help you with that! / She will call you tomorrow. / Will you marry me? / It will be sunny tomorrow. / I won't tell anyone. / We'll see you at the party.
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+Lesson a1-6-28: "Present Perfect: ever/never"
+Theory: Present Perfect = life experiences (no specific time). Have/Has + past participle. EVER = in your life (in questions). NEVER = not at any time. been = visited (I have been to Paris).
+Examples: Have you ever eaten sushi? Yes, I have. / I have never seen snow. / She has never been to London. / Have they ever met before? / I have eaten Indian food once. / Has he ever driven a truck?
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson a1-6-29: "Question Tags"
+Theory: Question tags = short questions at the end. Positive sentence → negative tag. Negative sentence → positive tag. She is Spanish, isn't she? They are coming, aren't they? You don't like fish, do you?
+Examples: You are tired, aren't you? / She isn't here, is she? / They came yesterday, didn't they? / He can swim, can't he? / We won't be late, will we? / It was cold, wasn't it?
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+Lesson a1-6-30: "A1 Повторение"
+Theory: Review of all A1 grammar: To Be, Have got, Present Simple, Present Continuous, Past Simple, Can/Must, Going to/Will, There is/are, Question words, Articles, Prepositions.
+Examples: I am a student from Russia. / She has got blue eyes. / I went to the cinema last Saturday. / Can you speak French? No, I can't. / We are going to travel next summer. / There are many people in the park.
+Exercises: 5 mixed (fill_blank and multiple_choice)
+Quiz: 10 questions (mix of all A1 topics)
+
+═══════════════════════════════════
+A2 — Block 1 "Прошлое углублённо" (lessons 31-35)
+═══════════════════════════════════
+
+Lesson a2-1-31: "Past Progressive"
+Theory: Past Progressive = action in progress at a moment in the past. Was/Were + verb-ing. I was sleeping at 10pm. Negative: wasn't/weren't + ing. Question: Were you sleeping?
+Examples: I was watching TV at 8 o'clock. / She was reading when I called. / Were you sleeping? Yes, I was. / They weren't listening to the teacher. / What were you doing? / He was cooking dinner.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson a2-1-32: "Past Simple vs Progressive"
+Theory: Past Progressive (was doing) = longer background action. Past Simple (did) = shorter completed action that interrupts. I was sleeping when the phone rang. While I was cooking, she arrived.
+Examples: I was walking home when it started to rain. / She was reading while I was cooking. / While they were talking, I left. / He fell asleep while he was watching TV. / I was having a shower when you called. / What were you doing when I arrived?
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson a2-1-33: "Топ-20 неправильных глаголов"
+Theory: Essential irregular verbs: begin/began, break/broke, bring/brought, build/built, catch/caught, choose/chose, feel/felt, find/found, forget/forgot, grow/grew, hold/held, keep/kept, leave/left, lose/lost, meet/met, pay/paid, run/ran, send/sent, sit/sat, stand/stood.
+Examples: She forgot her keys again. / We met at university. / I lost my phone yesterday. / He kept his promise. / They built this house in 1990. / She sent me a message.
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+Lesson a2-1-34: "Used to"
+Theory: USED TO = repeated actions or states in the past (that are no longer true). I used to + base verb. Negative: didn't use to. Question: Did you use to...? There is no present form of "used to".
+Examples: I used to live in Moscow. / She used to have long hair. / Did you use to play football? / We didn't use to have smartphones. / He used to be very shy. / They used to come every weekend.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson a2-1-35: "Past Simple review"
+Theory: Complete review of Past Simple: regular verbs (+ed), irregular verbs (various forms), negatives (didn't + base), questions (Did + base), time expressions (yesterday, last week, ago, in 2020).
+Examples: I didn't see the film last night. / What did you do at the weekend? / She moved to London five years ago. / Did he enjoy the party? Yes, he did. / They travelled to Spain in 2019. / I was born in Almaty.
+Exercises: 5 mixed
+Quiz: 5 questions
+
+═══════════════════════════════════
+A2 — Block 2 "Условия и желания" (lessons 36-40)
+═══════════════════════════════════
+
+Lesson a2-2-36: "Zero Conditional"
+Theory: Zero Conditional = facts and general truths. If + Present Simple, Present Simple. The result is ALWAYS true. Can replace "if" with "when". If you heat water to 100°C, it boils.
+Examples: If you eat too much, you get fat. / Water freezes if the temperature is below zero. / If it rains, I get wet. / When you don't sleep, you feel tired. / If you exercise regularly, you feel better. / Plants die if they don't get water.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson a2-2-37: "First Conditional"
+Theory: First Conditional = real and possible future situations. If + Present Simple, WILL + base verb. Possible situation in the future with a likely result. Can also use: might, can, should in the result clause.
+Examples: If it rains tomorrow, I will stay home. / If you study hard, you will pass the exam. / If she calls, I'll tell her. / I'll be angry if you're late. / If we leave now, we won't miss the train. / If you need help, you can call me.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson a2-2-38: "Unless"
+Theory: UNLESS = if not. Unless you study, you'll fail = If you don't study, you'll fail. Unless is only used in real/zero conditionals (not 2nd or 3rd). Always use UNLESS + positive verb.
+Examples: I'll go unless it rains. / Unless you hurry, you'll be late. / She won't come unless you invite her. / Unless you eat breakfast, you'll be hungry. / He'll call unless he's busy. / I won't tell anyone unless you ask me to.
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+Lesson a2-2-39: "Wish"
+Theory: WISH for imaginary situations. Wish + Past Simple = I want something different now (but it's not true). I wish I was taller. (I'm not tall). I wish I had more money. (I don't have much money). Wish + could = ability you want.
+Examples: I wish I was taller. / She wishes she could speak French. / I wish I had more time. / He wishes he lived near the beach. / I wish it wasn't raining. / We wish we could help you.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson a2-2-40: "Should"
+Theory: SHOULD = advice and recommendation. I think it's a good idea. Should + base verb (same for all). Negative: shouldn't. Question: Should I...? Strong advice: had better (informal).
+Examples: You should see a doctor. / She shouldn't work so much. / Should I call him? / You should drink more water. / I think you should apologise. / You shouldn't eat so much sugar.
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+═══════════════════════════════════
+A2 — Block 3 "Обязательства" (lessons 41-45)
+═══════════════════════════════════
+
+Lesson a2-3-41: "Have to / Had to"
+Theory: HAVE TO = external obligation (a rule or someone else requires it). I have to wear a uniform at work. HAD TO = past obligation. Don't have to = no obligation (it's not necessary but you can if you want).
+Examples: I have to work on Saturdays. / She had to see the doctor yesterday. / Do you have to wear a uniform? / We don't have to come early. / He had to leave before the end. / You don't have to pay.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson a2-3-42: "Must vs Have to"
+Theory: MUST = internal obligation (you think it's important). HAVE TO = external obligation (a rule, law, or someone requires it). Mustn't = prohibition (don't do it!). Don't have to = not necessary (free choice).
+Examples: I must call my mother — I haven't spoken to her in a week. / You have to wear a seatbelt — it's the law. / You mustn't smoke in here. / You don't have to come if you don't want to. / I must remember to buy milk. / Students have to hand in their work by Friday.
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+Lesson a2-3-43: "Could / Couldn't"
+Theory: COULD = past ability (was able to). COULDN'T = wasn't able to. Also COULD for polite requests: Could you help me? Could I have...? And COULD for possibility: It could be true.
+Examples: I could swim when I was five. / She couldn't speak English before the course. / Could you help me, please? / Could I have the bill, please? / He couldn't find his keys. / Could you open the window?
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson a2-3-44: "Need / Needn't"
+Theory: NEED = necessity. I need to study. She needs to sleep. NEEDN'T = no necessity (it's not necessary). You needn't worry. DO I NEED TO...? = Is it necessary for me to...?
+Examples: I need to buy some food. / Do I need to bring anything? / You needn't come if you're tired. / She needs to rest. / We need more time. / You needn't worry — everything is fine.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson a2-3-45: "Modal verbs review"
+Theory: Review of all modal verbs: CAN (ability/permission), COULD (past ability/polite request), MUST (strong obligation/prohibition), HAVE TO (external obligation), SHOULD (advice), NEED (necessity), NEEDN'T (no necessity).
+Examples: Can you speak Japanese? / Could you repeat that? / You must wear a seatbelt. / I have to work tomorrow. / You should rest more. / You needn't bring food — I have everything. / Do I need to book in advance?
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+═══════════════════════════════════
+A2 — Block 4 "Present Perfect углублённо" (lessons 46-50)
+═══════════════════════════════════
+
+Lesson a2-4-46: "Present Perfect: since/for"
+Theory: Present Perfect + FOR = duration of time (how long). I have lived here for 3 years. Present Perfect + SINCE = starting point. I have lived here since 2020. Use for situations that started in the past and continue now.
+Examples: I have studied English for two years. / She has worked here since January. / How long have you lived in Almaty? / We have been married for ten years. / He has had this car since 2018. / They haven't spoken since last week.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson a2-4-47: "Present Perfect: already/yet/just"
+Theory: ALREADY = sooner than expected (positive). I have already eaten. YET = expected but not happened (negatives and questions). Have you eaten yet? / I haven't eaten yet. JUST = very recently. I have just arrived.
+Examples: I have already done my homework. / Have you finished yet? / No, I haven't finished yet. / She has just called. / Have they arrived yet? Yes, they have already arrived. / I have just had a shower.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson a2-4-48: "Present Perfect vs Past Simple"
+Theory: Present Perfect = past action with connection to NOW (experience, or still relevant). Past Simple = specific past time (yesterday, in 2020, last week). Trigger: if you say WHEN → use Past Simple. If no specific time → use Present Perfect.
+Examples: I have visited Paris. (general experience) / I visited Paris last summer. (specific time) / Have you ever eaten sushi? / I ate sushi in Tokyo in 2019. / She has lost her keys. / She lost her keys this morning.
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+Lesson a2-4-49: "Present Perfect questions"
+Theory: Questions with Present Perfect: Have you ever...? How long have you...? How many times have you...? What have you done? Who have you met? These all talk about life experience or current relevance.
+Examples: Have you ever been to the USA? / How long have you known her? / How many times have you seen this film? / What have you done today? / Have you met my brother? / How long has she worked here?
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson a2-4-50: "A2 Повторение"
+Theory: Review of all A2: Past Progressive, Used to, First/Zero Conditional, Unless, Wish, Should, Have to, Could, Need, Present Perfect (since/for/already/yet/just).
+Examples: I was watching TV when she called. / If it rains, I'll stay home. / I wish I could drive. / You should eat less sugar. / I have lived here since 2015. / She used to live in Moscow.
+Exercises: 5 mixed
+Quiz: 10 questions
+
+═══════════════════════════════════
+B1 — Block 1 "Сложные условия" (lessons 51-55)
+═══════════════════════════════════
+
+Lesson b1-1-51: "Second Conditional"
+Theory: Second Conditional = unreal/imaginary present or future. If + Past Simple, would/could/might + base verb. I am not rich, but: If I were rich, I would travel the world. Use WERE (not was) for all persons in formal/written English.
+Examples: If I had more time, I would learn to paint. / If she were taller, she could be a model. / Would you move abroad if you could? / If I won the lottery, I'd buy a house. / What would you do if you lost your job? / If I were you, I would apologise.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson b1-1-52: "Third Conditional"
+Theory: Third Conditional = imaginary past (regrets about what didn't happen). If + Past Perfect, would/could/might + have + past participle. If I had studied harder, I would have passed. (But I didn't study, so I didn't pass.)
+Examples: If I had studied harder, I would have passed the exam. / She would have caught the train if she had woken up earlier. / If they had told me, I would have helped. / I wouldn't have got lost if I had used a map. / If he had eaten breakfast, he wouldn't be hungry now. / Would you have come if you had known?
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson b1-1-53: "Mixed Conditionals intro"
+Theory: Mixed Conditionals = mix 2nd and 3rd. Type 1: If + Past Perfect (past), would + base verb (present result). If I had studied medicine, I would be a doctor now. Type 2: If + Past Simple (imaginary), would + have + PP (past result).
+Examples: If I had worked harder at school, I would have a better job now. / If she weren't so shy, she would have spoken to him. / If I had been born in England, I would speak perfect English. / He would have more money if he didn't spend so much. / If I had taken that job, I would be living in New York now. / She wouldn't be tired now if she had slept last night.
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+Lesson b1-1-54: "I wish / If only"
+Theory: WISH about present/future: I wish + Past Simple (I wish I had more money). WISH about past: I wish + Past Perfect (I wish I hadn't said that). IF ONLY = stronger, more emotional version of wish. Could also express wish for change: I wish you would stop that!
+Examples: I wish I hadn't eaten so much. / If only I had studied harder! / She wishes she hadn't quit her job. / I wish I could undo what I said. / If only we had left earlier! / I wish you would listen to me.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson b1-1-55: "Conditionals review"
+Theory: All four conditional types: Zero (facts), First (real future), Second (unreal present), Third (unreal past). Key: identify whether the situation is real/possible or imaginary, and whether it's present or past.
+Examples: If you touch fire, it burns. / If it snows tomorrow, we'll cancel. / If I were rich, I'd buy a yacht. / If I had left earlier, I would have arrived on time. / Unless you hurry, we'll miss the film. / I wish I lived by the sea.
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+═══════════════════════════════════
+B1 — Block 2 "Прошлое совершенное" (lessons 56-60)
+═══════════════════════════════════
+
+Lesson b1-2-56: "Past Perfect"
+Theory: Past Perfect = action that happened BEFORE another past action. Had + past participle. When I arrived, everyone had left. (First they left, THEN I arrived.) Use with: already, just, never, before, after, when, by the time.
+Examples: When I arrived, she had already gone. / I had never eaten Thai food before that night. / By the time we got there, the film had started. / She hadn't finished when I called. / Had you met him before the party? / After he had eaten, he went to bed.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson b1-2-57: "Past Perfect Progressive"
+Theory: Past Perfect Progressive = action in progress before another past action (emphasises duration). Had been + verb-ing. I had been waiting for an hour when she arrived. Focus: how long something had been happening.
+Examples: She had been crying before he arrived. / I had been working for six hours when I finally stopped. / They had been arguing for hours. / How long had you been waiting? / He was exhausted because he had been running. / By midnight, I had been studying for five hours.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson b1-2-58: "Past Perfect vs Past Simple"
+Theory: Past Perfect (had done) = the earlier action. Past Simple (did) = the later action. I saw (PS) the film I had heard (PP) about. Note: with BEFORE and AFTER, PP is sometimes optional because the time sequence is clear.
+Examples: She read the book before she saw the film. / I had read the book before I saw the film. / After he had left, we started the party. / When the police arrived, the thief had disappeared. / I didn't know that she had called. / By the time I got up, my flatmate had already left.
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+Lesson b1-2-59: "Narrative tenses"
+Theory: Telling stories in English. Past Simple = main events in sequence. Past Progressive = background actions/setting. Past Perfect = events that happened before the main story. All three are often used together.
+Examples: It was a cold winter evening. I was walking home (PP) when suddenly I saw (PS) a strange light. I had never seen (PPerf) anything like it before. / The restaurant was busy. People were talking and laughing. We had reserved (PPerf) a table. / She walked in and realised she had forgotten her purse.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson b1-2-60: "Past tenses review"
+Theory: Complete review: Past Simple (completed action), Past Progressive (background/interrupted action), Past Perfect (before another past action), Past Perfect Progressive (duration before past moment), Used to (past habits).
+Examples: I was living in London when I met my wife. / After I had finished my studies, I got a job. / She used to smoke but she stopped two years ago. / They had been together for five years before they got married. / What were you doing at midnight?
+Exercises: 5 mixed
+Quiz: 5 questions
+
+═══════════════════════════════════
+B1 — Block 3 "Reported Speech" (lessons 61-65)
+═══════════════════════════════════
+
+Lesson b1-3-61: "Reported Speech: statements"
+Theory: Reported Speech = reporting what someone said. Tense shift back: say→said, is→was, am going→was going, have done→had done, will→would, can→could. Time expressions change: now→then, today→that day, yesterday→the day before.
+Examples: "I am tired" → She said she was tired. / "I work in London" → He told me he worked in London. / "We have finished" → They said they had finished. / "I will help you" → She said she would help me. / "I can swim" → He said he could swim. / "I'm going to leave" → She said she was going to leave.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson b1-3-62: "Reported Speech: questions"
+Theory: Reported questions: no question word order (subject before verb). Yes/No questions: use IF or WHETHER. What time is it? → She asked what time it was. Are you coming? → He asked if I was coming. No question mark in reported speech.
+Examples: "Where do you live?" → She asked me where I lived. / "Are you married?" → He asked if I was married. / "What have you done?" → She asked what I had done. / "Can you help me?" → He asked if I could help him. / "When will you arrive?" → She asked when I would arrive. / "Do you like coffee?" → He asked whether I liked coffee.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson b1-3-63: "Reported Speech: commands"
+Theory: Reported commands: TELL + object + TO + infinitive. Negative: TELL + object + NOT TO + infinitive. "Sit down" → He told me to sit down. "Don't be late" → She told me not to be late. Also: asked me to, warned me not to, advised me to.
+Examples: "Please close the door" → She asked me to close the door. / "Don't touch that!" → He told me not to touch it. / "You should rest" → She advised me to rest. / "Be careful!" → He warned me to be careful. / "Don't worry" → She told him not to worry. / "Please call me" → He asked her to call him.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson b1-3-64: "Backshift of tenses"
+Theory: When reporting past statements, tenses shift back. Present Simple→Past Simple. Present Continuous→Past Continuous. Present Perfect→Past Perfect. Past Simple→Past Perfect. Will→Would. Can→Could. May→Might. Must→Had to.
+Examples: "I eat" → he said he ate. / "I'm working" → she said she was working. / "I have finished" → he said he had finished. / "I went" → she said she had gone. / "I will come" → he said he would come. / "I must go" → she said she had to go.
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+Lesson b1-3-65: "Reporting verbs"
+Theory: Different verbs to report speech: SAY (no object), TELL (+ object), ASK (question/request), SUGGEST (+ ing), WARN (not to), ADVISE (to), PROMISE (to), REFUSE (to), ADMIT (ing), DENY (ing), CLAIM (that), EXPLAIN (that).
+Examples: He suggested going to the cinema. / She warned me not to be late. / He promised to call me. / She refused to help. / He admitted taking the money. / She denied saying it. / He claimed he was innocent. / She explained that she had been ill.
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+═══════════════════════════════════
+B1 — Block 4 "Пассивный залог" (lessons 66-70)
+═══════════════════════════════════
+
+Lesson b1-4-66: "Passive: Present Simple"
+Theory: Passive voice = focus on the action not the doer. Present Simple Passive: am/is/are + past participle. English is spoken in many countries. Cars are made in factories. By + agent (optional): The cake is made by my mother.
+Examples: English is spoken all over the world. / This building was designed by a famous architect. / Emails are sent every day. / The office is cleaned every morning. / Rice is eaten in many Asian countries. / Mobile phones are made in China.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson b1-4-67: "Passive: Past Simple"
+Theory: Past Simple Passive: was/were + past participle. The window was broken (by someone). The books were written in 1900. The game was won by Brazil. Use passive when we don't know or don't care who did the action.
+Examples: The Mona Lisa was painted by Leonardo da Vinci. / The window was broken last night. / My phone was stolen on the train. / These shoes were made in Italy. / The buildings were destroyed in the earthquake. / She was given a prize.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson b1-4-68: "Passive: Present Perfect"
+Theory: Present Perfect Passive: has/have + been + past participle. The letter has been sent. Three people have been arrested. Use when the action is recent and still relevant now, but we focus on the result not the doer.
+Examples: The report has been finished. / Three people have been injured. / The problem has been solved. / This bridge has been closed for repairs. / I have been offered a job! / Have the results been announced yet?
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson b1-4-69: "Passive: Future"
+Theory: Future Passive: will be + past participle. The results will be announced tomorrow. You will be contacted soon. Also going to: The building is going to be demolished. Modal passives: must be done, should be checked, can be used.
+Examples: The results will be announced on Friday. / You will be contacted within 48 hours. / The bridge is going to be repaired next month. / This work must be done today. / Your application will be considered. / The form should be completed in black ink.
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+Lesson b1-4-70: "Passive voice review"
+Theory: All passive forms: Present Simple (is made), Past Simple (was made), Present Perfect (has been made), Future (will be made), Modal (must be made, should be checked, can be done). Active vs Passive choice.
+Examples: English is taught in schools. / The castle was built in 1200. / The email has been sent. / The work will be finished tomorrow. / The door must be locked. / Mistakes were made. / The prize has been awarded. / The package will be delivered.
+Exercises: 5 mixed
+Quiz: 5 questions
+
+═══════════════════════════════════
+B1 — Block 5 "Модальные для вывода" (lessons 71-75)
+═══════════════════════════════════
+
+Lesson b1-5-71: "Must/Can't for deduction"
+Theory: MUST = I'm almost certain it's true (positive deduction). CAN'T = I'm almost certain it's not true (negative deduction). These are about present situations based on evidence. She must be tired — she's been working all day. He can't be at home — his car isn't there.
+Examples: You must be hungry — you haven't eaten all day. / That can't be right — I checked it myself. / She must be very rich to live in that house. / He can't be a doctor — he's only 18. / They must be at home — the lights are on. / This can't be the right road — there are no signs.
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+Lesson b1-5-72: "May/Might for probability"
+Theory: MAY = perhaps/possibly (about 50% certain). MIGHT = a bit less certain than may. Both are used for present and future possibilities. May/might + be + adjective/noun. May/might + be + ing (happening now). MAY NOT / MIGHT NOT = negative possibility.
+Examples: She may be at home. / It might rain later. / I might not come to the party. / They may have finished already. / He might be sleeping — don't call. / I may be wrong but I think she's from France.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson b1-5-73: "Could for possibility"
+Theory: COULD = possibility (similar to might but often about theoretical possibility). It could be expensive. Could also = past ability and polite requests. For deduction: could = it's possible (but we're not sure). Couldn't = it's not possible.
+Examples: This could be a mistake. / That could be dangerous — be careful. / The problem could be the internet connection. / It couldn't be colder — it's minus twenty! / This could take a long time. / There could be a problem with the plan.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson b1-5-74: "Be able to"
+Theory: BE ABLE TO = ability (similar to can, but more formal and can be used in more tenses). Present: I am able to. Past: I was able to (managed to in a specific situation). Future: I will be able to. Perfect: I have been able to. Can't use CAN in these tenses.
+Examples: I was able to finish the project on time. / Will you be able to come? / She hasn't been able to sleep well lately. / I wasn't able to contact him. / They were able to escape just in time. / You will be able to speak English fluently one day.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson b1-5-75: "B1 Повторение"
+Theory: Review of all B1: Second and Third Conditionals, Wish/If only, Past Perfect, Reported Speech, Passive Voice, Must/Can't/May/Might/Could for deduction and possibility, Be able to.
+Examples: If I had known, I would have told you. / She said she was tired. / The letter has been sent. / You must be joking! / I wish I had studied harder. / By the time we arrived, they had left. / He might be at work.
+Exercises: 5 mixed
+Quiz: 10 questions
+
+═══════════════════════════════════
+B2 — Block 1 "Сложные модальные" (lessons 76-80)
+═══════════════════════════════════
+
+Lesson b2-1-76: "Should have done"
+Theory: SHOULD HAVE + past participle = criticism or regret about the past (it was a good idea but it didn't happen). SHOULDN'T HAVE + past participle = it was a bad idea but it happened. Often expresses regret or criticism of past actions.
+Examples: You should have called me — I was worried! / I shouldn't have eaten so much. / She should have left earlier. / He shouldn't have said that — it was rude. / We should have booked in advance. / I should have listened to your advice.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson b2-1-77: "Must have done"
+Theory: MUST HAVE + past participle = strong deduction about the past (I'm almost certain it happened). CAN'T HAVE + past participle = strong negative deduction about the past. Based on evidence or logic.
+Examples: She must have forgotten — she never misses meetings. / He must have left already — his coat is gone. / You can't have seen her — she's in Paris. / They must have worked very hard to finish in time. / I can't have locked the door — here are my keys. / She must have been very upset.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson b2-1-78: "Could have done"
+Theory: COULD HAVE + past participle = missed opportunity (you had the ability but didn't use it) OR past possibility (it was possible but we don't know if it happened). Could have been worse! COULDN'T HAVE = past impossibility or maximum degree.
+Examples: You could have called me instead of emailing. / She could have won the race if she had trained harder. / It could have been a serious accident. / I couldn't have done it without you. / He could have told us earlier. / This situation could have been avoided.
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+Lesson b2-1-79: "Might have done"
+Theory: MIGHT HAVE + past participle = past possibility that we're uncertain about (we don't know if it happened). MIGHT NOT HAVE = past negative possibility. Similar to could have but slightly more uncertain.
+Examples: She might have missed the train. / I might have left my keys at the office. / They might not have received the email. / He might have been trying to help. / I might have made a mistake — let me check. / She might not have known about it.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson b2-1-80: "Needn't have done"
+Theory: NEEDN'T HAVE + past participle = you did something but it was unnecessary. Didn't need to + base verb = it wasn't necessary so you didn't do it (or we don't know). Needn't have is more specific about the fact that you DID do it unnecessarily.
+Examples: You needn't have brought flowers — that was very kind though. / I needn't have worried — everything was fine. / She didn't need to cook — we ordered pizza. / You needn't have waited for me. / He needn't have apologised — it wasn't his fault. / I needn't have rushed — the meeting was cancelled.
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+═══════════════════════════════════
+B2 — Block 2 "Инверсия" (lessons 81-85)
+═══════════════════════════════════
+
+Lesson b2-2-81: "Inversion with Never/Rarely/Seldom"
+Theory: Inversion = subject and auxiliary verb swap positions for emphasis. Used after negative adverbs: Never, Rarely, Seldom, Hardly, Barely. Never have I seen such beauty. Rarely does she make mistakes. Adds dramatic emphasis to the statement.
+Examples: Never have I felt so embarrassed. / Rarely do we see such talent. / Seldom has this city been so beautiful. / Never before had I travelled alone. / Rarely did she complain about anything. / Never in my life have I been so frightened.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson b2-2-82: "Inversion with Not only/Hardly/No sooner"
+Theory: More inversion structures. Not only...but also: Not only did she win, but she also broke the record. Hardly/Scarcely/Barely...when: Hardly had I arrived when it started raining. No sooner...than: No sooner had I sat down than the phone rang.
+Examples: Not only did he forget my birthday, but he also forgot our anniversary. / Hardly had she left when it began to snow. / No sooner had I sat down than the phone rang. / Not only is she intelligent, but she is also hardworking. / Hardly had I fallen asleep when the alarm went off. / No sooner had we arrived than it started raining.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson b2-2-83: "Inversion with Only/Little/Scarcely"
+Theory: More inversion with: Only then/only when/only after/only if. Only then did I realise my mistake. Little did I know (= I didn't know at all). At no point, On no account (= never/under no circumstances). Under no circumstances should you sign without reading.
+Examples: Only then did I understand what had happened. / Little did I know it would change my life. / At no point did she apologise. / Only when I got home did I notice my wallet was missing. / Under no circumstances should you open that door. / Only after the meeting did we find out the truth.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson b2-2-84: "Emphasis with do/does/did"
+Theory: Emphatic DO: use DO/DOES/DID + base verb for emphasis (contrast or strong feeling). I DO like you (I want to correct your assumption). She DOES work hard (emphasising the fact). He DID call (it actually happened). Common in: contradictions, persuasion, insistence.
+Examples: I do understand your point. / She does work very hard. / I did send the email — check your spam folder. / He does care about you, even if he doesn't show it. / I do wish you would listen. / We did tell you about the meeting.
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+Lesson b2-2-85: "Cleft sentences"
+Theory: Cleft sentences = special structures to emphasise one part. IT + be + emphasis + relative clause: It was John who called (not someone else). WHAT clause: What I need is sleep. What surprised me was her reaction. All I want is... The thing that...
+Examples: It was Mary who told me. / What I need is more time. / It was yesterday that I saw him. / What surprised me was his attitude. / It's your help that I need. / What I don't understand is why he left. / It was the noise that woke me up.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+═══════════════════════════════════
+B2 — Block 3 "Придаточные предложения" (lessons 86-90)
+═══════════════════════════════════
+
+Lesson b2-3-86: "Relative clauses: defining"
+Theory: Defining relative clauses identify WHICH person/thing. WHO = people. WHICH = things. THAT = people or things (informal). WHERE = places. WHOSE = possession. No commas. Can omit who/which/that when it's the object of the clause.
+Examples: The man who called is my boss. / The book that I bought is great. / I know a place where you can get great coffee. / The woman whose car was stolen called the police. / The film which won the Oscar is amazing. / That's the restaurant I told you about.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson b2-3-87: "Relative clauses: non-defining"
+Theory: Non-defining relative clauses add EXTRA information (can be removed without changing the meaning). Use commas. Can only use WHO/WHICH/WHERE/WHOSE — NOT that. Cannot omit the pronoun.
+Examples: My sister, who lives in Paris, is a doctor. / London, which is the capital of England, is very expensive. / My car, which I bought last year, is already broken. / The director, whose latest film won an Oscar, gave a speech. / We went to Rome, where we had a wonderful time. / She passed all her exams, which was a great relief.
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+Lesson b2-3-88: "Reduced relative clauses"
+Theory: We can often shorten relative clauses. Active: who is/are → remove who + be: The man standing there = the man who is standing there. Passive: which was/were → remove which + be: The car parked outside = the car which was parked outside.
+Examples: The man standing at the door is my uncle. / The book written by Tolstoy is very long. / The woman sitting next to me was very kind. / The package delivered this morning is for you. / The children playing in the park are from our school. / The letter sent yesterday should arrive tomorrow.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson b2-3-89: "Participle clauses"
+Theory: Participle clauses replace a subject + verb. Present participle (-ing): Having finished his work, he went home. (= After he had finished his work...) Past participle: Left alone, she began to cry. (= When she was left alone...) Used in formal writing and literature.
+Examples: Having studied all night, she felt exhausted. / Not knowing what to do, I called my friend. / Having finished the report, he sent it immediately. / Arriving late, she missed the beginning. / Left to his own devices, he made a mess. / Having been promoted, she felt very proud.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson b2-3-90: "B2 Повторение"
+Theory: Review of all B2: Should/must/could/might/needn't have done, Inversion (never/rarely/not only/hardly/only), Emphasis with do, Cleft sentences, Defining and non-defining relative clauses, Reduced relative clauses, Participle clauses.
+Examples: She should have been more careful. / Never have I seen such a thing. / Not only did he fail, but he also gave up. / It was Maria who called. / My brother, who lives in London, is a teacher. / Having arrived late, I missed the start. / The man sitting there is my boss.
+Exercises: 5 mixed
+Quiz: 10 questions
+
+═══════════════════════════════════
+C1 — Block 1 "Сложные конструкции" (lessons 91-95)
+═══════════════════════════════════
+
+Lesson c1-1-91: "Advanced inversion"
+Theory: Advanced conditional inversion. Instead of IF in conditionals, use inversion: If I had known → Had I known. If it were not for → Were it not for. If I should need → Should I need help. More formal and literary register.
+Examples: Had I known about the problem, I would have helped. / Were it not for your support, I couldn't have done it. / Should you need any help, please call us. / Had she arrived earlier, she would have met him. / Were I in your position, I would think carefully. / Should there be any questions, I'll be happy to answer.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson c1-1-92: "Subjunctive mood"
+Theory: Subjunctive = verb form used in formal English after certain expressions. Present subjunctive: base form for all persons. Used after: suggest, recommend, insist, demand, request, vital, essential, important, necessary + that clause. It is vital that he BE present. (not IS)
+Examples: I suggest that she apply for the job. / It is essential that he attend the meeting. / The doctor recommended that he rest completely. / The committee demands that the report be submitted immediately. / It is vital that everyone be informed. / She insisted that he apologise.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson c1-1-93: "Advanced conditionals"
+Theory: More complex conditional patterns. Conditional without IF: Should you have any questions, contact us. (formal). Were you to accept, we would be delighted. Implied conditionals: A better student would have understood. (= if he were a better student). Mixed time references in conditionals.
+Examples: Should you decide to accept, please sign the form. / Were you to invest now, you would see good returns. / A more experienced manager would have handled it differently. / Given more time, I could have done better. / With better preparation, they would have succeeded. / But for your help, I would have failed.
+Exercises: 5 multiple_choice
+Quiz: 5 questions
+
+Lesson c1-1-94: "Nominalization"
+Theory: Nominalization = converting verbs and adjectives into nouns to create a more formal academic style. decide → decision, explore → exploration, discover → discovery, improve → improvement, develop → development, analyse → analysis, achieve → achievement.
+Examples: They decided to expand → Their decision to expand was significant. / The company grew rapidly → The rapid growth of the company was remarkable. / Scientists discovered a cure → The discovery of a cure revolutionised treatment. / We need to analyse the data → A careful analysis of the data is needed. / He achieved great success → His achievement was celebrated. / They developed a new system → The development of a new system took years.
+Exercises: 5 fill_blank
+Quiz: 5 questions
+
+Lesson c1-1-95: "C1 Повторение"
+Theory: Review of all C1 and comprehensive review: Advanced inversion (Had I known, Were it not for, Should you need), Subjunctive (It is vital that he be), Advanced conditionals (Should you decide, Were you to), Nominalization, plus all B1/B2 structures.
+Examples: Had I realised the consequences, I would never have agreed. / It is essential that all staff attend the briefing. / Should you require further assistance, do not hesitate to contact us. / The rapid development of technology has transformed communication. / Not only has the situation improved, but it has also stabilised. / Were it not for modern medicine, many lives would be lost.
+Exercises: 5 mixed
+Quiz: 10 questions
+
+═══════════════════════════════════
+LESSON PLAYER PAGE
+═══════════════════════════════════
+
+Rewrite: app/(dashboard)/lessons/page.tsx
+
+The page has 2 views:
+
+VIEW 1: CURRICULUM (default)
+- Level tabs: A1 | A2 | B1 | B2 | C1
+- For selected level, show blocks as sections
+- Each lesson shown as a card: title, duration, status icon
+  - 🔒 locked (gray) = previous lesson not completed 80%+
+  - ✅ done (green) = completed
+  - ▶️ current (purple glow) = next to do
+- First lesson (a1-1-1) always unlocked
+- Progress bar per block: "3 из 5 уроков"
+- Click unlocked lesson → open VIEW 2
+
+VIEW 2: LESSON PLAYER
+- Header: level badge + lesson title + "← Назад"
+- Step indicator: [1. Теория] → [2. Примеры] → [3. Упражнения] → [4. Тест]
+
+Step 1 - ТЕОРИЯ:
+- Show theory explanation as formatted text
+- "Далее →" button
+
+Step 2 - ПРИМЕРЫ (6 examples):
+- Show examples as cards
+- Click card to flip: English front, Russian back (CSS flip animation)
+- "Понятно ✓" button marks each, then next appears
+- After all 6: "К упражнениям →"
+
+Step 3 - УПРАЖНЕНИЯ (5 exercises):
+- fill_blank: show sentence with blank as input field, check on submit
+- multiple_choice: question + 4 option buttons, green/red feedback immediately
+- build_sentence: show shuffled word buttons, user clicks to build sentence in order
+- Show "✅ Правильно!" or "❌ Правильный ответ: [answer]" after each
+- Progress: "Упражнение 3 из 5"
+- After all 5: "К тесту →"
+
+Step 4 - ТЕСТ (5 questions, 10 for review lessons):
+- Multiple choice only, no hints
+- No feedback until end
+- After all: show score X/5
+- 4+ correct (80%+): "🎉 Урок завершён! +50 XP" → unlock next lesson
+- Less: "Попробуй снова" → restart only test step
+
+═══════════════════════════════════
+PROGRESS SYSTEM
+═══════════════════════════════════
+
+localStorage key "fluenta_lesson_progress":
+{
+  completedLessons: { [lessonId]: { score: number, completedAt: string } },
+  totalXP: number
+}
+
+═══════════════════════════════════
+DESIGN
+═══════════════════════════════════
+- Dark theme: #0f0f1a background
+- Cards: bg-white/[0.04] border border-white/10 rounded-2xl
+- Purple/blue gradients: from-[#6366f1] to-[#8b5cf6]
+- Locked: opacity-40 grayscale
+- Completed: green border + checkmark
+- Current: border-[#6366f1] shadow-[0_0_20px_rgba(99,102,241,0.3)]
+
+After completing everything:
+git add -A && git commit -m "feat: full lesson system with 95 lessons, exercises, quiz, XP progress" && git push

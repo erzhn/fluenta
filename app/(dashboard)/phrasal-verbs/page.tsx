@@ -1,6 +1,7 @@
 'use client'
 import { useState, useMemo } from 'react'
 import { PHRASAL_VERBS_DATA, searchPhrasalVerbs, getAllPhrasalVerbs } from '@/lib/phrasal-verbs-data'
+import { addCardToSR } from '@/lib/spaced-repetition'
 
 const CATEGORY_ICONS: Record<string, string> = {
   daily: '🏠',
@@ -35,7 +36,21 @@ export default function PhrasalVerbsPage() {
     e.stopPropagation()
     setLearned(prev => {
       const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+        // Add to spaced repetition
+        const verb = getAllPhrasalVerbs().find(v => v.id === id)
+        if (verb) {
+          addCardToSR({
+            wordId: `pv_${verb.verb.replace(/\s+/g, '_')}`,
+            word: verb.verb,
+            translation: verb.translation,
+            example: verb.examples[0],
+          })
+        }
+      }
       return next
     })
   }

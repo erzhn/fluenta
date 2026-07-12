@@ -8,6 +8,8 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { StreakCalendar } from '@/components/StreakCalendar'
+import { SkillsRadar } from '@/components/SkillsRadar'
 
 // ── Glassmorphism helper ───────────────────────────────────────────────────────
 const glass = 'bg-white/[0.04] backdrop-blur-xl border border-white/10'
@@ -349,6 +351,24 @@ export default function ProgressPage() {
             </p>
           )}
         </div>
+      </motion.div>
+
+      {/* ── 4b. Streak Calendar ────────────────────────────────────────────── */}
+      <motion.div custom={6.5} variants={fadeUp} initial="hidden" animate="visible">
+        <StreakCalendar activity={Object.fromEntries(
+          weekData.map(d => [d.date, { date: d.date, minutes: d.minutes, xp: d.xp_earned }])
+        )} />
+      </motion.div>
+
+      {/* ── 4c. Skills Radar ────────────────────────────────────────────────── */}
+      <motion.div custom={6.7} variants={fadeUp} initial="hidden" animate="visible">
+        <SkillsRadar skills={[
+          { name: 'Грамматика',  value: Math.min(100, lessonsCount * 3),  max: 100, color: '#6366f1' },
+          { name: 'Словарь',     value: Math.min(100, vocabCount * 2),    max: 100, color: '#8b5cf6' },
+          { name: 'Чтение',      value: 40,                               max: 100, color: '#06b6d4' },
+          { name: 'Аудирование', value: 30,                               max: 100, color: '#10b981' },
+          { name: 'Письмо',      value: Math.min(100, convCount * 5),     max: 100, color: '#f59e0b' },
+        ]} />
       </motion.div>
 
       {/* ── 5. Achievements ────────────────────────────────────────────────── */}

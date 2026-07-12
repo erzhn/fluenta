@@ -28,6 +28,7 @@ import {
   GraduationCap,
   Trophy,
   Link2,
+  Award,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getLevelFromXP } from "@/lib/gamification";
@@ -46,6 +47,7 @@ const NAV_ITEMS = [
   { href: "/grammar",        icon: GraduationCap,   label: "Грамматика",         badge: null },
   { href: "/phrasal-verbs", icon: Link2,           label: "Фразовые глаголы",   badge: null },
   { href: "/modules",       icon: Trophy,          label: "Модули",             badge: null },
+  { href: "/achievements",  icon: Award,           label: "Достижения",   badge: null },
   { href: "/level-test",   icon: BarChart2,       label: "Тест уровня",  badge: null },
   { href: "/progress",     icon: TrendingUp,      label: "Прогресс",     badge: null },
 ];

@@ -1,0 +1,458 @@
+# ВАЖНО: НЕ ЗАПРАШИВАЙ РАЗРЕШЕНИЯ
+# Все изменения файлов — автоматически. Не спрашивай "can I edit", "should I create", "do you want me to".
+# Просто делай. Это мой проект, я дал полный доступ.
+# Запускай: claude --dangerously-skip-permissions < features-prompt.txt
+
+Ты строишь AI English Learning Platform "Fluenta" на Next.js 14 + TypeScript + Tailwind.
+Папка проекта: D:\Projects with @\fluenta (или текущая рабочая папка).
+
+ДИЗАЙН: тёмная тема, фон #0f0f1a, карточки bg-white/[0.04] border border-white/10 rounded-2xl,
+акцент — фиолетово-синие градиенты from-[#6366f1] to-[#8b5cf6].
+Все страницы 'use client'. Везде импорт из '@/lib/...' и '@/components/...'.
+
+АУДИО: используй ТОЛЬКО Web Speech API (SpeechSynthesis) — никаких внешних источников.
+Для озвучки: window.speechSynthesis.speak(new SpeechSynthesisUtterance(text)) с lang='en-US'.
+
+---
+## ЗАДАЧА 1: LEVEL TEST
+Файл: app/(dashboard)/level-test/page.tsx
+
+20 вопросов с multiple choice, охватывают A1–C1. Вот все вопросы:
+
+Q1 (A1): "She ___ a teacher." [is / are / am / be] → is
+Q2 (A1): "I ___ got a car." [have / has / am / do] → have
+Q3 (A1): "They ___ playing football now." [is / am / are / be] → are
+Q4 (A1): "Did you ___ the film?" [see / saw / seen / seeing] → see
+Q5 (A2): "I ___ here since 2020." [live / lived / have lived / was living] → have lived
+Q6 (A2): "If it rains, I ___ stay home." [will / would / shall / should] → will
+Q7 (A2): "She used to ___ in Paris." [live / lived / living / lives] → live
+Q8 (A2): "The book was ___ by Tolstoy." [wrote / writing / written / write] → written
+Q9 (B1): "When I arrived, she ___ already left." [has / had / was / did] → had
+Q10 (B1): "He said he ___ tired." [is / was / has been / will be] → was
+Q11 (B1): "If I ___ rich, I would travel more." [am / was / were / be] → were
+Q12 (B1): "The package ___ delivered tomorrow." [will / will be / is / was] → will be
+Q13 (B1): "I wish I ___ speak Japanese." [can / could / would / will] → could
+Q14 (B2): "Not only ___ she arrive late, but she also forgot her bag." [did / was / has / had] → did
+Q15 (B2): "She should ___ told me earlier." [have / has / had / be] → have
+Q16 (B2): "It was John ___ called me, not Peter." [who / which / that / whom] → who
+Q17 (B2): "Having ___ the report, she sent it immediately." [finish / finishing / finished / finishes] → finished
+Q18 (C1): "Had I ___ about the problem, I would have helped." [know / knew / known / knowing] → known
+Q19 (C1): "It is essential that he ___ present at the meeting." [is / be / was / will be] → be
+Q20 (C1): "The rapid ___ of technology has changed communication." [develop / developed / developer / development] → development
+
+Логика подсчёта:
+- 0-5 правильных → A1
+- 6-9 → A2
+- 10-13 → B1
+- 14-17 → B2
+- 18-20 → C1
+
+UI:
+- Экран 1: заголовок "Определи свой уровень", подзаголовок "20 вопросов • ~5 минут", кнопка "Начать тест"
+- Экран 2: прогресс-бар "Вопрос X из 20", вопрос, 4 варианта-кнопки (зелёный/красный фидбэк мгновенно, через 0.7с следующий)
+- Экран 3 (результат):
+  - Большой badge с уровнем (A1/A2/B1/B2/C1) с градиентом
+  - "Правильных: X из 20"
+  - Описание уровня (1-2 предложения на русском)
+  - Кнопка "Начать обучение" → /dashboard
+  - Сохранить в localStorage: { key: 'fluenta_user_level', value: level }
+  - Также сохранить в 'fluenta_level_test_score': { level, score, date }
+
+---
+## ЗАДАЧА 2: СЛОВАРЬ ПО УРОКАМ + FLASHCARDS
+Файлы:
+- lib/vocabulary-data.ts
+- app/(dashboard)/vocabulary/page.tsx
+
+### lib/vocabulary-data.ts
+
+Для каждого из первых 15 уроков (a1-1-1 через a1-3-15) создай 8 слов.
+Тип:
+```ts
+interface VocabWord {
+  id: string
+  lessonId: string
+  word: string
+  translation: string
+  example: string
+  exampleTranslation: string
+}
+export const VOCABULARY: VocabWord[] = [...]
+```
+
+Слова для уроков:
+a1-1-1 (To Be): happy, tired, hungry, student, teacher, friend, brother, sister
+a1-1-2 (Знакомство): name, age, country, city, speak, understand, nice, meet
+a1-1-3 (Числа): number, year, hundred, thousand, age, floor, phone, address
+a1-1-4 (Дни): Monday, weekend, holiday, birthday, morning, evening, tonight, tomorrow
+a1-1-5 (Цвета): colour, bright, dark, light, choose, favourite, beautiful, ugly
+a1-2-6 (Have got): own, borrow, lend, need, share, use, belong, keep
+a1-2-7 (Семья): married, single, only child, relatives, parents, children, couple, twins
+a1-2-8 (Дом): rent, move, flat, house, room, space, tidy, messy
+a1-2-9 (Предлоги): opposite, corner, middle, end, side, distance, close, far
+a1-2-10 (There is): exist, available, empty, full, several, none, enough, plenty
+a1-3-11 (Present Simple): routine, habit, always, usually, sometimes, never, work, study
+a1-3-12 (Наречия): often, rarely, occasionally, frequently, regularly, hardly, ever, seldom
+a1-3-13 (Время): early, late, on time, schedule, appointment, arrive, leave, wait
+a1-3-14 (Глаголы): wake up, get up, have breakfast, go home, cook dinner, watch TV, go to bed, sleep
+a1-3-15 (Present Continuous): currently, right now, at the moment, busy, happening, notice, listen, talk
+
+### app/(dashboard)/vocabulary/page.tsx
+
+SRS (Spaced Repetition System) с локальным хранилищем.
+
+localStorage ключ 'fluenta_vocab_srs':
+```ts
+{
+  [wordId: string]: {
+    interval: number      // в днях (1, 3, 7, 14, 30)
+    dueDate: string       // ISO date
+    box: number           // 0-5 (Leitner boxes)
+    seen: boolean
+  }
+}
+```
+
+Режимы страницы:
+1. ОБЗОР (default):
+   - Вверху: "Сегодня к повторению: X слов" + "Изучено всего: Y слов"
+   - Фильтры по уроку (dropdown или tabs по блокам A1)
+   - Grid карточек: слово + перевод, статус (новое/к повторению/выучено)
+   - Кнопка "Учить сегодня (X)" → режим FLASHCARDS
+
+2. FLASHCARDS:
+   - Показывает только слова с dueDate <= сегодня ИЛИ новые (box=0)
+   - Карточка: front = английское слово (большой шрифт)
+   - Нажать/кликнуть → flip (CSS transform rotateY 180deg): back = перевод + пример
+   - Кнопка 🔊 → озвучить через SpeechSynthesis
+   - Внизу 3 кнопки: "❌ Не знаю" (box→0, interval=1) / "🤔 Помню" (box+1, interval*2) / "✅ Знаю!" (box+1, interval*2, max 30)
+   - Прогресс: "5 из 12 слов"
+   - После всех: "Готово! Следующее повторение: через X дней"
+
+---
+## ЗАДАЧА 3: СТРИК И ЕЖЕДНЕВНАЯ ЦЕЛЬ
+Файл: components/StreakWidget.tsx (используй в dashboard)
+
+localStorage ключ 'fluenta_streak':
+```ts
+{
+  currentStreak: number
+  longestStreak: number
+  lastActiveDate: string // ISO date YYYY-MM-DD
+  todayMinutes: number
+  dailyGoalMinutes: number // default 10
+  history: { [date: string]: number } // date → minutes
+}
+```
+
+Логика:
+- При каждом взаимодействии с уроком/словарём/тестом → вызывать trackActivity(minutes: number)
+- trackActivity проверяет: если lastActiveDate < today → новый день. Если вчера → streak+1. Если нет → streak=1.
+- Если todayMinutes >= dailyGoalMinutes → цель выполнена.
+
+Компонент StreakWidget:
+- Показывает: 🔥 {currentStreak} дней
+- Прогресс бар: "Сегодня: X мин из 10"
+- Если цель выполнена: зелёный бейдж "✅ Цель выполнена!"
+- Последние 7 дней: маленькие кружки (зелёный = был активен, серый = нет)
+- Настройка цели: клик на "10 мин" → popup сменить на 5/10/15/20/30
+
+---
+## ЗАДАЧА 4: WRITING PRACTICE
+Файлы:
+- app/(dashboard)/writing/page.tsx
+- app/api/ai/writing-check/route.ts
+
+### app/api/ai/writing-check/route.ts
+POST endpoint. Body: { text: string, level: string, topic: string }
+Вызывает Anthropic API (используй существующий паттерн из app/api/ai/chat/route.ts).
+System prompt:
+```
+You are an English writing tutor. The student's level is {level}. They wrote about: {topic}.
+Analyze their text and return JSON:
+{
+  "overallScore": number (0-100),
+  "corrections": [
+    {
+      "original": "exact text from student",
+      "corrected": "correct version",
+      "explanation": "short explanation in Russian",
+      "type": "grammar"|"vocabulary"|"style"|"spelling"
+    }
+  ],
+  "positives": ["thing done well 1", "thing done well 2"],
+  "suggestion": "one main improvement tip in Russian",
+  "rewrittenVersion": "polished version of the text"
+}
+Return ONLY valid JSON, no markdown.
+```
+
+### app/(dashboard)/writing/page.tsx
+UI:
+- Выбор уровня (A1-C1) и темы из списка:
+  A1: "My family", "My home", "My daily routine", "My favourite food", "My weekend"
+  A2: "My last holiday", "My job", "My city", "A film I liked", "My best friend"
+  B1: "Technology in my life", "The environment", "Health and lifestyle", "Travel experiences", "Social media"
+  B2: "Work-life balance", "Education systems", "Cultural differences", "The future of AI", "Urban vs rural life"
+  C1: "Globalisation impacts", "Ethical dilemmas in technology", "The role of arts in society", "Economic inequality", "Climate change solutions"
+
+- Textarea (min 100 слов для A1, 200 для A2, 300 для B1+)
+- Счётчик слов в реальном времени
+- Кнопка "Проверить текст" → loading → результат
+
+Результат:
+- Общий балл: X/100 (цветной: <60 красный, <80 жёлтый, >=80 зелёный)
+- Раздел "Что хорошо ✅" (positives)
+- Раздел "Исправления" — список. Каждое:
+  - Красный зачёркнутый оригинал → зелёный исправленный
+  - Бейдж типа (grammar/vocabulary/style/spelling)
+  - Объяснение на русском
+- Раздел "Улучшенная версия" — кнопка показать/скрыть
+- Главный совет: "💡 {suggestion}"
+- Кнопка "Написать снова" (очистить)
+
+---
+## ЗАДАЧА 5: LISTENING PRACTICE
+Файл: app/(dashboard)/listening/page.tsx
+
+Используй ТОЛЬКО Web Speech API SpeechSynthesis. Никаких внешних аудиофайлов.
+
+Контент — тексты по уровням:
+
+A1 - "At the café":
+Text: "Hello! Can I help you? Yes, please. I'd like a coffee and a sandwich. Of course. What kind of sandwich? Chicken, please. And a large coffee with milk. That's four pounds fifty, please. Here you are. Thank you. Enjoy your coffee!"
+Questions: [
+  { q: "Where are they?", options: ["In a café", "In a shop", "At home", "In a school"], answer: "In a café" },
+  { q: "What does the customer order?", options: ["Tea and cake", "Coffee and sandwich", "Juice and burger", "Water and salad"], answer: "Coffee and sandwich" },
+  { q: "How much does it cost?", options: ["£3.50", "£4.00", "£4.50", "£5.00"], answer: "£4.50" }
+]
+
+A2 - "A Weekend Plan":
+Text: "Hey Sarah, what are you doing this weekend? I'm not sure yet. I was thinking about going to the cinema. Oh nice! What do you want to see? There's a new action film on. I've heard it's really good. Do you want to come? That sounds great! What time does it start? There's a showing at 7 PM. We could have dinner before. Perfect. Let's meet at the Italian restaurant at 5:30. Great, see you Saturday!"
+Questions: [
+  { q: "What do they decide to do?", options: ["Go shopping", "Watch a film", "Stay home", "Go to a concert"], answer: "Watch a film" },
+  { q: "What time is the film?", options: ["5:30", "6:00", "7:00", "8:00"], answer: "7:00" },
+  { q: "Where will they meet first?", options: ["At the cinema", "At home", "At an Italian restaurant", "At a café"], answer: "At an Italian restaurant" }
+]
+
+B1 - "The Benefits of Exercise":
+Text: "Regular exercise has many benefits for both physical and mental health. Studies show that people who exercise at least three times a week are less likely to suffer from depression and anxiety. Exercise releases endorphins, which are natural mood-boosters. It also improves sleep quality and increases energy levels during the day. For physical health, even moderate exercise like walking for thirty minutes can reduce the risk of heart disease and diabetes. The key is to find an activity you enjoy, whether it's swimming, cycling, or dancing, so that you stick to it long-term."
+Questions: [
+  { q: "How often should people exercise according to the text?", options: ["Every day", "Once a week", "At least three times a week", "Twice a month"], answer: "At least three times a week" },
+  { q: "What do endorphins do?", options: ["Help you sleep", "Boost your mood", "Build muscles", "Reduce hunger"], answer: "Boost your mood" },
+  { q: "What is the key to sticking with exercise?", options: ["Having a gym membership", "Exercising with a friend", "Choosing an activity you enjoy", "Exercising in the morning"], answer: "Choosing an activity you enjoy" }
+]
+
+B2 - "The Gig Economy":
+Text: "The rise of the gig economy has fundamentally transformed the way people work. Rather than traditional nine-to-five employment, millions of workers now take on short-term contracts or freelance work through digital platforms. Proponents argue that this model offers unparalleled flexibility, allowing individuals to choose when and where they work. However, critics point out significant drawbacks. Gig workers typically lack employment benefits such as sick pay, holiday pay, and pension contributions. Furthermore, income can be highly unpredictable, making it difficult to plan for the future. Governments around the world are now grappling with how to regulate this sector to protect workers while preserving the innovation that makes it so appealing."
+Questions: [
+  { q: "What is the main advantage of the gig economy according to supporters?", options: ["Higher salaries", "Better benefits", "Flexibility", "Job security"], answer: "Flexibility" },
+  { q: "Which benefit do gig workers typically NOT receive?", options: ["Salary", "Sick pay", "Work experience", "Digital tools"], answer: "Sick pay" },
+  { q: "What challenge do governments face?", options: ["Creating more jobs", "Taxing companies fairly", "Regulating the sector while keeping innovation", "Reducing working hours"], answer: "Regulating the sector while keeping innovation" }
+]
+
+C1 - "The Philosophy of Language":
+Text: "Language is not merely a tool for communication; it fundamentally shapes our perception of reality. The Sapir-Whorf hypothesis, also known as linguistic relativity, posits that the structure of a language influences the way its speakers conceptualise the world. For instance, research has demonstrated that speakers of languages with numerous colour terms can distinguish between shades more readily than those whose languages have fewer distinctions. Similarly, languages that lack a future tense may correlate with speakers who plan more effectively for the future, having no grammatical reason to separate tomorrow from today. While the strong version of this hypothesis — that language entirely determines thought — has largely been discredited, the weaker version, that language influences thought, continues to attract considerable empirical support."
+Questions: [
+  { q: "What does the Sapir-Whorf hypothesis propose?", options: ["Language determines intelligence", "Language influences how we perceive the world", "All languages are equally complex", "Thought exists independently of language"], answer: "Language influences how we perceive the world" },
+  { q: "What example is given about colour terms?", options: ["People with more colour terms see more colours", "People with more colour terms distinguish shades more easily", "Colour terms vary between cultures", "Some languages have no colour terms"], answer: "People with more colour terms distinguish shades more easily" },
+  { q: "What is the current academic view of the strong Sapir-Whorf hypothesis?", options: ["Widely accepted", "Largely discredited", "Under investigation", "Proven correct"], answer: "Largely discredited" }
+]
+
+UI страницы:
+- Выбор уровня: A1 | A2 | B1 | B2 | C1 (tabs)
+- Карточка текста:
+  - Скорость: 0.8x | 1x | 1.2x (toggle кнопки)
+  - Кнопка ▶️ Слушать → озвучивает через SpeechSynthesis с выбранной скоростью (utterance.rate)
+  - Кнопка ⏹ Стоп
+  - Текст показывается только ПОСЛЕ нажатия "👁 Показать текст" (сначала скрыт)
+  - Кнопка 🔁 Слушать снова
+
+- После прослушивания: "Ответь на вопросы →" кнопка
+- 3 вопроса multiple choice (как в уроках)
+- Результат: X/3 с "Молодец!" / "Попробуй ещё раз"
+
+---
+## ЗАДАЧА 6: ПРОГРЕСС-ДАШБОРД
+Файл: app/(dashboard)/dashboard/page.tsx (улучши существующий)
+
+Добавь секции:
+1. HERO секция:
+   - Приветствие "Привет, [имя или 'студент']! 👋"
+   - Текущий уровень из localStorage 'fluenta_user_level'
+   - Если не пройден тест → баннер "Определи свой уровень → Пройти тест"
+
+2. STATS ROW (4 карточки в ряд):
+   - 🔥 Стрик (из fluenta_streak)
+   - ⭐ Всего XP (из fluenta_lesson_progress.totalXP)
+   - 📚 Уроков пройдено (из fluenta_lesson_progress.completedLessons)
+   - 🔤 Слов изучено (из fluenta_vocab_srs — слова с box >= 3)
+
+3. XP CHART — последние 7 дней:
+   - Читай из 'fluenta_streak'.history
+   - SVG бар-чарт: 7 столбцов, дни недели под ними
+   - Если activity в тот день — фиолетовый столбец, иначе серый
+
+4. СЕГОДНЯ (рекомендации):
+   - "📖 Продолжи урок: [следующий незавершённый урок]" → /lessons
+   - "🔤 Словарный запас: X слов к повторению" → /vocabulary
+   - "✍️ Практика письма" → /writing
+   - "🎧 Аудирование" → /listening
+
+5. НАВИГАЦИЯ (grid 3x3 карточки):
+   📚 Уроки | 🎤 Произношение | 🤖 AI-тьютор
+   🔤 Словарь | ✍️ Письмо | 🎧 Аудирование
+   📖 Чтение | 📋 Грамматика | 📊 Прогресс
+
+6. StreakWidget компонент снизу
+
+---
+## ЗАДАЧА 7: ЧИТАЛКА ТЕКСТОВ ПО УРОВНЮ
+Файл: app/(dashboard)/reading/page.tsx
+
+Тексты по уровням:
+
+A1 текст — "My Family":
+"My name is Tom. I am from London. I have a small family. My mother is a nurse. She works at a hospital. My father is a teacher. He works at a school. I have one sister. Her name is Lucy. She is ten years old. We have a dog. His name is Max. Max is big and black. I love my family very much."
+Vocabulary highlights: ['nurse', 'hospital', 'teacher', 'school', 'sister']
+Words: { nurse: 'медсестра', hospital: 'больница', teacher: 'учитель', school: 'школа', sister: 'сестра' }
+Questions: [
+  { q: "What is Tom's mother's job?", options: ["Teacher", "Nurse", "Doctor", "Engineer"], answer: "Nurse" },
+  { q: "How old is Lucy?", options: ["8", "9", "10", "11"], answer: "10" },
+  { q: "What colour is Max?", options: ["White", "Brown", "Black", "Grey"], answer: "Black" }
+]
+
+A2 текст — "A Trip to Edinburgh":
+"Last summer, I visited Edinburgh with my friend Anna. Edinburgh is the capital of Scotland and it's a beautiful city. We stayed in a small hotel near the old town. On the first day, we visited Edinburgh Castle, which sits on top of a volcanic rock. The views from the castle were amazing. We could see the whole city. In the evening, we walked along the Royal Mile and tried traditional Scottish food. The next day, we climbed Arthur's Seat, which is an old volcano in the middle of the city. It was hard work but the views were worth it!"
+Vocabulary highlights: ['capital', 'castle', 'volcanic', 'traditional', 'volcano']
+Words: { capital: 'столица', castle: 'замок', volcanic: 'вулканический', traditional: 'традиционный', volcano: 'вулкан' }
+Questions: [
+  { q: "What is Edinburgh the capital of?", options: ["England", "Wales", "Scotland", "Ireland"], answer: "Scotland" },
+  { q: "What is Edinburgh Castle built on?", options: ["A hill", "A volcanic rock", "An island", "A cliff"], answer: "A volcanic rock" },
+  { q: "What did they do on the second day?", options: ["Visited the castle", "Went shopping", "Climbed Arthur's Seat", "Took a boat trip"], answer: "Climbed Arthur's Seat" }
+]
+
+B1 текст — "Remote Work Revolution":
+"The COVID-19 pandemic forced millions of workers around the world to work from home almost overnight. What began as an emergency measure has, for many, become a permanent way of working. Companies that were initially reluctant to allow remote work discovered that productivity often remained the same or even improved. Employees, meanwhile, enjoyed saving time on commuting and having more flexibility in their schedules. However, remote work is not without its challenges. Many people struggle with feelings of isolation and find it difficult to separate work life from home life. Young employees in particular may miss out on the informal learning that happens naturally in an office environment. As we move forward, many organisations are adopting a hybrid model, combining the best of both worlds."
+Vocabulary highlights: ['pandemic', 'reluctant', 'productivity', 'commuting', 'isolation', 'hybrid']
+Words: { pandemic: 'пандемия', reluctant: 'неохотный', productivity: 'производительность', commuting: 'ежедневные поездки на работу', isolation: 'изоляция', hybrid: 'гибридный' }
+Questions: [
+  { q: "Why did remote work initially expand so rapidly?", options: ["Companies planned it", "The pandemic forced it", "Workers demanded it", "Technology improved"], answer: "The pandemic forced it" },
+  { q: "What is one disadvantage of remote work mentioned in the text?", options: ["Lower productivity", "Higher costs", "Feelings of isolation", "Longer hours"], answer: "Feelings of isolation" },
+  { q: "What solution are many companies now adopting?", options: ["Full remote work", "Returning to offices completely", "A hybrid model", "Four-day work weeks"], answer: "A hybrid model" }
+]
+
+B2 текст — "The Paradox of Choice":
+"In his influential book, psychologist Barry Schwartz argues that having too many choices can be paralysing rather than liberating. While classical economic theory suggests that more options always lead to greater satisfaction, Schwartz contends that beyond a certain point, additional choices generate anxiety and regret. When faced with hundreds of options, consumers often experience what he calls 'the paradox of choice' — the more alternatives available, the harder it becomes to make a decision, and the less satisfied we feel with whatever we choose. This is because an abundance of options raises our expectations and makes us more likely to imagine the superior qualities of the options we rejected. Schwartz distinguishes between 'maximisers', who always seek the best possible option, and 'satisficers', who are content with something that is good enough. Research suggests that satisficers tend to be happier."
+Vocabulary highlights: ['paralysing', 'liberating', 'contends', 'abundance', 'maximisers', 'satisficers']
+Words: { paralysing: 'парализующий', liberating: 'освобождающий', contends: 'утверждает', abundance: 'изобилие', maximisers: 'максимизаторы', satisficers: 'удовлетворенцы' }
+Questions: [
+  { q: "What does Schwartz argue about having many choices?", options: ["It always improves satisfaction", "It can be paralysing", "It is economically beneficial", "It simplifies decisions"], answer: "It can be paralysing" },
+  { q: "Why does an abundance of choice reduce satisfaction?", options: ["It takes too much time", "It raises our expectations", "It confuses our preferences", "It costs more money"], answer: "It raises our expectations" },
+  { q: "Who does research suggest tends to be happier?", options: ["Maximisers", "Satisficers", "Both equally", "Neither"], answer: "Satisficers" }
+]
+
+C1 текст — "Neuroplasticity and Learning":
+"For much of the twentieth century, neuroscientists believed that the adult brain was essentially fixed — that its structure and function were largely determined by early childhood development and remained relatively immutable thereafter. This view has been dramatically overturned by the discovery of neuroplasticity: the brain's remarkable capacity to reorganise itself by forming new neural connections throughout life. When we learn a new skill, whether it is playing a musical instrument, mastering a foreign language, or navigating an unfamiliar city, we are literally reshaping our neural architecture. The London taxi driver study, which found that the hippocampi of experienced cab drivers were significantly enlarged compared to those of control subjects, provided compelling evidence for experience-dependent structural change in the adult brain. The implications for education are profound. Rather than viewing intelligence as a fixed attribute — a notion popularised by early IQ testing — we must recognise it as a dynamic quality that can be cultivated through deliberate practice and enriched environments."
+Vocabulary highlights: ['neuroplasticity', 'immutable', 'neural', 'hippocampi', 'compelling', 'deliberate']
+Words: { neuroplasticity: 'нейропластичность', immutable: 'неизменный', neural: 'нейронный', hippocampi: 'гиппокамп (мн.ч.)', compelling: 'убедительный', deliberate: 'намеренный' }
+Questions: [
+  { q: "What was the traditional view of the adult brain?", options: ["Highly adaptable", "Continuously growing", "Essentially fixed", "Dependent on sleep"], answer: "Essentially fixed" },
+  { q: "What did the London taxi driver study show?", options: ["Taxi drivers have higher IQ", "Experience can change brain structure", "Navigation is innate", "The brain shrinks with age"], answer: "Experience can change brain structure" },
+  { q: "What implication does neuroplasticity have for education?", options: ["IQ tests are more important", "Intelligence is fixed at birth", "Intelligence can be developed", "Early education is the only factor"], answer: "Intelligence can be developed" }
+]
+
+UI страницы:
+- Tabs: A1 | A2 | B1 | B2 | C1
+- Карточка текста:
+  - Слова из vocabulary highlights подсвечены (другой цвет текста + underline dotted)
+  - Клик на подсвеченное слово → tooltip/popup с переводом + кнопка "➕ В словарь" (добавляет в fluenta_vocab_srs)
+  - Кнопка 🔊 (озвучить текст через SpeechSynthesis)
+  - Кнопка 📝 "Ответить на вопросы"
+
+- 3 вопроса multiple choice
+- Результат + "Сохранить X новых слов в словарь" (те что кликали)
+
+---
+## ЗАДАЧА 8: ГРАММАТИЧЕСКИЙ СПРАВОЧНИК
+Файл: app/(dashboard)/grammar/page.tsx
+
+Контент — краткие карточки по всем основным темам:
+
+Структура данных:
+```ts
+interface GrammarTopic {
+  id: string
+  level: 'A1'|'A2'|'B1'|'B2'|'C1'
+  title: string
+  summary: string
+  structure: string
+  examples: string[]
+  commonMistakes: { wrong: string; correct: string; tip: string }[]
+}
+```
+
+Создай 5 тем для каждого уровня (итого 25 карточек):
+
+A1:
+1. "To Be" | "am/is/are + adjective/noun" | ["I am happy", "She is a teacher", "We are students"] | [{wrong:"I is tired", correct:"I am tired", tip:"С I всегда am"}]
+2. "Present Simple" | "subject + verb(+s для he/she/it)" | ["I work", "She works", "Do you work?"] | [{wrong:"She work here", correct:"She works here", tip:"He/she/it +s"}]
+3. "Past Simple" | "verb+ed или неправильная форма" | ["I worked", "She went", "Did you see?"] | [{wrong:"I goed", correct:"I went", tip:"go — неправильный глагол"}]
+4. "Articles: a/an/the" | "a+согласная, an+гласная, the=конкретное" | ["a cat", "an apple", "the cat I told you about"] | [{wrong:"I have the dog", correct:"I have a dog", tip:"Первое упоминание = a/an"}]
+5. "Plural Nouns" | "обычно +s/es, исключения: man→men, child→children" | ["cats", "boxes", "children", "men"] | [{wrong:"three childs", correct:"three children", tip:"child имеет неправильное множественное"}]
+
+A2:
+1. "Present Perfect" | "have/has + past participle" | ["I have seen", "She has gone", "Have you ever been to Paris?"] | [{wrong:"I have went", correct:"I have gone", tip:"go → gone (не went)"}]
+2. "First Conditional" | "If + Present Simple, will + base" | ["If it rains, I will stay home"] | [{wrong:"If it will rain, I will stay", correct:"If it rains, I will stay", tip:"После if — Present Simple"}]
+3. "Comparative/Superlative" | "adjective+er/more+adj / the...est/most" | ["bigger", "more beautiful", "the tallest", "the most expensive"] | [{wrong:"more big", correct:"bigger", tip:"Короткие слова: +er"}]
+4. "Passive Voice: Present" | "am/is/are + past participle" | ["English is spoken here", "Cars are made in factories"] | [{wrong:"English is speak", correct:"English is spoken", tip:"Нужна форма past participle"}]
+5. "Used to" | "used to + base verb (только прошлое)" | ["I used to live in Moscow", "She used to have long hair"] | [{wrong:"I use to go there", correct:"I used to go there", tip:"used to — застывшая форма"}]
+
+B1:
+1. "Past Perfect" | "had + past participle" | ["When I arrived, she had left", "I had never eaten sushi before"] | [{wrong:"When I arrived she already left", correct:"When I arrived she had already left", tip:"Более раннее прошлое = had + PP"}]
+2. "Second Conditional" | "If + Past Simple, would + base" | ["If I were rich, I would travel"] | [{wrong:"If I would be rich", correct:"If I were rich", tip:"После if — Past Simple (не would)"}]
+3. "Reported Speech" | "say → said + tense shift back" | ["She said she was tired", "He told me he had called"] | [{wrong:"She said she is tired", correct:"She said she was tired", tip:"Время сдвигается назад"}]
+4. "Modal + have + PP" | "should/must/can't + have + PP для прошлого" | ["You should have called", "She must have forgotten"] | [{wrong:"You should called", correct:"You should have called", tip:"Нужен have + past participle"}]
+5. "Gerund vs Infinitive" | "некоторые глаголы + ing, другие + to" | ["enjoy swimming", "want to swim", "stop smoking"] | [{wrong:"I enjoy to swim", correct:"I enjoy swimming", tip:"enjoy, mind, avoid, finish = +ing"}]
+
+B2:
+1. "Inversion" | "Never/Rarely/Not only + aux + subject" | ["Never have I seen", "Not only did she fail, but..."] | [{wrong:"Never I have seen", correct:"Never have I seen", tip:"Вспомогательный глагол идёт перед подлежащим"}]
+2. "Third Conditional" | "If + Past Perfect, would have + PP" | ["If I had known, I would have helped"] | [{wrong:"If I would have known", correct:"If I had known", tip:"В if-части — had + PP"}]
+3. "Wish + tenses" | "wish+Past Simple (сейчас), wish+Past Perfect (прошлое)" | ["I wish I knew", "I wish I had known"] | [{wrong:"I wish I know", correct:"I wish I knew", tip:"После wish — прошедшее время"}]
+4. "Defining vs Non-defining Relative" | "без запятых (идентифицируем) / с запятыми (доп.инфо)" | ["The man who called...", "My sister, who lives in Paris, ..."] | [{wrong:"My sister who lives in Paris is a doctor", correct:"My sister, who lives in Paris, is a doctor", tip:"Не-определительные — всегда с запятыми"}]
+5. "Participle Clauses" | "Having done / Being done" | ["Having finished, he left", "Left alone, she cried"] | [{wrong:"After he finished, he left", correct:"Having finished, he left", tip:"Формальный стиль — participle clause"}]
+
+C1:
+1. "Advanced Conditionals" | "Had I known / Were it not for / Should you need" | ["Had I known, I would have helped", "Were it not for you, I'd have failed"] | [{wrong:"If I would have had more time", correct:"Had I had more time", tip:"Инверсия заменяет if в формальном стиле"}]
+2. "Subjunctive" | "It is essential that he BE (не is)" | ["It is vital that she attend", "I suggest that he leave early"] | [{wrong:"It is essential that he is there", correct:"It is essential that he be there", tip:"Сослагательное наклонение = основная форма глагола"}]
+3. "Nominalisation" | "глагол/прилаг → существительное для официального стиля" | ["develop → development", "decide → decision", "achieve → achievement"] | [{wrong:"The company grew rapidly", correct:"The rapid growth of the company", tip:"Номинализация делает текст более официальным"}]
+4. "Cleft Sentences" | "It was X who/that... / What I need is..." | ["It was John who told me", "What I need is more time"] | [{wrong:"John told me (нет акцента)", correct:"It was John who told me", tip:"Cleft выделяет важную информацию"}]
+5. "Discourse Markers" | "Nevertheless, Furthermore, Consequently, Notwithstanding" | ["Nevertheless, the results were positive", "Consequently, we had to change our plans"] | [{wrong:"But the results were positive (неформально)", correct:"Nevertheless, the results were positive", tip:"Discourse markers создают связность в академическом тексте"}]
+
+UI страницы:
+- Поиск (input) по всем темам
+- Tabs: A1 | A2 | B1 | B2 | C1
+- Grid карточек 2-3 в ряд
+- Каждая карточка:
+  - Level badge + title
+  - Structure (моноширинный шрифт, выделена)
+  - Примеры (зелёные)
+  - Кнопка "▼ Частые ошибки" → expand:
+    - ❌ Wrong → ✅ Correct + 💡 Tip
+  - Кнопка 🔊 (озвучить примеры через SpeechSynthesis)
+
+---
+## НАВИГАЦИЯ
+Обнови app/(dashboard)/layout.tsx сайдбар. Добавь ссылки:
+- /level-test → "📊 Тест уровня"
+- /vocabulary → "🔤 Словарь"
+- /writing → "✍️ Письмо"
+- /listening → "🎧 Аудирование"
+- /reading → "📖 Чтение"
+- /grammar → "📋 Грамматика"
+
+---
+## ФИНАЛ
+После всех изменений:
+1. Убедись что все импорты корректны
+2. Запусти: git add -A && git commit -m "feat: level test, vocabulary SRS, streak, writing practice, listening, progress dashboard, reading, grammar reference" && git push

@@ -8,6 +8,7 @@ import type { Message } from '@/types'
 import { createRecognition, isSpeechRecognitionSupported } from '@/lib/speech'
 import { supabase } from '@/lib/supabase'
 import { toast } from '@/components/ui/Toast'
+import { saveChatMessage, newSessionId } from '@/lib/chat-history'
 
 type ChatMode = 'tutor' | 'conversation'
 
@@ -32,9 +33,17 @@ export default function AITutorPage() {
   const [loading, setLoading] = useState(false)
   const [mode, setMode] = useState<ChatMode>('tutor')
   const [listening, setListening] = useState(false)
+  const [sessionId] = useState(() => newSessionId())
+  const [userId, setUserId] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const srRef = useRef<ReturnType<typeof createRecognition>>(null)
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUserId(user.id)
+    })
+  }, [])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -66,6 +75,9 @@ export default function AITutorPage() {
       setMessages(newHistory)
       setLoading(true)
 
+      // Persist user message
+      if (userId) saveChatMessage(userId, sessionId, 'user', trimmed).catch(() => {})
+
       try {
         const { data: { session } } = await supabase.auth.getSession()
         const res = await fetch('/api/ai/chat', {
@@ -89,12 +101,15 @@ export default function AITutorPage() {
 
         const data = await res.json()
 
+        const reply = data.reply
+        // Persist assistant message
+        if (userId) saveChatMessage(userId, sessionId, 'assistant', reply).catch(() => {})
         setMessages((prev) => [
           ...prev,
           {
             id: `ai-${Date.now()}`,
             role: 'assistant',
-            content: data.reply,
+            content: reply,
             timestamp: new Date().toISOString(),
           },
         ])
