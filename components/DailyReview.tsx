@@ -90,5 +90,5 @@ export function DailyReview() {
         </div>
       )}
     </div>
-  )
+  );
 }

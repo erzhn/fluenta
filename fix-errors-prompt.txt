@@ -1,0 +1,160 @@
+# НЕ ЗАПРАШИВАЙ РАЗРЕШЕНИЯ. Все изменения автоматически.
+# Запуск: $env:CLAUDE_CODE_MAX_OUTPUT_TOKENS=100000 && claude --dangerously-skip-permissions < fix-errors-prompt.txt
+
+# ═══════════════════════════════════════════════════════════
+# FLUENTA — ИСПРАВЛЕНИЕ ОБРЕЗАННЫХ ФАЙЛОВ
+#
+# Большинство файлов в app/(dashboard)/ были обрезаны из-за
+# превышения токен-лимита в прошлых сессиях. Затем были
+# добавлены некорректные закрывающие теги вручную.
+#
+# Задача: прочитай каждый файл ниже, определи где JSX
+# структура нарушена (незакрытые теги, дубли, неправильные
+# закрывающие), и исправь до рабочего состояния.
+#
+# ПРИНЦИП: Минимальные изменения — только исправить структуру,
+# не менять логику и контент.
+# ═══════════════════════════════════════════════════════════
+
+## ШАГ 0: Сначала запусти проверку
+
+```bash
+npx tsc --noEmit 2>&1 | grep "^app/" | grep -oP "app/[^(]+" | sort -u
+```
+
+Ты увидишь список файлов с ошибками. Исправь каждый.
+
+---
+
+## ШАГ 1: Для каждого файла с ошибкой — алгоритм исправления
+
+Для каждого файла из списка:
+
+1. Прочитай файл полностью (`Read`)
+2. Найди ошибку TypeScript: `npx tsc --noEmit 2>&1 | grep "filename"`
+3. Посмотри на строку с ошибкой — что там
+4. Определи что не закрыто или задублировано
+5. Исправь минимально (`Edit`)
+6. Проверь: `npx tsc --noEmit 2>&1 | grep "filename"` — ошибок быть не должно
+
+---
+
+## ШАГ 2: Известные конкретные проблемы
+
+### app/(dashboard)/dictation/page.tsx
+Ошибка на строке ~309. Файл оригинально обрезан был внутри `</div>`.
+После ручного исправления добавились лишние закрывающие теги.
+Прочитай файл, найди где структура нарушена (скорее всего лишние `</div>` или `)}` после правильного закрытия), удали лишнее.
+
+### app/(dashboard)/grammar-exercises/page.tsx
+Ошибка на строке ~124-126. Внутри return нет закрытия для одного из div.
+Прочитай файл, найди незакрытый JSX элемент.
+
+### app/(dashboard)/lessons/page.tsx
+Ошибка ~771: Identifier expected. Скорее всего обрезан внутри модального окна DemoModal.
+Файл большой (770+ строк). Найди нарушенную структуру в хвосте.
+
+### app/(dashboard)/level-test/page.tsx
+Ошибка ~316: ')' expected. Незакрытый AnimatePresence или motion.div в конце файла.
+
+### app/(dashboard)/listening/page.tsx
+Ошибка ~263: ')' expected. Незакрытый AnimatePresence.
+
+### app/(dashboard)/mini-stories/page.tsx
+Ошибка ~178: Unexpected token. Лишний `{` или `}` в хвосте после моих правок.
+
+### app/(dashboard)/modules/page.tsx
+Ошибка ~174: Unexpected token. Лишний `}` после `</Link>`.
+
+### app/(dashboard)/profile/page.tsx
+Ошибка ~415: ')' expected. Файл обрезан внутри Button компонента.
+
+### app/(dashboard)/progress/page.tsx
+Ошибка ~490: '}' expected. Лишний `}` после правильного закрытия.
+
+### app/(dashboard)/pronunciation/page.tsx
+Ошибка ~865: '</' expected. Нет закрытия для основного div контейнера.
+
+### app/(dashboard)/reading-speed/page.tsx
+Ошибка ~176: Unexpected token JSX fragment.
+
+### app/(dashboard)/vocabulary/page.tsx
+Ошибка ~540: Expected closing tag for 'motion.div'. Внутри AnimatePresence есть motion.div который не закрыт.
+
+### app/(dashboard)/weekly-summary/page.tsx
+Ошибка ~114: Expected closing tag for 'div'. Незакрытый div в конце.
+
+### app/(dashboard)/word-formation/page.tsx
+Ошибка ~135: ')' expected. Лишние закрывающие теги в хвосте.
+
+---
+
+## ШАГ 3: Также проверь components/
+
+```bash
+npx tsc --noEmit 2>&1 | grep "^components/" | grep -oP "components/[^(]+" | sort -u
+```
+
+Если есть ошибки в компонентах — исправь по тому же алгоритму.
+Большинство ошибок в components/ каскадные (пропадут после исправления pages).
+
+---
+
+## ШАГ 4: Особые файлы — полная перезапись если сильно нарушены
+
+Если файл настолько нарушен что проще переписать — делай так.
+Вот минимальные рабочие версии для самых простых страниц:
+
+### app/(dashboard)/loading.tsx (если нарушен)
+```tsx
+export default function Loading() {
+  return (
+    <div className="flex h-full items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-10 h-10 rounded-2xl bg-primary/20 animate-pulse flex items-center justify-center text-lg">
+          ⚡
+        </div>
+        <p className="text-muted-foreground text-sm">Загрузка...</p>
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+## ШАГ 5: Финальная проверка
+
+```bash
+npx tsc --noEmit 2>&1 | grep "^app/" | wc -l
+```
+
+Должно быть 0. Если остались ошибки — повтори для каждого файла.
+
+Также проверь что приложение запускается:
+```bash
+timeout 15 npx next build 2>&1 | tail -20
+```
+
+---
+
+## ШАГ 6: Проверь что LessonNotes работает в уроках
+
+Убедись что в app/(dashboard)/lessons/[id]/page.tsx последние строки выглядят так:
+```tsx
+      <LessonNotes lessonId={lesson.id} />
+    </>
+  );
+}
+```
+
+Если нет — добавь.
+
+---
+
+## ШАГ 7: Git commit
+
+```bash
+git add -A
+git commit -m "fix: restore truncated files, fix JSX structure errors across all dashboard pages"
+```

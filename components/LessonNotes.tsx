@@ -54,5 +54,5 @@ export function LessonNotes({ lessonId }: { lessonId: string }) {
         📝
       </button>
     </div>
-  )
+  );
 }

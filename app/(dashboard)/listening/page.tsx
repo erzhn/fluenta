@@ -261,5 +261,5 @@ export default function ListeningPage() {
         </motion.div>
       </AnimatePresence>
     </div>
-  )
+  );
 }

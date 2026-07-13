@@ -60,5 +60,5 @@ export function WordOfDay() {
         {added ? '✓ Добавлено в повторение' : '+ Добавить в словарь'}
       </button>
     </div>
-  )
+  );
 }

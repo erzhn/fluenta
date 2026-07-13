@@ -78,5 +78,5 @@ export function ProgressPrediction({ completedLessons, currentLevel, dailyAvgMin
         </p>
       )}
     </div>
-  )
+  );
 }

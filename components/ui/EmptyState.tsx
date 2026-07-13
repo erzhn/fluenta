@@ -74,5 +74,5 @@ export function EmptyState({ type, title, subtitle, action }: EmptyStateProps) {
         </a>
       )}
     </div>
-  )
+  );
 }

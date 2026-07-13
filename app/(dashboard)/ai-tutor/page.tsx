@@ -443,5 +443,5 @@ export default function AITutorPage() {
         </p>
       </div>
     </div>
-  )
+  );
 }

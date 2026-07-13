@@ -232,5 +232,5 @@ export default function PronunciationPracticePage() {
         </div>
       )}
     </div>
-  )
+  );
 }

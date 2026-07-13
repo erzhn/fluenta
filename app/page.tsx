@@ -773,9 +773,9 @@ function Footer() {
         <p className="text-[#334155] text-sm text-center">Fluenta © 2026 — Free AI English Academy</p>
         <div className="flex items-center gap-5 text-sm text-muted-foreground">
           <a href="#features" className="hover:text-white transition-colors">Features</a>
-          <Link href="/auth/login" className="hover:text-white transition-colors">Sign in</Link>
+          <Link href="/auth/login" className="hover:text-white transition-colors">Login</Link>
         </div>
       </div>
     </footer>
-  )
+  );
 }

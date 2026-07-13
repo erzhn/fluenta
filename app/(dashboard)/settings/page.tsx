@@ -165,7 +165,7 @@ export default function SettingsPage() {
           className="px-6 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-medium rounded-xl transition-colors border border-red-500/20">
           Выйти
         </button>
-      </div>
+            </div>
     </div>
-  )
+  );
 }

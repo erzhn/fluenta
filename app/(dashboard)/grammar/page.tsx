@@ -593,9 +593,11 @@ export default function GrammarPage() {
 
       {filtered.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-muted-foreground">Ничего не найдено</p>
+               <p className="text-4xl mb-3">🔍</p>
+          <p className="text-white font-semibold">Ничего не найдено</p>
+          <p className="text-muted-foreground text-sm mt-1">Попробуй другой поисковый запрос</p>
         </div>
       )}
     </div>
-  )
+  );
 }

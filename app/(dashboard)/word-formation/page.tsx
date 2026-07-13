@@ -137,5 +137,5 @@ export default function WordFormationPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

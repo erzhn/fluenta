@@ -176,5 +176,5 @@ export default function ReadingSpeedPage() {
         </>
       )}
     </div>
-  )
+  );
 }

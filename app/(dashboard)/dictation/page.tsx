@@ -308,5 +308,5 @@ export default function DictationPage() {
         </div>
       )}
     </div>
-  )
+  );
 }

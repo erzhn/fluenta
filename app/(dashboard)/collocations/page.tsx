@@ -86,8 +86,8 @@ export default function CollocationsPage() {
               </button>
             )}
           </div>
-        ))}
+             ))}
       </div>
     </div>
-  )
+  );
 }

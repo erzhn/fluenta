@@ -62,5 +62,5 @@ export function SkillsRadar({ skills }: { skills: Skill[] }) {
         </div>
       </div>
     </div>
-  )
+  );
 }

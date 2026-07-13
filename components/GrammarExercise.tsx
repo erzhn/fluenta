@@ -22,9 +22,10 @@ interface GrammarExerciseProps {
   exercise: Exercise
   onNext?: () => void
   onCorrect?: () => void
+  onWrong?: () => void
 }
 
-export function GrammarExercise({ topic, level, exercise, onNext, onCorrect }: GrammarExerciseProps) {
+export function GrammarExercise({ topic, level, exercise, onNext, onCorrect, onWrong }: GrammarExerciseProps) {
   const [userAnswer, setUserAnswer] = useState('')
   const [result, setResult] = useState<CheckResult | null>(null)
   const [checking, setChecking] = useState(false)
@@ -138,9 +139,9 @@ export function GrammarExercise({ topic, level, exercise, onNext, onCorrect }: G
       {result && (
         <button onClick={handleNext}
           className="w-full py-3 bg-white/[0.06] hover:bg-white/10 text-white font-medium rounded-xl transition-colors border border-white/10">
-          Следующее упражнение →
+          Следующее упражнение
         </button>
       )}
     </div>
-  )
+  );
 }

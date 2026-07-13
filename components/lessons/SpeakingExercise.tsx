@@ -108,5 +108,5 @@ export default function SpeakingExercise({ prompt, sampleAnswer, onComplete }: P
         </div>
       )}
     </div>
-  )
+  );
 }

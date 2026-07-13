@@ -113,5 +113,5 @@ export default function WeeklySummaryPage() {
         </p>
       </div>
     </div>
-  )
+  );
 }

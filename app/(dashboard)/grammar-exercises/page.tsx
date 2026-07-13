@@ -112,15 +112,18 @@ export default function GrammarExercisesPage() {
         </div>
       )}
 
-      {!loading && exercise && (
+      {!loading && exercise ? (
         <GrammarExercise
           topic={selectedTopic.label}
           level={selectedTopic.level}
           exercise={exercise}
           onNext={loadExercise}
           onCorrect={() => setScore(s => ({ correct: s.correct + 1, total: s.total + 1 }))}
+           onWrong={() => setScore(s => ({ correct: s.correct, total: s.total + 1 }))}
         />
+      ) : (
+        <div className="text-center py-20 text-muted-foreground">Загрузка...</div>
       )}
     </div>
-  )
+  );
 }

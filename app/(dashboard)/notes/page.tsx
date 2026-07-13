@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { LESSONS } from '@/lib/lessons-data'
 
 export default function NotesPage() {
@@ -28,25 +29,38 @@ export default function NotesPage() {
 
   return (
     <div className="p-4 sm:p-8 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold text-white mb-2">Мои заметки</h1>
-      <p className="text-muted-foreground text-sm mb-6">{notes.length} заметок</p>
+      <h1 className="text-2xl font-bold text-foreground mb-2">Мои заметки</h1>
+      <p className="text-muted-foreground text-sm mb-6">{notes.length} заметок из уроков</p>
 
       {notes.length === 0 ? (
         <div className="text-center py-16">
           <p className="text-4xl mb-4">📝</p>
-          <p className="text-white font-semibold mb-2">Заметок пока нет</p>
-          <p className="text-muted-foreground text-sm">Открой любой урок и нажми на иконку 📝 внизу справа</p>
+          <p className="text-foreground font-semibold mb-2">Заметок пока нет</p>
+          <p className="text-muted-foreground text-sm mb-6">
+            Открой любой урок и нажми на иконку 📝 внизу справа
+          </p>
+          <Link href="/lessons"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:opacity-90 transition-opacity">
+            Перейти к урокам
+          </Link>
         </div>
       ) : (
         <div className="space-y-3">
           {notes.map(note => (
-            <div key={note.lessonId} className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
+            <div key={note.lessonId} className="bg-card border border-border rounded-2xl p-5">
               <div className="flex items-start justify-between mb-2">
-                <p className="text-white font-semibold text-sm">{note.title}</p>
+                <Link href={`/lessons/${note.lessonId}`}
+                  className="text-foreground font-semibold text-sm hover:text-primary transition-colors">
+                  {note.title}
+                </Link>
                 <button onClick={() => deleteNote(note.lessonId)}
-                  className="text-[#334155] hover:text-red-400 transition-colors text-sm ml-2">✕</button>
+                  className="text-muted-foreground hover:text-red-400 transition-colors text-sm ml-2 shrink-0">
+                  ✕
+                </button>
               </div>
-              <p className="text-muted-foreground text-sm whitespace-pre-wrap leading-relaxed">{note.content}</p>
+              <p className="text-muted-foreground text-sm whitespace-pre-wrap leading-relaxed">
+                {note.content}
+              </p>
             </div>
           ))}
         </div>

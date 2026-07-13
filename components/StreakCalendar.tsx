@@ -51,5 +51,5 @@ export function StreakCalendar({ activity }: { activity: Record<string, Activity
         </div>
       </div>
     </div>
-  )
+  );
 }

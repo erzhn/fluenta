@@ -772,6 +772,5 @@ export default function LessonsPage() {
         )}
       </AnimatePresence>
     </div>
-  )
+  );
 }
-

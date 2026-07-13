@@ -226,9 +226,9 @@ export default function PhrasalVerbsPage() {
         <div className="text-center py-16">
           <p className="text-4xl mb-4">🔍</p>
           <p className="text-white font-medium mb-2">Ничего не найдено</p>
-          <p className="text-muted-foreground text-sm">Попробуй другой запрос</p>
+          <p className="text-muted-foreground text-sm">Попробуй дру другой запрос</p>
         </div>
       )}
     </div>
-  )
+  );
 }

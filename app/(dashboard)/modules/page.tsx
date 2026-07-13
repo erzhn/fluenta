@@ -174,5 +174,5 @@ export default function ModulesPage() {
         </motion.div>
       </div>
     </div>
-  )
+  );
 }

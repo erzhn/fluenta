@@ -321,5 +321,5 @@ export default function ReadingPage() {
         </motion.div>
       </AnimatePresence>
     </div>
-  )
+  );
 }

@@ -178,5 +178,5 @@ export default function MiniStoriesPage() {
         )}
       </div>
     </div>
-  )
+  );
 }

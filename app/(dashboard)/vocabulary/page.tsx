@@ -543,5 +543,5 @@ export default function VocabularyPage() {
         </>
       )}
     </div>
-  )
+  );
 }

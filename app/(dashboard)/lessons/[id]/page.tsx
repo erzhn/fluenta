@@ -414,6 +414,7 @@ export default function LessonPlayerPage() {
       </AnimatePresence>
 
       <LessonNotes lessonId={lesson.id} />
+ 
     </>
   );
 }

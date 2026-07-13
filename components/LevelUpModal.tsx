@@ -67,5 +67,5 @@ export function LevelUpModal({ fromLevel, toLevel, onClose }: LevelUpModalProps)
         </button>
       </div>
     </div>
-  )
+  );
 }

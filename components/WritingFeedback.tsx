@@ -77,5 +77,5 @@ export function WritingFeedback({ data }: { data: FeedbackData }) {
         </div>
       )}
     </div>
-  )
+  );
 }

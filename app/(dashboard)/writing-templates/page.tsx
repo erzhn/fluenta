@@ -236,9 +236,9 @@ export default function WritingTemplatesPage() {
             <p className="text-white font-semibold group-hover:text-[#a5b4fc] transition-colors">{t.title}</p>
             <p className="text-muted-foreground text-sm mt-1">{t.description}</p>
             <p className="text-muted-foreground text-xs mt-2">{t.wordCount}</p>
-          </button>
+                 </button>
         ))}
       </div>
     </div>
-  )
+  );
 }

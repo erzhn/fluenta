@@ -316,5 +316,5 @@ export default function LevelTestPage() {
         )}
       </AnimatePresence>
     </div>
-  )
+  );
 }

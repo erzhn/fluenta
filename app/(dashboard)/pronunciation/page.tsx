@@ -863,11 +863,8 @@ export default function PronunciationPage() {
               </motion.div>
             </AnimatePresence>
           </div>
-          <div>
-            <ProgressPanel />
-          </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

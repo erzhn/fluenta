@@ -127,5 +127,5 @@ Make it specific to the goal (${goal}) and level (${level}). All lesson titles a
         </div>
       )}
     </div>
-  )
+  );
 }

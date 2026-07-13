@@ -193,7 +193,7 @@ export default function SentenceBuilderPage() {
             Следующее предложение →
           </button>
         )}
-      </div>
+          </div>
     </div>
-  )
+  );
 }

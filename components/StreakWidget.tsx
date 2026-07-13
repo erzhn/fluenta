@@ -173,5 +173,5 @@ export function StreakWidget({ className = '' }: StreakWidgetProps) {
         </p>
       )}
     </div>
-  )
+  );
 }

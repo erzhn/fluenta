@@ -1220,8 +1220,7 @@ function FooterSection() {
         </div>
 
         <div className="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3 text-[#334155] text-sm">
-          <p>© {new Date().getFullYear()} Fluenta. Все права защищены.</p>
-          <p>Сделано с ❤️ для изучающих английский</p>
+          <p>© {new Date().getFullYear()} Fluenta. All rights reserved.</p>
         </div>
       </div>
     </footer>
