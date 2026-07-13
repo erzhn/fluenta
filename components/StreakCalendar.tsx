@@ -22,7 +22,7 @@ export function StreakCalendar({ activity }: { activity: Record<string, Activity
     <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
       <div className="flex items-center justify-between mb-4">
         <p className="text-white font-semibold text-sm">Активность</p>
-        <div className="flex items-center gap-2 text-xs text-[#64748b]">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>меньше</span>
           {colors.map((c, i) => (
             <div key={i} className="w-3 h-3 rounded-sm" style={{ background: c }} />
@@ -35,7 +35,7 @@ export function StreakCalendar({ activity }: { activity: Record<string, Activity
         <div className="flex gap-1 min-w-max">
           <div className="flex flex-col gap-1 mr-1">
             {labels.map((l, i) => (
-              <div key={i} className="h-3 text-[10px] text-[#475569] flex items-center w-4">{l}</div>
+              <div key={i} className="h-3 text-[10px] text-muted-foreground flex items-center w-4">{l}</div>
             ))}
           </div>
           {weeks.map((week, wi) => (

@@ -45,16 +45,16 @@ export function ProgressPrediction({ completedLessons, currentLevel, dailyAvgMin
 
       <div className="flex items-center gap-3 mb-4">
         <div className="flex-1">
-          <p className="text-[#64748b] text-xs mb-1">Текущий уровень</p>
+          <p className="text-muted-foreground text-xs mb-1">Текущий уровень</p>
           <p className="text-white font-bold text-xl">{currentLevel}</p>
         </div>
         <div className="text-[#334155] text-2xl">→</div>
         <div className="flex-1">
-          <p className="text-[#64748b] text-xs mb-1">Следующий</p>
+          <p className="text-muted-foreground text-xs mb-1">Следующий</p>
           <p className="font-bold text-xl" style={{ color: motivationColor }}>{prediction.nextLevel}</p>
         </div>
         <div className="text-right">
-          <p className="text-[#64748b] text-xs mb-1">Осталось уроков</p>
+          <p className="text-muted-foreground text-xs mb-1">Осталось уроков</p>
           <p className="text-white font-bold text-xl">{prediction.lessonsLeft}</p>
         </div>
       </div>
@@ -67,7 +67,7 @@ export function ProgressPrediction({ completedLessons, currentLevel, dailyAvgMin
             {prediction.months > 0 ? `${prediction.months} мес. ` : ''}{prediction.days > 0 ? `${prediction.days} дн.` : ''}
           </span>
         </p>
-        <p className="text-[#475569] text-xs mt-1">
+        <p className="text-muted-foreground text-xs mt-1">
           Примерно {prediction.targetDate.toLocaleDateString('ru', { day: 'numeric', month: 'long', year: 'numeric' })}
         </p>
       </div>

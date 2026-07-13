@@ -49,17 +49,17 @@ function FillBlank({ exercise, onResult }: {
                 className={`w-28 sm:w-36 border-b-2 bg-transparent text-center font-semibold outline-none transition-colors px-1 ${
                   checked
                     ? isCorrect ? "border-[#10B981] text-[#10B981]" : "border-[#EF4444] text-[#EF4444]"
-                    : "border-[#6366F1] text-[#818CF8] focus:border-[#818CF8]"
+                    : "border-primary text-[#818CF8] focus:border-[#818CF8]"
                 }`}
               />
             )}
           </span>
         ))}
       </div>
-      {exercise.hint && <p className="text-[#475569] text-xs">💡 {exercise.hint}</p>}
+      {exercise.hint && <p className="text-muted-foreground text-xs">💡 {exercise.hint}</p>}
       {!checked && (
         <button onClick={handleCheck} disabled={!value.trim()}
-          className="px-6 py-2.5 rounded-xl bg-[#6366F1] hover:bg-[#5558E3] disabled:bg-[#1E293B] disabled:text-[#334155] text-white text-sm font-semibold transition-all">
+          className="px-6 py-2.5 rounded-xl bg-primary hover:bg-[#5558E3] disabled:bg-card disabled:text-[#334155] text-white text-sm font-semibold transition-all">
           Проверить
         </button>
       )}
@@ -90,10 +90,10 @@ function MultipleChoice({ exercise, onResult }: {
   };
 
   const getBtnClass = (opt: string) => {
-    if (selected === null) return "border-[#334155] bg-[#1E293B] hover:border-[#6366F1]/50 hover:bg-[#6366F1]/5 text-white";
+    if (selected === null) return "border-border bg-card hover:border-primary/50 hover:bg-primary/5 text-white";
     if (opt === exercise.answer) return "border-[#10B981] bg-[#10B981]/15 text-[#10B981]";
     if (opt === selected) return "border-[#EF4444] bg-[#EF4444]/15 text-[#EF4444]";
-    return "border-[#1E293B] bg-[#0F172A] text-[#475569]";
+    return "border-[#1E293B] bg-background text-muted-foreground";
   };
 
   return (
@@ -132,8 +132,8 @@ function BuildSentence({ exercise, onResult }: {
 
   return (
     <div className="space-y-4">
-      <p className="text-[#94A3B8] text-sm">{exercise.question || "Расставь слова в правильном порядке:"}</p>
-      <div className="min-h-[52px] flex flex-wrap gap-2 p-3 rounded-xl border-2 border-dashed border-[#334155] bg-[#0F172A]">
+      <p className="text-muted-foreground text-sm">{exercise.question || "Расставь слова в правильном порядке:"}</p>
+      <div className="min-h-[52px] flex flex-wrap gap-2 p-3 rounded-xl border-2 border-dashed border-border bg-background">
         {arranged.length === 0 && <span className="text-[#334155] text-sm self-center">Нажми на слова ниже...</span>}
         {arranged.map((word, idx) => (
           <motion.button key={`a${idx}`} initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
@@ -141,7 +141,7 @@ function BuildSentence({ exercise, onResult }: {
             disabled={checked}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all ${
               checked ? (isCorrect ? "bg-[#10B981]/15 border-[#10B981]/40 text-[#10B981]" : "bg-[#EF4444]/15 border-[#EF4444]/40 text-[#EF4444]")
-                : "bg-[#6366F1]/15 border-[#6366F1]/40 text-[#818CF8] hover:bg-[#6366F1]/25"
+                : "bg-primary/15 border-primary/40 text-[#818CF8] hover:bg-primary/25"
             }`}>
             {word}
           </motion.button>
@@ -152,14 +152,14 @@ function BuildSentence({ exercise, onResult }: {
           <motion.button key={`v${idx}`} whileTap={{ scale: 0.95 }}
             onClick={() => { if (checked) return; setArranged(b => [...b, word]); setAvailable(a => a.filter((_, i) => i !== idx)); }}
             disabled={checked}
-            className="px-3 py-1.5 rounded-lg text-sm font-medium bg-[#1E293B] border border-[#334155] text-white hover:border-[#6366F1]/50 hover:bg-[#6366F1]/10 transition-all disabled:opacity-40">
+            className="px-3 py-1.5 rounded-lg text-sm font-medium bg-card border border-border text-white hover:border-primary/50 hover:bg-primary/10 transition-all disabled:opacity-40">
             {word}
           </motion.button>
         ))}
       </div>
       {!checked ? (
         <button onClick={handleCheck} disabled={arranged.length === 0}
-          className="px-6 py-2.5 rounded-xl bg-[#6366F1] hover:bg-[#5558E3] disabled:bg-[#1E293B] disabled:text-[#334155] text-white text-sm font-semibold transition-all">
+          className="px-6 py-2.5 rounded-xl bg-primary hover:bg-[#5558E3] disabled:bg-card disabled:text-[#334155] text-white text-sm font-semibold transition-all">
           Проверить порядок
         </button>
       ) : (
@@ -195,11 +195,11 @@ export function ExerciseEngine({ exercise, exerciseNumber, total, onCorrect, onW
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between mb-5">
-        <span className="text-[#475569] text-xs font-medium">{typeLabels[exercise.type] ?? exercise.type}</span>
+        <span className="text-muted-foreground text-xs font-medium">{typeLabels[exercise.type] ?? exercise.type}</span>
         <div className="flex gap-1.5">
           {Array.from({ length: total }).map((_, i) => (
             <div key={i} className={`h-1.5 rounded-full transition-all ${
-              i < exerciseNumber - 1 ? "bg-[#10B981] w-5" : i === exerciseNumber - 1 ? "bg-[#6366F1] w-7" : "bg-[#1E293B] w-5"
+              i < exerciseNumber - 1 ? "bg-[#10B981] w-5" : i === exerciseNumber - 1 ? "bg-primary w-7" : "bg-card w-5"
             }`} />
           ))}
         </div>
@@ -229,7 +229,7 @@ export function ExerciseEngine({ exercise, exerciseNumber, total, onCorrect, onW
               </span>
             </div>
             <button onClick={onNext}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#6366F1] hover:bg-[#5558E3] text-white text-sm font-semibold transition-all hover:scale-[1.03]">
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-[#5558E3] text-white text-sm font-semibold transition-all hover:scale-[1.03]">
               {exerciseNumber < total ? "Следующее упражнение" : "Завершить урок"}
               <ChevronRight className="w-4 h-4" />
             </button>

@@ -358,23 +358,23 @@ export default function GrammarPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-white"><span className="gradient-text">Грамматический справочник</span></h1>
-        <p className="text-[#64748b] text-sm">25 ключевых правил от A1 до C1 + AI-объяснения</p>
+        <p className="text-muted-foreground text-sm">25 ключевых правил от A1 до C1 + AI-объяснения</p>
       </div>
 
       {/* Search + filter */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#475569]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Поиск по теме или правилу..."
-            className="w-full bg-white/[0.04] border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-[#3f4a5a] outline-none focus:border-[#6366f1]/50 transition-colors" />
+            className="w-full bg-white/[0.04] border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-[#3f4a5a] outline-none focus:border-primary/50 transition-colors" />
         </div>
         <div className="flex gap-1.5 flex-wrap">
           {LEVELS.map(l => (
             <button key={l} onClick={() => setFilter(l)}
               className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${filter === l
-                ? l === 'All' ? 'border-[#6366f1] bg-[#6366f1]/20 text-white' : ''
-                : 'border-white/10 text-[#64748b] hover:text-white'}`}
+                ? l === 'All' ? 'border-primary bg-primary/20 text-white' : ''
+                : 'border-white/10 text-muted-foreground hover:text-white'}`}
               style={filter === l && l !== 'All'
                 ? { borderColor: LEVEL_COLORS[l], backgroundColor: `${LEVEL_COLORS[l]}20`, color: LEVEL_COLORS[l] }
                 : {}}>
@@ -384,7 +384,7 @@ export default function GrammarPage() {
         </div>
       </div>
 
-      <p className="text-[#475569] text-xs">{filtered.length} правил</p>
+      <p className="text-muted-foreground text-xs">{filtered.length} правил</p>
 
       {/* Cards */}
       <div className="space-y-3">
@@ -402,7 +402,7 @@ export default function GrammarPage() {
                   </span>
                   <span className="text-white font-medium">{card.title}</span>
                 </div>
-                {expanded === card.id ? <ChevronUp className="w-4 h-4 text-[#475569]" /> : <ChevronDown className="w-4 h-4 text-[#475569]" />}
+                {expanded === card.id ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
               </button>
 
               <AnimatePresence>
@@ -412,7 +412,7 @@ export default function GrammarPage() {
                     className="overflow-hidden border-t border-white/[0.06]">
                     <div className="px-5 py-4 space-y-4">
                       {/* Rule */}
-                      <p className="text-[#94a3b8] text-sm leading-relaxed">{card.rule}</p>
+                      <p className="text-muted-foreground text-sm leading-relaxed">{card.rule}</p>
 
                       {/* Examples */}
                       <div>
@@ -425,7 +425,7 @@ export default function GrammarPage() {
                                   <span className="text-[#10b981] text-xs">✓</span>
                                   <span className="text-[#10b981] text-sm">{ex.correct.split(' → ')[0]}</span>
                                   <button onClick={() => speak(ex.correct.split(' → ')[0], { rate: 0.9 })}
-                                    className="text-[#475569] hover:text-[#6366f1] transition-colors flex-shrink-0">
+                                    className="text-muted-foreground hover:text-primary transition-colors flex-shrink-0">
                                     <Volume2 className="w-3 h-3" />
                                   </button>
                                 </div>
@@ -434,7 +434,7 @@ export default function GrammarPage() {
                                   <span className="text-[#ef4444]/70 line-through text-sm">{ex.wrong.split(' → ')[0]}</span>
                                 </div>
                               </div>
-                              <p className="text-[#475569] text-xs mt-1">{ex.note}</p>
+                              <p className="text-muted-foreground text-xs mt-1">{ex.note}</p>
                             </div>
                           ))}
                         </div>
@@ -443,39 +443,39 @@ export default function GrammarPage() {
                       {/* Tip */}
                       <div className="bg-[#f59e0b]/10 border border-[#f59e0b]/20 rounded-xl px-4 py-3">
                         <span className="text-[#f59e0b] text-xs font-semibold">💡 Совет: </span>
-                        <span className="text-[#94a3b8] text-xs">{card.tip}</span>
+                        <span className="text-muted-foreground text-xs">{card.tip}</span>
                       </div>
 
                       {/* AI Tools */}
                       <div className="pt-1">
                         <div className="flex items-center gap-1 mb-2">
-                          <Sparkles className="w-3.5 h-3.5 text-[#6366f1]" />
-                          <span className="text-[#6366f1] text-xs font-semibold">AI-помощник</span>
+                          <Sparkles className="w-3.5 h-3.5 text-primary" />
+                          <span className="text-primary text-xs font-semibold">AI-помощник</span>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           <button
                             onClick={() => fetchGrammarAI(card, 'explain')}
                             disabled={ai.loading}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all disabled:opacity-50 ${ai.activeType === 'explain' ? 'border-[#8b5cf6] bg-[#8b5cf6]/20 text-[#c4b5fd]' : 'border-white/10 text-[#94a3b8] hover:text-white hover:border-white/20'}`}>
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all disabled:opacity-50 ${ai.activeType === 'explain' ? 'border-[#8b5cf6] bg-[#8b5cf6]/20 text-[#c4b5fd]' : 'border-white/10 text-muted-foreground hover:text-white hover:border-white/20'}`}>
                             <Lightbulb className="w-3 h-3" />
                             {ai.loading && ai.activeType === 'explain' ? 'Загрузка...' : 'Объяснить по-русски'}
                           </button>
                           <button
                             onClick={() => fetchGrammarAI(card, 'examples')}
                             disabled={ai.loading}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all disabled:opacity-50 ${ai.activeType === 'examples' ? 'border-[#3b82f6] bg-[#3b82f6]/20 text-[#93c5fd]' : 'border-white/10 text-[#94a3b8] hover:text-white hover:border-white/20'}`}>
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all disabled:opacity-50 ${ai.activeType === 'examples' ? 'border-[#3b82f6] bg-[#3b82f6]/20 text-[#93c5fd]' : 'border-white/10 text-muted-foreground hover:text-white hover:border-white/20'}`}>
                             <BookOpen className="w-3 h-3" />
                             {ai.loading && ai.activeType === 'examples' ? 'Загрузка...' : 'Ещё примеры'}
                           </button>
                           <button
                             onClick={() => fetchGrammarAI(card, 'exercise')}
                             disabled={ai.loading}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all disabled:opacity-50 ${ai.activeType === 'exercise' ? 'border-[#10b981] bg-[#10b981]/20 text-[#6ee7b7]' : 'border-white/10 text-[#94a3b8] hover:text-white hover:border-white/20'}`}>
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all disabled:opacity-50 ${ai.activeType === 'exercise' ? 'border-[#10b981] bg-[#10b981]/20 text-[#6ee7b7]' : 'border-white/10 text-muted-foreground hover:text-white hover:border-white/20'}`}>
                             <PenLine className="w-3 h-3" />
                             {ai.loading && ai.activeType === 'exercise' ? 'Загрузка...' : 'Упражнение'}
                           </button>
                           <Link href={`/grammar-exercises`}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-[#6366f1]/30 text-[#818cf8] hover:bg-[#6366f1]/10 transition-all">
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-primary/30 text-[#818cf8] hover:bg-primary/10 transition-all">
                             📝 Упражнения →
                           </Link>
                         </div>
@@ -490,15 +490,15 @@ export default function GrammarPage() {
                                 <p className="text-[#e2e8f0] text-sm leading-relaxed">{ai.explanation.explanation}</p>
                               </div>
                               {ai.explanation.tip && (
-                                <div className="bg-[#6366f1]/10 border border-[#6366f1]/20 rounded-xl px-4 py-2.5">
+                                <div className="bg-primary/10 border border-primary/20 rounded-xl px-4 py-2.5">
                                   <p className="text-[#a5b4fc] text-xs font-semibold mb-0.5">Подсказка</p>
-                                  <p className="text-[#94a3b8] text-xs">{ai.explanation.tip}</p>
+                                  <p className="text-muted-foreground text-xs">{ai.explanation.tip}</p>
                                 </div>
                               )}
                               {ai.explanation.common_mistake && (
                                 <div className="bg-[#ef4444]/10 border border-[#ef4444]/20 rounded-xl px-4 py-2.5">
                                   <p className="text-[#fca5a5] text-xs font-semibold mb-0.5">Частая ошибка</p>
-                                  <p className="text-[#94a3b8] text-xs">{ai.explanation.common_mistake}</p>
+                                  <p className="text-muted-foreground text-xs">{ai.explanation.common_mistake}</p>
                                 </div>
                               )}
                             </motion.div>
@@ -514,11 +514,11 @@ export default function GrammarPage() {
                                   <div className="flex items-center gap-1.5">
                                     <span className="text-white text-sm">{ex.english}</span>
                                     <button onClick={() => speak(ex.english, { rate: 0.9 })}
-                                      className="text-[#475569] hover:text-[#3b82f6] transition-colors flex-shrink-0">
+                                      className="text-muted-foreground hover:text-[#3b82f6] transition-colors flex-shrink-0">
                                       <Volume2 className="w-3 h-3" />
                                     </button>
                                   </div>
-                                  <p className="text-[#64748b] text-xs">{ex.russian}</p>
+                                  <p className="text-muted-foreground text-xs">{ex.russian}</p>
                                 </div>
                               ))}
                             </motion.div>
@@ -549,7 +549,7 @@ export default function GrammarPage() {
                                 ) : (
                                   <button
                                     onClick={() => setAI(card.id, { exerciseInput: '', exerciseChecked: false })}
-                                    className="px-4 py-2 rounded-xl bg-white/[0.06] border border-white/10 text-[#94a3b8] text-sm hover:text-white transition-colors">
+                                    className="px-4 py-2 rounded-xl bg-white/[0.06] border border-white/10 text-muted-foreground text-sm hover:text-white transition-colors">
                                     Сброс
                                   </button>
                                 )}
@@ -569,7 +569,7 @@ export default function GrammarPage() {
                                           <div>
                                             <p className="text-[#f87171] text-sm">Правильный ответ: <strong>{ai.exercise!.answer}</strong></p>
                                             {ai.exercise!.explanation && (
-                                              <p className="text-[#94a3b8] text-xs mt-1">{ai.exercise!.explanation}</p>
+                                              <p className="text-muted-foreground text-xs mt-1">{ai.exercise!.explanation}</p>
                                             )}
                                           </div>
                                         </div>
@@ -593,7 +593,7 @@ export default function GrammarPage() {
 
       {filtered.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-[#475569]">Ничего не найдено</p>
+          <p className="text-muted-foreground">Ничего не найдено</p>
         </div>
       )}
     </div>

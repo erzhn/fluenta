@@ -57,7 +57,7 @@ export default function WeeklySummaryPage() {
   return (
     <div className="p-4 sm:p-8 max-w-3xl mx-auto">
       <h1 className="text-2xl font-bold text-white mb-2"><span className="gradient-text">Итоги недели</span></h1>
-      <p className="text-[#64748b] mb-8">
+      <p className="text-muted-foreground mb-8">
         {new Date(data.days[0].date).toLocaleDateString('ru', { day: 'numeric', month: 'long' })} —{' '}
         {new Date(data.days[6].date).toLocaleDateString('ru', { day: 'numeric', month: 'long', year: 'numeric' })}
       </p>
@@ -72,7 +72,7 @@ export default function WeeklySummaryPage() {
           <div key={s.label} className="bg-white/[0.04] border border-white/10 rounded-2xl p-4 text-center">
             <p className="text-2xl mb-1">{s.icon}</p>
             <p className="text-2xl font-bold text-white">{s.value}</p>
-            <p className="text-[#64748b] text-xs mt-1">{s.label}</p>
+            <p className="text-muted-foreground text-xs mt-1">{s.label}</p>
           </div>
         ))}
       </div>
@@ -92,19 +92,19 @@ export default function WeeklySummaryPage() {
                   title={`${day.minutes} мин`}
                 />
               </div>
-              <span className="text-[#64748b] text-xs">{day.label}</span>
+              <span className="text-muted-foreground text-xs">{day.label}</span>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="bg-gradient-to-r from-[#6366f1]/10 to-[#8b5cf6]/10 border border-[#6366f1]/20 rounded-2xl p-5">
+      <div className="bg-gradient-to-r from-[#6366f1]/10 to-[#8b5cf6]/10 border border-primary/20 rounded-2xl p-5">
         <p className="text-white font-semibold mb-2">
           {data.totalMinutes > 0
             ? `🎯 Лучший день недели: ${data.bestDay}`
             : '📚 Начни заниматься!'}
         </p>
-        <p className="text-[#94a3b8] text-sm">
+        <p className="text-muted-foreground text-sm">
           {data.totalMinutes >= 140
             ? 'Отличная неделя! Ты превысил цель в 20 мин/день.'
             : data.totalMinutes >= 60

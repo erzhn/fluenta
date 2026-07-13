@@ -26,8 +26,8 @@ export function LessonCard({ lesson, locked, progress }: LessonCardProps) {
         locked
           ? "border-[#1E293B] bg-[#0D1628] opacity-70 cursor-not-allowed"
           : completed
-          ? "border-[#10B981]/30 bg-[#1E293B] hover:border-[#10B981]/60"
-          : "border-[#334155] bg-[#1E293B] hover:border-[#6366F1]/50 hover:shadow-lg hover:shadow-[#6366F1]/5"
+          ? "border-[#10B981]/30 bg-card hover:border-[#10B981]/60"
+          : "border-border bg-card hover:border-primary/50 hover:shadow-lg hover:shadow-[#6366F1]/5"
       }`}
     >
       <div className="h-1 w-full" style={{ backgroundColor: color }} />
@@ -47,10 +47,10 @@ export function LessonCard({ lesson, locked, progress }: LessonCardProps) {
         </div>
 
         <h3 className="font-bold text-white text-sm leading-snug mb-1">{lesson.title}</h3>
-        <p className="text-[#475569] text-xs mb-4">Блок {lesson.block} · {lesson.blockName}</p>
+        <p className="text-muted-foreground text-xs mb-4">Блок {lesson.block} · {lesson.blockName}</p>
 
         <div className="mt-auto">
-          <div className="flex items-center justify-between text-xs text-[#475569] mb-3">
+          <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
             <span className="flex items-center gap-1">
               <Clock className="w-3.5 h-3.5" />{lesson.duration}
             </span>
@@ -61,7 +61,7 @@ export function LessonCard({ lesson, locked, progress }: LessonCardProps) {
 
           <div
             className={`w-full py-2.5 rounded-xl text-xs font-semibold text-center transition-all ${
-              locked ? "bg-[#0F172A] text-[#334155]"
+              locked ? "bg-background text-[#334155]"
                 : completed ? "bg-[#10B981]/15 text-[#10B981]"
                 : "text-white"
             }`}

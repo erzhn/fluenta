@@ -20,7 +20,7 @@ export function StreakCounter({ streak, hasActivityToday = true, compact = false
           🔥
         </motion.span>
         <span className="font-bold text-white text-sm">{streak}</span>
-        <span className="text-[#475569] text-xs">дн.</span>
+        <span className="text-muted-foreground text-xs">дн.</span>
       </div>
     );
   }
@@ -45,7 +45,7 @@ export function StreakCounter({ streak, hasActivityToday = true, compact = false
         {streak}
       </motion.div>
 
-      <div className="text-[#64748B] text-sm mt-0.5">дней подряд</div>
+      <div className="text-muted-foreground text-sm mt-0.5">дней подряд</div>
 
       <AnimatePresence>
         {!hasActivityToday && streak > 0 && (
@@ -63,7 +63,7 @@ export function StreakCounter({ streak, hasActivityToday = true, compact = false
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="mt-3 text-[#475569] text-xs"
+            className="mt-3 text-muted-foreground text-xs"
           >
             Начни серию сегодня!
           </motion.div>

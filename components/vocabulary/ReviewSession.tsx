@@ -47,7 +47,7 @@ function SessionComplete({
       </motion.div>
 
       <h2 className="text-2xl font-extrabold text-white mb-1">Отличная работа!</h2>
-      <p className="text-[#64748B] text-sm mb-6">Сессия повторения завершена</p>
+      <p className="text-muted-foreground text-sm mb-6">Сессия повторения завершена</p>
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 w-full max-w-xs mb-6">
@@ -56,9 +56,9 @@ function SessionComplete({
           { label: "Хорошо знал", value: correct, color: "#10B981" },
           { label: "XP заработано", value: `+${xp}`, color: "#F59E0B" },
         ].map((s) => (
-          <div key={s.label} className="bg-[#1E293B] border border-[#334155] rounded-xl p-3">
+          <div key={s.label} className="bg-card border border-border rounded-xl p-3">
             <div className="text-xl font-extrabold" style={{ color: s.color }}>{s.value}</div>
-            <div className="text-[#475569] text-xs mt-0.5">{s.label}</div>
+            <div className="text-muted-foreground text-xs mt-0.5">{s.label}</div>
           </div>
         ))}
       </div>
@@ -82,7 +82,7 @@ function SessionComplete({
       <div className="flex flex-col gap-3 w-full max-w-xs">
         <button
           onClick={onRetry}
-          className="flex items-center justify-center gap-2 py-3 rounded-xl bg-[#1E293B] border border-[#334155] text-white text-sm font-semibold hover:border-[#475569] transition-all"
+          className="flex items-center justify-center gap-2 py-3 rounded-xl bg-card border border-border text-white text-sm font-semibold hover:border-[#475569] transition-all"
         >
           <RotateCcw className="w-4 h-4" />
           Ещё раз
@@ -97,7 +97,7 @@ function SessionComplete({
         </Link>
         <Link
           href="/dashboard"
-          className="flex items-center justify-center gap-2 py-2 text-[#475569] text-sm hover:text-white transition-colors"
+          className="flex items-center justify-center gap-2 py-2 text-muted-foreground text-sm hover:text-white transition-colors"
         >
           <Home className="w-4 h-4" />
           На главную
@@ -183,19 +183,19 @@ export function ReviewSession({ words, onComplete, onExit }: ReviewSessionProps)
       <div className="flex items-center gap-3 mb-5">
         <button
           onClick={onExit}
-          className="flex items-center gap-1.5 text-[#64748B] hover:text-white transition-colors text-sm"
+          className="flex items-center gap-1.5 text-muted-foreground hover:text-white transition-colors text-sm"
         >
           <ArrowLeft className="w-4 h-4" />
           Выйти
         </button>
-        <div className="flex-1 h-1.5 bg-[#1E293B] rounded-full overflow-hidden">
+        <div className="flex-1 h-1.5 bg-card rounded-full overflow-hidden">
           <motion.div
             animate={{ width: `${(currentIndex / words.length) * 100}%` }}
             transition={{ duration: 0.3 }}
-            className="h-full bg-[#6366F1] rounded-full"
+            className="h-full bg-primary rounded-full"
           />
         </div>
-        <span className="text-[#475569] text-sm tabular-nums shrink-0">
+        <span className="text-muted-foreground text-sm tabular-nums shrink-0">
           {currentIndex + 1} / {words.length}
         </span>
       </div>
@@ -222,7 +222,7 @@ export function ReviewSession({ words, onComplete, onExit }: ReviewSessionProps)
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 8 }}
             >
-              <p className="text-center text-[#475569] text-xs mb-3">
+              <p className="text-center text-muted-foreground text-xs mb-3">
                 Как хорошо ты знал это слово? <span className="text-[#334155]">(клавиши 1–4)</span>
               </p>
               <div className="grid grid-cols-4 gap-2">
@@ -255,7 +255,7 @@ export function ReviewSession({ words, onComplete, onExit }: ReviewSessionProps)
             >
               <button
                 onClick={() => setFlipped(true)}
-                className="px-8 py-3 rounded-xl bg-[#1E293B] border border-[#334155] hover:border-[#6366F1]/50 text-white text-sm font-semibold transition-all hover:scale-[1.02]"
+                className="px-8 py-3 rounded-xl bg-card border border-border hover:border-primary/50 text-white text-sm font-semibold transition-all hover:scale-[1.02]"
               >
                 Показать перевод ↓
               </button>

@@ -30,11 +30,11 @@ export function XPBar({ xp, showLabels = true, compact = false, current: legacyC
     <div className="w-full">
       {showLabels && !compact && (
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[#94A3B8] text-xs font-medium">{levelName}</span>
-          <span className="text-[#94A3B8] text-xs">{nextName}</span>
+          <span className="text-muted-foreground text-xs font-medium">{levelName}</span>
+          <span className="text-muted-foreground text-xs">{nextName}</span>
         </div>
       )}
-      <div className={`${barH} bg-[#1E293B] rounded-full overflow-hidden`}>
+      <div className={`${barH} bg-card rounded-full overflow-hidden`}>
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${pct}%` }}
@@ -45,7 +45,7 @@ export function XPBar({ xp, showLabels = true, compact = false, current: legacyC
         </motion.div>
       </div>
       {showLabels && (
-        <div className="flex justify-between text-[10px] text-[#475569] mt-1.5">
+        <div className="flex justify-between text-[10px] text-muted-foreground mt-1.5">
           <span>{cur.toLocaleString()} XP</span>
           <span>{nxt.toLocaleString()} XP</span>
         </div>

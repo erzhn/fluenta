@@ -40,7 +40,7 @@ export default function ModulesPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#0F172A] text-white">
+    <div className="min-h-screen bg-background text-white">
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
         <motion.div
@@ -54,7 +54,7 @@ export default function ModulesPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">Специальные модули</h1>
-              <p className="text-[#64748B] text-sm">Business English, IELTS/TOEFL, Speaking Club, Grammar</p>
+              <p className="text-muted-foreground text-sm">Business English, IELTS/TOEFL, Speaking Club, Grammar</p>
             </div>
           </div>
         </motion.div>
@@ -86,17 +86,17 @@ export default function ModulesPage() {
                             <h2 className="text-lg font-semibold text-white group-hover:text-indigo-300 transition-colors">
                               {module.title}
                             </h2>
-                            <p className="text-[#64748B] text-sm mt-0.5">{module.description}</p>
+                            <p className="text-muted-foreground text-sm mt-0.5">{module.description}</p>
                           </div>
-                          <ChevronRight className="w-5 h-5 text-[#475569] group-hover:text-indigo-400 transition-colors shrink-0 mt-1" />
+                          <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-indigo-400 transition-colors shrink-0 mt-1" />
                         </div>
 
                         {/* Meta */}
                         <div className="flex items-center gap-3 mt-2 mb-3">
-                          <span className="text-xs text-[#64748B] bg-white/5 px-2 py-0.5 rounded-full">
+                          <span className="text-xs text-muted-foreground bg-white/5 px-2 py-0.5 rounded-full">
                             {module.levels}
                           </span>
-                          <span className="text-xs text-[#64748B]">
+                          <span className="text-xs text-muted-foreground">
                             {module.lessonCount} уроков
                           </span>
                           {isComplete && (
@@ -117,7 +117,7 @@ export default function ModulesPage() {
                               className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-500"
                             />
                           </div>
-                          <span className="text-xs text-[#64748B] shrink-0 w-16 text-right">
+                          <span className="text-xs text-muted-foreground shrink-0 w-16 text-right">
                             {prog.done}/{prog.total} уроков
                           </span>
                         </div>
@@ -166,9 +166,9 @@ export default function ModulesPage() {
                 <p className="text-white font-medium text-sm group-hover:text-indigo-300 transition-colors">
                   Основной курс
                 </p>
-                <p className="text-[#64748B] text-xs mt-0.5">A1–C1 · Базовые навыки английского</p>
+                <p className="text-muted-foreground text-xs mt-0.5">A1–C1 · Базовые навыки английского</p>
               </div>
-              <ChevronRight className="w-4 h-4 text-[#475569] group-hover:text-indigo-400 transition-colors" />
+              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-indigo-400 transition-colors" />
             </div>
           </Link>
         </motion.div>

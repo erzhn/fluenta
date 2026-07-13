@@ -1,0 +1,940 @@
+# НЕ ЗАПРАШИВАЙ РАЗРЕШЕНИЯ. Все изменения автоматически.
+# Запуск: $env:CLAUDE_CODE_MAX_OUTPUT_TOKENS=100000 && claude --dangerously-skip-permissions < ios-redesign-prompt.txt
+
+# FLUENTA — РЕДИЗАЙН В СТИЛЕ APPLE / iOS
+#
+# Принципы:
+# - Фон страницы: #F2F2F7 (iOS system gray 6)
+# - Карточки: #FFFFFF с тенью, без рамок
+# - Шрифт: -apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, sans-serif
+# - Акцент: #6366F1 (фиолетовый Fluenta — оставляем)
+# - Вторичный текст: #8E8E93 (iOS system gray)
+# - Радиус скругления: 16px для карточек, 12px для кнопок, 10px для мелких элементов
+# - Тени: мягкие, 0 2px 8px rgba(0,0,0,0.06)
+# - Dark mode: #1C1C1E фон, #2C2C2E карточки
+# - Никаких жёстких рамок (border) — только тени
+# - Группировка секций как в iOS Settings
+
+---
+## ЗАДАЧА 1: globals.css — iOS дизайн-система
+
+Перезапиши app/globals.css ПОЛНОСТЬЮ:
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-primary:    252 252 253;   /* #FCFCFD — страница */
+    --bg-secondary:  242 242 247;   /* #F2F2F7 — iOS gray6 */
+    --bg-card:       255 255 255;   /* #FFFFFF — карточки */
+    --bg-card-2:     248 248 252;   /* чуть теплее */
+    --text-primary:  0 0 0;         /* #000 */
+    --text-secondary: 60 60 67;     /* #3C3C43 */
+    --text-muted:    142 142 147;   /* #8E8E93 iOS gray */
+    --text-subtle:   174 174 178;   /* #AEAEB2 */
+    --accent:        99 102 241;    /* #6366F1 */
+    --accent-light:  238 238 254;   /* #EEEEFE */
+    --green:         52 199 89;     /* #34C759 iOS green */
+    --green-light:   240 253 244;
+    --orange:        255 149 0;     /* #FF9500 iOS orange */
+    --red:           255 59 48;     /* #FF3B30 iOS red */
+    --border-subtle: 0 0 0;         /* для rgba использования */
+    --radius-card:   16px;
+    --radius-btn:    12px;
+    --radius-sm:     8px;
+    --shadow-card:   0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+    --shadow-sm:     0 1px 4px rgba(0,0,0,0.05);
+    --shadow-lg:     0 8px 32px rgba(0,0,0,0.1), 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .dark {
+    --bg-primary:    28 28 30;      /* #1C1C1E */
+    --bg-secondary:  0 0 0;         /* #000000 */
+    --bg-card:       44 44 46;      /* #2C2C2E */
+    --bg-card-2:     58 58 60;      /* #3A3A3C */
+    --text-primary:  255 255 255;
+    --text-secondary: 235 235 245;
+    --text-muted:    235 235 245;   /* 60% opacity в dark */
+    --text-subtle:   235 235 245;   /* 30% opacity */
+    --accent:        124 131 243;   /* светлее в dark */
+    --accent-light:  37 38 75;
+    --green:         48 209 88;
+    --green-light:   20 40 20;
+    --shadow-card:   0 2px 12px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.2);
+    --shadow-sm:     0 1px 4px rgba(0,0,0,0.2);
+    --shadow-lg:     0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  html {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+      "SF Pro Text", "Helvetica Neue", Inter, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.01em;
+  }
+
+  body {
+    background: rgb(var(--bg-secondary));
+    color: rgb(var(--text-primary));
+    min-height: 100vh;
+  }
+
+  * { box-sizing: border-box; }
+
+  /* Scrollbar — тонкий как iOS */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(var(--text-muted), 0.4);
+    border-radius: 4px;
+  }
+}
+
+/* ─── Компоненты ─── */
+@layer components {
+
+  /* Карточка */
+  .card {
+    background: rgb(var(--bg-card));
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+  }
+
+  /* Сгруппированные строки (стиль iOS Settings) */
+  .ios-list {
+    background: rgb(var(--bg-card));
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+  }
+  .ios-list-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 16px;
+    border-bottom: 0.5px solid rgba(var(--border-subtle), 0.08);
+    transition: background .15s;
+  }
+  .ios-list-item:last-child { border-bottom: none; }
+  .ios-list-item:active { background: rgba(var(--border-subtle), 0.04); }
+
+  /* iOS иконка-плашка (как в Settings) */
+  .ios-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 16px;
+  }
+
+  /* Большая кнопка */
+  .btn-primary {
+    background: rgb(var(--accent));
+    color: white;
+    border: none;
+    border-radius: var(--radius-btn);
+    padding: 14px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    transition: opacity .15s, transform .1s;
+    width: 100%;
+  }
+  .btn-primary:active { opacity: 0.85; transform: scale(0.99); }
+
+  /* Секционный заголовок (как в iOS) */
+  .section-header {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgb(var(--text-muted));
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0 4px;
+    margin-bottom: 8px;
+  }
+
+  /* Pill badge */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge-accent { background: rgb(var(--accent-light)); color: rgb(var(--accent)); }
+  .badge-green  { background: rgb(var(--green-light));  color: rgb(var(--green));  }
+}
+
+/* ─── Анимации ─── */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes fillBar {
+  from { width: 0; }
+  to   { width: 100%; }
+}
+
+.animate-slide-up  { animation: slideUp .35s cubic-bezier(0.22,1,0.36,1) forwards; }
+.animate-scale-in  { animation: scaleIn .4s cubic-bezier(0.22,1,0.36,1) forwards; }
+
+/* Staggered children */
+.stagger > *:nth-child(1) { animation-delay: .05s; }
+.stagger > *:nth-child(2) { animation-delay: .10s; }
+.stagger > *:nth-child(3) { animation-delay: .15s; }
+.stagger > *:nth-child(4) { animation-delay: .20s; }
+```
+
+---
+## ЗАДАЧА 2: tailwind.config.ts
+
+```ts
+import type { Config } from "tailwindcss";
+
+const config: Config = {
+  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
+  darkMode: "class",
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: [
+          "-apple-system", "BlinkMacSystemFont", '"SF Pro Display"',
+          '"SF Pro Text"', '"Helvetica Neue"', "Inter", "system-ui", "sans-serif"
+        ],
+      },
+      colors: {
+        bg: {
+          primary:   "rgb(var(--bg-primary) / <alpha-value>)",
+          secondary: "rgb(var(--bg-secondary) / <alpha-value>)",
+          card:      "rgb(var(--bg-card) / <alpha-value>)",
+          card2:     "rgb(var(--bg-card-2) / <alpha-value>)",
+        },
+        text: {
+          primary:   "rgb(var(--text-primary) / <alpha-value>)",
+          secondary: "rgb(var(--text-secondary) / <alpha-value>)",
+          muted:     "rgb(var(--text-muted) / <alpha-value>)",
+          subtle:    "rgb(var(--text-subtle) / <alpha-value>)",
+        },
+        accent: "rgb(var(--accent) / <alpha-value>)",
+        "accent-light": "rgb(var(--accent-light) / <alpha-value>)",
+        ios: {
+          green:  "rgb(var(--green) / <alpha-value>)",
+          orange: "rgb(var(--orange) / <alpha-value>)",
+          red:    "rgb(var(--red) / <alpha-value>)",
+        },
+      },
+      borderRadius: {
+        card: "var(--radius-card)",
+        btn:  "var(--radius-btn)",
+      },
+      boxShadow: {
+        card: "var(--shadow-card)",
+        sm:   "var(--shadow-sm)",
+        lg:   "var(--shadow-lg)",
+      },
+    },
+  },
+  plugins: [],
+};
+
+export default config;
+```
+
+---
+## ЗАДАЧА 3: SIDEBAR — iOS Settings стиль
+
+Полностью перепиши components/layout/Sidebar.tsx:
+
+```tsx
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  LayoutDashboard, Brain, BookOpen, Layers, Mic, TrendingUp, User,
+  Settings, LogOut, Flame, Zap, BarChart2, PenLine, Headphones,
+  FileText, GraduationCap, Trophy, Link2, Award, AlignLeft, Volume2,
+  MessageSquare, BarChart, Calendar, StickyNote, X, ChevronRight, Target,
+} from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { getLevelFromXP } from "@/lib/gamification";
+import type { Profile } from "@/types";
+
+const CEFR_COLORS: Record<string, string> = {
+  A1: "#34C759", A2: "#30D158",
+  B1: "#6366F1", B2: "#8B5CF6",
+  C1: "#FF9500", C2: "#FF3B30",
+};
+
+const NAV_GROUPS = [
+  {
+    label: "Обучение",
+    items: [
+      { href: "/dashboard",     icon: LayoutDashboard, label: "Главная",          color: "#6366F1" },
+      { href: "/ai-tutor",      icon: Brain,           label: "AI Репетитор",     color: "#8B5CF6" },
+      { href: "/lessons",       icon: BookOpen,        label: "Уроки",            color: "#007AFF" },
+      { href: "/my-plan",       icon: Calendar,        label: "Мой план",         color: "#5856D6" },
+    ],
+  },
+  {
+    label: "Словарный запас",
+    items: [
+      { href: "/vocabulary",    icon: Layers,        label: "Словарь",            color: "#34C759", badge: "vocab" },
+      { href: "/phrasal-verbs", icon: Link2,         label: "Фразовые глаголы",   color: "#30B0C7" },
+      { href: "/idioms",        icon: MessageSquare, label: "Идиомы",             color: "#FF9F0A" },
+      { href: "/collocations",  icon: Link2,         label: "Коллокации",         color: "#FF6B6B" },
+      { href: "/word-formation",icon: Layers,        label: "Словообразование",   color: "#BF5AF2" },
+    ],
+  },
+  {
+    label: "Грамматика и письмо",
+    items: [
+      { href: "/grammar",            icon: GraduationCap, label: "Грамматика",          color: "#FF9500" },
+      { href: "/grammar-exercises",  icon: BookOpen,      label: "Упражнения",          color: "#FF6B6B" },
+      { href: "/writing",            icon: PenLine,       label: "Письмо",              color: "#007AFF" },
+      { href: "/writing-templates",  icon: FileText,      label: "Шаблоны",             color: "#32ADE6" },
+    ],
+  },
+  {
+    label: "Навыки",
+    items: [
+      { href: "/listening",           icon: Headphones,    label: "Аудирование",         color: "#FF3B30" },
+      { href: "/reading",             icon: FileText,      label: "Чтение",              color: "#5856D6" },
+      { href: "/reading-speed",       icon: Zap,           label: "Скорость чтения",     color: "#FF9500" },
+      { href: "/pronunciation",       icon: Mic,           label: "Произношение",        color: "#34C759" },
+      { href: "/pronunciation-practice", icon: Mic,        label: "Произношение+",       color: "#30D158" },
+      { href: "/dictation",           icon: Volume2,       label: "Диктант",             color: "#007AFF" },
+      { href: "/sentence-builder",    icon: AlignLeft,     label: "Конструктор",         color: "#FF9F0A" },
+      { href: "/mini-stories",        icon: BookOpen,      label: "Мини-истории",        color: "#BF5AF2" },
+    ],
+  },
+  {
+    label: "Прогресс",
+    items: [
+      { href: "/progress",       icon: TrendingUp, label: "Прогресс",        color: "#34C759" },
+      { href: "/achievements",   icon: Award,      label: "Достижения",      color: "#FF9500" },
+      { href: "/weekly-summary", icon: BarChart,   label: "Итоги недели",    color: "#007AFF" },
+      { href: "/level-test",     icon: BarChart2,  label: "Тест уровня",     color: "#BF5AF2" },
+      { href: "/modules",        icon: Trophy,     label: "Модули",          color: "#FF9F0A" },
+      { href: "/notes",          icon: StickyNote, label: "Заметки",         color: "#8E8E93" },
+    ],
+  },
+];
+
+interface SidebarProps {
+  vocabDueCount?: number;
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
+}
+
+function SidebarContent({
+  pathname, vocabDueCount, profile, dailyMinutes, dailyGoal,
+  onItemClick, onLogout,
+}: {
+  pathname: string;
+  vocabDueCount: number;
+  profile: Profile | null;
+  dailyMinutes: number;
+  dailyGoal: number;
+  onItemClick?: () => void;
+  onLogout: () => void;
+}) {
+  const levelInfo = profile ? getLevelFromXP(profile.xp ?? 0) : null;
+  const dailyProgress = Math.min(100, Math.round((dailyMinutes / dailyGoal) * 100));
+  const initials = profile?.full_name
+    ? profile.full_name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
+    : "?";
+
+  return (
+    <div className="flex flex-col h-full bg-bg-secondary dark:bg-bg-secondary">
+
+      {/* Header */}
+      <div className="px-4 pt-5 pb-4 shrink-0">
+        <Link href="/dashboard" onClick={onItemClick} className="flex items-center gap-2.5 mb-5">
+          <div className="w-8 h-8 rounded-[10px] bg-accent flex items-center justify-center text-white font-bold text-base shadow-sm">
+            F
+          </div>
+          <span className="text-[17px] font-bold tracking-tight text-text-primary">Fluenta</span>
+        </Link>
+
+        {/* User card */}
+        {profile && (
+          <div className="card p-3.5">
+            <div className="flex items-center gap-3 mb-3">
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm shrink-0"
+                style={{ background: `linear-gradient(135deg, ${CEFR_COLORS[profile.cefr_level] ?? '#6366F1'}, ${CEFR_COLORS[profile.cefr_level] ?? '#8B5CF6'}cc)` }}
+              >
+                {initials}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[14px] font-semibold text-text-primary truncate leading-tight">
+                  {profile.full_name || "Пользователь"}
+                </p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="badge badge-accent text-[11px]">{profile.cefr_level}</span>
+                  <div className="flex items-center gap-1">
+                    <Flame className="w-3.5 h-3.5 text-[#FF9500]" />
+                    <span className="text-[12px] text-text-muted">{profile.streak ?? 0}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {levelInfo && (
+              <>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[11px] text-text-muted">Ур. {levelInfo.level}</span>
+                  <div className="flex items-center gap-1">
+                    <Zap className="w-3 h-3 text-accent" />
+                    <span className="text-[11px] font-semibold text-accent">
+                      {(profile.xp ?? 0).toLocaleString()} XP
+                    </span>
+                  </div>
+                </div>
+                <div className="h-1.5 bg-bg-secondary dark:bg-bg-card-2 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{ width: `${levelInfo.progress}%`, background: CEFR_COLORS[profile.cefr_level] ?? '#6366F1' }}
+                  />
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Nav */}
+      <nav className="flex-1 overflow-y-auto px-3 pb-3">
+        {NAV_GROUPS.map((group) => (
+          <div key={group.label} className="mb-5">
+            <p className="section-header mb-2">{group.label}</p>
+            <div className="ios-list">
+              {group.items.map((item, idx) => {
+                const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+                const dueCount = (item as {badge?: string}).badge === "vocab" ? vocabDueCount : 0;
+                return (
+                  <Link key={item.href} href={item.href} onClick={onItemClick}>
+                    <div className={`ios-list-item ${isActive ? "bg-accent-light dark:bg-[#1c1c2e]" : ""}`}>
+                      <div className="ios-icon" style={{ background: item.color + "20", color: item.color }}>
+                        <item.icon className="w-4 h-4" />
+                      </div>
+                      <span className={`flex-1 text-[14px] ${isActive ? "font-semibold text-accent" : "text-text-primary"}`}>
+                        {item.label}
+                      </span>
+                      {dueCount > 0 && (
+                        <span className="badge badge-accent text-[11px]">{dueCount > 99 ? "99+" : dueCount}</span>
+                      )}
+                      <ChevronRight className="w-3.5 h-3.5 text-text-subtle opacity-50" />
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </nav>
+
+      {/* Daily goal */}
+      <div className="px-3 pb-2 shrink-0">
+        <div className="card p-3.5">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Target className="w-3.5 h-3.5 text-ios-green" />
+              <span className="text-[12px] font-semibold text-text-primary">Цель на день</span>
+            </div>
+            <span className="text-[11px] text-text-muted">{dailyMinutes}/{dailyGoal} мин</span>
+          </div>
+          <div className="h-2 bg-bg-secondary dark:bg-bg-card-2 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{
+                width: `${dailyProgress}%`,
+                background: dailyProgress >= 100 ? "rgb(var(--green))" : dailyProgress >= 50 ? "rgb(var(--orange))" : "rgb(var(--accent))"
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom */}
+      <div className="px-3 pb-5 shrink-0">
+        <div className="ios-list">
+          <Link href="/profile" onClick={onItemClick}>
+            <div className="ios-list-item">
+              <div className="ios-icon" style={{ background: "#007AFF20", color: "#007AFF" }}>
+                <User className="w-4 h-4" />
+              </div>
+              <span className="flex-1 text-[14px] text-text-primary">Профиль</span>
+              <ChevronRight className="w-3.5 h-3.5 text-text-subtle opacity-50" />
+            </div>
+          </Link>
+          <Link href="/settings" onClick={onItemClick}>
+            <div className="ios-list-item">
+              <div className="ios-icon" style={{ background: "#8E8E9320", color: "#8E8E93" }}>
+                <Settings className="w-4 h-4" />
+              </div>
+              <span className="flex-1 text-[14px] text-text-primary">Настройки</span>
+              <ChevronRight className="w-3.5 h-3.5 text-text-subtle opacity-50" />
+            </div>
+          </Link>
+          <button onClick={onLogout} className="ios-list-item w-full text-left">
+            <div className="ios-icon" style={{ background: "#FF3B3020", color: "#FF3B30" }}>
+              <LogOut className="w-4 h-4" />
+            </div>
+            <span className="flex-1 text-[14px] text-[#FF3B30]">Выйти</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function Sidebar({ vocabDueCount = 0, mobileOpen = false, onMobileClose }: SidebarProps) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [dailyMinutes, setDailyMinutes] = useState(0);
+  const [dailyGoal, setDailyGoal] = useState(20);
+
+  useEffect(() => {
+    async function load() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from("profiles").select("*").eq("user_id", user.id).single();
+      if (data) { setProfile(data); setDailyGoal(data.daily_goal_minutes ?? 20); }
+      const today = new Date().toISOString().slice(0, 10);
+      const { count } = await supabase.from("lessons_progress")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id).gte("completed_at", today);
+      setDailyMinutes((count ?? 0) * 10);
+    }
+    load();
+  }, []);
+
+  const handleLogout = useCallback(async () => {
+    await supabase.auth.signOut();
+    router.push("/auth/login");
+  }, [router]);
+
+  return (
+    <>
+      {/* Desktop */}
+      <aside className="hidden md:block w-64 h-full overflow-y-auto shrink-0 border-r border-black/[0.06] dark:border-white/[0.06]">
+        <SidebarContent
+          pathname={pathname} vocabDueCount={vocabDueCount}
+          profile={profile} dailyMinutes={dailyMinutes} dailyGoal={dailyGoal}
+          onLogout={handleLogout}
+        />
+      </aside>
+
+      {/* Mobile */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="md:hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
+              onClick={onMobileClose}
+            />
+            <motion.div
+              initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="md:hidden fixed inset-y-0 left-0 z-50 w-72 overflow-y-auto shadow-lg"
+            >
+              <div className="absolute top-4 right-3 z-10">
+                <button onClick={onMobileClose}
+                  className="w-7 h-7 rounded-full bg-black/10 dark:bg-white/10 flex items-center justify-center">
+                  <X className="w-4 h-4 text-text-muted" />
+                </button>
+              </div>
+              <SidebarContent
+                pathname={pathname} vocabDueCount={vocabDueCount}
+                profile={profile} dailyMinutes={dailyMinutes} dailyGoal={dailyGoal}
+                onItemClick={onMobileClose} onLogout={handleLogout}
+              />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+```
+
+---
+## ЗАДАЧА 4: TOPBAR — iOS Navigation Bar
+
+Перепиши components/layout/TopBar.tsx:
+
+```tsx
+"use client";
+
+import { usePathname } from "next/navigation";
+import { Menu, Sun, Moon } from "lucide-react";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
+
+const PAGE_TITLES: Record<string, string> = {
+  "/dashboard": "Fluenta",
+  "/ai-tutor": "AI Репетитор",
+  "/lessons": "Уроки",
+  "/vocabulary": "Словарь",
+  "/grammar": "Грамматика",
+  "/phrasal-verbs": "Фразовые глаголы",
+  "/idioms": "Идиомы",
+  "/collocations": "Коллокации",
+  "/word-formation": "Словообразование",
+  "/mini-stories": "Истории",
+  "/writing": "Письмо",
+  "/writing-templates": "Шаблоны письма",
+  "/reading": "Чтение",
+  "/reading-speed": "Скорость чтения",
+  "/listening": "Аудирование",
+  "/pronunciation": "Произношение",
+  "/pronunciation-practice": "Произношение+",
+  "/dictation": "Диктант",
+  "/sentence-builder": "Конструктор",
+  "/grammar-exercises": "Упражнения",
+  "/progress": "Прогресс",
+  "/achievements": "Достижения",
+  "/weekly-summary": "Итоги недели",
+  "/level-test": "Тест уровня",
+  "/modules": "Модули",
+  "/my-plan": "Мой план",
+  "/notes": "Заметки",
+  "/profile": "Профиль",
+  "/settings": "Настройки",
+};
+
+interface TopBarProps { onMenuClick: () => void; }
+
+export function TopBar({ onMenuClick }: TopBarProps) {
+  const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const title = PAGE_TITLES[pathname] ??
+    PAGE_TITLES[Object.keys(PAGE_TITLES).find(k => k !== "/" && pathname.startsWith(k)) ?? ""] ??
+    "Fluenta";
+
+  return (
+    <header className="h-14 shrink-0 flex items-center px-4 gap-3
+      bg-white/80 dark:bg-[#1C1C1E]/80 backdrop-blur-xl
+      border-b border-black/[0.06] dark:border-white/[0.06]">
+
+      <button onClick={onMenuClick}
+        className="md:hidden w-8 h-8 -ml-1 rounded-full flex items-center justify-center
+          text-text-muted hover:bg-black/[0.06] dark:hover:bg-white/[0.06] transition-colors">
+        <Menu className="w-5 h-5" />
+      </button>
+
+      <h1 className="flex-1 text-[17px] font-bold tracking-tight text-text-primary">
+        {title}
+      </h1>
+
+      {mounted && (
+        <button
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className="w-8 h-8 rounded-full flex items-center justify-center
+            text-text-muted hover:bg-black/[0.06] dark:hover:bg-white/[0.06] transition-colors">
+          {theme === "dark" ? <Sun className="w-4.5 h-4.5" /> : <Moon className="w-4.5 h-4.5" />}
+        </button>
+      )}
+    </header>
+  );
+}
+```
+
+---
+## ЗАДАЧА 5: МОБИЛЬНАЯ НАВИГАЦИЯ — iOS Tab Bar
+
+Перепиши components/layout/MobileNav.tsx:
+
+```tsx
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { LayoutDashboard, Brain, BookOpen, Layers, TrendingUp } from "lucide-react";
+
+const TABS = [
+  { href: "/dashboard", icon: LayoutDashboard, label: "Главная" },
+  { href: "/ai-tutor",  icon: Brain,           label: "AI" },
+  { href: "/lessons",   icon: BookOpen,        label: "Уроки" },
+  { href: "/vocabulary",icon: Layers,          label: "Словарь" },
+  { href: "/progress",  icon: TrendingUp,      label: "Прогресс" },
+];
+
+export function MobileNav() {
+  const pathname = usePathname();
+
+  return (
+    <nav
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40
+        bg-white/80 dark:bg-[#1C1C1E]/80 backdrop-blur-xl
+        border-t border-black/[0.06] dark:border-white/[0.06]"
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+    >
+      <div className="flex">
+        {TABS.map((tab) => {
+          const isActive = pathname === tab.href || pathname.startsWith(tab.href + "/");
+          return (
+            <Link key={tab.href} href={tab.href} className="flex-1">
+              <div className="flex flex-col items-center gap-0.5 pt-2.5 pb-2">
+                <tab.icon
+                  className="w-6 h-6 transition-colors"
+                  style={{ color: isActive ? "rgb(var(--accent))" : "rgb(var(--text-muted))", strokeWidth: isActive ? 2.5 : 1.5 }}
+                />
+                <span
+                  className="text-[10px] font-medium transition-colors"
+                  style={{ color: isActive ? "rgb(var(--accent))" : "rgb(var(--text-muted))" }}
+                >
+                  {tab.label}
+                </span>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+```
+
+---
+## ЗАДАЧА 6: DASHBOARD — чистый iOS стиль
+
+Полностью перепиши app/(dashboard)/dashboard/page.tsx:
+
+```tsx
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Brain, BookOpen, Layers, Mic, PenLine, ChevronRight, Flame, Zap, Trophy, Target } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { getLevelFromXP } from "@/lib/gamification";
+import { WordOfDay } from "@/components/WordOfDay";
+import type { Profile } from "@/types";
+
+const QUICK_ACTIONS = [
+  { href: "/ai-tutor",    icon: Brain,   label: "AI Репетитор",   color: "#6366F1", bg: "#6366F120" },
+  { href: "/lessons",     icon: BookOpen, label: "Уроки",         color: "#007AFF", bg: "#007AFF20" },
+  { href: "/vocabulary",  icon: Layers,  label: "Словарь",        color: "#34C759", bg: "#34C75920" },
+  { href: "/writing",     icon: PenLine, label: "Письмо",         color: "#FF9500", bg: "#FF950020" },
+  { href: "/pronunciation",icon: Mic,   label: "Произношение",   color: "#BF5AF2", bg: "#BF5AF220" },
+];
+
+export default function DashboardPage() {
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [completedToday, setCompletedToday] = useState(0);
+  const [vocabDue, setVocabDue] = useState(0);
+
+  useEffect(() => {
+    async function load() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const [{ data: p }, { count: today }, { count: due }] = await Promise.all([
+        supabase.from("profiles").select("*").eq("user_id", user.id).single(),
+        supabase.from("lessons_progress").select("*", { count: "exact", head: true })
+          .eq("user_id", user.id).gte("completed_at", new Date().toISOString().slice(0, 10)),
+        supabase.from("vocabulary").select("*", { count: "exact", head: true })
+          .eq("user_id", user.id).lte("next_review", new Date().toISOString()),
+      ]);
+      if (p) setProfile(p);
+      setCompletedToday(today ?? 0);
+      setVocabDue(due ?? 0);
+    }
+    load();
+  }, []);
+
+  const levelInfo = profile ? getLevelFromXP(profile.xp ?? 0) : null;
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Доброе утро" : hour < 17 ? "Добрый день" : "Добрый вечер";
+  const firstName = profile?.full_name?.split(" ")[0] ?? "";
+
+  return (
+    <div className="max-w-2xl mx-auto px-4 pt-6 pb-24 md:pb-8 space-y-6 animate-slide-up">
+
+      {/* Greeting */}
+      <div>
+        <p className="text-[15px] text-text-muted">{greeting}</p>
+        <h1 className="text-[28px] font-bold tracking-tight text-text-primary leading-tight">
+          {firstName || "Добро пожаловать"} 👋
+        </h1>
+      </div>
+
+      {/* Stats grid */}
+      <div className="grid grid-cols-2 gap-3 stagger">
+        {[
+          { icon: "🔥", value: profile?.streak ?? 0, label: "Дней подряд",   color: "#FF9500" },
+          { icon: "⚡", value: (profile?.xp ?? 0).toLocaleString(), label: "Очки XP", color: "rgb(var(--accent))" },
+          { icon: "🏆", value: levelInfo?.level ?? 1, label: "Уровень",      color: "#FF9500" },
+          { icon: "✅", value: completedToday, label: "Уроков сегодня",      color: "#34C759" },
+        ].map((s, i) => (
+          <div key={i} className="card p-4 animate-slide-up">
+            <p className="text-2xl mb-1">{s.icon}</p>
+            <p className="text-[22px] font-bold tracking-tight" style={{ color: s.color }}>{s.value}</p>
+            <p className="text-[12px] text-text-muted mt-0.5">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Progress */}
+      {levelInfo && profile && (
+        <div className="card p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-[15px] font-semibold text-text-primary">{profile.cefr_level} · {levelInfo.name}</p>
+              <p className="text-[12px] text-text-muted mt-0.5">Уровень {levelInfo.level}</p>
+            </div>
+            <span className="badge badge-accent">{levelInfo.progress}%</span>
+          </div>
+          <div className="h-2.5 bg-bg-secondary dark:bg-bg-card-2 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${levelInfo.progress}%`,
+                background: "rgb(var(--accent))"
+              }}
+            />
+          </div>
+          <p className="text-[12px] text-text-muted mt-2">
+            {levelInfo.xpToNext.toLocaleString()} XP до следующего уровня
+          </p>
+        </div>
+      )}
+
+      {/* Vocab due */}
+      {vocabDue > 0 && (
+        <Link href="/vocabulary">
+          <div className="card p-4 flex items-center gap-3 border-l-[3px] border-accent">
+            <span className="text-2xl">📚</span>
+            <div className="flex-1">
+              <p className="text-[15px] font-semibold text-text-primary">Пора повторить слова</p>
+              <p className="text-[13px] text-text-muted">{vocabDue} слов ждут повторения</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-text-subtle" />
+          </div>
+        </Link>
+      )}
+
+      {/* Quick actions */}
+      <div>
+        <p className="section-header mb-3">Быстрый старт</p>
+        <div className="ios-list">
+          {QUICK_ACTIONS.map((a) => (
+            <Link key={a.href} href={a.href}>
+              <div className="ios-list-item">
+                <div className="ios-icon" style={{ background: a.bg, color: a.color }}>
+                  <a.icon className="w-4 h-4" />
+                </div>
+                <span className="flex-1 text-[15px] text-text-primary">{a.label}</span>
+                <ChevronRight className="w-4 h-4 text-text-subtle opacity-50" />
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Word of Day */}
+      <div>
+        <p className="section-header mb-3">Слово дня</p>
+        <WordOfDay />
+      </div>
+
+    </div>
+  );
+}
+```
+
+---
+## ЗАДАЧА 7: ОБНОВИТЬ ThemeProvider
+
+Перезапиши components/ThemeProvider.tsx:
+
+```tsx
+"use client";
+
+import { ThemeProvider as NextThemesProvider } from "next-themes";
+import type { ThemeProviderProps } from "next-themes";
+
+export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
+  return (
+    <NextThemesProvider
+      attribute="class"
+      defaultTheme="light"
+      enableSystem={false}
+      storageKey="fluenta_theme"
+      {...props}
+    >
+      {children}
+    </NextThemesProvider>
+  );
+}
+```
+
+---
+## ЗАДАЧА 8: ГЛОБАЛЬНАЯ ЗАМЕНА СТИЛЕЙ
+
+Запусти в терминале:
+
+```bash
+# Замена тёмных фонов на iOS переменные
+find app components -name "*.tsx" | xargs sed -i \
+  -e 's/bg-\[#0F172A\]/bg-bg-secondary/g' \
+  -e 's/bg-\[#1E293B\]/bg-bg-card/g' \
+  -e 's/bg-\[#1C1C1E\]/bg-bg-card/g' \
+  -e 's/bg-white\/\[0\.04\]/bg-bg-card/g' \
+  -e 's/bg-white\/\[0\.06\]/bg-bg-card2/g' \
+  -e 's/border-white\/10/border-black\/\[0\.06\] dark:border-white\/\[0\.06\]/g' \
+  -e 's/text-white/text-text-primary/g' \
+  -e 's/text-\[#94a3b8\]/text-text-muted/g' \
+  -e 's/text-\[#64748[Bb]\]/text-text-muted/g' \
+  -e 's/text-\[#475569\]/text-text-secondary/g' \
+  -e 's/bg-\[#6366[Ff]1\]/bg-accent/g' \
+  -e 's/text-\[#6366[Ff]1\]/text-accent/g' \
+  -e 's/border-\[#6366[Ff]1\]/border-accent/g' \
+  -e 's/border-\[#334155\]/border-black\/\[0\.06\] dark:border-white\/\[0\.06\]/g'
+```
+
+После замены проверь и вручную исправь все страницы где остались старые цвета.
+
+---
+## ЗАДАЧА 9: AUTH СТРАНИЦА LOGIN
+
+В app/auth/login/page.tsx замени фон:
+- Основной контейнер: `min-h-screen bg-bg-secondary flex items-center justify-center`
+- Карточка входа: `card w-full max-w-sm mx-4 p-8`
+- Логотип: `w-12 h-12 rounded-[14px] bg-accent flex items-center justify-center text-white font-bold text-xl mx-auto mb-6 shadow-sm`
+- Заголовок: `text-[22px] font-bold tracking-tight text-text-primary text-center`
+- Поля ввода: `w-full px-4 py-3.5 rounded-btn bg-bg-secondary dark:bg-bg-card-2 border-none text-[16px] text-text-primary outline-none focus:ring-2 focus:ring-accent/30`
+- Кнопка: `btn-primary mt-4`
+
+---
+## ФИНАЛ
+
+1. npx tsc --noEmit — исправь все TypeScript ошибки
+2. Проверь что светлая тема красивая (серый фон #F2F2F7, белые карточки с тенями)
+3. Проверь тёмную тему (#1C1C1E фон, #2C2C2E карточки)
+4. Убедись что шрифты применились (-apple-system)
+5. git add -A && git commit -m "redesign: Apple/iOS style — system fonts, card shadows, section lists, tab bar"

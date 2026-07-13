@@ -49,7 +49,7 @@ export default function SpeakingExercise({ prompt, sampleAnswer, onComplete }: P
 
   return (
     <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 space-y-4">
-      <div className="bg-[#6366f1]/10 border border-[#6366f1]/30 rounded-xl p-4">
+      <div className="bg-primary/10 border border-primary/30 rounded-xl p-4">
         <p className="text-white text-sm font-medium mb-1">🗣️ Говори на тему:</p>
         <p className="text-[#a5b4fc] text-base">{prompt}</p>
       </div>
@@ -57,14 +57,14 @@ export default function SpeakingExercise({ prompt, sampleAnswer, onComplete }: P
       {(transcript || interimText) && (
         <div className="bg-white/[0.03] rounded-xl p-4 min-h-[80px]">
           <p className="text-white text-sm">{transcript}</p>
-          <p className="text-[#64748b] text-sm italic">{interimText}</p>
+          <p className="text-muted-foreground text-sm italic">{interimText}</p>
         </div>
       )}
 
       <div className="flex gap-3 flex-wrap">
         {phase === 'ready' && (
           <button onClick={startListening} disabled={!supported}
-            className="flex items-center gap-2 px-5 py-3 bg-[#6366f1] hover:bg-[#5558e8] text-white rounded-xl font-semibold transition-all disabled:opacity-40">
+            className="flex items-center gap-2 px-5 py-3 bg-primary hover:bg-[#5558e8] text-white rounded-xl font-semibold transition-all disabled:opacity-40">
             <Mic className="w-4 h-4" /> Начать говорить
           </button>
         )}
@@ -103,7 +103,7 @@ export default function SpeakingExercise({ prompt, sampleAnswer, onComplete }: P
       )}
 
       {phase === 'done' && wordCount > 0 && (
-        <div className="text-[#64748b] text-xs">
+        <div className="text-muted-foreground text-xs">
           Произнесено слов: {wordCount} {wordCount < 10 ? '— попробуй сказать больше!' : '— отлично!'}
         </div>
       )}

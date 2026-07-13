@@ -10,7 +10,7 @@ export default function OfflinePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0F172A] flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
       {/* Logo */}
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
@@ -29,8 +29,8 @@ export default function OfflinePage() {
         transition={{ delay: 0.1 }}
         className="mb-6"
       >
-        <div className="w-20 h-20 rounded-full bg-[#1E293B] border border-[#334155] flex items-center justify-center">
-          <WifiOff className="w-9 h-9 text-[#475569]" />
+        <div className="w-20 h-20 rounded-full bg-card border border-border flex items-center justify-center">
+          <WifiOff className="w-9 h-9 text-muted-foreground" />
         </div>
       </motion.div>
 
@@ -42,7 +42,7 @@ export default function OfflinePage() {
         className="text-center mb-8 max-w-sm"
       >
         <h1 className="text-2xl font-bold text-white mb-2">Нет подключения</h1>
-        <p className="text-[#64748B] leading-relaxed">
+        <p className="text-muted-foreground leading-relaxed">
           Не удалось подключиться к интернету. Проверь соединение и попробуй снова.
         </p>
       </motion.div>
@@ -52,17 +52,17 @@ export default function OfflinePage() {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="w-full max-w-sm bg-[#1E293B] border border-[#334155] rounded-2xl p-5 mb-6"
+        className="w-full max-w-sm bg-card border border-border rounded-2xl p-5 mb-6"
       >
-        <p className="text-[#64748B] text-sm font-medium mb-3 text-center">В офлайн-режиме доступно</p>
+        <p className="text-muted-foreground text-sm font-medium mb-3 text-center">В офлайн-режиме доступно</p>
         <div className="space-y-2">
-          <div className="flex items-center gap-3 text-sm text-[#94A3B8]">
-            <div className="w-8 h-8 rounded-lg bg-[#6366F1]/15 flex items-center justify-center shrink-0">
-              <BookOpen className="w-4 h-4 text-[#6366F1]" />
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+              <BookOpen className="w-4 h-4 text-primary" />
             </div>
             <span>Ранее загруженные уроки</span>
           </div>
-          <div className="flex items-center gap-3 text-sm text-[#94A3B8]">
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <div className="w-8 h-8 rounded-lg bg-[#8B5CF6]/15 flex items-center justify-center shrink-0">
               <Brain className="w-4 h-4 text-[#8B5CF6]" />
             </div>
@@ -87,7 +87,7 @@ export default function OfflinePage() {
         </button>
         <Link
           href="/dashboard"
-          className="flex items-center justify-center w-full py-3 rounded-xl bg-[#1E293B] border border-[#334155] text-[#94A3B8] hover:text-white hover:border-[#475569] text-sm font-medium transition-all"
+          className="flex items-center justify-center w-full py-3 rounded-xl bg-card border border-border text-muted-foreground hover:text-white hover:border-[#475569] text-sm font-medium transition-all"
         >
           На главную
         </Link>

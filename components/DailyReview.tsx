@@ -41,7 +41,7 @@ export function DailyReview() {
       <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-5 text-center">
         <p className="text-2xl mb-2">🎉</p>
         <p className="text-white font-semibold">Повторение завершено!</p>
-        <p className="text-[#64748b] text-sm">{todayCount} карточек повторено сегодня</p>
+        <p className="text-muted-foreground text-sm">{todayCount} карточек повторено сегодня</p>
       </div>
     )
   }
@@ -50,11 +50,11 @@ export function DailyReview() {
     <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
       <div className="flex items-center justify-between mb-4">
         <p className="text-white font-semibold text-sm">Ежедневное повторение</p>
-        <span className="text-[#64748b] text-xs">{current + 1} / {cards.length}</span>
+        <span className="text-muted-foreground text-xs">{current + 1} / {cards.length}</span>
       </div>
 
       <div className="h-1 bg-white/[0.06] rounded-full mb-5 overflow-hidden">
-        <div className="h-full bg-[#6366f1] rounded-full transition-all"
+        <div className="h-full bg-primary rounded-full transition-all"
           style={{ width: `${(current / cards.length) * 100}%` }} />
       </div>
 
@@ -62,12 +62,12 @@ export function DailyReview() {
         <p className="text-white text-2xl font-bold mb-1">{card.word}</p>
         {showAnswer ? (
           <>
-            <p className="text-[#6366f1] text-lg mt-2">{card.translation}</p>
-            {card.example && <p className="text-[#64748b] text-sm mt-3 italic">&quot;{card.example}&quot;</p>}
+            <p className="text-primary text-lg mt-2">{card.translation}</p>
+            {card.example && <p className="text-muted-foreground text-sm mt-3 italic">&quot;{card.example}&quot;</p>}
           </>
         ) : (
           <button onClick={() => setShowAnswer(true)}
-            className="mt-3 px-4 py-2 bg-white/[0.06] hover:bg-white/10 text-[#94a3b8] text-sm rounded-xl transition-colors">
+            className="mt-3 px-4 py-2 bg-white/[0.06] hover:bg-white/10 text-muted-foreground text-sm rounded-xl transition-colors">
             Показать перевод
           </button>
         )}

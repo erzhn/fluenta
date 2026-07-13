@@ -63,8 +63,8 @@ const THEME_SCRIPT = [
   "(function(){",
   "try{",
   "var t=localStorage.getItem('fluenta_theme');",
-  "if(t==='light'){document.documentElement.classList.remove('dark');document.documentElement.classList.add('light');}",
-  "else{document.documentElement.classList.add('dark');}",
+  "if(t==='dark'){document.documentElement.classList.add('dark');}",
+  "else{document.documentElement.classList.remove('dark');}",
   "}catch(e){}",
   "})();"
 ].join("");
@@ -75,7 +75,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru" className={`${inter.variable} ${spaceGrotesk.variable} h-full antialiased dark`}>
+    <html lang="ru" className={`${inter.variable} ${spaceGrotesk.variable} h-full antialiased`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>

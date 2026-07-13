@@ -64,11 +64,11 @@ export function EmptyState({ type, title, subtitle, action }: EmptyStateProps) {
         dangerouslySetInnerHTML={{ __html: ILLUSTRATIONS[type] }}
       />
       <h3 className="text-white font-semibold text-lg mb-2">{title}</h3>
-      {subtitle && <p className="text-[#64748b] text-sm max-w-xs mb-6">{subtitle}</p>}
+      {subtitle && <p className="text-muted-foreground text-sm max-w-xs mb-6">{subtitle}</p>}
       {action && (
         <a
           href={action.href}
-          className="px-5 py-2.5 bg-[#6366f1] hover:bg-[#5558e8] text-white text-sm font-medium rounded-xl transition-colors"
+          className="px-5 py-2.5 bg-primary hover:bg-[#5558e8] text-white text-sm font-medium rounded-xl transition-colors"
         >
           {action.label}
         </a>

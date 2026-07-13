@@ -62,7 +62,7 @@ export default function PhrasalVerbsPage() {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1"><span className="gradient-text">Фразовые глаголы</span></h1>
-        <p className="text-[#64748b] text-sm">{total} фразовых глаголов по 5 темам</p>
+        <p className="text-muted-foreground text-sm">{total} фразовых глаголов по 5 темам</p>
       </div>
 
       {/* Stats bar */}
@@ -71,14 +71,14 @@ export default function PhrasalVerbsPage() {
           <span className="text-green-400 text-base">✓</span>
           <div>
             <p className="text-white font-semibold text-sm">{learned.size}</p>
-            <p className="text-[#64748b] text-xs">Изучено</p>
+            <p className="text-muted-foreground text-xs">Изучено</p>
           </div>
         </div>
         <div className="bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 flex items-center gap-2">
-          <span className="text-[#6366f1] text-base">📚</span>
+          <span className="text-primary text-base">📚</span>
           <div>
             <p className="text-white font-semibold text-sm">{total - learned.size}</p>
-            <p className="text-[#64748b] text-xs">Осталось</p>
+            <p className="text-muted-foreground text-xs">Осталось</p>
           </div>
         </div>
         {learned.size > 0 && (
@@ -86,7 +86,7 @@ export default function PhrasalVerbsPage() {
             <span className="text-yellow-400 text-base">⚡</span>
             <div>
               <p className="text-white font-semibold text-sm">{Math.round(learned.size / total * 100)}%</p>
-              <p className="text-[#64748b] text-xs">Прогресс</p>
+              <p className="text-muted-foreground text-xs">Прогресс</p>
             </div>
           </div>
         )}
@@ -94,17 +94,17 @@ export default function PhrasalVerbsPage() {
 
       {/* Search */}
       <div className="relative mb-6">
-        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#64748b] text-sm">🔍</span>
+        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">🔍</span>
         <input
           type="text"
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Поиск: turn on, включать, lights..."
-          className="w-full bg-white/[0.04] border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white placeholder-[#475569] outline-none focus:border-[#6366f1]/50 transition-colors text-sm"
+          className="w-full bg-white/[0.04] border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white placeholder-[#475569] outline-none focus:border-primary/50 transition-colors text-sm"
         />
         {search && (
           <button onClick={() => setSearch('')}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#64748b] hover:text-white transition-colors">
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white transition-colors">
             ✕
           </button>
         )}
@@ -117,8 +117,8 @@ export default function PhrasalVerbsPage() {
             onClick={() => setActiveCategory('all')}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-all border ${
               activeCategory === 'all'
-                ? 'bg-[#6366f1] border-[#6366f1] text-white'
-                : 'bg-white/[0.04] border-white/10 text-[#94a3b8] hover:border-white/20 hover:text-white'
+                ? 'bg-primary border-primary text-white'
+                : 'bg-white/[0.04] border-white/10 text-muted-foreground hover:border-white/20 hover:text-white'
             }`}
           >
             Все ({total})
@@ -129,8 +129,8 @@ export default function PhrasalVerbsPage() {
               onClick={() => setActiveCategory(cat.id)}
               className={`px-4 py-2 rounded-xl text-sm font-medium transition-all border flex items-center gap-1.5 ${
                 activeCategory === cat.id
-                  ? 'bg-[#6366f1] border-[#6366f1] text-white'
-                  : 'bg-white/[0.04] border-white/10 text-[#94a3b8] hover:border-white/20 hover:text-white'
+                  ? 'bg-primary border-primary text-white'
+                  : 'bg-white/[0.04] border-white/10 text-muted-foreground hover:border-white/20 hover:text-white'
               }`}
             >
               <span>{CATEGORY_ICONS[cat.id]}</span>
@@ -143,7 +143,7 @@ export default function PhrasalVerbsPage() {
 
       {/* Category description */}
       {!search && activeCategory !== 'all' && (
-        <div className="mb-5 px-4 py-3 bg-[#6366f1]/10 border border-[#6366f1]/20 rounded-xl">
+        <div className="mb-5 px-4 py-3 bg-primary/10 border border-primary/20 rounded-xl">
           <p className="text-[#a5b4fc] text-sm">
             {CATEGORY_ICONS[activeCategory]}{' '}
             {PHRASAL_VERBS_DATA.find(c => c.id === activeCategory)?.description}
@@ -153,7 +153,7 @@ export default function PhrasalVerbsPage() {
 
       {/* Search results count */}
       {search && (
-        <p className="text-[#64748b] text-sm mb-4">
+        <p className="text-muted-foreground text-sm mb-4">
           Найдено: {displayedVerbs.length}{' '}
           {displayedVerbs.length === 1 ? 'глагол' : displayedVerbs.length < 5 ? 'глагола' : 'глаголов'}
         </p>
@@ -180,7 +180,7 @@ export default function PhrasalVerbsPage() {
                 className={`absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center text-sm transition-all ${
                   isLearned
                     ? 'bg-green-500/20 text-green-400'
-                    : 'bg-white/[0.06] text-[#475569] hover:text-white'
+                    : 'bg-white/[0.06] text-muted-foreground hover:text-white'
                 }`}
               >
                 {isLearned ? '✓' : '○'}
@@ -189,31 +189,31 @@ export default function PhrasalVerbsPage() {
               {/* Verb + translation */}
               <div className="pr-8">
                 <p className="text-white font-semibold text-base mb-1">{verb.verb}</p>
-                <p className="text-[#6366f1] text-sm">{verb.translation}</p>
+                <p className="text-primary text-sm">{verb.translation}</p>
               </div>
 
               {/* Expanded: examples + flip */}
               {isExpanded && (
                 <div className="mt-4 pt-4 border-t border-white/[0.08] space-y-2">
                   {verb.examples.map((ex, i) => (
-                    <p key={i} className="text-[#94a3b8] text-sm italic">"{ex}"</p>
+                    <p key={i} className="text-muted-foreground text-sm italic">"{ex}"</p>
                   ))}
                   <div className="flex items-center gap-2 pt-1">
                     <button
                       onClick={e => { e.stopPropagation(); toggleFlip(verb.id) }}
-                      className="text-xs px-3 py-1.5 rounded-lg bg-[#6366f1]/20 border border-[#6366f1]/30 text-[#a5b4fc] hover:bg-[#6366f1]/30 transition-all"
+                      className="text-xs px-3 py-1.5 rounded-lg bg-primary/20 border border-primary/30 text-[#a5b4fc] hover:bg-primary/30 transition-all"
                     >
                       {isFlipped ? 'Скрыть перевод' : 'Показать перевод'}
                     </button>
                     {isFlipped && (
-                      <span className="text-[#6366f1] text-sm font-medium">{verb.translation}</span>
+                      <span className="text-primary text-sm font-medium">{verb.translation}</span>
                     )}
                   </div>
                 </div>
               )}
 
               {!isExpanded && (
-                <p className="text-[#475569] text-xs mt-3">
+                <p className="text-muted-foreground text-xs mt-3">
                   {verb.examples.length} {verb.examples.length === 1 ? 'пример' : 'примера'} · нажми чтобы открыть
                 </p>
               )}
@@ -226,7 +226,7 @@ export default function PhrasalVerbsPage() {
         <div className="text-center py-16">
           <p className="text-4xl mb-4">🔍</p>
           <p className="text-white font-medium mb-2">Ничего не найдено</p>
-          <p className="text-[#64748b] text-sm">Попробуй другой запрос</p>
+          <p className="text-muted-foreground text-sm">Попробуй другой запрос</p>
         </div>
       )}
     </div>

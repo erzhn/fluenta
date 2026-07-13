@@ -107,9 +107,9 @@ function SwipeCard({ word, onKnow, onLearn }: {
           cursor-grab active:cursor-grabbing select-none text-center"
       >
         <p className="text-3xl font-bold text-white mb-3">{word.word}</p>
-        <p className="text-[#6366f1] text-lg">{word.translation}</p>
-        {word.example && <p className="text-[#64748b] text-sm mt-4 italic">&quot;{word.example}&quot;</p>}
-        <div className="mt-6 flex items-center justify-center gap-2 text-[#475569] text-xs">
+        <p className="text-primary text-lg">{word.translation}</p>
+        {word.example && <p className="text-muted-foreground text-sm mt-4 italic">&quot;{word.example}&quot;</p>}
+        <div className="mt-6 flex items-center justify-center gap-2 text-muted-foreground text-xs">
           <span>← Учу</span>
           <span className="text-[#334155]">· свайп ·</span>
           <span>Знаю →</span>
@@ -235,23 +235,23 @@ export default function VocabularyPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white"><span className="gradient-text">Словарь</span></h1>
-          <p className="text-[#64748b] text-sm">{VOCABULARY.length} слов • Метод Leitner</p>
+          <p className="text-muted-foreground text-sm">{VOCABULARY.length} слов • Метод Leitner</p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => setMode('study')}
-            className={`px-3 py-1.5 rounded-xl text-sm border transition-all ${mode === 'study' ? 'border-[#6366f1] bg-[#6366f1]/20 text-white' : 'border-white/10 text-[#64748b]'}`}>
+            className={`px-3 py-1.5 rounded-xl text-sm border transition-all ${mode === 'study' ? 'border-primary bg-primary/20 text-white' : 'border-white/10 text-muted-foreground'}`}>
             Учить
           </button>
           <button onClick={() => setMode('lessons')}
-            className={`px-3 py-1.5 rounded-xl text-sm border transition-all ${mode === 'lessons' ? 'border-[#6366f1] bg-[#6366f1]/20 text-white' : 'border-white/10 text-[#64748b]'}`}>
+            className={`px-3 py-1.5 rounded-xl text-sm border transition-all ${mode === 'lessons' ? 'border-primary bg-primary/20 text-white' : 'border-white/10 text-muted-foreground'}`}>
             По урокам
           </button>
           <button onClick={() => setMode('swipe')}
-            className={`px-3 py-1.5 rounded-xl text-sm border transition-all ${mode === 'swipe' ? 'border-[#6366f1] bg-[#6366f1]/20 text-white' : 'border-white/10 text-[#64748b]'}`}>
+            className={`px-3 py-1.5 rounded-xl text-sm border transition-all ${mode === 'swipe' ? 'border-primary bg-primary/20 text-white' : 'border-white/10 text-muted-foreground'}`}>
             Карточки
           </button>
           <button onClick={() => setMode('stats')}
-            className={`px-3 py-1.5 rounded-xl text-sm border transition-all ${mode === 'stats' ? 'border-[#6366f1] bg-[#6366f1]/20 text-white' : 'border-white/10 text-[#64748b]'}`}>
+            className={`px-3 py-1.5 rounded-xl text-sm border transition-all ${mode === 'stats' ? 'border-primary bg-primary/20 text-white' : 'border-white/10 text-muted-foreground'}`}>
             Прогресс
           </button>
         </div>
@@ -263,7 +263,7 @@ export default function VocabularyPage() {
           <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
             <div className="flex items-center justify-between mb-3">
               <span className="text-white font-semibold">Всего выучено</span>
-              <span className="text-2xl font-bold text-[#10b981]">{totalLearned} <span className="text-[#475569] text-base font-normal">/ {VOCABULARY.length}</span></span>
+              <span className="text-2xl font-bold text-[#10b981]">{totalLearned} <span className="text-muted-foreground text-base font-normal">/ {VOCABULARY.length}</span></span>
             </div>
             <div className="h-2 bg-white/[0.06] rounded-full overflow-hidden">
               <div className="h-full rounded-full bg-[#10b981] transition-all duration-1000"
@@ -283,7 +283,7 @@ export default function VocabularyPage() {
                       transition={{ duration: 0.6, delay: b * 0.08 }}
                       style={{ backgroundColor: `${BOX_COLORS[b]}60` }} />
                   </div>
-                  <span className="text-[#64748b] text-xs w-8 text-right">{boxCounts[b]}</span>
+                  <span className="text-muted-foreground text-xs w-8 text-right">{boxCounts[b]}</span>
                 </div>
               ))}
             </div>
@@ -296,10 +296,10 @@ export default function VocabularyPage() {
         <div className="space-y-4">
           {swipeIdx < swipeQueue.length ? (
             <>
-              <div className="flex justify-between text-sm text-[#64748b]">
+              <div className="flex justify-between text-sm text-muted-foreground">
                 <span>Карточка {swipeIdx + 1} из {swipeQueue.length}</span>
                 <button onClick={() => { setSwipeIdx(0); setSwipeQueue(shuffle(VOCABULARY).slice(0, 20)) }}
-                  className="text-[#6366f1] hover:text-[#818cf8] transition-colors">
+                  className="text-primary hover:text-[#818cf8] transition-colors">
                   <RotateCcw className="w-4 h-4" />
                 </button>
               </div>
@@ -317,9 +317,9 @@ export default function VocabularyPage() {
             <div className="text-center py-12">
               <p className="text-3xl mb-3">🎉</p>
               <p className="text-white font-semibold mb-1">Все карточки пройдены!</p>
-              <p className="text-[#64748b] text-sm mb-4">Слова добавлены в интервальное повторение</p>
+              <p className="text-muted-foreground text-sm mb-4">Слова добавлены в интервальное повторение</p>
               <button onClick={() => { setSwipeIdx(0); setSwipeQueue(shuffle(VOCABULARY).slice(0, 20)) }}
-                className="px-5 py-2.5 bg-[#6366f1] hover:bg-[#5558e8] text-white rounded-xl text-sm font-medium transition-colors">
+                className="px-5 py-2.5 bg-primary hover:bg-[#5558e8] text-white rounded-xl text-sm font-medium transition-colors">
                 Ещё раз
               </button>
             </div>
@@ -335,22 +335,22 @@ export default function VocabularyPage() {
             const learned = VOCABULARY.filter(w => w.lessonId === id && (srs[w.id]?.box ?? 0) >= 5).length
             return (
               <button key={id} onClick={() => openLesson(id)}
-                className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl bg-white/[0.04] border border-white/10 hover:border-[#6366f1]/40 transition-all text-left">
+                className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl bg-white/[0.04] border border-white/10 hover:border-primary/40 transition-all text-left">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-[#6366f1]/20 flex items-center justify-center text-[#818cf8] text-sm font-bold">
+                  <div className="w-8 h-8 rounded-xl bg-primary/20 flex items-center justify-center text-[#818cf8] text-sm font-bold">
                     {i + 1}
                   </div>
                   <div>
                     <p className="text-white font-medium text-sm">{LESSON_NAMES[id]}</p>
-                    <p className="text-[#475569] text-xs">{count} слов</p>
+                    <p className="text-muted-foreground text-xs">{count} слов</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="text-right">
                     <p className="text-[#10b981] text-xs font-medium">{learned}/{count}</p>
-                    <p className="text-[#475569] text-[10px]">выучено</p>
+                    <p className="text-muted-foreground text-[10px]">выучено</p>
                   </div>
-                  <BookOpen className="w-4 h-4 text-[#475569]" />
+                  <BookOpen className="w-4 h-4 text-muted-foreground" />
                 </div>
               </button>
             )
@@ -362,21 +362,21 @@ export default function VocabularyPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <button onClick={() => setSelectedLesson(null)} className="text-[#64748b] hover:text-white text-sm transition-colors mb-1 flex items-center gap-1">
+              <button onClick={() => setSelectedLesson(null)} className="text-muted-foreground hover:text-white text-sm transition-colors mb-1 flex items-center gap-1">
                 ← Все уроки
               </button>
               <h2 className="text-white font-bold">{LESSON_NAMES[selectedLesson]}</h2>
-              <p className="text-[#475569] text-xs">{lessonWords.length} из {VOCABULARY.filter(w => w.lessonId === selectedLesson).length} слов</p>
+              <p className="text-muted-foreground text-xs">{lessonWords.length} из {VOCABULARY.filter(w => w.lessonId === selectedLesson).length} слов</p>
             </div>
             <button onClick={reshuffleLesson}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 text-[#94a3b8] hover:text-white text-xs transition-colors">
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 text-muted-foreground hover:text-white text-xs transition-colors">
               <RotateCcw className="w-3 h-3" /> Показать другие слова
             </button>
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[#64748b] text-sm">{Math.min(lessonIdx, lessonWords.length)} / {lessonWords.length}</span>
+              <span className="text-muted-foreground text-sm">{Math.min(lessonIdx, lessonWords.length)} / {lessonWords.length}</span>
             </div>
             <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
               <div className="h-full bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] rounded-full transition-all"
@@ -390,7 +390,7 @@ export default function VocabularyPage() {
                 className="text-center py-12 bg-white/[0.04] border border-white/10 rounded-2xl">
                 <div className="text-4xl mb-4">🎉</div>
                 <h2 className="text-white font-bold text-xl mb-2">Урок завершён!</h2>
-                <p className="text-[#64748b] mb-6">Ты прошёл {lessonWords.length} слов</p>
+                <p className="text-muted-foreground mb-6">Ты прошёл {lessonWords.length} слов</p>
                 <button onClick={reshuffleLesson}
                   className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white font-semibold hover:opacity-90 transition-opacity">
                   Ещё раз
@@ -404,21 +404,21 @@ export default function VocabularyPage() {
                   style={{ perspective: '1000px' }}>
                   <motion.div className="absolute inset-0 w-full h-full" style={{ transformStyle: 'preserve-3d' }}
                     animate={{ rotateY: lessonFlipped ? 180 : 0 }} transition={{ duration: 0.4 }}>
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#6366f1]/20 to-[#8b5cf6]/20 border border-[#6366f1]/30 rounded-2xl flex flex-col items-center justify-center"
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#6366f1]/20 to-[#8b5cf6]/20 border border-primary/30 rounded-2xl flex flex-col items-center justify-center"
                       style={{ backfaceVisibility: 'hidden' }}>
                       <p className="text-white text-3xl font-bold mb-3">{lessonCard.word}</p>
-                      <p className="text-[#64748b] text-sm">Нажми, чтобы увидеть перевод</p>
+                      <p className="text-muted-foreground text-sm">Нажми, чтобы увидеть перевод</p>
                       <button onClick={e => { e.stopPropagation(); handleListen(lessonCard.word) }}
-                        className="mt-4 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 text-[#94a3b8] hover:text-white text-sm transition-colors">
+                        className="mt-4 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 text-muted-foreground hover:text-white text-sm transition-colors">
                         <Volume2 className="w-4 h-4" /> Послушать
                       </button>
                     </div>
                     <div className="absolute inset-0 bg-white/[0.04] border border-white/10 rounded-2xl flex flex-col items-center justify-center p-6"
                       style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
-                      <p className="text-[#94a3b8] text-sm mb-1">Перевод</p>
+                      <p className="text-muted-foreground text-sm mb-1">Перевод</p>
                       <p className="text-white text-2xl font-bold mb-4">{lessonCard.translation}</p>
-                      <p className="text-[#64748b] text-sm text-center italic">"{lessonCard.example}"</p>
-                      <p className="text-[#475569] text-xs text-center mt-1">{lessonCard.exampleTranslation}</p>
+                      <p className="text-muted-foreground text-sm text-center italic">"{lessonCard.example}"</p>
+                      <p className="text-muted-foreground text-xs text-center mt-1">{lessonCard.exampleTranslation}</p>
                     </div>
                   </motion.div>
                 </div>
@@ -450,9 +450,9 @@ export default function VocabularyPage() {
           {totalDue > 0 && (
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[#64748b] text-sm">{Math.min(qIdx, totalDue)} / {totalDue} карточек</span>
+                <span className="text-muted-foreground text-sm">{Math.min(qIdx, totalDue)} / {totalDue} карточек</span>
                 <button onClick={restart}
-                  className="flex items-center gap-1 text-xs text-[#475569] hover:text-[#94a3b8] transition-colors">
+                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-muted-foreground transition-colors">
                   <RotateCcw className="w-3 h-3" /> Обновить
                 </button>
               </div>
@@ -469,7 +469,7 @@ export default function VocabularyPage() {
                 className="text-center py-12 bg-white/[0.04] border border-white/10 rounded-2xl">
                 <div className="text-4xl mb-4">🎉</div>
                 <h2 className="text-white font-bold text-xl mb-2">Сессия завершена!</h2>
-                <p className="text-[#64748b] mb-6">{totalDue > 0 ? `Ты прошёл ${totalDue} карточек` : 'Нет карточек для повторения'}</p>
+                <p className="text-muted-foreground mb-6">{totalDue > 0 ? `Ты прошёл ${totalDue} карточек` : 'Нет карточек для повторения'}</p>
                 <button onClick={restart}
                   className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white font-semibold hover:opacity-90 transition-opacity">
                   {totalDue > 0 ? 'Ещё раз' : 'Обновить'}
@@ -480,9 +480,9 @@ export default function VocabularyPage() {
             {!done && totalDue === 0 && (
               <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                 className="text-center py-12 bg-white/[0.04] border border-white/10 rounded-2xl">
-                <Layers className="w-10 h-10 mx-auto mb-3 text-[#475569]" />
+                <Layers className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
                 <h2 className="text-white font-bold mb-2">Всё повторено!</h2>
-                <p className="text-[#64748b] text-sm">Возвращайся позже или пройди уроки, чтобы добавить слова.</p>
+                <p className="text-muted-foreground text-sm">Возвращайся позже или пройди уроки, чтобы добавить слова.</p>
               </motion.div>
             )}
 
@@ -492,21 +492,21 @@ export default function VocabularyPage() {
                   style={{ perspective: '1000px' }}>
                   <motion.div className="absolute inset-0 w-full h-full" style={{ transformStyle: 'preserve-3d' }}
                     animate={{ rotateY: flipped ? 180 : 0 }} transition={{ duration: 0.4 }}>
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#6366f1]/20 to-[#8b5cf6]/20 border border-[#6366f1]/30 rounded-2xl flex flex-col items-center justify-center"
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#6366f1]/20 to-[#8b5cf6]/20 border border-primary/30 rounded-2xl flex flex-col items-center justify-center"
                       style={{ backfaceVisibility: 'hidden' }}>
                       <p className="text-white text-3xl font-bold mb-3">{card.word}</p>
-                      <p className="text-[#64748b] text-sm">Нажми, чтобы увидеть перевод</p>
+                      <p className="text-muted-foreground text-sm">Нажми, чтобы увидеть перевод</p>
                       <button onClick={e => { e.stopPropagation(); handleListen(card.word) }}
-                        className="mt-4 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 text-[#94a3b8] hover:text-white text-sm transition-colors">
+                        className="mt-4 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 text-muted-foreground hover:text-white text-sm transition-colors">
                         <Volume2 className="w-4 h-4" /> {speaking ? '⏹ Стоп' : 'Послушать'}
                       </button>
                     </div>
                     <div className="absolute inset-0 bg-white/[0.04] border border-white/10 rounded-2xl flex flex-col items-center justify-center p-6"
                       style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
-                      <p className="text-[#94a3b8] text-sm mb-1">Перевод</p>
+                      <p className="text-muted-foreground text-sm mb-1">Перевод</p>
                       <p className="text-white text-2xl font-bold mb-4">{card.translation}</p>
-                      <p className="text-[#64748b] text-sm text-center italic">"{card.example}"</p>
-                      <p className="text-[#475569] text-xs text-center mt-1">{card.exampleTranslation}</p>
+                      <p className="text-muted-foreground text-sm text-center italic">"{card.example}"</p>
+                      <p className="text-muted-foreground text-xs text-center mt-1">{card.exampleTranslation}</p>
                     </div>
                   </motion.div>
                 </div>
@@ -519,7 +519,7 @@ export default function VocabularyPage() {
                         transform: (srs[card.id]?.box ?? 0) === b ? 'scale(1.3)' : 'scale(1)',
                       }} />
                   ))}
-                  <span className="text-[#475569] text-xs ml-1">{BOX_LABELS[srs[card.id]?.box ?? 0]}</span>
+                  <span className="text-muted-foreground text-xs ml-1">{BOX_LABELS[srs[card.id]?.box ?? 0]}</span>
                 </div>
 
                 <AnimatePresence>

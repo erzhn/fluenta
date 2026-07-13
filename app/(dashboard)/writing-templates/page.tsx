@@ -156,23 +156,23 @@ export default function WritingTemplatesPage() {
   if (selected) return (
     <div className="p-4 sm:p-8 max-w-3xl mx-auto">
       <button onClick={() => { setSelected(null); setUserText({}); setAiSuggestion('') }}
-        className="text-[#64748b] hover:text-white text-sm mb-6 flex items-center gap-2 transition-colors">
+        className="text-muted-foreground hover:text-white text-sm mb-6 flex items-center gap-2 transition-colors">
         ← Все шаблоны
       </button>
 
       <div className="flex items-center gap-2 mb-2">
-        <span className="text-xs px-2 py-0.5 rounded-full bg-[#6366f1]/10 text-[#6366f1]">{selected.type}</span>
-        <span className="text-[#475569] text-xs">{selected.level} · {selected.wordCount}</span>
+        <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">{selected.type}</span>
+        <span className="text-muted-foreground text-xs">{selected.level} · {selected.wordCount}</span>
       </div>
       <h1 className="text-2xl font-bold text-white mb-2">{selected.title}</h1>
-      <p className="text-[#64748b] text-sm mb-6">{selected.description}</p>
+      <p className="text-muted-foreground text-sm mb-6">{selected.description}</p>
 
       {/* Советы */}
       <div className="bg-[#f59e0b]/5 border border-[#f59e0b]/20 rounded-2xl p-4 mb-6">
         <p className="text-[#f59e0b] font-semibold text-sm mb-2">💡 Советы</p>
         <ul className="space-y-1">
           {selected.tips.map((tip, i) => (
-            <li key={i} className="text-[#94a3b8] text-sm flex gap-2">
+            <li key={i} className="text-muted-foreground text-sm flex gap-2">
               <span className="text-[#f59e0b]">·</span>{tip}
             </li>
           ))}
@@ -184,28 +184,28 @@ export default function WritingTemplatesPage() {
         {selected.structure.map((part, i) => (
           <div key={i} className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
             <p className="text-white font-semibold text-sm mb-1">{part.label}</p>
-            <p className="text-[#475569] text-xs mb-3 italic">{part.example}</p>
+            <p className="text-muted-foreground text-xs mb-3 italic">{part.example}</p>
             <textarea
               value={userText[`${selected.id}_${i}`] ?? ''}
               onChange={e => setUserText(prev => ({ ...prev, [`${selected.id}_${i}`]: e.target.value }))}
               placeholder={part.placeholder}
               rows={4}
               className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-white
-                placeholder:text-[#334155] outline-none focus:border-[#6366f1]/50 transition-colors text-sm resize-none"
+                placeholder:text-[#334155] outline-none focus:border-primary/50 transition-colors text-sm resize-none"
             />
           </div>
         ))}
       </div>
 
       <button onClick={generateWithAI} disabled={generating}
-        className="w-full py-4 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-50 text-white font-semibold rounded-2xl transition-colors mb-4">
+        className="w-full py-4 bg-primary hover:bg-[#5558e8] disabled:opacity-50 text-white font-semibold rounded-2xl transition-colors mb-4">
         {generating ? '⏳ AI анализирует...' : '✨ Получить AI-обратную связь'}
       </button>
 
       {aiSuggestion && (
-        <div className="bg-[#6366f1]/5 border border-[#6366f1]/20 rounded-2xl p-5">
-          <p className="text-[#6366f1] font-semibold text-sm mb-3">AI Обратная связь</p>
-          <p className="text-[#94a3b8] text-sm whitespace-pre-wrap leading-relaxed">{aiSuggestion}</p>
+        <div className="bg-primary/5 border border-primary/20 rounded-2xl p-5">
+          <p className="text-primary font-semibold text-sm mb-3">AI Обратная связь</p>
+          <p className="text-muted-foreground text-sm whitespace-pre-wrap leading-relaxed">{aiSuggestion}</p>
         </div>
       )}
     </div>
@@ -214,13 +214,13 @@ export default function WritingTemplatesPage() {
   return (
     <div className="p-4 sm:p-8 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold text-white mb-2">Шаблоны для письма</h1>
-      <p className="text-[#64748b] text-sm mb-6">IELTS · деловые письма · жалобы · эссе</p>
+      <p className="text-muted-foreground text-sm mb-6">IELTS · деловые письма · жалобы · эссе</p>
 
       <div className="flex gap-2 mb-6">
         {types.map(t => (
           <button key={t} onClick={() => setFilter(t)}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-all border ${
-              filter === t ? 'bg-[#6366f1] border-[#6366f1] text-white' : 'bg-white/[0.04] border-white/10 text-[#94a3b8] hover:text-white'
+              filter === t ? 'bg-primary border-primary text-white' : 'bg-white/[0.04] border-white/10 text-muted-foreground hover:text-white'
             }`}>{t}</button>
         ))}
       </div>
@@ -230,12 +230,12 @@ export default function WritingTemplatesPage() {
           <button key={t.id} onClick={() => setSelected(t)}
             className="text-left bg-white/[0.04] border border-white/10 hover:border-white/20 rounded-2xl p-5 transition-all group">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs px-2 py-0.5 rounded-full bg-[#6366f1]/10 text-[#6366f1]">{t.type}</span>
-              <span className="text-[#475569] text-xs">{t.level}</span>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">{t.type}</span>
+              <span className="text-muted-foreground text-xs">{t.level}</span>
             </div>
             <p className="text-white font-semibold group-hover:text-[#a5b4fc] transition-colors">{t.title}</p>
-            <p className="text-[#64748b] text-sm mt-1">{t.description}</p>
-            <p className="text-[#475569] text-xs mt-2">{t.wordCount}</p>
+            <p className="text-muted-foreground text-sm mt-1">{t.description}</p>
+            <p className="text-muted-foreground text-xs mt-2">{t.wordCount}</p>
           </button>
         ))}
       </div>

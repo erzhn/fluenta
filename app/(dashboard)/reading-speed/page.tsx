@@ -79,23 +79,23 @@ export default function ReadingSpeedPage() {
   return (
     <div className="p-4 sm:p-8 max-w-3xl mx-auto">
       <h1 className="text-2xl font-bold text-white mb-2"><span className="gradient-text">Скорость чтения</span></h1>
-      <p className="text-[#64748b] mb-6">Читай текст и нажми &quot;Готово&quot; когда закончишь</p>
+      <p className="text-muted-foreground mb-6">Читай текст и нажми &quot;Готово&quot; когда закончишь</p>
 
       {phase === 'intro' && (
         <>
           <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 mb-4">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-white font-semibold">{text.title}</h2>
-              <span className="text-xs px-2 py-1 rounded-full bg-[#6366f1]/10 text-[#6366f1]">{text.level}</span>
+              <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">{text.level}</span>
             </div>
-            <p className="text-[#64748b] text-sm">{text.wordCount} слов · Норма для {text.level}: {norm} слов/мин</p>
+            <p className="text-muted-foreground text-sm">{text.wordCount} слов · Норма для {text.level}: {norm} слов/мин</p>
           </div>
 
           <div className="flex gap-2 mb-6 flex-wrap">
             {TEXTS.map((t, i) => (
               <button key={i} onClick={() => setTextIdx(i)}
                 className={`px-3 py-1.5 rounded-xl text-sm transition-all border ${
-                  i === textIdx ? 'bg-[#6366f1] border-[#6366f1] text-white' : 'bg-white/[0.04] border-white/10 text-[#94a3b8]'
+                  i === textIdx ? 'bg-primary border-primary text-white' : 'bg-white/[0.04] border-white/10 text-muted-foreground'
                 }`}>
                 {t.level} · {t.title.split(' ').slice(0, 2).join(' ')}
               </button>
@@ -103,7 +103,7 @@ export default function ReadingSpeedPage() {
           </div>
 
           <button onClick={startReading}
-            className="btn-glow w-full py-4 bg-[#6366f1] hover:bg-[#5558e8] text-white font-semibold rounded-2xl text-lg transition-colors">
+            className="btn-glow w-full py-4 bg-primary hover:bg-[#5558e8] text-white font-semibold rounded-2xl text-lg transition-colors">
             Начать чтение
           </button>
         </>
@@ -112,8 +112,8 @@ export default function ReadingSpeedPage() {
       {phase === 'reading' && (
         <>
           <div className="flex items-center justify-between mb-4">
-            <span className="text-[#6366f1] font-mono text-lg font-bold">{elapsed}с</span>
-            <span className="text-[#64748b] text-sm">{text.wordCount} слов</span>
+            <span className="text-primary font-mono text-lg font-bold">{elapsed}с</span>
+            <span className="text-muted-foreground text-sm">{text.wordCount} слов</span>
           </div>
           <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 sm:p-8 mb-6 leading-relaxed">
             <h2 className="text-white font-bold text-xl mb-4">{text.title}</h2>
@@ -129,12 +129,12 @@ export default function ReadingSpeedPage() {
       {phase === 'result' && (
         <>
           <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-8 mb-6 text-center">
-            <p className="text-[#64748b] text-sm mb-2">Твой результат</p>
+            <p className="text-muted-foreground text-sm mb-2">Твой результат</p>
             <p className="text-6xl font-bold mb-2"
               style={{ color: percentage >= 100 ? '#10b981' : percentage >= 70 ? '#f59e0b' : '#ef4444' }}>
               {wpm}
             </p>
-            <p className="text-[#64748b] mb-6">слов в минуту</p>
+            <p className="text-muted-foreground mb-6">слов в минуту</p>
 
             <div className="h-3 bg-white/[0.06] rounded-full overflow-hidden mb-2">
               <div className="h-full rounded-full transition-all duration-1000"
@@ -143,7 +143,7 @@ export default function ReadingSpeedPage() {
                   background: percentage >= 100 ? '#10b981' : percentage >= 70 ? '#f59e0b' : '#ef4444',
                 }} />
             </div>
-            <div className="flex justify-between text-xs text-[#475569]">
+            <div className="flex justify-between text-xs text-muted-foreground">
               <span>0</span>
               <span>Норма {norm} сл/мин</span>
               <span>{norm * 1.5}+</span>
@@ -156,7 +156,7 @@ export default function ReadingSpeedPage() {
                  percentage >= 60 ? '📖 Продолжай практиковаться' :
                  '🐌 Попробуй читать чуть быстрее'}
               </p>
-              <p className="text-[#64748b] text-sm">
+              <p className="text-muted-foreground text-sm">
                 Норма для уровня {text.level}: {norm} слов/мин.
                 {percentage < 100 ? ` Тебе нужно читать на ${norm - wpm} слов/мин быстрее.` : ' Ты достиг нормы!'}
               </p>
@@ -165,11 +165,11 @@ export default function ReadingSpeedPage() {
 
           <div className="flex gap-3">
             <button onClick={nextText}
-              className="flex-1 py-3 bg-[#6366f1] hover:bg-[#5558e8] text-white font-semibold rounded-xl transition-colors">
+              className="flex-1 py-3 bg-primary hover:bg-[#5558e8] text-white font-semibold rounded-xl transition-colors">
               Следующий текст
             </button>
             <button onClick={() => setPhase('intro')}
-              className="px-5 py-3 bg-white/[0.06] hover:bg-white/10 text-[#94a3b8] rounded-xl transition-colors border border-white/10">
+              className="px-5 py-3 bg-white/[0.06] hover:bg-white/10 text-muted-foreground rounded-xl transition-colors border border-white/10">
               Повторить
             </button>
           </div>

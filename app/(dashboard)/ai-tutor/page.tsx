@@ -182,7 +182,7 @@ export default function AITutorPage() {
   const isFirstMessage = messages.length === 1
 
   return (
-    <div className="-m-4 sm:-m-6 lg:-m-8 overflow-hidden flex flex-col h-[calc(100%+2rem)] sm:h-[calc(100%+3rem)] lg:h-[calc(100%+4rem)] bg-[#0F172A]">
+    <div className="-m-4 sm:-m-6 lg:-m-8 overflow-hidden flex flex-col h-[calc(100%+2rem)] sm:h-[calc(100%+3rem)] lg:h-[calc(100%+4rem)] bg-background">
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="shrink-0 flex items-center justify-between px-4 sm:px-6 py-3.5 bg-[#0A1628] border-b border-[#1E293B]">
@@ -204,13 +204,13 @@ export default function AITutorPage() {
 
         <div className="flex items-center gap-2">
           {/* Mode toggle */}
-          <div className="flex bg-[#1E293B] rounded-xl p-1 gap-1">
+          <div className="flex bg-card rounded-xl p-1 gap-1">
             <button
               onClick={() => toggleMode('tutor')}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 mode === 'tutor'
-                  ? 'bg-[#6366F1] text-white shadow-sm'
-                  : 'text-[#475569] hover:text-[#94A3B8]'
+                  ? 'bg-primary text-white shadow-sm'
+                  : 'text-muted-foreground hover:text-muted-foreground'
               }`}
             >
               📚 Учёба
@@ -219,8 +219,8 @@ export default function AITutorPage() {
               onClick={() => toggleMode('conversation')}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 mode === 'conversation'
-                  ? 'bg-[#6366F1] text-white shadow-sm'
-                  : 'text-[#475569] hover:text-[#94A3B8]'
+                  ? 'bg-primary text-white shadow-sm'
+                  : 'text-muted-foreground hover:text-muted-foreground'
               }`}
             >
               💬 Разговор
@@ -229,8 +229,8 @@ export default function AITutorPage() {
               onClick={() => toggleMode('roleplay')}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 mode === 'roleplay'
-                  ? 'bg-[#6366F1] text-white shadow-sm'
-                  : 'text-[#475569] hover:text-[#94A3B8]'
+                  ? 'bg-primary text-white shadow-sm'
+                  : 'text-muted-foreground hover:text-muted-foreground'
               }`}
             >
               🎭 Ролевая игра
@@ -242,14 +242,14 @@ export default function AITutorPage() {
             <div className="flex items-center gap-2 ml-1">
               <span className="text-sm">{activeScenario.emoji}</span>
               <span className="text-white text-xs font-medium">{activeScenario.title}</span>
-              <button onClick={() => { setActiveScenario(null) }} className="text-[#64748b] text-xs hover:text-white">✕</button>
+              <button onClick={() => { setActiveScenario(null) }} className="text-muted-foreground text-xs hover:text-white">✕</button>
             </div>
           )}
 
           <button
             onClick={handleReset}
             title="Start new conversation"
-            className="flex items-center gap-1.5 text-xs text-[#475569] hover:text-[#94A3B8] transition-colors px-2.5 py-1.5 rounded-lg hover:bg-white/5"
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-muted-foreground transition-colors px-2.5 py-1.5 rounded-lg hover:bg-white/5"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">New chat</span>
@@ -262,7 +262,7 @@ export default function AITutorPage() {
         <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-5 min-h-0">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-white font-semibold">Выбери сценарий</h2>
-            <button onClick={() => toggleMode('tutor')} className="text-[#64748b] text-sm hover:text-white transition-colors">
+            <button onClick={() => toggleMode('tutor')} className="text-muted-foreground text-sm hover:text-white transition-colors">
               ← Обычный чат
             </button>
           </div>
@@ -279,11 +279,11 @@ export default function AITutorPage() {
                   }])
                 }}
                 className="p-4 bg-white/[0.04] border border-white/10 rounded-2xl text-left
-                  hover:border-[#6366f1]/40 hover:bg-white/[0.06] transition-all">
+                  hover:border-primary/40 hover:bg-white/[0.06] transition-all">
                 <span className="text-3xl block mb-2">{s.emoji}</span>
                 <p className="text-white text-sm font-medium">{s.title}</p>
-                <p className="text-[#64748b] text-xs mt-1">{s.description}</p>
-                <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded-full bg-[#6366f1]/10 text-[#6366f1]">
+                <p className="text-muted-foreground text-xs mt-1">{s.description}</p>
+                <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
                   {s.level}
                 </span>
               </button>
@@ -310,10 +310,10 @@ export default function AITutorPage() {
                 <button
                   key={text}
                   onClick={() => sendMessage(text)}
-                  className="group text-left px-3.5 py-3 rounded-xl bg-[#1E293B] border border-[#334155] hover:border-[#6366F1]/40 hover:bg-[#6366F1]/5 transition-all"
+                  className="group text-left px-3.5 py-3 rounded-xl bg-card border border-border hover:border-primary/40 hover:bg-primary/5 transition-all"
                 >
                   <span className="text-lg block mb-0.5">{emoji}</span>
-                  <span className="text-[#94A3B8] text-xs group-hover:text-white transition-colors leading-snug">
+                  <span className="text-muted-foreground text-xs group-hover:text-white transition-colors leading-snug">
                     {text}
                   </span>
                 </button>
@@ -339,10 +339,10 @@ export default function AITutorPage() {
               transition={{ duration: 0.2 }}
               className="flex gap-3"
             >
-              <div className="w-8 h-8 rounded-full bg-[#1E293B] border border-[#334155] flex items-center justify-center text-sm shrink-0">
+              <div className="w-8 h-8 rounded-full bg-card border border-border flex items-center justify-center text-sm shrink-0">
                 👨‍🏫
               </div>
-              <div className="bg-[#1E293B] border border-[#334155] rounded-2xl rounded-tl-sm px-4 py-3.5">
+              <div className="bg-card border border-border rounded-2xl rounded-tl-sm px-4 py-3.5">
                 <div className="flex gap-1.5 items-center h-4">
                   {[0, 1, 2].map((i) => (
                     <motion.div
@@ -375,9 +375,9 @@ export default function AITutorPage() {
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 4 }}
-              className="text-xs text-[#6366F1] font-medium mb-2 flex items-center gap-1.5"
+              className="text-xs text-primary font-medium mb-2 flex items-center gap-1.5"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#6366F1] animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
               Zhan is typing…
             </motion.div>
           )}
@@ -397,10 +397,10 @@ export default function AITutorPage() {
               disabled={loading}
               rows={1}
               maxLength={2000}
-              className="w-full bg-[#1E293B] border border-[#334155] hover:border-[#475569] focus:border-[#6366F1] rounded-xl px-4 py-3 text-white placeholder-[#334155] text-sm transition-colors outline-none resize-none leading-relaxed disabled:opacity-50"
+              className="w-full bg-card border border-border hover:border-[#475569] focus:border-primary rounded-xl px-4 py-3 text-white placeholder-[#334155] text-sm transition-colors outline-none resize-none leading-relaxed disabled:opacity-50"
             />
             {input.length > 1500 && (
-              <div className="absolute right-3 bottom-3 text-[10px] text-[#475569]">
+              <div className="absolute right-3 bottom-3 text-[10px] text-muted-foreground">
                 {2000 - input.length}
               </div>
             )}
@@ -415,7 +415,7 @@ export default function AITutorPage() {
             className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors shrink-0 ${
               listening
                 ? 'bg-red-500/20 border border-red-500/60 text-red-400'
-                : 'bg-[#1E293B] border border-[#334155] text-[#475569] hover:text-[#94A3B8] hover:border-[#475569]'
+                : 'bg-card border border-border text-muted-foreground hover:text-muted-foreground hover:border-[#475569]'
             } disabled:opacity-40 disabled:cursor-not-allowed`}
           >
             {listening ? (
@@ -432,7 +432,7 @@ export default function AITutorPage() {
             onClick={() => sendMessage(input)}
             disabled={!input.trim() || loading}
             whileTap={{ scale: 0.92 }}
-            className="w-10 h-10 rounded-xl bg-[#6366F1] hover:bg-[#5558E3] disabled:bg-[#1E293B] disabled:text-[#334155] text-white flex items-center justify-center transition-colors disabled:cursor-not-allowed hover:shadow-lg hover:shadow-indigo-500/25 shrink-0"
+            className="w-10 h-10 rounded-xl bg-primary hover:bg-[#5558E3] disabled:bg-card disabled:text-[#334155] text-white flex items-center justify-center transition-colors disabled:cursor-not-allowed hover:shadow-lg hover:shadow-indigo-500/25 shrink-0"
           >
             <Send className="w-4 h-4" />
           </motion.button>

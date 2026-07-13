@@ -31,15 +31,15 @@ export function LevelUpModal({ fromLevel, toLevel, onClose }: LevelUpModalProps)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-      <div className="bg-[#0F172A] border border-[#6366f1]/30 rounded-3xl p-8 sm:p-12 max-w-md w-full mx-4 text-center
+      <div className="bg-background border border-primary/30 rounded-3xl p-8 sm:p-12 max-w-md w-full mx-4 text-center
         shadow-2xl shadow-[#6366f1]/20 animate-[scaleIn_0.5s_cubic-bezier(0.22,1,0.36,1)]">
 
         <div className="w-24 h-24 rounded-3xl mx-auto mb-6 flex items-center justify-center text-5xl
-          bg-gradient-to-br from-[#6366f1]/20 to-[#8b5cf6]/20 border border-[#6366f1]/30">
+          bg-gradient-to-br from-[#6366f1]/20 to-[#8b5cf6]/20 border border-primary/30">
           {LEVEL_EMOJI[toLevel] ?? '🎉'}
         </div>
 
-        <p className="text-[#6366f1] text-sm font-semibold uppercase tracking-widest mb-2">Поздравляем!</p>
+        <p className="text-primary text-sm font-semibold uppercase tracking-widest mb-2">Поздравляем!</p>
         <h2 className="text-white text-3xl font-bold mb-1">
           Уровень <span style={{
             background: 'linear-gradient(135deg, #6366f1, #8b5cf6, #06b6d4)',
@@ -47,11 +47,11 @@ export function LevelUpModal({ fromLevel, toLevel, onClose }: LevelUpModalProps)
             WebkitTextFillColor: 'transparent',
           }}>{toLevel}</span>
         </h2>
-        <p className="text-[#64748b] mb-2">{fromLevel} → {toLevel}</p>
+        <p className="text-muted-foreground mb-2">{fromLevel} → {toLevel}</p>
 
         <div className="my-6 h-px bg-white/[0.06]" />
 
-        <p className="text-[#94a3b8] text-base leading-relaxed mb-8">
+        <p className="text-muted-foreground text-base leading-relaxed mb-8">
           {LEVEL_DESCRIPTIONS[toLevel] ?? 'Отличная работа!'}
         </p>
 
@@ -61,7 +61,7 @@ export function LevelUpModal({ fromLevel, toLevel, onClose }: LevelUpModalProps)
         </div>
 
         <button onClick={onClose}
-          className="w-full py-4 bg-[#6366f1] hover:bg-[#5558e8] text-white font-bold rounded-2xl text-lg
+          className="w-full py-4 bg-primary hover:bg-[#5558e8] text-white font-bold rounded-2xl text-lg
             transition-all hover:scale-[1.02] active:scale-[0.98]">
           Продолжить обучение 🚀
         </button>
