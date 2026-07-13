@@ -1,79 +1,87 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  LayoutDashboard, Brain, BookOpen, Layers, Mic, TrendingUp, User,
-  Settings, LogOut, Flame, Zap, BarChart2, PenLine, Headphones,
-  FileText, GraduationCap, Trophy, Link2, Award, AlignLeft, Volume2,
-  MessageSquare, BarChart, Calendar, StickyNote, X, ChevronRight, Target,
+  LayoutDashboard,
+  Brain,
+  BookOpen,
+  Layers,
+  Mic,
+  TrendingUp,
+  User,
+  Settings,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+  Flame,
+  Zap,
+  Target,
+  X,
+  BarChart2,
+  PenLine,
+  Headphones,
+  FileText,
+  GraduationCap,
+  Trophy,
+  Link2,
+  Award,
+  AlignLeft,
+  Volume2,
+  MessageSquare,
+  BarChart,
+  Calendar,
+  StickyNote,
 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { cn } from "@/lib/utils";
 import { getLevelFromXP } from "@/lib/gamification";
+import { supabase } from "@/lib/supabase";
 import type { Profile } from "@/types";
 
-const CEFR_COLORS: Record<string, string> = {
-  A1: "#34C759", A2: "#30D158",
-  B1: "#6366F1", B2: "#8B5CF6",
-  C1: "#FF9500", C2: "#FF3B30",
+const NAV_ITEMS = [
+  { href: "/dashboard",    icon: LayoutDashboard, label: "Главная",      badge: null },
+  { href: "/ai-tutor",     icon: Brain,           label: "AI Репетитор", badge: null },
+  { href: "/lessons",      icon: BookOpen,        label: "Уроки",        badge: null },
+  { href: "/vocabulary",   icon: Layers,          label: "Словарь",      badge: "vocab" },
+  { href: "/pronunciation",icon: Mic,             label: "Произношение", badge: null },
+  { href: "/listening",    icon: Headphones,      label: "Аудирование",  badge: null },
+  { href: "/reading",      icon: FileText,        label: "Чтение",       badge: null },
+  { href: "/writing",      icon: PenLine,         label: "Письмо",       badge: null },
+  { href: "/grammar",            icon: GraduationCap, label: "Грамматика",         badge: null },
+  { href: "/phrasal-verbs",      icon: Link2,         label: "Фразовые глаголы",   badge: null },
+  { href: "/dictation",          icon: Volume2,       label: "Диктант",            badge: null },
+  { href: "/sentence-builder",   icon: AlignLeft,     label: "Предложения",        badge: null },
+  { href: "/grammar-exercises",  icon: BookOpen,      label: "Упражнения",         badge: null },
+  { href: "/idioms",             icon: MessageSquare, label: "Идиомы",             badge: null },
+  { href: "/collocations",       icon: Link2,         label: "Коллокации",         badge: null },
+  { href: "/word-formation",     icon: Layers,        label: "Словообразование",   badge: null },
+  { href: "/mini-stories",       icon: BookOpen,      label: "Истории",            badge: null },
+  { href: "/writing-templates",  icon: FileText,      label: "Шаблоны письма",     badge: null },
+  { href: "/reading-speed",      icon: Zap,           label: "Скорость чтения",    badge: null },
+  { href: "/pronunciation-practice", icon: Mic,       label: "Произношение+",      badge: null },
+  { href: "/my-plan",            icon: Calendar,      label: "Мой план",           badge: null },
+  { href: "/notes",              icon: StickyNote,    label: "Заметки",            badge: null },
+  { href: "/weekly-summary",     icon: BarChart,      label: "Итоги недели",       badge: null },
+  { href: "/modules",            icon: Trophy,        label: "Модули",             badge: null },
+  { href: "/achievements",       icon: Award,         label: "Достижения",         badge: null },
+  { href: "/level-test",         icon: BarChart2,     label: "Тест уровня",        badge: null },
+  { href: "/progress",           icon: TrendingUp,    label: "Прогресс",           badge: null },
+];
+
+const CEFR_LABELS: Record<string, string> = {
+  A1: "Начинающий", A2: "Элементарный",
+  B1: "Средний", B2: "Выше среднего",
+  C1: "Продвинутый", C2: "Владение",
 };
 
-const NAV_GROUPS = [
-  {
-    label: "Обучение",
-    items: [
-      { href: "/dashboard",     icon: LayoutDashboard, label: "Главная",        color: "#6366F1" },
-      { href: "/ai-tutor",      icon: Brain,           label: "AI Репетитор",   color: "#8B5CF6" },
-      { href: "/lessons",       icon: BookOpen,        label: "Уроки",          color: "#007AFF" },
-      { href: "/my-plan",       icon: Calendar,        label: "Мой план",       color: "#5856D6" },
-    ],
-  },
-  {
-    label: "Словарный запас",
-    items: [
-      { href: "/vocabulary",     icon: Layers,        label: "Словарь",          color: "#34C759", badge: "vocab" },
-      { href: "/phrasal-verbs",  icon: Link2,         label: "Фразовые глаголы", color: "#30B0C7" },
-      { href: "/idioms",         icon: MessageSquare, label: "Идиомы",           color: "#FF9F0A" },
-      { href: "/collocations",   icon: Link2,         label: "Коллокации",       color: "#FF6B6B" },
-      { href: "/word-formation", icon: Layers,        label: "Словообразование", color: "#BF5AF2" },
-    ],
-  },
-  {
-    label: "Грамматика и письмо",
-    items: [
-      { href: "/grammar",           icon: GraduationCap, label: "Грамматика",    color: "#FF9500" },
-      { href: "/grammar-exercises", icon: BookOpen,      label: "Упражнения",    color: "#FF6B6B" },
-      { href: "/writing",           icon: PenLine,       label: "Письмо",        color: "#007AFF" },
-      { href: "/writing-templates", icon: FileText,      label: "Шаблоны",       color: "#32ADE6" },
-    ],
-  },
-  {
-    label: "Навыки",
-    items: [
-      { href: "/listening",             icon: Headphones, label: "Аудирование",     color: "#FF3B30" },
-      { href: "/reading",               icon: FileText,   label: "Чтение",          color: "#5856D6" },
-      { href: "/reading-speed",         icon: Zap,        label: "Скорость чтения", color: "#FF9500" },
-      { href: "/pronunciation",         icon: Mic,        label: "Произношение",    color: "#34C759" },
-      { href: "/pronunciation-practice",icon: Mic,        label: "Произношение+",   color: "#30D158" },
-      { href: "/dictation",             icon: Volume2,    label: "Диктант",         color: "#007AFF" },
-      { href: "/sentence-builder",      icon: AlignLeft,  label: "Конструктор",     color: "#FF9F0A" },
-      { href: "/mini-stories",          icon: BookOpen,   label: "Мини-истории",    color: "#BF5AF2" },
-    ],
-  },
-  {
-    label: "Прогресс",
-    items: [
-      { href: "/progress",       icon: TrendingUp, label: "Прогресс",     color: "#34C759" },
-      { href: "/achievements",   icon: Award,      label: "Достижения",   color: "#FF9500" },
-      { href: "/weekly-summary", icon: BarChart,   label: "Итоги недели", color: "#007AFF" },
-      { href: "/level-test",     icon: BarChart2,  label: "Тест уровня",  color: "#BF5AF2" },
-      { href: "/modules",        icon: Trophy,     label: "Модули",       color: "#FF9F0A" },
-      { href: "/notes",          icon: StickyNote, label: "Заметки",      color: "#8E8E93" },
-    ],
-  },
-];
+const CEFR_COLORS: Record<string, string> = {
+  A1: "#10B981", A2: "#34D399",
+  B1: "#6366F1", B2: "#8B5CF6",
+  C1: "#F59E0B", C2: "#EF4444",
+};
 
 interface SidebarProps {
   vocabDueCount?: number;
@@ -81,189 +89,10 @@ interface SidebarProps {
   onMobileClose?: () => void;
 }
 
-function SidebarContent({
-  pathname, vocabDueCount, profile, dailyMinutes, dailyGoal, onItemClick, onLogout,
-}: {
-  pathname: string;
-  vocabDueCount: number;
-  profile: Profile | null;
-  dailyMinutes: number;
-  dailyGoal: number;
-  onItemClick?: () => void;
-  onLogout: () => void;
-}) {
-  const levelInfo = profile ? getLevelFromXP(profile.xp ?? 0) : null;
-  const dailyProgress = Math.min(100, Math.round((dailyMinutes / dailyGoal) * 100));
-  const initials = profile?.full_name
-    ? profile.full_name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
-    : "?";
-
-  return (
-    <div className="flex flex-col h-full bg-bg-secondary">
-      {/* Header */}
-      <div className="px-4 pt-5 pb-4 shrink-0">
-        <Link href="/dashboard" onClick={onItemClick} className="flex items-center gap-2.5 mb-5">
-          <div
-            className="w-8 h-8 rounded-[10px] bg-accent flex items-center justify-center text-white font-bold text-base"
-            style={{ boxShadow: "var(--shadow-sm)" }}
-          >
-            F
-          </div>
-          <span className="text-[17px] font-bold tracking-tight text-text-primary">Fluenta</span>
-        </Link>
-
-        {/* User card */}
-        {profile && (
-          <div className="card p-3.5">
-            <div className="flex items-center gap-3 mb-3">
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0"
-                style={{
-                  background: `linear-gradient(135deg, ${CEFR_COLORS[profile.cefr_level] ?? "#6366F1"}, ${CEFR_COLORS[profile.cefr_level] ?? "#8B5CF6"}cc)`,
-                  boxShadow: "var(--shadow-sm)",
-                }}
-              >
-                {initials}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[14px] font-semibold text-text-primary truncate leading-tight">
-                  {profile.full_name || "Пользователь"}
-                </p>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="badge badge-accent text-[11px]">{profile.cefr_level}</span>
-                  <div className="flex items-center gap-1">
-                    <Flame className="w-3.5 h-3.5 text-ios-orange" />
-                    <span className="text-[12px] text-text-muted">{profile.streak ?? 0}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {levelInfo && (
-              <>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[11px] text-text-muted">Ур. {levelInfo.level}</span>
-                  <div className="flex items-center gap-1">
-                    <Zap className="w-3 h-3 text-accent" />
-                    <span className="text-[11px] font-semibold text-accent">
-                      {(profile.xp ?? 0).toLocaleString()} XP
-                    </span>
-                  </div>
-                </div>
-                <div className="h-1.5 bg-bg-secondary rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-700"
-                    style={{
-                      width: `${levelInfo.progress}%`,
-                      background: CEFR_COLORS[profile.cefr_level] ?? "rgb(var(--ios-accent))",
-                    }}
-                  />
-                </div>
-              </>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-3 pb-3">
-        {NAV_GROUPS.map((group) => (
-          <div key={group.label} className="mb-5">
-            <p className="section-header mb-2">{group.label}</p>
-            <div className="ios-list">
-              {group.items.map((item) => {
-                const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
-                const dueCount = (item as { badge?: string }).badge === "vocab" ? vocabDueCount : 0;
-                return (
-                  <Link key={item.href} href={item.href} onClick={onItemClick}>
-                    <div
-                      className="ios-list-item"
-                      style={isActive ? { background: `${item.color}12` } : {}}
-                    >
-                      <div className="ios-icon" style={{ background: item.color + "20", color: item.color }}>
-                        <item.icon className="w-4 h-4" />
-                      </div>
-                      <span
-                        className={`flex-1 text-[14px] ${isActive ? "font-semibold" : "text-text-primary"}`}
-                        style={isActive ? { color: item.color } : {}}
-                      >
-                        {item.label}
-                      </span>
-                      {dueCount > 0 && (
-                        <span className="badge badge-accent text-[11px]">{dueCount > 99 ? "99+" : dueCount}</span>
-                      )}
-                      <ChevronRight className="w-3.5 h-3.5 text-text-subtle opacity-50" />
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </nav>
-
-      {/* Daily goal */}
-      <div className="px-3 pb-2 shrink-0">
-        <div className="card p-3.5">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <Target className="w-3.5 h-3.5 text-ios-green" />
-              <span className="text-[12px] font-semibold text-text-primary">Цель на день</span>
-            </div>
-            <span className="text-[11px] text-text-muted">{dailyMinutes}/{dailyGoal} мин</span>
-          </div>
-          <div className="h-2 bg-bg-secondary rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{
-                width: `${dailyProgress}%`,
-                background: dailyProgress >= 100
-                  ? "rgb(var(--ios-green))"
-                  : dailyProgress >= 50
-                  ? "rgb(var(--ios-orange))"
-                  : "rgb(var(--ios-accent))",
-              }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom */}
-      <div className="px-3 pb-5 shrink-0">
-        <div className="ios-list">
-          <Link href="/profile" onClick={onItemClick}>
-            <div className="ios-list-item">
-              <div className="ios-icon" style={{ background: "#007AFF20", color: "#007AFF" }}>
-                <User className="w-4 h-4" />
-              </div>
-              <span className="flex-1 text-[14px] text-text-primary">Профиль</span>
-              <ChevronRight className="w-3.5 h-3.5 text-text-subtle opacity-50" />
-            </div>
-          </Link>
-          <Link href="/settings" onClick={onItemClick}>
-            <div className="ios-list-item">
-              <div className="ios-icon" style={{ background: "#8E8E9320", color: "#8E8E93" }}>
-                <Settings className="w-4 h-4" />
-              </div>
-              <span className="flex-1 text-[14px] text-text-primary">Настройки</span>
-              <ChevronRight className="w-3.5 h-3.5 text-text-subtle opacity-50" />
-            </div>
-          </Link>
-          <button onClick={onLogout} className="ios-list-item w-full text-left">
-            <div className="ios-icon" style={{ background: "#FF3B3020", color: "#FF3B30" }}>
-              <LogOut className="w-4 h-4" />
-            </div>
-            <span className="flex-1 text-[14px]" style={{ color: "#FF3B30" }}>Выйти</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function Sidebar({ vocabDueCount = 0, mobileOpen = false, onMobileClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const [collapsed, setCollapsed] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [dailyMinutes, setDailyMinutes] = useState(0);
   const [dailyGoal, setDailyGoal] = useState(20);
@@ -272,66 +101,360 @@ export function Sidebar({ vocabDueCount = 0, mobileOpen = false, onMobileClose }
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data } = await supabase.from("profiles").select("*").eq("user_id", user.id).single();
-      if (data) { setProfile(data); setDailyGoal(data.daily_goal_minutes ?? 20); }
+      const { data } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+      if (data) {
+        setProfile(data);
+        setDailyGoal(data.daily_goal_minutes ?? 20);
+      }
       const today = new Date().toISOString().slice(0, 10);
-      const { count } = await supabase.from("lessons_progress")
+      const { count } = await supabase
+        .from("lessons_progress")
         .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id).gte("completed_at", today);
+        .eq("user_id", user.id)
+        .gte("completed_at", today);
       setDailyMinutes((count ?? 0) * 10);
     }
     load();
   }, []);
 
-  const handleLogout = useCallback(async () => {
+  const levelInfo = profile ? getLevelFromXP(profile.xp ?? 0) : null;
+  const dailyProgress = Math.min(100, Math.round((dailyMinutes / dailyGoal) * 100));
+  const initials = profile?.full_name
+    ? profile.full_name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
+    : "?";
+
+  const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push("/auth/login");
-  }, [router]);
+  };
+
+  // ── Desktop Sidebar ──────────────────────────────────────────────────────────
+  const desktopSidebar = (
+    <motion.aside
+      animate={{ width: collapsed ? 64 : 256 }}
+      transition={{ duration: 0.25, ease: "easeInOut" }}
+      className="hidden md:flex flex-col h-full bg-[#1E293B] border-r border-[#334155] overflow-hidden shrink-0"
+    >
+      {/* Logo */}
+      <div className={cn(
+        "flex items-center border-b border-[#334155] shrink-0",
+        collapsed ? "justify-center px-0 py-4 h-16" : "justify-between px-4 py-4 h-16"
+      )}>
+        {!collapsed && (
+          <Link href="/dashboard" className="flex items-center">
+            <Image src="/logo.svg" alt="Fluenta" width={120} height={30} priority />
+          </Link>
+        )}
+        {collapsed && (
+          <Link href="/dashboard">
+            <Image src="/logo-icon.svg" alt="Fluenta" width={32} height={32} priority />
+          </Link>
+        )}
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className={cn(
+            "w-7 h-7 rounded-lg bg-[#0F172A] border border-[#334155] flex items-center justify-center text-[#64748B] hover:text-white hover:border-[#475569] transition-all",
+            collapsed && "hidden md:flex absolute left-[52px] top-4.5 z-10"
+          )}
+        >
+          {collapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
+        </button>
+      </div>
+
+      {/* User card */}
+      {profile && !collapsed && (
+        <div className="px-4 py-4 border-b border-[#334155] shrink-0">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center text-white font-bold text-sm shrink-0">
+              {initials}
+            </div>
+            <div className="min-w-0">
+              <p className="text-white text-sm font-semibold truncate">{profile.full_name || "Пользователь"}</p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span
+                  className="text-[10px] font-bold px-1.5 py-0.5 rounded"
+                  style={{
+                    backgroundColor: `${CEFR_COLORS[profile.cefr_level] ?? "#6366F1"}25`,
+                    color: CEFR_COLORS[profile.cefr_level] ?? "#6366F1",
+                  }}
+                >
+                  {profile.cefr_level}
+                </span>
+                <span className="text-[#64748B] text-[10px] truncate">{CEFR_LABELS[profile.cefr_level] ?? ""}</span>
+              </div>
+            </div>
+          </div>
+          {levelInfo && (
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[#64748B] text-[10px]">Ур. {levelInfo.level}</span>
+                <div className="flex items-center gap-1">
+                  <Zap className="w-3 h-3 text-[#6366F1]" />
+                  <span className="text-[#6366F1] text-[10px] font-bold">{(profile.xp ?? 0).toLocaleString()}</span>
+                </div>
+              </div>
+              <div className="h-1.5 bg-[#0F172A] rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${levelInfo.progress}%` }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  className="h-full bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] rounded-full"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {profile && collapsed && (
+        <div className="flex justify-center py-3 border-b border-[#334155] shrink-0">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center text-white font-bold text-xs">
+            {initials}
+          </div>
+        </div>
+      )}
+
+      {/* Nav */}
+      <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
+        {NAV_ITEMS.map((item) => {
+          const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+          const dueCount = item.badge === "vocab" ? vocabDueCount : 0;
+          return (
+            <Link key={item.href} href={item.href}>
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                className={cn(
+                  "flex items-center rounded-xl text-sm font-medium transition-all cursor-pointer relative",
+                  collapsed ? "justify-center p-3" : "gap-3 px-3 py-2.5",
+                  isActive
+                    ? "bg-[#6366F1]/15 text-[#818CF8]"
+                    : "text-[#64748B] hover:text-white hover:bg-[#334155]/60"
+                )}
+                title={collapsed ? item.label : undefined}
+              >
+                <item.icon className={cn("shrink-0", collapsed ? "w-5 h-5" : "w-4.5 h-4.5")} />
+                {!collapsed && <span className="flex-1">{item.label}</span>}
+                {dueCount > 0 && (
+                  <span className={cn(
+                    "bg-[#EF4444] text-white text-[9px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1",
+                    collapsed ? "absolute top-1.5 right-1.5" : ""
+                  )}>
+                    {dueCount > 99 ? "99+" : dueCount}
+                  </span>
+                )}
+                {!collapsed && isActive && (
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#6366F1]" />
+                )}
+              </motion.div>
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Daily goal */}
+      {!collapsed && (
+        <div className="px-3 py-3 border-t border-[#334155] shrink-0">
+          <div className="bg-[#0F172A] rounded-xl p-3">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-1.5">
+                <Target className="w-3.5 h-3.5 text-[#10B981]" />
+                <span className="text-white text-xs font-semibold">Цель на день</span>
+              </div>
+              <span className="text-[#64748B] text-[10px]">{dailyMinutes}/{dailyGoal} мин</span>
+            </div>
+            <div className="h-1.5 bg-[#1E293B] rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${dailyProgress}%` }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                className={cn(
+                  "h-full rounded-full",
+                  dailyProgress >= 100 ? "bg-[#10B981]" : dailyProgress >= 50 ? "bg-[#F59E0B]" : "bg-[#6366F1]"
+                )}
+              />
+            </div>
+            {profile && (
+              <div className="flex items-center gap-1 mt-1.5">
+                <Flame className="w-3 h-3 text-[#F59E0B]" />
+                <span className="text-[#64748B] text-[10px]">{profile.streak ?? 0} дней подряд</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Bottom actions */}
+      <div className={cn(
+        "border-t border-[#334155] py-2 px-2 flex shrink-0",
+        collapsed ? "flex-col items-center gap-1" : "gap-1"
+      )}>
+        <Link href="/profile" className="flex-1">
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className={cn(
+              "flex items-center rounded-xl text-[#64748B] hover:text-white hover:bg-[#334155]/60 transition-all text-sm font-medium",
+              collapsed ? "justify-center p-3 w-full" : "gap-2.5 px-3 py-2.5"
+            )}
+            title={collapsed ? "Профиль" : undefined}
+          >
+            <User className="w-4.5 h-4.5 shrink-0" />
+            {!collapsed && "Профиль"}
+          </motion.div>
+        </Link>
+        <Link href="/settings" className={collapsed ? "" : "flex-1"}>
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className={cn(
+              "flex items-center rounded-xl text-[#64748B] hover:text-white hover:bg-[#334155]/60 transition-all text-sm font-medium",
+              collapsed ? "justify-center p-3 w-full" : "gap-2.5 px-3 py-2.5"
+            )}
+            title={collapsed ? "Настройки" : undefined}
+          >
+            <Settings className="w-4.5 h-4.5 shrink-0" />
+            {!collapsed && "Настройки"}
+          </motion.div>
+        </Link>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          onClick={handleLogout}
+          className={cn(
+            "flex items-center rounded-xl text-[#64748B] hover:text-[#EF4444] hover:bg-[#EF4444]/10 transition-all text-sm font-medium",
+            collapsed ? "justify-center p-3 w-full" : "px-3 py-2.5"
+          )}
+          title={collapsed ? "Выйти" : undefined}
+        >
+          <LogOut className="w-4.5 h-4.5 shrink-0" />
+        </motion.button>
+      </div>
+    </motion.aside>
+  );
+
+  // ── Mobile Drawer ────────────────────────────────────────────────────────────
+  const mobileDrawer = (
+    <AnimatePresence>
+      {mobileOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="md:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            onClick={onMobileClose}
+          />
+          <motion.div
+            initial={{ x: "-100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "-100%" }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="md:hidden fixed inset-y-0 left-0 z-50 w-72 bg-[#1E293B] border-r border-[#334155] flex flex-col"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 h-16 border-b border-[#334155] shrink-0">
+              <Link href="/dashboard" onClick={onMobileClose} className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center text-white font-bold text-sm">
+                  F
+                </div>
+                <span className="font-bold text-lg text-white">Fluenta</span>
+              </Link>
+              <button
+                onClick={onMobileClose}
+                className="w-8 h-8 rounded-lg bg-[#0F172A] border border-[#334155] flex items-center justify-center text-[#64748B] hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* User card */}
+            {profile && (
+              <div className="px-4 py-4 border-b border-[#334155] shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center text-white font-bold text-sm shrink-0">
+                    {initials}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-white text-sm font-semibold truncate">{profile.full_name || "Пользователь"}</p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span
+                        className="text-[10px] font-bold px-1.5 py-0.5 rounded"
+                        style={{
+                          backgroundColor: `${CEFR_COLORS[profile.cefr_level] ?? "#6366F1"}25`,
+                          color: CEFR_COLORS[profile.cefr_level] ?? "#6366F1",
+                        }}
+                      >
+                        {profile.cefr_level}
+                      </span>
+                      <span className="text-[#64748B] text-[10px]">{CEFR_LABELS[profile.cefr_level] ?? ""}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Nav */}
+            <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
+              {NAV_ITEMS.map((item) => {
+                const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+                const dueCount = item.badge === "vocab" ? vocabDueCount : 0;
+                return (
+                  <Link key={item.href} href={item.href} onClick={onMobileClose}>
+                    <div className={cn(
+                      "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
+                      isActive
+                        ? "bg-[#6366F1]/15 text-[#818CF8]"
+                        : "text-[#64748B] hover:text-white hover:bg-[#334155]/60"
+                    )}>
+                      <item.icon className="w-5 h-5 shrink-0" />
+                      <span className="flex-1">{item.label}</span>
+                      {dueCount > 0 && (
+                        <span className="bg-[#EF4444] text-white text-[9px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
+                          {dueCount > 99 ? "99+" : dueCount}
+                        </span>
+                      )}
+                      {isActive && <div className="w-1.5 h-1.5 rounded-full bg-[#6366F1]" />}
+                    </div>
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* Bottom */}
+            <div className="border-t border-[#334155] py-2 px-2 flex flex-col gap-1 shrink-0">
+              <Link href="/profile" onClick={onMobileClose}>
+                <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#64748B] hover:text-white hover:bg-[#334155]/60 transition-all text-sm font-medium">
+                  <User className="w-5 h-5 shrink-0" />
+                  <span>Профиль</span>
+                </div>
+              </Link>
+              <Link href="/settings" onClick={onMobileClose}>
+                <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#64748B] hover:text-white hover:bg-[#334155]/60 transition-all text-sm font-medium">
+                  <Settings className="w-5 h-5 shrink-0" />
+                  <span>Настройки</span>
+                </div>
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#64748B] hover:text-[#EF4444] hover:bg-[#EF4444]/10 transition-all text-sm font-medium w-full"
+              >
+                <LogOut className="w-5 h-5 shrink-0" />
+                <span>Выйти</span>
+              </button>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
 
   return (
     <>
-      {/* Desktop */}
-      <aside className="hidden md:block w-64 h-full overflow-y-auto shrink-0 border-r border-black/[0.06] dark:border-white/[0.06]">
-        <SidebarContent
-          pathname={pathname} vocabDueCount={vocabDueCount}
-          profile={profile} dailyMinutes={dailyMinutes} dailyGoal={dailyGoal}
-          onLogout={handleLogout}
-        />
-      </aside>
-
-      {/* Mobile */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="md:hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
-              onClick={onMobileClose}
-            />
-            <motion.div
-              initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="md:hidden fixed inset-y-0 left-0 z-50 w-72 overflow-y-auto"
-              style={{ boxShadow: "var(--shadow-lg)" }}
-            >
-              <div className="absolute top-4 right-3 z-10">
-                <button
-                  onClick={onMobileClose}
-                  className="w-7 h-7 rounded-full bg-black/10 dark:bg-white/10 flex items-center justify-center"
-                >
-                  <X className="w-4 h-4 text-text-muted" />
-                </button>
-              </div>
-              <SidebarContent
-                pathname={pathname} vocabDueCount={vocabDueCount}
-                profile={profile} dailyMinutes={dailyMinutes} dailyGoal={dailyGoal}
-                onItemClick={onMobileClose} onLogout={handleLogout}
-              />
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      {desktopSidebar}
+      {mobileDrawer}
     </>
   );
 }

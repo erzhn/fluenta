@@ -1,51 +1,106 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Brain, BookOpen, Layers, TrendingUp } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  LayoutDashboard,
+  Brain,
+  BookOpen,
+  Layers,
+  TrendingUp,
+  Award,
+  Volume2,
+  AlignLeft,
+  MessageSquare,
+  Link2,
+  FileText,
+  Calendar,
+  StickyNote,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
 
-const TABS = [
-  { href: "/dashboard",  icon: LayoutDashboard, label: "Главная" },
-  { href: "/ai-tutor",   icon: Brain,            label: "AI" },
-  { href: "/lessons",    icon: BookOpen,          label: "Уроки" },
-  { href: "/vocabulary", icon: Layers,            label: "Словарь" },
-  { href: "/progress",   icon: TrendingUp,        label: "Прогресс" },
+const NAV_ITEMS = [
+  { href: "/dashboard",        icon: LayoutDashboard, label: "Главная",  badge: null },
+  { href: "/ai-tutor",         icon: Brain,           label: "AI",       badge: null },
+  { href: "/lessons",          icon: BookOpen,        label: "Уроки",    badge: null },
+  { href: "/vocabulary",       icon: Layers,          label: "Словарь",  badge: "vocab" },
+  { href: "/dictation",        icon: Volume2,         label: "Диктант",  badge: null },
+  { href: "/sentence-builder", icon: AlignLeft,       label: "Слова",    badge: null },
+  { href: "/idioms",           icon: MessageSquare,   label: "Идиомы",   badge: null },
+  { href: "/achievements",     icon: Award,           label: "Награды",  badge: null },
+  { href: "/progress",         icon: TrendingUp,      label: "Прогресс", badge: null },
+  { href: "/collocations",     icon: Link2,           label: "Колл.",    badge: null },
+  { href: "/mini-stories",     icon: BookOpen,        label: "Истории",  badge: null },
+  { href: "/writing-templates",icon: FileText,        label: "Шаблоны",  badge: null },
+  { href: "/my-plan",          icon: Calendar,        label: "Мой план", badge: null },
+  { href: "/notes",            icon: StickyNote,      label: "Заметки",  badge: null },
 ];
 
 export function MobileNav() {
   const pathname = usePathname();
+  const [vocabDue, setVocabDue] = useState(0);
+
+  useEffect(() => {
+    async function loadDue() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const now = new Date().toISOString();
+      const { count } = await supabase
+        .from("vocabulary")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .lte("next_review", now);
+      setVocabDue(count ?? 0);
+    }
+    loadDue();
+  }, []);
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 inset-x-0 z-40 h-[68px] flex items-center"
-      style={{
-        background: "rgba(var(--ios-bg-card), 0.85)",
-        backdropFilter: "saturate(180%) blur(20px)",
-        WebkitBackdropFilter: "saturate(180%) blur(20px)",
-        borderTop: "0.5px solid rgba(0,0,0,0.06)",
-        paddingBottom: "env(safe-area-inset-bottom)",
-      }}
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#1E293B] border-t border-[#334155]"
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <div className="flex w-full justify-around items-center px-2">
-        {TABS.map(({ href, icon: Icon, label }) => {
-          const isActive = pathname === href || pathname.startsWith(href + "/");
+      <div className="flex items-center justify-around px-2 py-1">
+        {NAV_ITEMS.map((item) => {
+          const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+          const dueCount = item.badge === "vocab" ? vocabDue : 0;
+
           return (
-            <Link
-              key={href}
-              href={href}
-              className="flex flex-col items-center gap-0.5 min-w-[52px] py-1 px-2"
-            >
-              <Icon
-                className="w-[26px] h-[26px]"
-                strokeWidth={isActive ? 2.5 : 1.5}
-                style={{ color: isActive ? "rgb(var(--ios-accent))" : "rgb(var(--ios-text-muted))" }}
-              />
-              <span
-                className="text-[10px] font-medium"
-                style={{ color: isActive ? "rgb(var(--ios-accent))" : "rgb(var(--ios-text-muted))" }}
+            <Link key={item.href} href={item.href} className="flex-1">
+              <motion.div
+                whileTap={{ scale: 0.85 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                className="flex flex-col items-center gap-0.5 py-2 px-1 rounded-xl transition-colors relative"
               >
-                {label}
-              </span>
+                <div className="relative">
+                  <item.icon
+                    className={cn(
+                      "w-5 h-5 transition-colors",
+                      isActive ? "text-[#6366F1]" : "text-[#64748B]"
+                    )}
+                  />
+                  {dueCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 bg-[#EF4444] text-white text-[9px] font-bold rounded-full min-w-[14px] h-3.5 flex items-center justify-center px-0.5 leading-none">
+                      {dueCount > 9 ? "9+" : dueCount}
+                    </span>
+                  )}
+                </div>
+                <span className={cn(
+                  "text-[10px] font-medium transition-colors",
+                  isActive ? "text-[#6366F1]" : "text-[#64748B]"
+                )}>
+                  {item.label}
+                </span>
+                {isActive && (
+                  <motion.div
+                    layoutId="mobile-nav-dot"
+                    className="absolute bottom-1 w-1 h-1 rounded-full bg-[#6366F1]"
+                  />
+                )}
+              </motion.div>
             </Link>
           );
         })}

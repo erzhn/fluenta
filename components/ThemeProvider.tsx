@@ -1,18 +1,9 @@
-"use client";
-
-import { ThemeProvider as NextThemesProvider } from "next-themes";
-import type { ThemeProviderProps } from "next-themes";
-
-export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
+'use client'
+import { ThemeProvider as NextThemesProvider } from 'next-themes'
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
   return (
-    <NextThemesProvider
-      attribute="class"
-      defaultTheme="light"
-      enableSystem={false}
-      storageKey="fluenta_theme"
-      {...props}
-    >
+    <NextThemesProvider attribute="class" defaultTheme="dark" enableSystem={false}>
       {children}
     </NextThemesProvider>
-  );
+  )
 }
