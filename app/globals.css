@@ -180,19 +180,18 @@
   }
 
   /* Кнопка — фиолетовая */
-  .btn {
-    @apply inline-flex items-center justify-center gap-2 font-semibold transition-all
-           rounded-full px-5 py-2.5 text-sm cursor-pointer select-none;
-  }
   .btn-violet {
-    @apply btn text-white;
+    @apply inline-flex items-center justify-center gap-2 font-semibold transition-all
+           rounded-full px-5 py-2.5 text-sm cursor-pointer select-none text-white;
     background: var(--primary);
   }
   .btn-violet:hover { filter: brightness(1.07); }
   .btn-violet:active { transform: scale(0.98); }
 
   .btn-ghost {
-    @apply btn text-foreground/70 hover:text-foreground hover:bg-secondary;
+    @apply inline-flex items-center justify-center gap-2 font-semibold transition-all
+           rounded-full px-5 py-2.5 text-sm cursor-pointer select-none
+           text-foreground/70 hover:text-foreground hover:bg-secondary;
   }
 
   /* Строка навигации */
