@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 import { useState, useRef } from 'react'
 
 const DICTATION_WORDS: Record<string, { word: string; hint?: string }[]> = {
@@ -137,7 +137,7 @@ export default function DictationPage() {
             style={{ color: score >= 8 ? '#10b981' : score >= 5 ? '#f59e0b' : '#ef4444' }}>
             {score}/{sessionWords.length}
           </div>
-          <p className="text-[hsl(var(--foreground-muted))]">
+          <p className="text-[#64748b]">
             {score >= 8 ? '🎉 Отлично! Ты великолепно справился!' :
              score >= 5 ? '👍 Хороший результат, продолжай практиковаться!' :
              '💪 Не сдавайся, повтори эти слова ещё раз!'}
@@ -154,7 +154,7 @@ export default function DictationPage() {
                 {!r.correct && (
                   <span className="text-red-400 text-sm line-through">{r.userAnswer || '(пусто)'}</span>
                 )}
-                <span className={r.correct ? 'text-green-400' : 'text-[hsl(var(--foreground-muted))]'}>
+                <span className={r.correct ? 'text-green-400' : 'text-[#64748b]'}>
                   {r.correct ? '✓' : r.word}
                 </span>
               </div>
@@ -164,7 +164,7 @@ export default function DictationPage() {
 
         <div className="flex gap-3">
           <button onClick={handleRestart}
-            className="flex-1 py-3 bg-[hsl(var(--accent))] hover:bg-[#5558e8] text-white font-medium rounded-xl transition-colors">
+            className="flex-1 py-3 bg-[#6366f1] hover:bg-[#5558e8] text-white font-medium rounded-xl transition-colors">
             Попробовать снова
           </button>
           <button onClick={() => {
@@ -185,15 +185,15 @@ export default function DictationPage() {
     return (
       <div className="p-4 sm:p-8 max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold text-white mb-2"><span className="gradient-text">Диктант</span></h1>
-        <p className="text-[hsl(var(--foreground-muted))] mb-8">Прослушай слово и напиши его правильно</p>
+        <p className="text-[#64748b] mb-8">Прослушай слово и напиши его правильно</p>
 
         <div className="grid grid-cols-5 gap-2 mb-8">
           {(['A1','A2','B1','B2','C1'] as Level[]).map(l => (
             <button key={l} onClick={() => setLevel(l)}
               className={`py-3 rounded-xl font-semibold transition-all border ${
                 level === l
-                  ? 'bg-[hsl(var(--accent))] border-[hsl(var(--accent))] text-white'
-                  : 'bg-white/[0.04] border-white/10 text-[hsl(var(--foreground-muted))] hover:text-white'
+                  ? 'bg-[#6366f1] border-[#6366f1] text-white'
+                  : 'bg-white/[0.04] border-white/10 text-[#94a3b8] hover:text-white'
               }`}>
               {l}
             </button>
@@ -202,7 +202,7 @@ export default function DictationPage() {
 
         <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 mb-6">
           <h3 className="text-white font-semibold mb-3">Как это работает</h3>
-          <div className="space-y-2 text-[hsl(var(--foreground-muted))] text-sm">
+          <div className="space-y-2 text-[#64748b] text-sm">
             <p>🔊 Нажми &quot;Воспроизвести&quot; — AI произнесёт слово</p>
             <p>✍️ Напиши что услышал в поле ввода</p>
             <p>✓ Нажми &quot;Проверить&quot; для проверки</p>
@@ -211,7 +211,7 @@ export default function DictationPage() {
         </div>
 
         <button onClick={handleStart}
-          className="btn-glow w-full py-4 bg-[hsl(var(--accent))] hover:bg-[#5558e8] text-white font-semibold rounded-2xl text-lg transition-colors">
+          className="btn-glow w-full py-4 bg-[#6366f1] hover:bg-[#5558e8] text-white font-semibold rounded-2xl text-lg transition-colors">
           Начать диктант ({ROUND_SIZE} слов)
         </button>
       </div>
@@ -222,18 +222,18 @@ export default function DictationPage() {
     <div className="p-4 sm:p-8 max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-bold text-white">Диктант · {level}</h1>
-        <span className="text-[hsl(var(--foreground-muted))] text-sm">{currentIndex + 1} / {sessionWords.length}</span>
+        <span className="text-[#64748b] text-sm">{currentIndex + 1} / {sessionWords.length}</span>
       </div>
 
       <div className="h-1.5 bg-white/[0.06] rounded-full mb-8 overflow-hidden">
-        <div className="h-full bg-[hsl(var(--accent))] rounded-full transition-all duration-500"
+        <div className="h-full bg-[#6366f1] rounded-full transition-all duration-500"
           style={{ width: `${(currentIndex / sessionWords.length) * 100}%` }} />
       </div>
 
       <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-8 mb-6 text-center">
         <div className="flex gap-3 justify-center mb-8">
           <button onClick={handlePlay} disabled={isPlaying}
-            className="flex items-center gap-2 px-6 py-3 bg-[hsl(var(--accent))] hover:bg-[#5558e8] disabled:opacity-50 text-white font-medium rounded-xl transition-all">
+            className="flex items-center gap-2 px-6 py-3 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-50 text-white font-medium rounded-xl transition-all">
             {isPlaying ? (
               <span className="flex gap-1">
                 <span className="w-1 h-4 bg-white rounded animate-bounce" style={{animationDelay:'0ms'}}/>
@@ -245,7 +245,7 @@ export default function DictationPage() {
             {playCount > 0 && <span className="text-white/60 text-xs">×{playCount}</span>}
           </button>
           <button onClick={handlePlaySlow} disabled={isPlaying}
-            className="flex items-center gap-2 px-4 py-3 bg-white/[0.06] hover:bg-white/10 text-[hsl(var(--foreground-muted))] font-medium rounded-xl transition-all border border-white/10">
+            className="flex items-center gap-2 px-4 py-3 bg-white/[0.06] hover:bg-white/10 text-[#94a3b8] font-medium rounded-xl transition-all border border-white/10">
             🐢 Медленно
           </button>
         </div>
@@ -264,7 +264,7 @@ export default function DictationPage() {
               ? results[results.length-1]?.correct
                 ? 'border-green-500/50 bg-green-500/10'
                 : 'border-red-500/50 bg-red-500/10'
-              : 'border-white/10 focus:border-[hsl(var(--accent))]/50'
+              : 'border-white/10 focus:border-[#6366f1]/50'
             }`}
         />
 
@@ -275,7 +275,7 @@ export default function DictationPage() {
             ) : (
               <div>
                 <p className="text-red-400 font-semibold text-lg mb-1">✗ Неправильно</p>
-                <p className="text-white text-lg">Правильно: <span className="text-[hsl(var(--accent))] font-bold">{current.word}</span></p>
+                <p className="text-white text-lg">Правильно: <span className="text-[#6366f1] font-bold">{current.word}</span></p>
               </div>
             )}
           </div>
@@ -284,7 +284,7 @@ export default function DictationPage() {
 
       {!showAnswer ? (
         <button onClick={handleCheck} disabled={!userInput.trim()}
-          className="w-full py-4 bg-[hsl(var(--accent))] hover:bg-[#5558e8] disabled:opacity-40 text-white font-semibold rounded-2xl transition-colors">
+          className="w-full py-4 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-40 text-white font-semibold rounded-2xl transition-colors">
           Проверить
         </button>
       ) : (

@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
@@ -114,16 +114,16 @@ export function StreakWidget({ className = '' }: StreakWidgetProps) {
         </div>
         <div className="flex items-center gap-3">
           <span className="text-2xl font-bold text-orange-400">{data.currentStreak}</span>
-          <span className="text-[hsl(var(--foreground-muted))] text-sm">дней</span>
+          <span className="text-[#64748b] text-sm">дней</span>
         </div>
       </div>
 
       {/* Progress bar */}
       <div className="mb-3">
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[hsl(var(--foreground-muted))] text-xs">Сегодня: {data.todayMinutes} мин</span>
+          <span className="text-[#94a3b8] text-xs">Сегодня: {data.todayMinutes} мин</span>
           <button onClick={() => setShowGoalPicker(v => !v)}
-            className="text-xs text-[hsl(var(--accent))] hover:text-[#818cf8] transition-colors font-medium">
+            className="text-xs text-[#6366f1] hover:text-[#818cf8] transition-colors font-medium">
             цель: {data.dailyGoalMinutes} мин
           </button>
         </div>
@@ -139,7 +139,7 @@ export function StreakWidget({ className = '' }: StreakWidgetProps) {
             className="mt-2 flex gap-1.5 flex-wrap">
             {GOAL_OPTIONS.map(m => (
               <button key={m} onClick={() => setGoal(m)}
-                className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${data.dailyGoalMinutes === m ? 'bg-[hsl(var(--accent))] text-white' : 'bg-white/[0.06] text-[hsl(var(--foreground-muted))] hover:text-white'}`}>
+                className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${data.dailyGoalMinutes === m ? 'bg-[#6366f1] text-white' : 'bg-white/[0.06] text-[#94a3b8] hover:text-white'}`}>
                 {m} мин
               </button>
             ))}
@@ -158,17 +158,17 @@ export function StreakWidget({ className = '' }: StreakWidgetProps) {
       <div className="flex gap-1.5 justify-between">
         {last7.map(({ iso, dayName, active }) => (
           <div key={iso} className="flex flex-col items-center gap-1">
-            <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${active ? 'bg-[#10b981]/20 border border-[#10b981]/40' : iso === today ? 'bg-[hsl(var(--accent))]/20 border border-[hsl(var(--accent))]/40' : 'bg-white/[0.04] border border-white/10'}`}>
+            <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${active ? 'bg-[#10b981]/20 border border-[#10b981]/40' : iso === today ? 'bg-[#6366f1]/20 border border-[#6366f1]/40' : 'bg-white/[0.04] border border-white/10'}`}>
               {active && <Check className="w-3 h-3 text-[#10b981]" />}
-              {!active && iso === today && <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--accent))]" />}
+              {!active && iso === today && <div className="w-1.5 h-1.5 rounded-full bg-[#6366f1]" />}
             </div>
-            <span className="text-[hsl(var(--foreground-subtle))] text-[10px]">{dayName}</span>
+            <span className="text-[#475569] text-[10px]">{dayName}</span>
           </div>
         ))}
       </div>
 
       {data.longestStreak > 0 && (
-        <p className="text-[hsl(var(--foreground-subtle))] text-xs mt-3 flex items-center gap-1">
+        <p className="text-[#475569] text-xs mt-3 flex items-center gap-1">
           <Target className="w-3 h-3" /> Рекорд: {data.longestStreak} дней
         </p>
       )}

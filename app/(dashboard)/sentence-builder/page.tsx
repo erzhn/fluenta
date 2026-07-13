@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 import { useState, useEffect } from 'react'
 
 interface Sentence {
@@ -91,7 +91,7 @@ export default function SentenceBuilderPage() {
         <p className="text-2xl mb-3">✅</p>
         <p className="text-white font-semibold mb-2">Все предложения для уровня {level} пройдены!</p>
         <button onClick={() => setCurrentIdx(0)}
-          className="px-5 py-2.5 bg-[hsl(var(--accent))] text-white rounded-xl text-sm font-medium mt-4">
+          className="px-5 py-2.5 bg-[#6366f1] text-white rounded-xl text-sm font-medium mt-4">
           Начать заново
         </button>
       </div>
@@ -103,11 +103,11 @@ export default function SentenceBuilderPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-white"><span className="gradient-text">Собери предложение</span></h1>
-          <p className="text-[hsl(var(--foreground-muted))] text-sm mt-1">Нажимай на слова в правильном порядке</p>
+          <p className="text-[#64748b] text-sm mt-1">Нажимай на слова в правильном порядке</p>
         </div>
         <div className="text-right">
           <p className="text-white font-semibold">{score.correct}/{score.total}</p>
-          <p className="text-[hsl(var(--foreground-muted))] text-xs">правильно</p>
+          <p className="text-[#64748b] text-xs">правильно</p>
         </div>
       </div>
 
@@ -115,7 +115,7 @@ export default function SentenceBuilderPage() {
         {(['A1','A2','B1','B2','C1'] as Level[]).map(l => (
           <button key={l} onClick={() => { setLevel(l); setCurrentIdx(0) }}
             className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-all border ${
-              level === l ? 'bg-[hsl(var(--accent))] border-[hsl(var(--accent))] text-white' : 'bg-white/[0.04] border-white/10 text-[hsl(var(--foreground-muted))] hover:text-white'
+              level === l ? 'bg-[#6366f1] border-[#6366f1] text-white' : 'bg-white/[0.04] border-white/10 text-[#94a3b8] hover:text-white'
             }`}>
             {l}
           </button>
@@ -123,7 +123,7 @@ export default function SentenceBuilderPage() {
       </div>
 
       <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5 mb-6">
-        <p className="text-[hsl(var(--foreground-muted))] text-xs uppercase tracking-wider mb-2">Переведи на английский:</p>
+        <p className="text-[#64748b] text-xs uppercase tracking-wider mb-2">Переведи на английский:</p>
         <p className="text-white text-xl font-semibold">{current.translation}</p>
       </div>
 
@@ -140,8 +140,8 @@ export default function SentenceBuilderPage() {
         {selected.map(item => (
           <button key={item.id}
             onClick={() => deselectWord(item)}
-            className="px-4 py-2 bg-[hsl(var(--accent))]/20 border border-[hsl(var(--accent))]/40 text-white
-              rounded-xl text-sm font-medium hover:bg-[hsl(var(--accent))]/30 transition-all active:scale-95">
+            className="px-4 py-2 bg-[#6366f1]/20 border border-[#6366f1]/40 text-white
+              rounded-xl text-sm font-medium hover:bg-[#6366f1]/30 transition-all active:scale-95">
             {item.word}
           </button>
         ))}
@@ -156,7 +156,7 @@ export default function SentenceBuilderPage() {
           ) : (
             <>
               <p className="text-red-400 font-semibold mb-1">✗ Неправильно</p>
-              <p className="text-[hsl(var(--foreground-muted))] text-sm">
+              <p className="text-[#94a3b8] text-sm">
                 Правильно: <span className="text-white font-medium">{current.words.join(' ')}</span>
               </p>
             </>
@@ -179,17 +179,17 @@ export default function SentenceBuilderPage() {
         {checked === null ? (
           <>
             <button onClick={resetSentence}
-              className="px-5 py-3 bg-white/[0.06] hover:bg-white/10 text-[hsl(var(--foreground-muted))] font-medium rounded-xl transition-colors border border-white/10">
+              className="px-5 py-3 bg-white/[0.06] hover:bg-white/10 text-[#94a3b8] font-medium rounded-xl transition-colors border border-white/10">
               ↺ Сброс
             </button>
             <button onClick={handleCheck} disabled={selected.length === 0}
-              className="flex-1 py-3 bg-[hsl(var(--accent))] hover:bg-[#5558e8] disabled:opacity-40 text-white font-semibold rounded-xl transition-colors">
+              className="flex-1 py-3 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-40 text-white font-semibold rounded-xl transition-colors">
               Проверить
             </button>
           </>
         ) : (
           <button onClick={handleNext}
-            className="flex-1 py-3 bg-[hsl(var(--accent))] hover:bg-[#5558e8] text-white font-semibold rounded-xl transition-colors">
+            className="flex-1 py-3 bg-[#6366f1] hover:bg-[#5558e8] text-white font-semibold rounded-xl transition-colors">
             Следующее предложение →
           </button>
         )}

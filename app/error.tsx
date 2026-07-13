@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect } from "react";
 import { motion } from "framer-motion";
@@ -17,7 +17,7 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-[#0F172A] flex flex-col items-center justify-center px-4">
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -35,7 +35,7 @@ export default function Error({
         className="text-center mb-8 max-w-sm"
       >
         <h1 className="text-2xl font-bold text-white mb-2">Что-то пошло не так</h1>
-        <p className="text-[hsl(var(--foreground-muted))] leading-relaxed">
+        <p className="text-[#64748B] leading-relaxed">
           Произошла непредвиденная ошибка. Попробуй обновить страницу.
         </p>
         {error.digest && (
@@ -58,7 +58,7 @@ export default function Error({
         </button>
         <Link
           href="/dashboard"
-          className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[hsl(var(--background-secondary))] border border-[hsl(var(--border))] text-[hsl(var(--foreground-muted))] hover:text-white hover:border-[#475569] text-sm font-medium transition-all"
+          className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[#1E293B] border border-[#334155] text-[#94A3B8] hover:text-white hover:border-[#475569] text-sm font-medium transition-all"
         >
           <Home className="w-4 h-4" />
           На главную

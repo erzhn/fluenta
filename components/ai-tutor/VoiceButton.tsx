@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useRef, useEffect } from "react";
 import { Mic, MicOff } from "lucide-react";
@@ -89,7 +89,7 @@ export function VoiceButton({ onTranscript, disabled }: VoiceButtonProps) {
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 4 }}
-            className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[hsl(var(--background-secondary))] border border-[hsl(var(--border))] text-[#CBD5E1] text-xs px-3 py-2 rounded-xl shadow-xl z-10 max-w-[180px] text-center"
+            className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#1E293B] border border-[#334155] text-[#CBD5E1] text-xs px-3 py-2 rounded-xl shadow-xl z-10 max-w-[180px] text-center"
           >
             Используй Chrome или Edge для голосового ввода
           </motion.div>
@@ -110,8 +110,8 @@ export function VoiceButton({ onTranscript, disabled }: VoiceButtonProps) {
           isRecording
             ? "bg-[#EF4444] text-white shadow-lg shadow-red-500/30"
             : unsupported
-            ? "bg-[hsl(var(--background-secondary))] text-[#334155] cursor-help"
-            : "bg-[hsl(var(--background-secondary))] hover:bg-[#334155] text-[hsl(var(--foreground-muted))] hover:text-[hsl(var(--foreground-muted))]"
+            ? "bg-[#1E293B] text-[#334155] cursor-help"
+            : "bg-[#1E293B] hover:bg-[#334155] text-[#64748B] hover:text-[#94A3B8]"
         }`}
       >
         {/* Pulsing ring when recording */}

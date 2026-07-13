@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -231,7 +231,7 @@ const g = "bg-white/5 backdrop-blur-xl border border-white/10";
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] text-white overflow-x-hidden">
+    <div className="min-h-screen bg-[#0F172A] text-white overflow-x-hidden">
       <style>{`
         @keyframes blobDrift {
           0%,100% { transform: translate(0,0) scale(1) rotate(0deg); }
@@ -296,7 +296,7 @@ function Navbar() {
     <nav
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-[hsl(var(--background))]/85 backdrop-blur-xl border-b border-white/10 shadow-xl shadow-black/20"
+          ? "bg-[#0F172A]/85 backdrop-blur-xl border-b border-white/10 shadow-xl shadow-black/20"
           : "bg-transparent"
       }`}
     >
@@ -317,7 +317,7 @@ function Navbar() {
             <a
               key={link.label}
               href={link.href}
-              className="text-sm text-[hsl(var(--foreground-muted))] hover:text-white transition-colors duration-200 font-medium"
+              className="text-sm text-[#94A3B8] hover:text-white transition-colors duration-200 font-medium"
             >
               {link.label}
             </a>
@@ -328,7 +328,7 @@ function Navbar() {
         <div className="hidden lg:flex items-center gap-3">
           <Link
             href="/auth/login"
-            className="text-sm text-[hsl(var(--foreground-muted))] hover:text-white transition-colors font-medium px-4 py-2"
+            className="text-sm text-[#94A3B8] hover:text-white transition-colors font-medium px-4 py-2"
           >
             Войти
           </Link>
@@ -342,7 +342,7 @@ function Navbar() {
         {/* Mobile hamburger */}
         <button
           onClick={() => setOpen(!open)}
-          className="lg:hidden p-2 rounded-xl text-[hsl(var(--foreground-muted))] hover:text-white hover:bg-white/5 transition-all"
+          className="lg:hidden p-2 rounded-xl text-[#94A3B8] hover:text-white hover:bg-white/5 transition-all"
           aria-label="Toggle menu"
         >
           <AnimatePresence mode="wait" initial={false}>
@@ -367,7 +367,7 @@ function Navbar() {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25, ease: "easeInOut" }}
-            className="lg:hidden overflow-hidden bg-[hsl(var(--background))]/95 backdrop-blur-xl border-b border-white/10"
+            className="lg:hidden overflow-hidden bg-[#0F172A]/95 backdrop-blur-xl border-b border-white/10"
           >
             <div className="px-4 pt-2 pb-6 space-y-1">
               {NAV_LINKS.map((link, i) => (
@@ -378,14 +378,14 @@ function Navbar() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.05 }}
                   onClick={() => setOpen(false)}
-                  className="block px-4 py-3 rounded-xl text-[hsl(var(--foreground-muted))] hover:text-white hover:bg-white/5 transition-all text-sm font-medium"
+                  className="block px-4 py-3 rounded-xl text-[#94A3B8] hover:text-white hover:bg-white/5 transition-all text-sm font-medium"
                 >
                   {link.label}
                 </motion.a>
               ))}
               <div className="pt-3 space-y-2">
                 <Link href="/auth/login" onClick={() => setOpen(false)}>
-                  <button className="w-full px-4 py-3 rounded-xl text-sm font-medium text-[hsl(var(--foreground-muted))] border border-white/10 hover:text-white hover:bg-white/5 transition-all">
+                  <button className="w-full px-4 py-3 rounded-xl text-sm font-medium text-[#94A3B8] border border-white/10 hover:text-white hover:bg-white/5 transition-all">
                     Войти
                   </button>
                 </Link>
@@ -428,7 +428,7 @@ function HeroSection() {
         {/* Left: Text */}
         <div>
           <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible">
-            <div className={`inline-flex items-center gap-2.5 ${g} rounded-full px-4 py-2 text-sm text-[hsl(var(--foreground-muted))] mb-8`}>
+            <div className={`inline-flex items-center gap-2.5 ${g} rounded-full px-4 py-2 text-sm text-[#94A3B8] mb-8`}>
               <span className="text-base">✨</span>
               <span className="font-medium">AI-репетитор нового поколения</span>
               <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
@@ -448,7 +448,7 @@ function HeroSection() {
 
           <motion.p
             custom={2} variants={fadeUp} initial="hidden" animate="visible"
-            className="text-lg sm:text-xl text-[hsl(var(--foreground-muted))] leading-relaxed mb-10 max-w-lg"
+            className="text-lg sm:text-xl text-[#94A3B8] leading-relaxed mb-10 max-w-lg"
           >
             Замени дорогих репетиторов умным ИИ. Персональный подход,
             произношение, грамматика — всё в одном месте.
@@ -475,7 +475,7 @@ function HeroSection() {
               { icon: "✓", text: "10 уроков бесплатно" },
               { icon: "✓", text: "Отмена в любой момент" },
             ].map((item) => (
-              <div key={item.text} className="flex items-center gap-1.5 text-sm text-[hsl(var(--foreground-muted))]">
+              <div key={item.text} className="flex items-center gap-1.5 text-sm text-[#64748B]">
                 <span className="text-[#10B981] font-bold">{item.icon}</span>
                 {item.text}
               </div>
@@ -490,10 +490,10 @@ function HeroSection() {
               { val: "A1→C1", label: "за 6 месяцев", icon: Zap },
             ].map(({ val, label, icon: Icon }) => (
               <div key={val} className={`flex items-center gap-2.5 ${g} rounded-xl px-4 py-2.5`}>
-                <Icon className="w-4 h-4 text-[hsl(var(--accent))]" />
+                <Icon className="w-4 h-4 text-[#6366F1]" />
                 <div>
                   <span className="font-bold text-white text-sm">{val}</span>
-                  <span className="text-[hsl(var(--foreground-muted))] text-xs ml-1.5">{label}</span>
+                  <span className="text-[#64748B] text-xs ml-1.5">{label}</span>
                 </div>
               </div>
             ))}
@@ -535,10 +535,10 @@ function HeroSection() {
               {/* User message */}
               <div className="msg1 flex justify-end">
                 <div className="max-w-[80%]">
-                  <div className="bg-[hsl(var(--accent))] rounded-2xl rounded-tr-sm px-4 py-3 text-sm text-white">
+                  <div className="bg-[#6366F1] rounded-2xl rounded-tr-sm px-4 py-3 text-sm text-white">
                     Yesterday I go to the shop
                   </div>
-                  <div className="text-[10px] text-[hsl(var(--foreground-subtle))] text-right mt-1">Ты · сейчас</div>
+                  <div className="text-[10px] text-[#475569] text-right mt-1">Ты · сейчас</div>
                 </div>
               </div>
 
@@ -548,7 +548,7 @@ function HeroSection() {
                   F
                 </div>
                 <div className={`${g} rounded-2xl rounded-tl-sm px-4 py-3 text-sm max-w-[85%]`}>
-                  <p className="text-[hsl(var(--foreground-muted))] mb-1">Почти правильно! Небольшая ошибка 👀</p>
+                  <p className="text-[#94A3B8] mb-1">Почти правильно! Небольшая ошибка 👀</p>
                   <p className="text-white">
                     Нужно:{" "}
                     <span className="text-[#A78BFA]">&ldquo;Yesterday I </span>
@@ -565,19 +565,19 @@ function HeroSection() {
                 </div>
                 <div className={`${g} rounded-2xl rounded-tl-sm px-4 py-3 text-sm max-w-[85%]`}>
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="bg-[hsl(var(--accent))]/20 text-[#818CF8] text-xs px-2 py-0.5 rounded-full font-medium">Past Simple</span>
-                    <span className="text-xs text-[hsl(var(--foreground-subtle))]">используем с yesterday</span>
+                    <span className="bg-[#6366F1]/20 text-[#818CF8] text-xs px-2 py-0.5 rounded-full font-medium">Past Simple</span>
+                    <span className="text-xs text-[#475569]">используем с yesterday</span>
                   </div>
-                  <p className="text-[hsl(var(--foreground-muted))] text-xs">
+                  <p className="text-[#94A3B8] text-xs">
                     go → <strong className="text-white">went</strong> (неправильный глагол, нужно запомнить ✓)
                   </p>
                 </div>
               </div>
 
               {/* Typing input */}
-              <div className={`${g} rounded-xl px-4 py-3 flex items-center gap-2 text-sm text-[hsl(var(--foreground-subtle))]`}>
+              <div className={`${g} rounded-xl px-4 py-3 flex items-center gap-2 text-sm text-[#475569]`}>
                 <span>Напиши ответ на английском...</span>
-                <span className="cursor text-[hsl(var(--accent))] font-bold ml-1">|</span>
+                <span className="cursor text-[#6366F1] font-bold ml-1">|</span>
               </div>
             </div>
 
@@ -596,7 +596,7 @@ function HeroSection() {
               <span className="text-2xl">🔥</span>
               <div>
                 <div className="text-white font-bold text-sm">7-дневный стрик</div>
-                <div className="text-[hsl(var(--foreground-muted))] text-xs">Так держать!</div>
+                <div className="text-[#94A3B8] text-xs">Так держать!</div>
               </div>
             </div>
           </motion.div>
@@ -611,7 +611,7 @@ function HeroSection() {
               <span className="text-2xl">⚡</span>
               <div>
                 <div className="text-white font-bold text-sm">+120 XP</div>
-                <div className="text-[hsl(var(--foreground-muted))] text-xs">за урок</div>
+                <div className="text-[#94A3B8] text-xs">за урок</div>
               </div>
             </div>
           </motion.div>
@@ -631,7 +631,7 @@ function FeaturesSection() {
           variants={staggerContainer}
           className="text-center mb-16"
         >
-          <motion.p variants={fadeUp} className="text-[hsl(var(--accent))] font-semibold text-sm uppercase tracking-widest mb-3">
+          <motion.p variants={fadeUp} className="text-[#6366F1] font-semibold text-sm uppercase tracking-widest mb-3">
             Возможности
           </motion.p>
           <motion.h2 variants={fadeUp} className="text-4xl sm:text-5xl font-extrabold mb-5">
@@ -640,7 +640,7 @@ function FeaturesSection() {
               свободного английского
             </span>
           </motion.h2>
-          <motion.p variants={fadeUp} className="text-[hsl(var(--foreground-muted))] text-lg max-w-2xl mx-auto">
+          <motion.p variants={fadeUp} className="text-[#64748B] text-lg max-w-2xl mx-auto">
             Полноценная AI-платформа для изучения английского в одном месте
           </motion.p>
         </motion.div>
@@ -675,7 +675,7 @@ function FeaturesSection() {
               <h3 className="text-lg font-bold text-white mb-2 group-hover:text-white transition-colors">
                 {f.title}
               </h3>
-              <p className="text-[hsl(var(--foreground-muted))] text-sm leading-relaxed">{f.description}</p>
+              <p className="text-[#64748B] text-sm leading-relaxed">{f.description}</p>
               <div
                 className="mt-4 flex items-center gap-1.5 text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity"
                 style={{ color: f.color }}
@@ -701,7 +701,7 @@ function HowItWorksSection() {
           variants={staggerContainer}
           className="text-center mb-16"
         >
-          <motion.p variants={fadeUp} className="text-[hsl(var(--accent))] font-semibold text-sm uppercase tracking-widest mb-3">Как это работает</motion.p>
+          <motion.p variants={fadeUp} className="text-[#6366F1] font-semibold text-sm uppercase tracking-widest mb-3">Как это работает</motion.p>
           <motion.h2 variants={fadeUp} className="text-4xl sm:text-5xl font-extrabold">
             Три шага до{" "}
             <span className="bg-gradient-to-r from-[#818CF8] to-[#C084FC] bg-clip-text text-transparent">свободного английского</span>
@@ -759,7 +759,7 @@ function HowItWorksSection() {
                   </div>
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">{step.title}</h3>
-                <p className="text-[hsl(var(--foreground-muted))] text-sm leading-relaxed max-w-xs">{step.description}</p>
+                <p className="text-[#64748B] text-sm leading-relaxed max-w-xs">{step.description}</p>
               </motion.div>
             ))}
           </div>
@@ -793,7 +793,7 @@ function CEFRSection() {
           variants={staggerContainer}
           className="text-center mb-16"
         >
-          <motion.p variants={fadeUp} className="text-[hsl(var(--accent))] font-semibold text-sm uppercase tracking-widest mb-3">
+          <motion.p variants={fadeUp} className="text-[#6366F1] font-semibold text-sm uppercase tracking-widest mb-3">
             Программа CEFR
           </motion.p>
           <motion.h2 variants={fadeUp} className="text-4xl sm:text-5xl font-extrabold mb-5">
@@ -801,7 +801,7 @@ function CEFRSection() {
             <span className="bg-gradient-to-r from-[#818CF8] to-[#C084FC] bg-clip-text text-transparent">C1</span>
             {" "}за 12 месяцев
           </motion.h2>
-          <motion.p variants={fadeUp} className="text-[hsl(var(--foreground-muted))] text-lg max-w-xl mx-auto">
+          <motion.p variants={fadeUp} className="text-[#64748B] text-lg max-w-xl mx-auto">
             Международная система уровней — мировой стандарт в обучении языкам
           </motion.p>
         </motion.div>
@@ -842,7 +842,7 @@ function CEFRSection() {
                   {lvl.time}
                 </div>
               </div>
-              <p className="text-[hsl(var(--foreground-muted))] text-sm leading-relaxed">{lvl.description}</p>
+              <p className="text-[#64748B] text-sm leading-relaxed">{lvl.description}</p>
               <div
                 className="mt-4 h-0.5 rounded-full w-0 group-hover:w-full transition-all duration-500"
                 style={{ backgroundColor: lvl.color }}
@@ -866,7 +866,7 @@ function TestimonialsSection() {
           variants={staggerContainer}
           className="text-center mb-16"
         >
-          <motion.p variants={fadeUp} className="text-[hsl(var(--accent))] font-semibold text-sm uppercase tracking-widest mb-3">
+          <motion.p variants={fadeUp} className="text-[#6366F1] font-semibold text-sm uppercase tracking-widest mb-3">
             Отзывы
           </motion.p>
           <motion.h2 variants={fadeUp} className="text-4xl sm:text-5xl font-extrabold mb-5">
@@ -878,7 +878,7 @@ function TestimonialsSection() {
           <motion.div variants={fadeUp} className="flex items-center justify-center gap-1.5 text-[#F59E0B]">
             {Array.from({ length: 5 }).map((_, i) => <Star key={i} className="w-5 h-5 fill-current" />)}
             <span className="text-white font-bold ml-2">4.9</span>
-            <span className="text-[hsl(var(--foreground-muted))] ml-1">из 50,000+ отзывов</span>
+            <span className="text-[#64748B] ml-1">из 50,000+ отзывов</span>
           </motion.div>
         </motion.div>
 
@@ -914,7 +914,7 @@ function TestimonialsSection() {
                   <div className="text-white font-semibold text-sm flex items-center gap-1.5">
                     {t.name} <span>{t.flag}</span>
                   </div>
-                  <div className="text-[hsl(var(--foreground-muted))] text-xs">{t.city}</div>
+                  <div className="text-[#64748B] text-xs">{t.city}</div>
                 </div>
                 <div className={`ml-auto px-3 py-1 rounded-lg text-xs font-bold bg-gradient-to-r ${t.gradient} text-white`}>
                   {t.badge}
@@ -938,13 +938,13 @@ function PricingSection() {
           variants={staggerContainer}
           className="text-center mb-16"
         >
-          <motion.p variants={fadeUp} className="text-[hsl(var(--accent))] font-semibold text-sm uppercase tracking-widest mb-3">Цены</motion.p>
+          <motion.p variants={fadeUp} className="text-[#6366F1] font-semibold text-sm uppercase tracking-widest mb-3">Цены</motion.p>
           <motion.h2 variants={fadeUp} className="text-4xl sm:text-5xl font-extrabold mb-5">
             Простые и{" "}
             <span className="bg-gradient-to-r from-[#818CF8] to-[#C084FC] bg-clip-text text-transparent">честные</span>{" "}
             цены
           </motion.h2>
-          <motion.p variants={fadeUp} className="text-[hsl(var(--foreground-muted))] text-lg">
+          <motion.p variants={fadeUp} className="text-[#64748B] text-lg">
             Начни бесплатно. Перейди на Про когда будешь готов.
           </motion.p>
         </motion.div>
@@ -977,21 +977,21 @@ function PricingSection() {
 
               <div className="mb-6">
                 <div className="text-white font-bold text-lg mb-1">{plan.name}</div>
-                <div className="text-[hsl(var(--foreground-muted))] text-sm">{plan.desc}</div>
+                <div className="text-[#94A3B8] text-sm">{plan.desc}</div>
               </div>
 
               <div className="flex items-end gap-1 mb-6">
                 <span className="text-5xl font-extrabold text-white">{plan.price}</span>
-                {plan.period && <span className="text-[hsl(var(--foreground-muted))] mb-1.5">{plan.period}</span>}
+                {plan.period && <span className="text-[#94A3B8] mb-1.5">{plan.period}</span>}
               </div>
 
               <ul className="space-y-3 mb-8 flex-1">
                 {plan.features.map((f) => (
                   <li key={f} className="flex items-start gap-2.5 text-sm">
-                    <div className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5 ${plan.popular ? "bg-white/20" : "bg-[hsl(var(--accent))]/20"}`}>
-                      <Check className={`w-3 h-3 ${plan.popular ? "text-white" : "text-[hsl(var(--accent))]"}`} />
+                    <div className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5 ${plan.popular ? "bg-white/20" : "bg-[#6366F1]/20"}`}>
+                      <Check className={`w-3 h-3 ${plan.popular ? "text-white" : "text-[#6366F1]"}`} />
                     </div>
-                    <span className={plan.popular ? "text-white/90" : "text-[hsl(var(--foreground-muted))]"}>{f}</span>
+                    <span className={plan.popular ? "text-white/90" : "text-[#94A3B8]"}>{f}</span>
                   </li>
                 ))}
               </ul>
@@ -1000,8 +1000,8 @@ function PricingSection() {
                 <button
                   className={`w-full py-3.5 rounded-xl font-semibold text-sm transition-all duration-200 ${
                     plan.popular
-                      ? "bg-white text-[hsl(var(--accent))] hover:bg-white/95 hover:scale-105 shadow-xl"
-                      : "bg-[hsl(var(--accent))] text-white hover:bg-[#5558E3] hover:scale-105"
+                      ? "bg-white text-[#6366F1] hover:bg-white/95 hover:scale-105 shadow-xl"
+                      : "bg-[#6366F1] text-white hover:bg-[#5558E3] hover:scale-105"
                   }`}
                 >
                   {plan.cta}
@@ -1016,7 +1016,7 @@ function PricingSection() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.5 }}
-          className="text-center text-[hsl(var(--foreground-subtle))] text-sm mt-8"
+          className="text-center text-[#475569] text-sm mt-8"
         >
           Все планы включают 30-дневную гарантию возврата денег. Без вопросов.
         </motion.p>
@@ -1037,7 +1037,7 @@ function FAQSection() {
           variants={staggerContainer}
           className="text-center mb-14"
         >
-          <motion.p variants={fadeUp} className="text-[hsl(var(--accent))] font-semibold text-sm uppercase tracking-widest mb-3">FAQ</motion.p>
+          <motion.p variants={fadeUp} className="text-[#6366F1] font-semibold text-sm uppercase tracking-widest mb-3">FAQ</motion.p>
           <motion.h2 variants={fadeUp} className="text-4xl sm:text-5xl font-extrabold">Частые вопросы</motion.h2>
         </motion.div>
 
@@ -1053,7 +1053,7 @@ function FAQSection() {
               <button
                 onClick={() => setOpen(open === i ? null : i)}
                 className={`w-full text-left ${g} rounded-2xl px-6 py-5 transition-all duration-200 group ${
-                  open === i ? "border-[hsl(var(--accent))]/40" : "hover:border-white/20"
+                  open === i ? "border-[#6366F1]/40" : "hover:border-white/20"
                 }`}
               >
                 <div className="flex items-center justify-between gap-4">
@@ -1065,7 +1065,7 @@ function FAQSection() {
                     transition={{ duration: 0.25 }}
                     className="shrink-0"
                   >
-                    <ChevronDown className={`w-5 h-5 transition-colors ${open === i ? "text-[hsl(var(--accent))]" : "text-[hsl(var(--foreground-subtle))]"}`} />
+                    <ChevronDown className={`w-5 h-5 transition-colors ${open === i ? "text-[#6366F1]" : "text-[#475569]"}`} />
                   </motion.div>
                 </div>
                 <AnimatePresence initial={false}>
@@ -1077,7 +1077,7 @@ function FAQSection() {
                       transition={{ duration: 0.3, ease: "easeInOut" }}
                       className="overflow-hidden"
                     >
-                      <p className="text-[hsl(var(--foreground-muted))] text-sm leading-relaxed mt-3 pr-8">{faq.a}</p>
+                      <p className="text-[#64748B] text-sm leading-relaxed mt-3 pr-8">{faq.a}</p>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -1128,7 +1128,7 @@ function CTASection() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/auth/register">
-                <button className="group flex items-center justify-center gap-2 px-9 py-4 rounded-xl text-base font-bold text-[hsl(var(--accent))] bg-white hover:bg-white/95 transition-all hover:scale-105 shadow-2xl shadow-black/20">
+                <button className="group flex items-center justify-center gap-2 px-9 py-4 rounded-xl text-base font-bold text-[#6366F1] bg-white hover:bg-white/95 transition-all hover:scale-105 shadow-2xl shadow-black/20">
                   Начать бесплатно
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                 </button>
@@ -1186,7 +1186,7 @@ function FooterSection() {
                 Fluenta
               </span>
             </div>
-            <p className="text-[hsl(var(--foreground-subtle))] text-sm max-w-xs leading-relaxed">
+            <p className="text-[#475569] text-sm max-w-xs leading-relaxed">
               AI-репетитор английского языка нового поколения. Учись быстрее с персональным подходом.
             </p>
           </div>
@@ -1197,7 +1197,7 @@ function FooterSection() {
               <a
                 key={link.label}
                 href={link.href}
-                className="text-[hsl(var(--foreground-subtle))] hover:text-white text-sm transition-colors"
+                className="text-[#475569] hover:text-white text-sm transition-colors"
               >
                 {link.label}
               </a>
@@ -1211,7 +1211,7 @@ function FooterSection() {
                 key={label}
                 href={href}
                 aria-label={label}
-                className={`w-9 h-9 ${g} rounded-xl flex items-center justify-center text-[hsl(var(--foreground-subtle))] hover:text-white hover:border-white/20 transition-all hover:scale-110`}
+                className={`w-9 h-9 ${g} rounded-xl flex items-center justify-center text-[#475569] hover:text-white hover:border-white/20 transition-all hover:scale-110`}
               >
                 <Icon className="w-4 h-4" />
               </a>

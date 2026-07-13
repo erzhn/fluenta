@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 import { useState } from 'react'
 
 interface Exercise {
@@ -63,7 +63,7 @@ export function GrammarExercise({ topic, level, exercise, onNext, onCorrect }: G
 
   const exerciseDisplay = exercise.exercise.replace(
     /___+/g,
-    `<span class="inline-block min-w-[80px] border-b-2 border-[hsl(var(--accent))] text-center px-2 text-[hsl(var(--accent))]">${
+    `<span class="inline-block min-w-[80px] border-b-2 border-[#6366f1] text-center px-2 text-[#6366f1]">${
       result ? exercise.correctAnswer : '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
     }</span>`
   )
@@ -73,7 +73,7 @@ export function GrammarExercise({ topic, level, exercise, onNext, onCorrect }: G
 
   return (
     <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6">
-      <p className="text-[hsl(var(--foreground-muted))] text-sm mb-4">{exercise.instruction}</p>
+      <p className="text-[#64748b] text-sm mb-4">{exercise.instruction}</p>
 
       <div className="bg-white/[0.03] rounded-xl p-4 mb-5">
         <p className="text-white text-lg leading-relaxed"
@@ -81,7 +81,7 @@ export function GrammarExercise({ topic, level, exercise, onNext, onCorrect }: G
       </div>
 
       {exercise.explanation && !result && (
-        <p className="text-[hsl(var(--foreground-subtle))] text-sm italic mb-4">📚 {exercise.explanation}</p>
+        <p className="text-[#475569] text-sm italic mb-4">📚 {exercise.explanation}</p>
       )}
 
       {!result && (
@@ -93,23 +93,23 @@ export function GrammarExercise({ topic, level, exercise, onNext, onCorrect }: G
             onKeyDown={e => e.key === 'Enter' && handleCheck()}
             placeholder="Твой ответ..."
             className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3
-              text-white placeholder:text-[#334155] outline-none focus:border-[hsl(var(--accent))]/50 transition-colors mb-3"
+              text-white placeholder:text-[#334155] outline-none focus:border-[#6366f1]/50 transition-colors mb-3"
           />
 
           {exercise.hint && (
             <button onClick={() => setShowHint(!showHint)}
-              className="text-[hsl(var(--foreground-subtle))] text-xs hover:text-[hsl(var(--foreground-muted))] transition-colors mb-3 block">
+              className="text-[#475569] text-xs hover:text-[#64748b] transition-colors mb-3 block">
               {showHint ? '▼ Скрыть подсказку' : '▶ Показать подсказку'}
             </button>
           )}
           {showHint && exercise.hint && (
-            <p className="text-[hsl(var(--foreground-muted))] text-sm bg-white/[0.03] rounded-lg px-3 py-2 mb-3">
+            <p className="text-[#64748b] text-sm bg-white/[0.03] rounded-lg px-3 py-2 mb-3">
               💡 {exercise.hint}
             </p>
           )}
 
           <button onClick={handleCheck} disabled={!userAnswer.trim() || checking}
-            className="btn-glow w-full py-3 bg-[hsl(var(--accent))] hover:bg-[#5558e8] disabled:opacity-40
+            className="btn-glow w-full py-3 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-40
               text-white font-semibold rounded-xl transition-colors">
             {checking ? 'Проверяю...' : 'Проверить'}
           </button>
@@ -123,12 +123,12 @@ export function GrammarExercise({ topic, level, exercise, onNext, onCorrect }: G
           <p className={`font-semibold mb-1 ${result.isCorrect ? 'text-green-400' : 'text-red-400'}`}>
             {result.isCorrect ? '✓ Правильно!' : '✗ Неправильно'}
           </p>
-          <p className="text-[hsl(var(--foreground-muted))] text-sm">{result.feedback}</p>
+          <p className="text-[#94a3b8] text-sm">{result.feedback}</p>
           {result.explanation && (
-            <p className="text-[hsl(var(--foreground-muted))] text-sm mt-2">📖 {result.explanation}</p>
+            <p className="text-[#64748b] text-sm mt-2">📖 {result.explanation}</p>
           )}
           {result.betterAnswer && !result.isCorrect && (
-            <p className="text-[hsl(var(--foreground-muted))] text-sm mt-2">
+            <p className="text-[#94a3b8] text-sm mt-2">
               Правильно: <span className="text-white font-medium">{result.betterAnswer}</span>
             </p>
           )}

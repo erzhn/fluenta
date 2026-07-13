@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -15,11 +15,11 @@ function HighlightedContext({ context, word }: { context: string; word: string }
   const lower = context.toLowerCase();
   const wordLower = word.toLowerCase();
   const idx = lower.indexOf(wordLower);
-  if (idx === -1) return <span className="italic text-[hsl(var(--foreground-muted))]">"{context}"</span>;
+  if (idx === -1) return <span className="italic text-[#94A3B8]">"{context}"</span>;
   return (
-    <span className="italic text-[hsl(var(--foreground-muted))]">
+    <span className="italic text-[#94A3B8]">
       "{context.slice(0, idx)}
-      <mark className="bg-[hsl(var(--accent))]/30 text-[#818CF8] rounded-sm not-italic px-0.5 mx-0.5">
+      <mark className="bg-[#6366F1]/30 text-[#818CF8] rounded-sm not-italic px-0.5 mx-0.5">
         {context.slice(idx, idx + word.length)}
       </mark>
       {context.slice(idx + word.length)}"
@@ -74,26 +74,26 @@ export function FlashCard({ word, onFlip, forceFlipped }: FlashCardProps) {
       >
         {/* ── Front ── */}
         <div
-          className="absolute inset-0 bg-[hsl(var(--background-secondary))] border border-[hsl(var(--border))] rounded-2xl flex flex-col items-center justify-center p-8 text-center"
+          className="absolute inset-0 bg-[#1E293B] border border-[#334155] rounded-2xl flex flex-col items-center justify-center p-8 text-center"
           style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
         >
           <div className="flex items-center gap-2 mb-1">
-            {isNew && <span className="text-[10px] font-bold bg-[hsl(var(--accent))]/20 text-[#818CF8] px-2 py-0.5 rounded-full">Новое</span>}
+            {isNew && <span className="text-[10px] font-bold bg-[#6366F1]/20 text-[#818CF8] px-2 py-0.5 rounded-full">Новое</span>}
             {isMastered && <span className="text-[10px] font-bold bg-[#10B981]/20 text-[#10B981] px-2 py-0.5 rounded-full">Выучено</span>}
             {word.part_of_speech && (
-              <span className="text-[10px] text-[hsl(var(--foreground-subtle))] bg-[hsl(var(--background))] px-2 py-0.5 rounded-full">{word.part_of_speech}</span>
+              <span className="text-[10px] text-[#475569] bg-[#0F172A] px-2 py-0.5 rounded-full">{word.part_of_speech}</span>
             )}
           </div>
 
           <h3 className="text-4xl font-extrabold text-white mt-3 mb-2 tracking-tight">{word.word}</h3>
 
           {word.phonetic && (
-            <p className="text-[hsl(var(--foreground-muted))] font-mono text-base mb-4">{word.phonetic}</p>
+            <p className="text-[#64748B] font-mono text-base mb-4">{word.phonetic}</p>
           )}
 
           <button
             onClick={speak}
-            className="p-2.5 rounded-xl bg-[hsl(var(--background))] hover:bg-[#334155] border border-[hsl(var(--border))] hover:border-[#475569] text-[hsl(var(--foreground-muted))] hover:text-white transition-all"
+            className="p-2.5 rounded-xl bg-[#0F172A] hover:bg-[#334155] border border-[#334155] hover:border-[#475569] text-[#64748B] hover:text-white transition-all"
           >
             <Volume2 className="w-5 h-5" />
           </button>
@@ -124,14 +124,14 @@ export function FlashCard({ word, onFlip, forceFlipped }: FlashCardProps) {
           )}
 
           {word.part_of_speech && (
-            <span className="text-[10px] font-bold bg-[#334155] text-[hsl(var(--foreground-muted))] px-2.5 py-1 rounded-full uppercase tracking-wider">
+            <span className="text-[10px] font-bold bg-[#334155] text-[#94A3B8] px-2.5 py-1 rounded-full uppercase tracking-wider">
               {word.part_of_speech}
             </span>
           )}
 
           <button
             onClick={speak}
-            className="mt-4 p-2 rounded-xl bg-white/5 hover:bg-white/10 text-[hsl(var(--foreground-muted))] hover:text-white transition-all"
+            className="mt-4 p-2 rounded-xl bg-white/5 hover:bg-white/10 text-[#64748B] hover:text-white transition-all"
           >
             <Volume2 className="w-4 h-4" />
           </button>

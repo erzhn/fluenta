@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -30,7 +30,7 @@ export function ToastContainer() {
   const colors = {
     success: 'bg-green-500/20 border-green-500/40 text-green-400',
     error: 'bg-red-500/20 border-red-500/40 text-red-400',
-    info: 'bg-[hsl(var(--accent))]/20 border-[hsl(var(--accent))]/40 text-[#a5b4fc]',
+    info: 'bg-[#6366f1]/20 border-[#6366f1]/40 text-[#a5b4fc]',
     xp: 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400',
   }
   const icons = { success: '✅', error: '❌', info: 'ℹ️', xp: '⚡' }

@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -97,7 +97,7 @@ export default function WritingPage() {
     <div className="max-w-3xl mx-auto p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Практика письма</h1>
-        <p className="text-[hsl(var(--foreground-muted))] text-sm">Выбери уровень и тему, напиши текст — ИИ проверит и даст рекомендации</p>
+        <p className="text-[#64748b] text-sm">Выбери уровень и тему, напиши текст — ИИ проверит и даст рекомендации</p>
       </div>
 
       {!result && (
@@ -124,7 +124,7 @@ export default function WritingPage() {
             <div className="flex flex-col gap-2">
               {TOPICS[level].map(t => (
                 <button key={t} onClick={() => setTopic(t)}
-                  className={`text-left px-4 py-2.5 rounded-xl border text-sm transition-all ${topic === t ? 'border-[hsl(var(--accent))] bg-[hsl(var(--accent))]/15 text-white' : 'border-white/10 text-[hsl(var(--foreground-muted))] hover:text-white hover:border-white/20'}`}>
+                  className={`text-left px-4 py-2.5 rounded-xl border text-sm transition-all ${topic === t ? 'border-[#6366f1] bg-[#6366f1]/15 text-white' : 'border-white/10 text-[#64748b] hover:text-white hover:border-white/20'}`}>
                   {t}
                 </button>
               ))}
@@ -134,9 +134,9 @@ export default function WritingPage() {
           {/* Editor */}
           <div className="bg-white/[0.04] border border-white/10 rounded-2xl overflow-hidden">
             <div className="px-5 pt-4 pb-2">
-              <p className="text-[hsl(var(--foreground-muted))] text-xs">
+              <p className="text-[#64748b] text-xs">
                 Тема: <span className="text-[#818cf8] font-medium">{topic}</span>
-                <span className="ml-3 text-[hsl(var(--foreground-subtle))]">· Минимум {minWords} слов</span>
+                <span className="ml-3 text-[#475569]">· Минимум {minWords} слов</span>
               </p>
             </div>
             <textarea
@@ -148,11 +148,11 @@ export default function WritingPage() {
             />
             <div className="flex items-center justify-between px-5 py-3 border-t border-white/[0.06]">
               <div className="flex items-center gap-2">
-                <span className={`text-sm font-medium ${enoughWords ? 'text-[#10b981]' : 'text-[hsl(var(--foreground-muted))]'}`}>
+                <span className={`text-sm font-medium ${enoughWords ? 'text-[#10b981]' : 'text-[#64748b]'}`}>
                   {words} слов
                 </span>
                 {!enoughWords && (
-                  <span className="text-xs text-[hsl(var(--foreground-subtle))]">/ нужно {minWords}</span>
+                  <span className="text-xs text-[#475569]">/ нужно {minWords}</span>
                 )}
               </div>
               <button onClick={handleCheck} disabled={!enoughWords || loading}
@@ -178,7 +178,7 @@ export default function WritingPage() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-white font-bold text-lg">Результат · Тема: {topic} · {level}</h3>
               <button onClick={reset}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 text-[hsl(var(--foreground-muted))] hover:text-white text-sm transition-colors">
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 text-[#94a3b8] hover:text-white text-sm transition-colors">
                 <RefreshCw className="w-3.5 h-3.5" /> Написать снова
               </button>
             </div>

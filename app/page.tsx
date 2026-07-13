@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
@@ -251,14 +251,14 @@ function Navbar() {
         </Link>
 
         {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-7 text-sm text-[hsl(var(--foreground-muted))] font-medium">
+        <div className="hidden md:flex items-center gap-7 text-sm text-[#94a3b8] font-medium">
           {[['Features', '#features'], ['How it works', '#how'], ['Testimonials', '#testimonials']].map(([label, href]) => (
             <a key={label} href={href} className="hover:text-white transition-colors">{label}</a>
           ))}
         </div>
 
         <div className="hidden md:flex items-center gap-3">
-          <Link href="/auth/login" className="text-sm text-[hsl(var(--foreground-muted))] hover:text-white transition-colors font-medium px-4 py-2">
+          <Link href="/auth/login" className="text-sm text-[#94a3b8] hover:text-white transition-colors font-medium px-4 py-2">
             Log in
           </Link>
           <Link href="/auth/login">
@@ -271,7 +271,7 @@ function Navbar() {
         {/* Mobile hamburger */}
         <button
           onClick={() => setOpen(!open)}
-          className="md:hidden p-2 rounded-xl text-[hsl(var(--foreground-muted))] hover:text-white hover:bg-white/5 transition-all"
+          className="md:hidden p-2 rounded-xl text-[#94a3b8] hover:text-white hover:bg-white/5 transition-all"
         >
           <AnimatePresence mode="wait" initial={false}>
             {open
@@ -295,13 +295,13 @@ function Navbar() {
             <div className="px-5 py-4 space-y-1">
               {[['Features', '#features'], ['How it works', '#how'], ['Testimonials', '#testimonials']].map(([label, href]) => (
                 <a key={label} href={href} onClick={() => setOpen(false)}
-                  className="block px-4 py-3 rounded-xl text-sm text-[hsl(var(--foreground-muted))] hover:text-white hover:bg-white/5 transition-all font-medium">
+                  className="block px-4 py-3 rounded-xl text-sm text-[#94a3b8] hover:text-white hover:bg-white/5 transition-all font-medium">
                   {label}
                 </a>
               ))}
               <div className="pt-3 space-y-2">
                 <Link href="/auth/login" onClick={() => setOpen(false)}>
-                  <button className="w-full py-3 rounded-xl text-sm font-medium text-[hsl(var(--foreground-muted))] border border-white/10 hover:text-white hover:bg-white/5 transition-all">Log in</button>
+                  <button className="w-full py-3 rounded-xl text-sm font-medium text-[#94a3b8] border border-white/10 hover:text-white hover:bg-white/5 transition-all">Log in</button>
                 </Link>
                 <Link href="/auth/login" onClick={() => setOpen(false)}>
                   <button className="w-full py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-[#6366f1] to-[#8b5cf6]">Start for free</button>
@@ -358,7 +358,7 @@ function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.35 }}
-            className="text-lg sm:text-xl text-[hsl(var(--foreground-muted))] leading-relaxed mb-9 max-w-lg"
+            className="text-lg sm:text-xl text-[#94a3b8] leading-relaxed mb-9 max-w-lg"
           >
             Meet <strong className="text-white">Zhan</strong>, your personal AI English tutor.
             Available 24/7, completely free. Real conversations, instant corrections.
@@ -391,7 +391,7 @@ function HeroSection() {
             className="flex flex-wrap gap-5"
           >
             {['No credit card required', 'Cancel anytime', 'Free forever'].map((t) => (
-              <div key={t} className="flex items-center gap-1.5 text-sm text-[hsl(var(--foreground-muted))]">
+              <div key={t} className="flex items-center gap-1.5 text-sm text-[#64748b]">
                 <Check className="w-3.5 h-3.5 text-[#10b981]" />
                 {t}
               </div>
@@ -433,10 +433,10 @@ function HeroSection() {
             <div className="p-5 space-y-3.5 min-h-[280px]">
               <div className="msg-1 flex justify-end">
                 <div className="max-w-[80%]">
-                  <div className="bg-[hsl(var(--accent))] rounded-2xl rounded-tr-sm px-4 py-3 text-sm text-white">
+                  <div className="bg-[#6366f1] rounded-2xl rounded-tr-sm px-4 py-3 text-sm text-white">
                     {CHAT[0].text}
                   </div>
-                  <div className="text-[10px] text-[hsl(var(--foreground-subtle))] text-right mt-1">You · just now</div>
+                  <div className="text-[10px] text-[#475569] text-right mt-1">You · just now</div>
                 </div>
               </div>
 
@@ -449,7 +449,7 @@ function HeroSection() {
 
               <div className="msg-3 flex justify-end">
                 <div className="max-w-[78%]">
-                  <div className="bg-[hsl(var(--accent))] rounded-2xl rounded-tr-sm px-4 py-3 text-sm text-white">
+                  <div className="bg-[#6366f1] rounded-2xl rounded-tr-sm px-4 py-3 text-sm text-white">
                     {CHAT[2].text}
                   </div>
                 </div>
@@ -466,9 +466,9 @@ function HeroSection() {
               </div>
 
               {/* Input mock */}
-              <div className={`${glass} rounded-xl px-4 py-3 flex items-center gap-2 text-sm text-[hsl(var(--foreground-subtle))]`}>
+              <div className={`${glass} rounded-xl px-4 py-3 flex items-center gap-2 text-sm text-[#475569]`}>
                 <span>Type your message…</span>
-                <span className="cursor text-[hsl(var(--accent))] font-bold">|</span>
+                <span className="cursor text-[#6366f1] font-bold">|</span>
               </div>
             </div>
           </div>
@@ -484,7 +484,7 @@ function HeroSection() {
               <span className="text-2xl">🔥</span>
               <div>
                 <div className="text-white font-bold text-sm">7-day streak</div>
-                <div className="text-[hsl(var(--foreground-muted))] text-xs">Keep it up!</div>
+                <div className="text-[#94a3b8] text-xs">Keep it up!</div>
               </div>
             </div>
           </motion.div>
@@ -499,7 +499,7 @@ function HeroSection() {
               <span className="text-2xl">⚡</span>
               <div>
                 <div className="text-white font-bold text-sm">+150 XP</div>
-                <div className="text-[hsl(var(--foreground-muted))] text-xs">earned today</div>
+                <div className="text-[#94a3b8] text-xs">earned today</div>
               </div>
             </div>
           </motion.div>
@@ -516,7 +516,7 @@ function FeaturesSection() {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-14">
           <FadeUp>
-            <p className="text-[hsl(var(--accent))] font-semibold text-xs uppercase tracking-widest mb-3">Features</p>
+            <p className="text-[#6366f1] font-semibold text-xs uppercase tracking-widest mb-3">Features</p>
           </FadeUp>
           <FadeUp delay={0.08}>
             <h2 className="text-4xl sm:text-5xl font-black mb-4">
@@ -525,7 +525,7 @@ function FeaturesSection() {
             </h2>
           </FadeUp>
           <FadeUp delay={0.16}>
-            <p className="text-[hsl(var(--foreground-muted))] text-lg max-w-xl mx-auto">
+            <p className="text-[#64748b] text-lg max-w-xl mx-auto">
               One platform, all the tools — no extras to buy, no subscriptions to manage.
             </p>
           </FadeUp>
@@ -556,7 +556,7 @@ function FeaturesSection() {
                   {f.emoji}
                 </div>
                 <h3 className="text-lg font-bold text-white mb-2">{f.title}</h3>
-                <p className="text-[hsl(var(--foreground-muted))] text-sm leading-relaxed">{f.desc}</p>
+                <p className="text-[#64748b] text-sm leading-relaxed">{f.desc}</p>
               </motion.div>
             </FadeUp>
           ))}
@@ -576,7 +576,7 @@ function HowItWorksSection() {
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-14">
           <FadeUp>
-            <p className="text-[hsl(var(--accent))] font-semibold text-xs uppercase tracking-widest mb-3">How it works</p>
+            <p className="text-[#6366f1] font-semibold text-xs uppercase tracking-widest mb-3">How it works</p>
           </FadeUp>
           <FadeUp delay={0.08}>
             <h2 className="text-4xl sm:text-5xl font-black">
@@ -618,7 +618,7 @@ function HowItWorksSection() {
                     </div>
                   </div>
                   <h3 className="text-lg font-bold text-white mb-2">{step.title}</h3>
-                  <p className="text-[hsl(var(--foreground-muted))] text-sm leading-relaxed max-w-[220px]">{step.desc}</p>
+                  <p className="text-[#64748b] text-sm leading-relaxed max-w-[220px]">{step.desc}</p>
                 </div>
               </FadeUp>
             ))}
@@ -646,7 +646,7 @@ function TestimonialsSection() {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-14">
           <FadeUp>
-            <p className="text-[hsl(var(--accent))] font-semibold text-xs uppercase tracking-widest mb-3">Testimonials</p>
+            <p className="text-[#6366f1] font-semibold text-xs uppercase tracking-widest mb-3">Testimonials</p>
           </FadeUp>
           <FadeUp delay={0.08}>
             <h2 className="text-4xl sm:text-5xl font-black mb-4">
@@ -658,7 +658,7 @@ function TestimonialsSection() {
             <div className="flex items-center justify-center gap-1 text-[#f59e0b]">
               {Array.from({ length: 5 }).map((_, i) => <Star key={i} className="w-5 h-5 fill-current" />)}
               <span className="text-white font-bold ml-2">4.9</span>
-              <span className="text-[hsl(var(--foreground-subtle))] text-sm ml-1.5">from 50,000+ learners</span>
+              <span className="text-[#475569] text-sm ml-1.5">from 50,000+ learners</span>
             </div>
           </FadeUp>
         </div>
@@ -688,7 +688,7 @@ function TestimonialsSection() {
                     <div className="text-white font-semibold text-sm flex items-center gap-1.5">
                       {t.name} <span>{t.flag}</span>
                     </div>
-                    <div className="text-[hsl(var(--foreground-subtle))] text-xs">{t.city}</div>
+                    <div className="text-[#475569] text-xs">{t.city}</div>
                   </div>
                   <div className={`ml-auto px-2.5 py-1 rounded-lg text-xs font-bold bg-gradient-to-r ${t.gradient} text-white shrink-0`}>
                     {t.badge}
@@ -737,7 +737,7 @@ function CTASection() {
 
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link href="/auth/login">
-                  <button className="group flex items-center justify-center gap-2 px-9 py-4 rounded-xl text-base font-bold text-[hsl(var(--accent))] bg-white hover:bg-white/95 transition-all hover:scale-[1.04] shadow-2xl shadow-black/20">
+                  <button className="group flex items-center justify-center gap-2 px-9 py-4 rounded-xl text-base font-bold text-[#6366f1] bg-white hover:bg-white/95 transition-all hover:scale-[1.04] shadow-2xl shadow-black/20">
                     Start learning for free
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                   </button>
@@ -771,7 +771,7 @@ function Footer() {
           <span className="font-black gradient-text">Fluenta</span>
         </div>
         <p className="text-[#334155] text-sm text-center">Fluenta © 2026 — Free AI English Academy</p>
-        <div className="flex items-center gap-5 text-sm text-[hsl(var(--foreground-subtle))]">
+        <div className="flex items-center gap-5 text-sm text-[#475569]">
           <a href="#features" className="hover:text-white transition-colors">Features</a>
           <Link href="/auth/login" className="hover:text-white transition-colors">Sign in</Link>
         </div>

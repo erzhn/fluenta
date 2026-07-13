@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 import { useState, useRef } from 'react'
 
 const PHRASES: Record<string, string[]> = {
@@ -130,12 +130,12 @@ export default function PronunciationPracticePage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-white"><span className="gradient-text">Произношение</span></h1>
-          <p className="text-[hsl(var(--foreground-muted))] text-sm mt-1">Послушай и повтори фразу</p>
+          <p className="text-[#64748b] text-sm mt-1">Послушай и повтори фразу</p>
         </div>
         {avgScore !== null && (
           <div className="text-right">
             <p className="text-white font-semibold text-lg">{avgScore}%</p>
-            <p className="text-[hsl(var(--foreground-muted))] text-xs">средний балл</p>
+            <p className="text-[#64748b] text-xs">средний балл</p>
           </div>
         )}
       </div>
@@ -144,7 +144,7 @@ export default function PronunciationPracticePage() {
         {(['A1','A2','B1','B2','C1'] as Level[]).map(l => (
           <button key={l} onClick={() => { setLevel(l); setPhraseIdx(0); setHeard(''); setScore(null) }}
             className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-all border ${
-              level === l ? 'bg-[hsl(var(--accent))] border-[hsl(var(--accent))] text-white' : 'bg-white/[0.04] border-white/10 text-[hsl(var(--foreground-muted))] hover:text-white'
+              level === l ? 'bg-[#6366f1] border-[#6366f1] text-white' : 'bg-white/[0.04] border-white/10 text-[#94a3b8] hover:text-white'
             }`}>
             {l}
           </button>
@@ -152,12 +152,12 @@ export default function PronunciationPracticePage() {
       </div>
 
       <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 sm:p-8 mb-6 text-center">
-        <p className="text-[hsl(var(--foreground-muted))] text-xs uppercase tracking-wider mb-4">Повтори вслух:</p>
+        <p className="text-[#64748b] text-xs uppercase tracking-wider mb-4">Повтори вслух:</p>
         <p className="text-white text-xl sm:text-2xl font-medium leading-relaxed mb-6">
           &ldquo;{phrase}&rdquo;
         </p>
         <button onClick={speak}
-          className="px-6 py-2.5 bg-white/[0.06] hover:bg-white/10 border border-white/10 text-[hsl(var(--foreground-muted))]
+          className="px-6 py-2.5 bg-white/[0.06] hover:bg-white/10 border border-white/10 text-[#94a3b8]
             hover:text-white rounded-xl text-sm font-medium transition-all inline-flex items-center gap-2">
           🔊 Послушать произношение
         </button>
@@ -169,12 +169,12 @@ export default function PronunciationPracticePage() {
           className={`w-20 h-20 rounded-full flex items-center justify-center text-3xl transition-all shadow-lg ${
             isListening
               ? 'bg-red-500 shadow-red-500/30 scale-110 animate-pulse'
-              : 'bg-[hsl(var(--accent))] shadow-[#6366f1]/30 hover:scale-105'
+              : 'bg-[#6366f1] shadow-[#6366f1]/30 hover:scale-105'
           }`}>
           {isListening ? '⏹' : '🎤'}
         </button>
       </div>
-      <p className="text-center text-[hsl(var(--foreground-subtle))] text-sm mb-6">
+      <p className="text-center text-[#475569] text-sm mb-6">
         {isListening ? 'Слушаю... говори сейчас' : 'Нажми чтобы начать запись'}
       </p>
 
@@ -191,9 +191,9 @@ export default function PronunciationPracticePage() {
               {score}%
             </p>
           </div>
-          <p className="text-[hsl(var(--foreground-muted))] text-sm mb-1">Я услышал:</p>
-          <p className="text-[hsl(var(--foreground-muted))] italic mb-3">&ldquo;{heard}&rdquo;</p>
-          <p className="text-[hsl(var(--foreground-muted))] text-sm">
+          <p className="text-[#64748b] text-sm mb-1">Я услышал:</p>
+          <p className="text-[#94a3b8] italic mb-3">&ldquo;{heard}&rdquo;</p>
+          <p className="text-[#64748b] text-sm">
             {score >= 90 ? '🎉 Превосходное произношение!' :
              score >= 70 ? '👍 Хорошо! Попробуй ещё раз для совершенства.' :
              score >= 50 ? '📢 Неплохо! Говори чётче и медленнее.' :
@@ -205,11 +205,11 @@ export default function PronunciationPracticePage() {
       {score !== null && (
         <div className="flex gap-3">
           <button onClick={() => { setHeard(''); setScore(null) }}
-            className="flex-1 py-3 bg-white/[0.06] hover:bg-white/10 text-[hsl(var(--foreground-muted))] font-medium rounded-xl transition-colors border border-white/10">
+            className="flex-1 py-3 bg-white/[0.06] hover:bg-white/10 text-[#94a3b8] font-medium rounded-xl transition-colors border border-white/10">
             ↺ Повторить
           </button>
           <button onClick={nextPhrase}
-            className="flex-1 py-3 bg-[hsl(var(--accent))] hover:bg-[#5558e8] text-white font-semibold rounded-xl transition-colors">
+            className="flex-1 py-3 bg-[#6366f1] hover:bg-[#5558e8] text-white font-semibold rounded-xl transition-colors">
             Следующая фраза →
           </button>
         </div>
@@ -217,11 +217,11 @@ export default function PronunciationPracticePage() {
 
       {attempts.length > 0 && (
         <div className="mt-6">
-          <p className="text-[hsl(var(--foreground-muted))] text-xs uppercase tracking-wider mb-3">История попыток</p>
+          <p className="text-[#64748b] text-xs uppercase tracking-wider mb-3">История попыток</p>
           <div className="space-y-2">
             {attempts.slice(-5).reverse().map((a, i) => (
               <div key={i} className="flex items-center justify-between bg-white/[0.03] rounded-xl px-4 py-2.5">
-                <span className="text-[hsl(var(--foreground-muted))] text-sm truncate flex-1">{a.phrase.slice(0, 40)}...</span>
+                <span className="text-[#64748b] text-sm truncate flex-1">{a.phrase.slice(0, 40)}...</span>
                 <span className="font-bold ml-3 shrink-0"
                   style={{ color: a.score >= 80 ? '#10b981' : a.score >= 50 ? '#f59e0b' : '#ef4444' }}>
                   {a.score}%

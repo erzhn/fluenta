@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
@@ -189,7 +189,7 @@ export default function ProgressPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-2xl sm:text-3xl font-black text-white">My Progress 📈</h1>
-            <p className="text-[hsl(var(--foreground-muted))] text-sm mt-1">Track your English learning journey</p>
+            <p className="text-[#64748b] text-sm mt-1">Track your English learning journey</p>
           </div>
           <div
             className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-black shrink-0 self-start sm:self-auto"
@@ -215,10 +215,10 @@ export default function ProgressPage() {
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: s.bg }}>
                   <s.icon style={{ color: s.color, width: 18, height: 18 }} />
                 </div>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--foreground-subtle))]">{s.unit}</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#475569]">{s.unit}</span>
               </div>
               <div className="text-3xl font-black text-white leading-none mb-1">{s.value.toLocaleString()}</div>
-              <div className="text-xs text-[hsl(var(--foreground-muted))]">{s.label}</div>
+              <div className="text-xs text-[#64748b]">{s.label}</div>
             </div>
           </motion.div>
         ))}
@@ -230,7 +230,7 @@ export default function ProgressPage() {
           <div className="flex items-center justify-between mb-5">
             <div>
               <h2 className="text-white font-bold text-sm">Level Progress</h2>
-              <p className="text-[hsl(var(--foreground-muted))] text-xs mt-0.5">
+              <p className="text-[#64748b] text-xs mt-0.5">
                 {nextLvl
                   ? `${lvlProg.needed - lvlProg.earned} XP to reach ${nextLvl.level}`
                   : 'Maximum level reached!'}
@@ -257,9 +257,9 @@ export default function ProgressPage() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between text-[10px] text-[hsl(var(--foreground-subtle))] mb-5">
+          <div className="flex items-center justify-between text-[10px] text-[#475569] mb-5">
             <span className="font-semibold" style={{ color: lvlInfo.color }}>{lvlInfo.level} · {lvlInfo.min.toLocaleString()} XP</span>
-            <span className="font-semibold text-[hsl(var(--accent))]">{xp.toLocaleString()} XP</span>
+            <span className="font-semibold text-[#6366f1]">{xp.toLocaleString()} XP</span>
             {nextLvl && (
               <span>{nextLvl.level} · {lvlInfo.max.toLocaleString()} XP</span>
             )}
@@ -296,9 +296,9 @@ export default function ProgressPage() {
           <div className="flex items-center justify-between mb-5">
             <div>
               <h2 className="text-white font-bold text-sm">Weekly Activity</h2>
-              <p className="text-[hsl(var(--foreground-muted))] text-xs mt-0.5">Minutes studied per day</p>
+              <p className="text-[#64748b] text-xs mt-0.5">Minutes studied per day</p>
             </div>
-            <div className={`flex items-center gap-1.5 text-xs text-[hsl(var(--foreground-muted))] px-3 py-1.5 rounded-lg bg-white/[0.03]`}>
+            <div className={`flex items-center gap-1.5 text-xs text-[#64748b] px-3 py-1.5 rounded-lg bg-white/[0.03]`}>
               <Calendar className="w-3.5 h-3.5" />
               Last 7 days
             </div>
@@ -316,7 +316,7 @@ export default function ProgressPage() {
                 <div key={day.date} className="flex-1 flex flex-col items-center gap-1.5 group relative">
                   {/* Tooltip */}
                   {mins > 0 && (
-                    <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-[hsl(var(--background-secondary))] border border-white/10 text-white text-[10px] font-semibold px-2 py-0.5 rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                    <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-[#1e293b] border border-white/10 text-white text-[10px] font-semibold px-2 py-0.5 rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
                       {mins} min
                     </div>
                   )}
@@ -389,7 +389,7 @@ export default function ProgressPage() {
           <div className="flex items-center gap-2 mb-5">
             <Trophy className="w-4 h-4 text-[#f59e0b]" />
             <h2 className="text-white font-bold text-sm">Achievements</h2>
-            <span className="text-xs text-[hsl(var(--foreground-subtle))] ml-auto">
+            <span className="text-xs text-[#475569] ml-auto">
               {achievements.filter((a) => a.unlocked).length}/{achievements.length} unlocked
             </span>
           </div>
@@ -404,7 +404,7 @@ export default function ProgressPage() {
                 animate="visible"
                 className={`rounded-2xl p-4 border transition-all relative overflow-hidden ${
                   ach.unlocked
-                    ? 'bg-gradient-to-r from-[#6366f1]/10 to-[#8b5cf6]/10 border-[hsl(var(--accent))]/30'
+                    ? 'bg-gradient-to-r from-[#6366f1]/10 to-[#8b5cf6]/10 border-[#6366f1]/30'
                     : 'bg-white/[0.02] border-white/[0.06]'
                 }`}
               >
@@ -413,10 +413,10 @@ export default function ProgressPage() {
                     {ach.unlocked ? ach.emoji : <Lock className="w-5 h-5 text-[#334155]" />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-bold leading-snug ${ach.unlocked ? 'text-white' : 'text-[hsl(var(--foreground-subtle))]'}`}>
+                    <p className={`text-sm font-bold leading-snug ${ach.unlocked ? 'text-white' : 'text-[#475569]'}`}>
                       {ach.title}
                     </p>
-                    <p className="text-[hsl(var(--foreground-muted))] text-xs mt-0.5">{ach.desc}</p>
+                    <p className="text-[#64748b] text-xs mt-0.5">{ach.desc}</p>
                   </div>
                   {ach.unlocked && (
                     <div className="w-6 h-6 rounded-full bg-[#10b981]/20 flex items-center justify-center shrink-0">
@@ -451,7 +451,7 @@ export default function ProgressPage() {
           <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
             <h2 className="text-white font-bold text-sm">Recent Activity</h2>
             {recentConvs.length > 0 && (
-              <Link href="/ai-tutor" className="text-xs text-[hsl(var(--accent))] hover:text-[#818cf8] transition-colors font-medium flex items-center gap-1">
+              <Link href="/ai-tutor" className="text-xs text-[#6366f1] hover:text-[#818cf8] transition-colors font-medium flex items-center gap-1">
                 View all <ArrowRight className="w-3 h-3" />
               </Link>
             )}
@@ -461,7 +461,7 @@ export default function ProgressPage() {
             <div className="py-12 flex flex-col items-center gap-3 text-center px-6">
               <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-xl">💬</div>
               <p className="text-white font-semibold text-sm">No activity yet</p>
-              <p className="text-[hsl(var(--foreground-subtle))] text-xs">Start your first lesson or chat with Zhan!</p>
+              <p className="text-[#475569] text-xs">Start your first lesson or chat with Zhan!</p>
               <Link href="/ai-tutor">
                 <button className="mt-1 flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white text-sm font-bold hover:scale-[1.03] transition-transform shadow-lg shadow-indigo-500/20">
                   <MessageSquare className="w-4 h-4" />
@@ -474,15 +474,15 @@ export default function ProgressPage() {
               {recentConvs.map((conv) => (
                 <div key={conv.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-white/[0.02] transition-colors group">
                   <div className="w-9 h-9 rounded-xl bg-[#6366f120] flex items-center justify-center shrink-0">
-                    <MessageSquare className="w-4 h-4 text-[hsl(var(--accent))]" />
+                    <MessageSquare className="w-4 h-4 text-[#6366f1]" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-white text-sm font-medium truncate">{conv.title || 'Conversation with Zhan'}</p>
-                    <p className="text-[hsl(var(--foreground-subtle))] text-xs mt-0.5">AI Conversation</p>
+                    <p className="text-[#475569] text-xs mt-0.5">AI Conversation</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-[hsl(var(--foreground-subtle))] text-xs">{relativeDate(conv.updated_at)}</p>
-                    <p className="text-[hsl(var(--accent))] text-[10px] font-semibold mt-0.5">+20 XP</p>
+                    <p className="text-[#475569] text-xs">{relativeDate(conv.updated_at)}</p>
+                    <p className="text-[#6366f1] text-[10px] font-semibold mt-0.5">+20 XP</p>
                   </div>
                 </div>
               ))}

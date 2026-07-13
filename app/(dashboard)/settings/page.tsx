@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 import { useState, useEffect } from 'react'
 import { useTheme } from 'next-themes'
 import { useRouter } from 'next/navigation'
@@ -60,7 +60,7 @@ export default function SettingsPage() {
 
   if (loading) return (
     <div className="p-8 flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-[hsl(var(--accent))] border-t-transparent rounded-full animate-spin" />
+      <div className="w-8 h-8 border-2 border-[#6366f1] border-t-transparent rounded-full animate-spin" />
     </div>
   )
 
@@ -75,20 +75,20 @@ export default function SettingsPage() {
         <h2 className="text-white font-semibold mb-4">Профиль</h2>
         <div className="space-y-4">
           <div>
-            <label className="text-[hsl(var(--foreground-muted))] text-sm block mb-1.5">Имя</label>
+            <label className="text-[#64748b] text-sm block mb-1.5">Имя</label>
             <input
               type="text"
               value={settings.displayName}
               onChange={e => setSettings(s => ({ ...s, displayName: e.target.value }))}
               placeholder="Твоё имя"
               className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-2.5
-                text-white placeholder:text-[#334155] outline-none focus:border-[hsl(var(--accent))]/50 transition-colors"
+                text-white placeholder:text-[#334155] outline-none focus:border-[#6366f1]/50 transition-colors"
             />
           </div>
           <div>
-            <label className="text-[hsl(var(--foreground-muted))] text-sm block mb-1.5">Email</label>
+            <label className="text-[#64748b] text-sm block mb-1.5">Email</label>
             <input type="text" value={email} disabled
-              className="w-full bg-white/[0.03] border border-white/[0.06] rounded-xl px-4 py-2.5 text-[hsl(var(--foreground-subtle))] cursor-not-allowed" />
+              className="w-full bg-white/[0.03] border border-white/[0.06] rounded-xl px-4 py-2.5 text-[#475569] cursor-not-allowed" />
           </div>
         </div>
       </section>
@@ -107,8 +107,8 @@ export default function SettingsPage() {
             <button key={g.id} onClick={() => setSettings(s => ({ ...s, goal: g.id }))}
               className={`text-left p-4 rounded-xl border transition-all ${
                 settings.goal === g.id
-                  ? 'bg-[hsl(var(--accent))]/15 border-[hsl(var(--accent))]/50 text-white'
-                  : 'bg-white/[0.03] border-white/[0.06] text-[hsl(var(--foreground-muted))] hover:border-white/20'
+                  ? 'bg-[#6366f1]/15 border-[#6366f1]/50 text-white'
+                  : 'bg-white/[0.03] border-white/[0.06] text-[#94a3b8] hover:border-white/20'
               }`}>
               <p className="font-medium text-sm">{g.label}</p>
               <p className="text-xs opacity-70 mt-0.5">{g.desc}</p>
@@ -125,8 +125,8 @@ export default function SettingsPage() {
             <button key={min} onClick={() => setSettings(s => ({ ...s, dailyGoalMinutes: min }))}
               className={`py-3 rounded-xl font-semibold text-sm transition-all border ${
                 settings.dailyGoalMinutes === min
-                  ? 'bg-[hsl(var(--accent))] border-[hsl(var(--accent))] text-white'
-                  : 'bg-white/[0.04] border-white/10 text-[hsl(var(--foreground-muted))] hover:text-white'
+                  ? 'bg-[#6366f1] border-[#6366f1] text-white'
+                  : 'bg-white/[0.04] border-white/10 text-[#94a3b8] hover:text-white'
               }`}>
               {min} мин
             </button>
@@ -139,14 +139,14 @@ export default function SettingsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-white font-semibold">Тема оформления</h2>
-            <p className="text-[hsl(var(--foreground-muted))] text-sm mt-0.5">
+            <p className="text-[#64748b] text-sm mt-0.5">
               Сейчас: {currentTheme === 'dark' ? 'Тёмная' : 'Светлая'}
             </p>
           </div>
           <button
             onClick={() => setTheme(currentTheme === 'dark' ? 'light' : 'dark')}
             className={`relative w-14 h-7 rounded-full transition-all duration-300 border ${
-              currentTheme === 'light' ? 'bg-[hsl(var(--accent))] border-[hsl(var(--accent))]' : 'bg-white/[0.06] border-white/10'
+              currentTheme === 'light' ? 'bg-[#6366f1] border-[#6366f1]' : 'bg-white/[0.06] border-white/10'
             }`}>
             <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-all duration-300 flex items-center justify-center text-xs
               ${currentTheme === 'light' ? 'left-7' : 'left-0.5'}`}>
@@ -158,7 +158,7 @@ export default function SettingsPage() {
 
       <div className="flex gap-3 mt-6">
         <button onClick={saveSettings}
-          className="flex-1 py-3 bg-[hsl(var(--accent))] hover:bg-[#5558e8] text-white font-semibold rounded-xl transition-colors">
+          className="flex-1 py-3 bg-[#6366f1] hover:bg-[#5558e8] text-white font-semibold rounded-xl transition-colors">
           {saved ? '✓ Сохранено!' : 'Сохранить'}
         </button>
         <button onClick={handleSignOut}

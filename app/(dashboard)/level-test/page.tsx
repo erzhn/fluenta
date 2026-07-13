@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -205,13 +205,13 @@ export default function LevelTestPage() {
               📊
             </div>
             <h1 className="text-3xl font-bold text-white mb-3">Определи свой уровень</h1>
-            <p className="text-[hsl(var(--foreground-muted))] mb-2">20 вопросов из 100 • ~5 минут</p>
-            <p className="text-[hsl(var(--foreground-muted))] text-sm mb-8">Каждый раз выбираются случайные вопросы от A1 до C1. Не угадывай — выбирай то, что знаешь.</p>
+            <p className="text-[#94a3b8] mb-2">20 вопросов из 100 • ~5 минут</p>
+            <p className="text-[#64748b] text-sm mb-8">Каждый раз выбираются случайные вопросы от A1 до C1. Не угадывай — выбирай то, что знаешь.</p>
             <div className="grid grid-cols-5 gap-2 mb-8">
               {['A1', 'A2', 'B1', 'B2', 'C1'].map((l, i) => (
                 <div key={l} className="bg-white/[0.04] border border-white/10 rounded-xl p-3 text-center">
                   <div className="text-xs font-bold text-white">{l}</div>
-                  <div className="text-[10px] text-[hsl(var(--foreground-muted))] mt-0.5">{['0–4', '5–8', '9–12', '13–16', '17–20'][i]}</div>
+                  <div className="text-[10px] text-[#64748b] mt-0.5">{['0–4', '5–8', '9–12', '13–16', '17–20'][i]}</div>
                 </div>
               ))}
             </div>
@@ -230,7 +230,7 @@ export default function LevelTestPage() {
             {/* Progress */}
             <div className="mb-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[hsl(var(--foreground-muted))] text-sm">Вопрос {current + 1} из {questions.length}</span>
+                <span className="text-[#64748b] text-sm">Вопрос {current + 1} из {questions.length}</span>
                 <span className="text-xs font-bold px-2 py-0.5 rounded-lg"
                   style={{ backgroundColor: `${LEVEL_DESCRIPTIONS[question.lvl]?.color}20`, color: LEVEL_DESCRIPTIONS[question.lvl]?.color }}>
                   {question.lvl}
@@ -252,11 +252,11 @@ export default function LevelTestPage() {
             {/* Options */}
             <div className="space-y-3">
               {question.o.map((opt) => {
-                let cls = 'border-white/10 bg-white/[0.04] text-white hover:border-[hsl(var(--accent))]/50 hover:bg-[hsl(var(--accent))]/5'
+                let cls = 'border-white/10 bg-white/[0.04] text-white hover:border-[#6366f1]/50 hover:bg-[#6366f1]/5'
                 if (selected !== null) {
                   if (opt === question.a) cls = 'border-[#10b981] bg-[#10b981]/15 text-[#10b981]'
                   else if (opt === selected) cls = 'border-[#ef4444] bg-[#ef4444]/15 text-[#ef4444]'
-                  else cls = 'border-white/5 bg-white/[0.02] text-[hsl(var(--foreground-subtle))]'
+                  else cls = 'border-white/5 bg-white/[0.02] text-[#475569]'
                 }
                 return (
                   <motion.button key={opt} whileTap={selected === null ? { scale: 0.98 } : {}}
@@ -284,10 +284,10 @@ export default function LevelTestPage() {
               {level}
             </div>
             <p className="text-white font-semibold text-lg mb-1">{levelInfo.label}</p>
-            <p className="text-[hsl(var(--foreground-muted))] text-sm mb-4">{levelInfo.desc}</p>
+            <p className="text-[#94a3b8] text-sm mb-4">{levelInfo.desc}</p>
             <div className="bg-white/[0.04] border border-white/10 rounded-2xl px-6 py-4 mb-6">
-              <p className="text-[hsl(var(--foreground-muted))] text-sm mb-1">Правильных ответов</p>
-              <p className="text-white text-2xl font-bold">{finalScore} <span className="text-[hsl(var(--foreground-muted))] text-lg font-normal">из 20</span></p>
+              <p className="text-[#64748b] text-sm mb-1">Правильных ответов</p>
+              <p className="text-white text-2xl font-bold">{finalScore} <span className="text-[#64748b] text-lg font-normal">из 20</span></p>
               <div className="h-2 bg-white/[0.06] rounded-full mt-3 overflow-hidden">
                 <div className="h-full rounded-full transition-all duration-1000"
                   style={{ width: `${(finalScore / 20) * 100}%`, backgroundColor: levelInfo.color }} />
@@ -303,7 +303,7 @@ export default function LevelTestPage() {
             </div>
             <div className="flex gap-3">
               <button onClick={() => startTest(true)}
-                className="flex-1 py-3.5 rounded-2xl border border-white/10 bg-white/[0.04] text-[hsl(var(--foreground-muted))] hover:text-white font-semibold flex items-center justify-center gap-2 transition-colors">
+                className="flex-1 py-3.5 rounded-2xl border border-white/10 bg-white/[0.04] text-[#94a3b8] hover:text-white font-semibold flex items-center justify-center gap-2 transition-colors">
                 <RotateCcw className="w-4 h-4" /> Пройти снова
               </button>
               <Link href="/dashboard" className="flex-1">

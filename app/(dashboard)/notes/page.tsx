@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 import { useState, useEffect } from 'react'
 import { LESSONS } from '@/lib/lessons-data'
 
@@ -29,13 +29,13 @@ export default function NotesPage() {
   return (
     <div className="p-4 sm:p-8 max-w-3xl mx-auto">
       <h1 className="text-2xl font-bold text-white mb-2">Мои заметки</h1>
-      <p className="text-[hsl(var(--foreground-muted))] text-sm mb-6">{notes.length} заметок</p>
+      <p className="text-[#64748b] text-sm mb-6">{notes.length} заметок</p>
 
       {notes.length === 0 ? (
         <div className="text-center py-16">
           <p className="text-4xl mb-4">📝</p>
           <p className="text-white font-semibold mb-2">Заметок пока нет</p>
-          <p className="text-[hsl(var(--foreground-muted))] text-sm">Открой любой урок и нажми на иконку 📝 внизу справа</p>
+          <p className="text-[#64748b] text-sm">Открой любой урок и нажми на иконку 📝 внизу справа</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -46,7 +46,7 @@ export default function NotesPage() {
                 <button onClick={() => deleteNote(note.lessonId)}
                   className="text-[#334155] hover:text-red-400 transition-colors text-sm ml-2">✕</button>
               </div>
-              <p className="text-[hsl(var(--foreground-muted))] text-sm whitespace-pre-wrap leading-relaxed">{note.content}</p>
+              <p className="text-[#64748b] text-sm whitespace-pre-wrap leading-relaxed">{note.content}</p>
             </div>
           ))}
         </div>

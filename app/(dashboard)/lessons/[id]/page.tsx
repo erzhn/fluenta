@@ -62,7 +62,7 @@ function CelebrationScreen({ score, total, xpEarned, nextLessonId, onRetry }: {
         {perfect ? "Идеально!" : score >= Math.ceil(total * 0.6) ? "Отличная работа!" : "Урок завершён!"}
       </motion.h2>
       <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.65 }}
-        className="relative z-10 text-[hsl(var(--foreground-muted))] text-sm mb-8">
+        className="relative z-10 text-[#64748B] text-sm mb-8">
         {perfect ? "Все выполнены правильно!" : `Правильных ответов: ${score} из ${total}`}
       </motion.p>
       <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.6, stiffness: 200 }}
@@ -76,20 +76,20 @@ function CelebrationScreen({ score, total, xpEarned, nextLessonId, onRetry }: {
             }}>
             {pct}%
           </div>
-          <div className="text-[hsl(var(--foreground-subtle))] text-xs mt-1">точность</div>
+          <div className="text-[#475569] text-xs mt-1">точность</div>
         </div>
         <div className="flex flex-col items-center">
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.9, type: "spring" }}
             className="w-20 h-20 rounded-full border-4 border-[#F59E0B] bg-[#F59E0B]/15 flex items-center justify-center text-xl font-extrabold text-[#F59E0B]">
             +{xpEarned}
           </motion.div>
-          <div className="text-[hsl(var(--foreground-subtle))] text-xs mt-1">XP</div>
+          <div className="text-[#475569] text-xs mt-1">XP</div>
         </div>
       </motion.div>
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1 }}
         className="relative z-10 flex flex-col sm:flex-row gap-3 w-full max-w-sm">
         <Link href="/lessons"
-          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-[hsl(var(--background-secondary))] border border-[hsl(var(--border))] text-white text-sm font-semibold hover:border-[#475569] transition-all">
+          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-[#1E293B] border border-[#334155] text-white text-sm font-semibold hover:border-[#475569] transition-all">
           <ArrowLeft className="w-4 h-4" />К урокам
         </Link>
         {nextLessonId ? (
@@ -179,11 +179,11 @@ function AlexChat({ lessonTitle, onClose }: { lessonTitle: string; onClose: () =
           <span className="text-2xl">👨‍🏫</span>
           <div>
             <div className="text-white font-bold text-sm">Alex</div>
-            <div className="text-[hsl(var(--foreground-subtle))] text-xs">Спроси про урок</div>
+            <div className="text-[#475569] text-xs">Спроси про урок</div>
           </div>
         </div>
         <button onClick={onClose}
-          className="w-8 h-8 rounded-lg flex items-center justify-center text-[hsl(var(--foreground-subtle))] hover:text-white hover:bg-white/5 transition-all">
+          className="w-8 h-8 rounded-lg flex items-center justify-center text-[#475569] hover:text-white hover:bg-white/5 transition-all">
           <X className="w-4 h-4" />
         </button>
       </div>
@@ -191,10 +191,10 @@ function AlexChat({ lessonTitle, onClose }: { lessonTitle: string; onClose: () =
         {messages.map((msg, i) => (
           <div key={i} className={`flex gap-2 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
             {msg.role === "assistant" && (
-              <div className="w-7 h-7 rounded-full bg-[hsl(var(--background-secondary))] border border-[hsl(var(--border))] flex items-center justify-center text-sm shrink-0">👨‍🏫</div>
+              <div className="w-7 h-7 rounded-full bg-[#1E293B] border border-[#334155] flex items-center justify-center text-sm shrink-0">👨‍🏫</div>
             )}
             <div className={`max-w-[80%] px-3 py-2.5 rounded-2xl text-sm leading-relaxed ${
-              msg.role === "user" ? "bg-[hsl(var(--accent))] text-white rounded-tr-sm" : "bg-[hsl(var(--background-secondary))] border border-[hsl(var(--border))] text-[#E2E8F0] rounded-tl-sm"
+              msg.role === "user" ? "bg-[#6366F1] text-white rounded-tr-sm" : "bg-[#1E293B] border border-[#334155] text-[#E2E8F0] rounded-tl-sm"
             }`}>
               <p className="whitespace-pre-wrap">{msg.content}</p>
             </div>
@@ -202,8 +202,8 @@ function AlexChat({ lessonTitle, onClose }: { lessonTitle: string; onClose: () =
         ))}
         {loading && !streamRef.current && (
           <div className="flex gap-2">
-            <div className="w-7 h-7 rounded-full bg-[hsl(var(--background-secondary))] border border-[hsl(var(--border))] flex items-center justify-center text-sm shrink-0">👨‍🏫</div>
-            <div className="bg-[hsl(var(--background-secondary))] border border-[hsl(var(--border))] rounded-2xl rounded-tl-sm px-3 py-2.5">
+            <div className="w-7 h-7 rounded-full bg-[#1E293B] border border-[#334155] flex items-center justify-center text-sm shrink-0">👨‍🏫</div>
+            <div className="bg-[#1E293B] border border-[#334155] rounded-2xl rounded-tl-sm px-3 py-2.5">
               <div className="flex gap-1.5">
                 {[0, 1, 2].map(i => (
                   <motion.div key={i} animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: i * 0.15 }}
@@ -219,9 +219,9 @@ function AlexChat({ lessonTitle, onClose }: { lessonTitle: string; onClose: () =
         <div className="flex gap-2">
           <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send()}
             placeholder="Задай вопрос..." disabled={loading}
-            className="flex-1 bg-[hsl(var(--background-secondary))] border border-[hsl(var(--border))] focus:border-[hsl(var(--accent))] rounded-xl px-3 py-2.5 text-white placeholder-[#334155] text-sm outline-none transition-colors" />
+            className="flex-1 bg-[#1E293B] border border-[#334155] focus:border-[#6366F1] rounded-xl px-3 py-2.5 text-white placeholder-[#334155] text-sm outline-none transition-colors" />
           <button onClick={send} disabled={!input.trim() || loading}
-            className="w-9 h-9 rounded-xl bg-[hsl(var(--accent))] hover:bg-[#5558E3] disabled:bg-[hsl(var(--background-secondary))] flex items-center justify-center transition-all">
+            className="w-9 h-9 rounded-xl bg-[#6366F1] hover:bg-[#5558E3] disabled:bg-[#1E293B] flex items-center justify-center transition-all">
             {loading ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <Send className="w-4 h-4 text-white" />}
           </button>
         </div>
@@ -267,7 +267,7 @@ export default function LessonPlayerPage() {
         <div className="text-center">
           <div className="text-4xl mb-3">📚</div>
           <div className="text-white font-bold mb-2">Урок не найден</div>
-          <Link href="/lessons" className="text-[hsl(var(--accent))] hover:underline text-sm">← Вернуться к урокам</Link>
+          <Link href="/lessons" className="text-[#6366F1] hover:underline text-sm">← Вернуться к урокам</Link>
         </div>
       </div>
     );
@@ -292,20 +292,20 @@ export default function LessonPlayerPage() {
         {/* Top bar */}
         <div className="shrink-0 flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3 border-b border-[#1E293B] bg-[#0A1628]">
           <Link href="/lessons"
-            className="flex items-center gap-1.5 text-[hsl(var(--foreground-muted))] hover:text-white transition-colors text-sm">
+            className="flex items-center gap-1.5 text-[#64748B] hover:text-white transition-colors text-sm">
             <ArrowLeft className="w-4 h-4" /><span className="hidden sm:inline">К урокам</span>
           </Link>
           {phase === "exercises" && (
             <div className="flex items-center gap-2 flex-1 mx-6 max-w-xs">
-              <span className="text-[hsl(var(--foreground-subtle))] text-xs shrink-0">{currentEx + 1}/{lesson.exercises.length}</span>
-              <div className="flex-1 h-1.5 bg-[hsl(var(--background-secondary))] rounded-full overflow-hidden">
+              <span className="text-[#475569] text-xs shrink-0">{currentEx + 1}/{lesson.exercises.length}</span>
+              <div className="flex-1 h-1.5 bg-[#1E293B] rounded-full overflow-hidden">
                 <motion.div initial={false} animate={{ width: `${(currentEx / lesson.exercises.length) * 100}%` }}
                   transition={{ duration: 0.4 }} className="h-full rounded-full" style={{ backgroundColor: color }} />
               </div>
             </div>
           )}
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 text-xs text-[hsl(var(--foreground-subtle))]">
+            <div className="flex items-center gap-1.5 text-xs text-[#475569]">
               <Clock className="w-3.5 h-3.5" />{lesson.duration}
             </div>
             <div className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full"
@@ -332,7 +332,7 @@ export default function LessonPlayerPage() {
                 {/* Content Panel */}
                 <div className="lg:w-[45%] border-b lg:border-b-0 lg:border-r border-[#1E293B] overflow-y-auto px-5 py-6 lg:px-8 lg:py-8 bg-[#0A1628]">
                   <h1 className="text-xl font-extrabold text-white mb-0.5">{lesson.title}</h1>
-                  <p className="text-[hsl(var(--foreground-subtle))] text-sm mb-6">Блок {lesson.block} · {lesson.blockName}</p>
+                  <p className="text-[#475569] text-sm mb-6">Блок {lesson.block} · {lesson.blockName}</p>
 
                   <div className="space-y-4 mb-6">
                     {lesson.theory.explanation.split("\n").filter(Boolean).map((para, i) => (
@@ -342,12 +342,12 @@ export default function LessonPlayerPage() {
 
                   {lesson.theory.examples.length > 0 && (
                     <div className="mb-6">
-                      <h3 className="text-[hsl(var(--foreground-subtle))] font-bold text-xs uppercase tracking-widest mb-3">Примеры</h3>
+                      <h3 className="text-[#475569] font-bold text-xs uppercase tracking-widest mb-3">Примеры</h3>
                       <div className="space-y-2.5">
                         {lesson.theory.examples.map((ex, i) => (
-                          <div key={i} className="bg-[hsl(var(--background-secondary))] border-l-2 rounded-r-xl pl-4 pr-4 py-3" style={{ borderColor: color }}>
+                          <div key={i} className="bg-[#1E293B] border-l-2 rounded-r-xl pl-4 pr-4 py-3" style={{ borderColor: color }}>
                             <div className="text-white font-medium text-sm">{ex.english}</div>
-                            <div className="text-[hsl(var(--foreground-muted))] text-xs mt-0.5">{ex.russian}</div>
+                            <div className="text-[#64748B] text-xs mt-0.5">{ex.russian}</div>
                           </div>
                         ))}
                       </div>
@@ -355,7 +355,7 @@ export default function LessonPlayerPage() {
                   )}
 
                   <button onClick={() => setAlexOpen(true)}
-                    className="flex items-center gap-2 w-full py-3 px-4 rounded-xl bg-[hsl(var(--accent))]/10 border border-[hsl(var(--accent))]/25 text-[#818CF8] text-sm font-medium hover:bg-[hsl(var(--accent))]/20 transition-all">
+                    className="flex items-center gap-2 w-full py-3 px-4 rounded-xl bg-[#6366F1]/10 border border-[#6366F1]/25 text-[#818CF8] text-sm font-medium hover:bg-[#6366F1]/20 transition-all">
                     <MessageSquare className="w-4 h-4" />Ask Alex про эту тему 🤖
                   </button>
                 </div>
@@ -367,10 +367,10 @@ export default function LessonPlayerPage() {
                       <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
                         transition={{ type: "spring" }} className="text-6xl mb-5">📝</motion.div>
                       <h2 className="text-white font-extrabold text-lg mb-2">Готов к упражнениям?</h2>
-                      <p className="text-[hsl(var(--foreground-muted))] text-sm mb-6 max-w-xs">
+                      <p className="text-[#64748B] text-sm mb-6 max-w-xs">
                         {lesson.exercises.length} упражнений по теме «{lesson.title}»
                       </p>
-                      <div className="flex items-center gap-2 text-[hsl(var(--foreground-subtle))] text-xs mb-8">
+                      <div className="flex items-center gap-2 text-[#475569] text-xs mb-8">
                         <BookOpen className="w-3.5 h-3.5" />Прочитай материал слева, затем начинай
                       </div>
                       <button onClick={() => setPhase("exercises")}

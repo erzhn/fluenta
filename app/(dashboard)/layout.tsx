@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -40,19 +40,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (!authChecked) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[hsl(var(--background))]">
+      <div className="flex h-screen items-center justify-center bg-[#0F172A]">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center text-white font-bold text-xl animate-pulse">
             F
           </div>
-          <p className="text-[hsl(var(--foreground-subtle))] text-sm">Загрузка...</p>
+          <p className="text-[#475569] text-sm">Загрузка...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-[hsl(var(--background))] overflow-hidden">
+    <div className="flex h-screen bg-[#0F172A] overflow-hidden">
       <Sidebar
         mobileOpen={mobileDrawerOpen}
         onMobileClose={() => setMobileDrawerOpen(false)}

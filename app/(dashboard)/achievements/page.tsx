@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 import { useState } from 'react'
 
 interface Badge {
@@ -41,7 +41,7 @@ export default function AchievementsPage() {
         <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
           <span className="gradient-text">Достижения</span>
         </h1>
-        <p className="text-[hsl(var(--foreground-muted))]">{unlocked} из {BADGES.length} получено</p>
+        <p className="text-[#64748b]">{unlocked} из {BADGES.length} получено</p>
 
         <div className="mt-4 h-2 bg-white/[0.06] rounded-full overflow-hidden">
           <div
@@ -59,8 +59,8 @@ export default function AchievementsPage() {
           <button key={f} onClick={() => setFilter(f)}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-all border ${
               filter === f
-                ? 'bg-[hsl(var(--accent))] border-[hsl(var(--accent))] text-white'
-                : 'bg-white/[0.04] border-white/10 text-[hsl(var(--foreground-muted))] hover:text-white'
+                ? 'bg-[#6366f1] border-[#6366f1] text-white'
+                : 'bg-white/[0.04] border-white/10 text-[#94a3b8] hover:text-white'
             }`}>
             {f === 'all' ? 'Все' : f === 'unlocked' ? '✓ Получены' : '🔒 Заблокированы'}
           </button>
@@ -86,11 +86,11 @@ export default function AchievementsPage() {
             </div>
 
             <p className="text-white text-sm font-semibold mb-1">{badge.title}</p>
-            <p className="text-[hsl(var(--foreground-muted))] text-xs leading-relaxed">{badge.description}</p>
+            <p className="text-[#64748b] text-xs leading-relaxed">{badge.description}</p>
 
             {!badge.unlocked && badge.progress !== undefined && badge.total && (
               <div className="mt-3">
-                <div className="flex justify-between text-xs text-[hsl(var(--foreground-subtle))] mb-1">
+                <div className="flex justify-between text-xs text-[#475569] mb-1">
                   <span>{badge.progress}</span><span>{badge.total}</span>
                 </div>
                 <div className="h-1 bg-white/[0.06] rounded-full overflow-hidden">

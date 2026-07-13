@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -205,7 +205,7 @@ function LevelTabs({ value, onChange }: { value: Level; onChange: (l: Level) => 
       {LEVELS.map((l) => (
         <button key={l} onClick={() => onChange(l)}
           className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-            value === l ? 'bg-[hsl(var(--accent))] text-white' : 'text-[hsl(var(--foreground-muted))] hover:text-white bg-white/[0.03]'
+            value === l ? 'bg-[#6366f1] text-white' : 'text-[#64748b] hover:text-white bg-white/[0.03]'
           }`}>{l}
         </button>
       ))}
@@ -283,7 +283,7 @@ function ShadowingTab({ supported }: { supported: boolean }) {
   return (
     <div className={`${glass} rounded-2xl p-5 sm:p-6 space-y-5`}>
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <span className="text-[hsl(var(--foreground-muted))] text-xs uppercase tracking-wider">Уровень</span>
+        <span className="text-[#64748b] text-xs uppercase tracking-wider">Уровень</span>
         <LevelTabs value={level} onChange={changeLevel} />
       </div>
 
@@ -316,11 +316,11 @@ function ShadowingTab({ supported }: { supported: boolean }) {
       {/* Controls */}
       <div className="flex flex-wrap items-center justify-center gap-2">
         <button onClick={() => playPhrase(1)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[hsl(var(--accent))]/40 text-[#818cf8] hover:bg-[hsl(var(--accent))]/10 transition-all text-sm font-semibold">
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#6366f1]/40 text-[#818cf8] hover:bg-[#6366f1]/10 transition-all text-sm font-semibold">
           <Volume2 className="w-4 h-4" /> 🔊 Слушай
         </button>
         <button onClick={() => playPhrase(0.6)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[hsl(var(--accent))]/30 text-[#818cf8] hover:bg-[hsl(var(--accent))]/10 transition-all text-sm font-semibold">
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#6366f1]/30 text-[#818cf8] hover:bg-[#6366f1]/10 transition-all text-sm font-semibold">
           🐢 Медленно
         </button>
         <button onClick={recording ? stopRec : startRec} disabled={!supported}
@@ -332,7 +332,7 @@ function ShadowingTab({ supported }: { supported: boolean }) {
         </button>
         {playbackUrl && (
           <button onClick={playMyRecording}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 text-[hsl(var(--foreground-muted))] hover:text-white text-sm font-semibold transition-all">
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 text-[#64748b] hover:text-white text-sm font-semibold transition-all">
             <Play className="w-4 h-4" /> ▶️ Моя запись
           </button>
         )}
@@ -357,7 +357,7 @@ function ShadowingTab({ supported }: { supported: boolean }) {
       </AnimatePresence>
 
       <button onClick={next}
-        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[hsl(var(--foreground-muted))] hover:text-white hover:bg-white/[0.04] transition-all text-sm font-medium border border-white/[0.06]">
+        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[#64748b] hover:text-white hover:bg-white/[0.04] transition-all text-sm font-medium border border-white/[0.06]">
         Следующая фраза → <ChevronRight className="w-4 h-4" />
       </button>
     </div>
@@ -408,12 +408,12 @@ function ReadAloudTab({ supported }: { supported: boolean }) {
   return (
     <div className={`${glass} rounded-2xl p-5 sm:p-6 space-y-5`}>
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <span className="text-[hsl(var(--foreground-muted))] text-xs uppercase tracking-wider">Уровень</span>
+        <span className="text-[#64748b] text-xs uppercase tracking-wider">Уровень</span>
         <LevelTabs value={level} onChange={(l) => { setLevel(l); reset() }} />
       </div>
 
       <div className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06]">
-        <p className="text-[hsl(var(--foreground-subtle))] text-xs uppercase tracking-wider mb-2">Читай вслух:</p>
+        <p className="text-[#475569] text-xs uppercase tracking-wider mb-2">Читай вслух:</p>
         {diff.length > 0 ? (
           <p className="text-base sm:text-lg font-medium leading-relaxed">
             {diff.map((d, i) => (
@@ -443,7 +443,7 @@ function ReadAloudTab({ supported }: { supported: boolean }) {
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
             <div className="flex justify-center"><ScoreBadge score={score} /></div>
             <button onClick={reset}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[hsl(var(--foreground-muted))] hover:text-white hover:bg-white/[0.04] transition-all text-sm border border-white/[0.06]">
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[#64748b] hover:text-white hover:bg-white/[0.04] transition-all text-sm border border-white/[0.06]">
               <RefreshCw className="w-4 h-4" /> Попробовать снова
             </button>
           </motion.div>
@@ -504,13 +504,13 @@ function FreeSpeechTab({ supported }: { supported: boolean }) {
     <div className={`${glass} rounded-2xl p-5 sm:p-6 space-y-5`}>
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h3 className="text-white font-bold">Тема:</h3>
-        <button onClick={newTopic} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[hsl(var(--foreground-muted))] hover:text-white bg-white/[0.03] border border-white/[0.06] text-xs transition-all">
+        <button onClick={newTopic} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[#64748b] hover:text-white bg-white/[0.03] border border-white/[0.06] text-xs transition-all">
           <RefreshCw className="w-3 h-3" /> Новая тема
         </button>
       </div>
-      <div className="bg-[hsl(var(--accent))]/10 border border-[hsl(var(--accent))]/30 rounded-xl p-4 text-center">
+      <div className="bg-[#6366f1]/10 border border-[#6366f1]/30 rounded-xl p-4 text-center">
         <p className="text-[#818cf8] font-bold text-lg">{topic}</p>
-        <p className="text-[hsl(var(--foreground-muted))] text-xs mt-1">Говори 30 секунд на английском</p>
+        <p className="text-[#64748b] text-xs mt-1">Говори 30 секунд на английском</p>
       </div>
       {recording && (
         <div className="flex items-center justify-center">
@@ -542,11 +542,11 @@ function FreeSpeechTab({ supported }: { supported: boolean }) {
       {done && transcript && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
           <div className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06]">
-            <p className="text-[hsl(var(--foreground-muted))] text-xs mb-1">Ты сказал:</p>
+            <p className="text-[#64748b] text-xs mb-1">Ты сказал:</p>
             <p className="text-white/80 text-sm">{transcript}</p>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-[hsl(var(--foreground-muted))] text-sm">Слов произнесено: <span className="text-white font-bold">{wordCount}</span></span>
+            <span className="text-[#64748b] text-sm">Слов произнесено: <span className="text-white font-bold">{wordCount}</span></span>
             <ScoreBadge score={fluency} />
           </div>
         </motion.div>
@@ -616,7 +616,7 @@ function MinimalPairsTab({ supported }: { supported: boolean }) {
   return (
     <div className={`${glass} rounded-2xl p-5 sm:p-6 space-y-5`}>
       <div className="text-center">
-        <span className="text-[hsl(var(--foreground-muted))] text-xs bg-white/[0.04] px-3 py-1 rounded-full border border-white/[0.06]">
+        <span className="text-[#64748b] text-xs bg-white/[0.04] px-3 py-1 rounded-full border border-white/[0.06]">
           Звук: {pair.sound}
         </span>
       </div>
@@ -626,7 +626,7 @@ function MinimalPairsTab({ supported }: { supported: boolean }) {
           return (
             <button key={w} onClick={() => playWord(w)}
               className={`p-6 rounded-2xl border font-black text-2xl transition-all ${
-                playing === w ? 'bg-[hsl(var(--accent))]/20 border-[hsl(var(--accent))] scale-[1.03] text-[#818cf8]' : 'bg-white/[0.03] border-white/10 text-white hover:border-[hsl(var(--accent))]/50'
+                playing === w ? 'bg-[#6366f1]/20 border-[#6366f1] scale-[1.03] text-[#818cf8]' : 'bg-white/[0.03] border-white/10 text-white hover:border-[#6366f1]/50'
               }`}>
               {word}
             </button>
@@ -635,7 +635,7 @@ function MinimalPairsTab({ supported }: { supported: boolean }) {
       </div>
       {phase === 'listen' && (
         <div className="space-y-3">
-          <p className="text-center text-[hsl(var(--foreground-muted))] text-sm">Нажми на слова чтобы услышать разницу, потом:</p>
+          <p className="text-center text-[#64748b] text-sm">Нажми на слова чтобы услышать разницу, потом:</p>
           <button onClick={startGuess} className="w-full py-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white font-bold text-sm">
             🎯 Угадай какое слово!
           </button>
@@ -649,7 +649,7 @@ function MinimalPairsTab({ supported }: { supported: boolean }) {
               <button key={w} onClick={() => makeGuess(w)}
                 className={`py-4 rounded-xl font-bold border-2 transition-all text-lg ${
                   guess === w ? (correct ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400' : 'bg-red-500/20 border-red-500 text-red-400')
-                             : 'bg-white/[0.04] border-white/10 text-white hover:border-[hsl(var(--accent))]/60'
+                             : 'bg-white/[0.04] border-white/10 text-white hover:border-[#6366f1]/60'
                 }`}>
                 {w === 1 ? pair.word1 : pair.word2}
               </button>
@@ -673,7 +673,7 @@ function MinimalPairsTab({ supported }: { supported: boolean }) {
       {phase === 'result' && (
         <div className="space-y-4">
           {spokenScore !== null && <div className="flex justify-center"><ScoreBadge score={spokenScore} /></div>}
-          <button onClick={next} className="w-full py-3 rounded-xl text-[hsl(var(--foreground-muted))] hover:text-white bg-white/[0.03] border border-white/[0.06] text-sm font-medium transition-all">
+          <button onClick={next} className="w-full py-3 rounded-xl text-[#64748b] hover:text-white bg-white/[0.03] border border-white/[0.06] text-sm font-medium transition-all">
             Следующая пара →
           </button>
         </div>
@@ -714,7 +714,7 @@ function TongueTwistersTab({ supported }: { supported: boolean }) {
       <div className="flex gap-2 justify-center">
         {TONGUE_TWISTERS.map((_, i) => (
           <button key={i} onClick={() => { setIdx(i); setScores({}) }}
-            className={`w-2 h-2 rounded-full transition-all ${i === idx ? 'bg-[hsl(var(--accent))] scale-125' : 'bg-white/20'}`}/>
+            className={`w-2 h-2 rounded-full transition-all ${i === idx ? 'bg-[#6366f1] scale-125' : 'bg-white/20'}`}/>
         ))}
       </div>
       <div className="bg-white/[0.03] rounded-xl p-5 border border-white/[0.06] text-center">
@@ -724,7 +724,7 @@ function TongueTwistersTab({ supported }: { supported: boolean }) {
         {(['slow','normal','fast'] as const).map((s) => (
           <button key={s} onClick={() => setSpeed(s)}
             className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${
-              speed === s ? 'bg-[hsl(var(--accent))] border-[hsl(var(--accent))] text-white' : 'bg-white/[0.03] border-white/10 text-[hsl(var(--foreground-muted))] hover:text-white'
+              speed === s ? 'bg-[#6366f1] border-[#6366f1] text-white' : 'bg-white/[0.03] border-white/10 text-[#64748b] hover:text-white'
             }`}>
             {s === 'slow' ? '🐢 Медленно' : s === 'normal' ? '🚶 Нормально' : '🏃 Быстро'}
             {scores[s] !== undefined && <span className="ml-1 text-xs opacity-70">{scores[s]}%</span>}
@@ -733,7 +733,7 @@ function TongueTwistersTab({ supported }: { supported: boolean }) {
       </div>
       <div className="flex gap-3 justify-center">
         <button onClick={() => speak(tt, rateMap[speed])}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[hsl(var(--accent))]/40 text-[#818cf8] hover:bg-[hsl(var(--accent))]/10 text-sm font-semibold transition-all">
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[#6366f1]/40 text-[#818cf8] hover:bg-[#6366f1]/10 text-sm font-semibold transition-all">
           <Volume2 className="w-4 h-4"/> 🔊 Послушай
         </button>
         <button onClick={recording ? () => recRef.current?.stop() : startRec} disabled={!supported}
@@ -750,7 +750,7 @@ function TongueTwistersTab({ supported }: { supported: boolean }) {
         <div className="grid grid-cols-3 gap-2">
           {(['slow','normal','fast'] as const).map((s) => scores[s] !== undefined && (
             <div key={s} className="text-center p-3 bg-white/[0.03] rounded-xl border border-white/[0.06]">
-              <p className="text-[hsl(var(--foreground-muted))] text-xs mb-1">{s === 'slow' ? '🐢' : s === 'normal' ? '🚶' : '🏃'}</p>
+              <p className="text-[#64748b] text-xs mb-1">{s === 'slow' ? '🐢' : s === 'normal' ? '🚶' : '🏃'}</p>
               <p className="font-black text-lg" style={{ color: colorFor(scores[s]) }}>{scores[s]}%</p>
             </div>
           ))}
@@ -776,27 +776,27 @@ function ProgressPanel() {
       <div className="grid grid-cols-3 gap-2 text-center">
         <div className="bg-white/[0.03] rounded-xl p-3 border border-white/[0.06]">
           <p className="text-2xl font-black text-[#818cf8]">{data.attempts}</p>
-          <p className="text-[hsl(var(--foreground-muted))] text-xs">попыток</p>
+          <p className="text-[#64748b] text-xs">попыток</p>
         </div>
         <div className="bg-white/[0.03] rounded-xl p-3 border border-white/[0.06]">
           <p className="text-2xl font-black" style={{ color: colorFor(avg) }}>{avg}%</p>
-          <p className="text-[hsl(var(--foreground-muted))] text-xs">средний балл</p>
+          <p className="text-[#64748b] text-xs">средний балл</p>
         </div>
         <div className="bg-white/[0.03] rounded-xl p-3 border border-white/[0.06]">
           <p className="text-2xl font-black text-orange-400">{data.streak}🔥</p>
-          <p className="text-[hsl(var(--foreground-muted))] text-xs">дней подряд</p>
+          <p className="text-[#64748b] text-xs">дней подряд</p>
         </div>
       </div>
       {weakSounds.length > 0 && (
         <div className="space-y-2">
-          <p className="text-[hsl(var(--foreground-muted))] text-xs uppercase tracking-wider">Слабые звуки</p>
+          <p className="text-[#64748b] text-xs uppercase tracking-wider">Слабые звуки</p>
           {weakSounds.map((x) => (
             <div key={x.sound} className="flex items-center justify-between bg-red-500/5 border border-red-500/20 rounded-xl px-3 py-2">
               <span className="text-white/70 text-sm font-mono">{x.sound}</span>
               <span className="text-red-400 font-bold text-sm">{x.avg}%</span>
             </div>
           ))}
-          <p className="text-[hsl(var(--foreground-muted))] text-xs">💡 Тренируй эти звуки в «Минимальных парах»</p>
+          <p className="text-[#64748b] text-xs">💡 Тренируй эти звуки в «Минимальных парах»</p>
         </div>
       )}
     </div>
@@ -828,7 +828,7 @@ export default function PronunciationPage() {
       <div className="max-w-4xl mx-auto space-y-6">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-white">🎤 Тренажёр речи</h1>
-          <p className="text-[hsl(var(--foreground-muted))] mt-1">Улучши произношение с помощью AI-анализа</p>
+          <p className="text-[#64748b] mt-1">Улучши произношение с помощью AI-анализа</p>
         </div>
 
         {!supported && (
@@ -843,8 +843,8 @@ export default function PronunciationPage() {
             <button key={m.id} onClick={() => setMode(m.id)}
               className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all border ${
                 mode === m.id
-                  ? 'bg-[hsl(var(--accent))] border-[hsl(var(--accent))] text-white shadow-lg shadow-indigo-500/20'
-                  : 'bg-white/[0.03] border-white/[0.06] text-[hsl(var(--foreground-muted))] hover:text-white hover:border-white/20'
+                  ? 'bg-[#6366f1] border-[#6366f1] text-white shadow-lg shadow-indigo-500/20'
+                  : 'bg-white/[0.03] border-white/[0.06] text-[#64748b] hover:text-white hover:border-white/20'
               }`}>
               {m.label}
             </button>

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useRef } from "react";
 import { Send, Mic } from "lucide-react";
@@ -49,14 +49,14 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
           placeholder="Type a message... (Enter to send)"
           disabled={disabled}
           rows={1}
-          className="w-full bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-xl px-4 py-3 pr-4 text-white placeholder-[#475569] focus:outline-none focus:border-[hsl(var(--accent))] transition-colors resize-none text-sm leading-relaxed"
+          className="w-full bg-[#0F172A] border border-[#334155] rounded-xl px-4 py-3 pr-4 text-white placeholder-[#475569] focus:outline-none focus:border-[#6366F1] transition-colors resize-none text-sm leading-relaxed"
         />
       </div>
 
       <button
         onClick={handleSend}
         disabled={!input.trim() || disabled}
-        className="w-10 h-10 rounded-xl bg-[hsl(var(--accent))] hover:bg-[#5558E3] disabled:bg-[#334155] disabled:cursor-not-allowed flex items-center justify-center transition-colors shrink-0"
+        className="w-10 h-10 rounded-xl bg-[#6366F1] hover:bg-[#5558E3] disabled:bg-[#334155] disabled:cursor-not-allowed flex items-center justify-center transition-colors shrink-0"
       >
         <Send className="w-4 h-4 text-white" />
       </button>

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { motion } from "framer-motion";
 import { MessageCircle, BookOpen, Layers, PenLine, GraduationCap, Briefcase } from "lucide-react";
@@ -90,13 +90,13 @@ export function ModeSelector({ mode, onModeChange, layout = "sidebar" }: ModeSel
               onClick={() => onModeChange(m.value)}
               className={`text-left p-3.5 rounded-xl border-2 transition-all ${
                 active
-                  ? "border-[hsl(var(--accent))] bg-[hsl(var(--accent))]/10"
-                  : "border-[#1E293B] bg-[hsl(var(--background))] hover:border-[hsl(var(--border))]"
+                  ? "border-[#6366F1] bg-[#6366F1]/10"
+                  : "border-[#1E293B] bg-[#0F172A] hover:border-[#334155]"
               }`}
             >
               <div className="text-xl mb-1">{m.emoji}</div>
               <div className="font-semibold text-white text-sm">{m.label}</div>
-              <div className="text-[hsl(var(--foreground-subtle))] text-xs mt-0.5">{m.desc}</div>
+              <div className="text-[#475569] text-xs mt-0.5">{m.desc}</div>
             </motion.button>
           );
         })}
@@ -118,7 +118,7 @@ export function ModeSelector({ mode, onModeChange, layout = "sidebar" }: ModeSel
             onClick={() => onModeChange(m.value)}
             className={`w-full text-left px-3 py-2.5 rounded-xl transition-all flex items-center gap-3 ${
               active
-                ? "bg-[hsl(var(--accent))]/15 border border-[hsl(var(--accent))]/30"
+                ? "bg-[#6366F1]/15 border border-[#6366F1]/30"
                 : "hover:bg-white/5 border border-transparent"
             }`}
           >
@@ -138,7 +138,7 @@ export function ModeSelector({ mode, onModeChange, layout = "sidebar" }: ModeSel
               >
                 {m.label}
               </div>
-              <div className="text-[hsl(var(--foreground-subtle))] text-xs truncate">{m.labelRu}</div>
+              <div className="text-[#475569] text-xs truncate">{m.labelRu}</div>
             </div>
             {active && (
               <div
