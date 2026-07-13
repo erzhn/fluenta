@@ -34,23 +34,38 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid level' }, { status: 400 })
   }
 
-  const systemPrompt = `You are an English writing tutor. The student's level is ${level || 'B1'}. They wrote about: ${topic || 'a general topic'}.
-Analyze their text and return JSON:
+  const systemPrompt = `You are an expert English writing coach. The student's level is ${level || 'B1'}. They wrote about: ${topic || 'a general topic'}.
+Analyze their writing and provide detailed feedback in Russian.
+
+For each error found, categorize it:
+- Grammar type (Present Perfect vs Past Simple, Articles, Prepositions, etc.)
+- Severity (minor/major)
+
+Return JSON:
 {
-  "overallScore": <number 0-100>,
-  "corrections": [
+  "overallScore": 75,
+  "correctedText": "...",
+  "summary": "Краткое резюме (1-2 предложения) на русском",
+  "errors": [
     {
-      "original": "exact text from student",
-      "corrected": "correct version",
-      "explanation": "short explanation in Russian",
-      "type": "grammar" | "vocabulary" | "style" | "spelling"
+      "original": "I have went",
+      "corrected": "I went / I have gone",
+      "category": "Past Simple vs Present Perfect",
+      "explanation": "Когда есть конкретное время (yesterday, last week) — используй Past Simple",
+      "severity": "major"
     }
   ],
-  "positives": ["thing done well 1", "thing done well 2"],
-  "suggestion": "one main improvement tip in Russian",
-  "rewrittenVersion": "polished version of the text"
+  "patterns": [
+    "Ты часто путаешь Present Perfect и Past Simple",
+    "Проблемы с артиклями a/the"
+  ],
+  "positives": [
+    "Хорошее использование linking words",
+    "Богатый словарный запас"
+  ],
+  "recommendation": "Порекомендуй конкретную тему для изучения"
 }
-Keep corrections to max 5 most important. Return ONLY valid JSON, no markdown.`
+Keep errors to max 5 most important. Return ONLY valid JSON, no markdown.`
 
   try {
     const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {

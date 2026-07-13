@@ -33,6 +33,8 @@ import {
   Volume2,
   MessageSquare,
   BarChart,
+  Calendar,
+  StickyNote,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getLevelFromXP } from "@/lib/gamification";
@@ -56,6 +58,12 @@ const NAV_ITEMS = [
   { href: "/idioms",            icon: MessageSquare, label: "Идиомы",          badge: null },
   { href: "/reading-speed",    icon: Zap,        label: "Скорость чтения",    badge: null },
   { href: "/pronunciation-practice", icon: Mic,  label: "Произношение+",      badge: null },
+  { href: "/collocations",      icon: Link2,      label: "Коллокации",         badge: null },
+  { href: "/word-formation",   icon: Layers,     label: "Словообразование",   badge: null },
+  { href: "/mini-stories",     icon: BookOpen,   label: "Истории",            badge: null },
+  { href: "/writing-templates",icon: FileText,   label: "Шаблоны письма",     badge: null },
+  { href: "/my-plan",          icon: Calendar,   label: "Мой план",           badge: null },
+  { href: "/notes",            icon: StickyNote, label: "Заметки",            badge: null },
   { href: "/weekly-summary",   icon: BarChart,   label: "Итоги недели",       badge: null },
   { href: "/modules",          icon: Trophy,     label: "Модули",             badge: null },
   { href: "/achievements",  icon: Award,           label: "Достижения",   badge: null },

@@ -10,6 +10,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { StreakCalendar } from '@/components/StreakCalendar'
 import { SkillsRadar } from '@/components/SkillsRadar'
+import { ProgressPrediction } from '@/components/ProgressPrediction'
 
 // ── Glassmorphism helper ───────────────────────────────────────────────────────
 const glass = 'bg-white/[0.04] backdrop-blur-xl border border-white/10'
@@ -353,7 +354,18 @@ export default function ProgressPage() {
         </div>
       </motion.div>
 
-      {/* ── 4b. Streak Calendar ────────────────────────────────────────────── */}
+      {/* ── 4b. Progress Prediction ─────────────────────────────────────────── */}
+      <motion.div custom={6.3} variants={fadeUp} initial="hidden" animate="visible">
+        <ProgressPrediction
+          completedLessons={lessonsCount}
+          totalLessons={95}
+          currentLevel={cefrLevel}
+          dailyAvgMinutes={weekData.length > 0 ? Math.round(weekData.reduce((s, d) => s + (d.minutes ?? 0), 0) / weekData.length) : 0}
+          streakDays={streak}
+        />
+      </motion.div>
+
+      {/* ── 4c. Streak Calendar ────────────────────────────────────────────── */}
       <motion.div custom={6.5} variants={fadeUp} initial="hidden" animate="visible">
         <StreakCalendar activity={Object.fromEntries(
           weekData.map(d => [d.date, { date: d.date, minutes: d.minutes, xp: d.xp_earned }])

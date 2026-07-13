@@ -14,6 +14,7 @@ import { LESSONS, LEVEL_COLORS, type Lesson } from '@/lib/lessons-data'
 import { getLessonCompletions } from '@/lib/progress'
 import { DailyReview } from '@/components/DailyReview'
 import { WordOfDay } from '@/components/WordOfDay'
+import { LevelUpModal } from '@/components/LevelUpModal'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface Profile {
@@ -82,6 +83,7 @@ export default function DashboardPage() {
   const [nextLesson, setNextLesson] = useState<Lesson | null>(null)
   const [completedCount, setCompletedCount] = useState(0)
   const [nextLessonLoading, setNextLessonLoading] = useState(true)
+  const [levelUp, setLevelUp] = useState<{from: string; to: string} | null>(null)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -117,7 +119,15 @@ export default function DashboardPage() {
         getLessonCompletions(user.id),
       ])
 
-      if (profileRes.data) setProfile(profileRes.data as Profile)
+      if (profileRes.data) {
+        setProfile(profileRes.data as Profile)
+        const currentLevel = (profileRes.data as Profile).current_level ?? 'A1'
+        const prevLevel = localStorage.getItem('fluenta_last_level')
+        if (prevLevel && prevLevel !== currentLevel) {
+          setLevelUp({ from: prevLevel, to: currentLevel })
+        }
+        localStorage.setItem('fluenta_last_level', currentLevel)
+      }
       setVocabCount(vocabRes.count ?? 0)
       if (convRes.data) setRecentConvs(convRes.data as RecentConv[])
 
@@ -167,6 +177,13 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-8">
+      {levelUp && (
+        <LevelUpModal
+          fromLevel={levelUp.from}
+          toLevel={levelUp.to}
+          onClose={() => setLevelUp(null)}
+        />
+      )}
 
       {/* ── 1. Welcome header ──────────────────────────────────────────────── */}
       <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible">

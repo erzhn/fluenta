@@ -11,6 +11,7 @@ import Link from "next/link";
 import { ExerciseEngine } from "@/components/lessons/ExerciseEngine";
 import { getLessonById, getNextLesson, LEVEL_COLORS } from "@/lib/lessons-data";
 import { supabase } from "@/lib/supabase";
+import { LessonNotes } from "@/components/LessonNotes";
 
 const XP_BY_LEVEL: Record<string, number> = { A1: 50, A2: 75, B1: 100, B2: 150, C1: 200 };
 
@@ -411,6 +412,8 @@ export default function LessonPlayerPage() {
           </>
         )}
       </AnimatePresence>
+
+      <LessonNotes lessonId={lesson.id} />
     </>
   );
 }

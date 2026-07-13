@@ -331,3 +331,9 @@
   50% { transform: translateY(-6px); }
 }
 .float-badge { animation: float 3s ease-in-out infinite; }
+
+/* ── Level Up Modal animation ── */
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}

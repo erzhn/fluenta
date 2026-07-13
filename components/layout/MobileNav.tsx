@@ -14,6 +14,10 @@ import {
   Volume2,
   AlignLeft,
   MessageSquare,
+  Link2,
+  FileText,
+  Calendar,
+  StickyNote,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
@@ -28,6 +32,11 @@ const NAV_ITEMS = [
   { href: "/idioms",           icon: MessageSquare,   label: "Идиомы",   badge: null },
   { href: "/achievements",     icon: Award,           label: "Награды",  badge: null },
   { href: "/progress",         icon: TrendingUp,      label: "Прогресс", badge: null },
+  { href: "/collocations",     icon: Link2,           label: "Колл.",    badge: null },
+  { href: "/mini-stories",     icon: BookOpen,        label: "Истории",  badge: null },
+  { href: "/writing-templates",icon: FileText,        label: "Шаблоны",  badge: null },
+  { href: "/my-plan",          icon: Calendar,        label: "Мой план", badge: null },
+  { href: "/notes",            icon: StickyNote,      label: "Заметки",  badge: null },
 ];
 
 export function MobileNav() {
