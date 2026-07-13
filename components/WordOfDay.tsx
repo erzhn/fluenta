@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState } from 'react'
 import { getWordOfDay } from '@/lib/word-of-day'
 
@@ -35,10 +35,10 @@ export function WordOfDay() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-[#6366f1]/10 to-[#8b5cf6]/10 border border-[#6366f1]/20 rounded-2xl p-5">
+    <div className="bg-gradient-to-br from-[#6366f1]/10 to-[#8b5cf6]/10 border border-[hsl(var(--accent))]/20 rounded-2xl p-5">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-medium text-[#6366f1] uppercase tracking-wider">Слово дня</span>
-        <span className="text-xs px-2 py-0.5 rounded-full bg-[#6366f1]/20 text-[#a5b4fc]">{word.level}</span>
+        <span className="text-xs font-medium text-[hsl(var(--accent))] uppercase tracking-wider">Слово дня</span>
+        <span className="text-xs px-2 py-0.5 rounded-full bg-[hsl(var(--accent))]/20 text-[#a5b4fc]">{word.level}</span>
       </div>
       <div className="flex items-center gap-3 mb-2">
         <h3 className="text-white text-2xl font-bold">{word.word}</h3>
@@ -48,14 +48,14 @@ export function WordOfDay() {
           🔊
         </button>
       </div>
-      <p className="text-[#94a3b8] text-sm mb-1">{word.transcription}</p>
-      <p className="text-[#6366f1] font-medium mb-3">{word.translation}</p>
-      <p className="text-[#64748b] text-sm italic mb-4">&ldquo;{word.example}&rdquo;</p>
+      <p className="text-[hsl(var(--foreground-muted))] text-sm mb-1">{word.transcription}</p>
+      <p className="text-[hsl(var(--accent))] font-medium mb-3">{word.translation}</p>
+      <p className="text-[hsl(var(--foreground-muted))] text-sm italic mb-4">&ldquo;{word.example}&rdquo;</p>
       <button onClick={addToSR} disabled={added}
         className={`w-full py-2 rounded-xl text-sm font-medium transition-all ${
           added
             ? 'bg-green-500/10 border border-green-500/20 text-green-400'
-            : 'bg-white/[0.06] hover:bg-white/10 border border-white/10 text-[#94a3b8] hover:text-white'
+            : 'bg-white/[0.06] hover:bg-white/10 border border-white/10 text-[hsl(var(--foreground-muted))] hover:text-white'
         }`}>
         {added ? '✓ Добавлено в повторение' : '+ Добавить в словарь'}
       </button>

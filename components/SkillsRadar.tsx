@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 interface Skill { name: string; value: number; max: number; color: string }
 
 export function SkillsRadar({ skills }: { skills: Skill[] }) {
@@ -52,10 +52,10 @@ export function SkillsRadar({ skills }: { skills: Skill[] }) {
         <div className="flex flex-col gap-3">
           {skills.map(s => (
             <div key={s.name} className="flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-[#6366f1]" />
+              <div className="w-2 h-2 rounded-full bg-[hsl(var(--accent))]" />
               <div>
                 <p className="text-white text-xs font-medium">{s.name}</p>
-                <p className="text-[#64748b] text-xs">{s.value}%</p>
+                <p className="text-[hsl(var(--foreground-muted))] text-xs">{s.value}%</p>
               </div>
             </div>
           ))}

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -117,7 +117,7 @@ export default function ListeningPage() {
     <div className="max-w-2xl mx-auto p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white"><span className="gradient-text">Аудирование</span></h1>
-        <p className="text-[#64748b] text-sm">Слушай тексты и отвечай на вопросы</p>
+        <p className="text-[hsl(var(--foreground-muted))] text-sm">Слушай тексты и отвечай на вопросы</p>
       </div>
 
       {/* Level tabs */}
@@ -149,11 +149,11 @@ export default function ListeningPage() {
               </div>
               <div className="flex gap-2">
                 <button onClick={nextText}
-                  className="px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 text-[#94a3b8] hover:text-white text-xs transition-colors flex items-center gap-1">
+                  className="px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 text-[hsl(var(--foreground-muted))] hover:text-white text-xs transition-colors flex items-center gap-1">
                   <RefreshCw className="w-3 h-3" /> Другой
                 </button>
                 <button onClick={generateAI} disabled={generatingAI}
-                  className="px-3 py-1.5 rounded-xl bg-[#6366f1]/15 border border-[#6366f1]/30 text-[#a5b4fc] hover:text-white text-xs transition-colors flex items-center gap-1 disabled:opacity-50">
+                  className="px-3 py-1.5 rounded-xl bg-[hsl(var(--accent))]/15 border border-[hsl(var(--accent))]/30 text-[#a5b4fc] hover:text-white text-xs transition-colors flex items-center gap-1 disabled:opacity-50">
                   <Sparkles className="w-3 h-3" /> {generatingAI ? 'AI...' : 'AI текст'}
                 </button>
               </div>
@@ -175,7 +175,7 @@ export default function ListeningPage() {
             <div className="flex gap-2 justify-center mb-5">
               {SPEEDS.map(s => (
                 <button key={s} onClick={() => setSpeed(s)}
-                  className={`px-4 py-1.5 rounded-lg text-sm font-medium border transition-all ${speed === s ? 'border-[#6366f1] bg-[#6366f1]/20 text-white' : 'border-white/10 text-[#64748b] hover:text-white'}`}>
+                  className={`px-4 py-1.5 rounded-lg text-sm font-medium border transition-all ${speed === s ? 'border-[hsl(var(--accent))] bg-[hsl(var(--accent))]/20 text-white' : 'border-white/10 text-[hsl(var(--foreground-muted))] hover:text-white'}`}>
                   {SPEED_LABELS[s]}
                 </button>
               ))}
@@ -191,7 +191,7 @@ export default function ListeningPage() {
 
             {/* Show text toggle */}
             <button onClick={() => setShowText(v => !v)}
-              className="mt-3 w-full py-2.5 rounded-xl border border-white/10 text-[#64748b] hover:text-white text-sm flex items-center justify-center gap-2 transition-colors">
+              className="mt-3 w-full py-2.5 rounded-xl border border-white/10 text-[hsl(var(--foreground-muted))] hover:text-white text-sm flex items-center justify-center gap-2 transition-colors">
               {showText ? <><EyeOff className="w-4 h-4" /> Скрыть текст</> : <><Eye className="w-4 h-4" /> Показать текст</>}
             </button>
 
@@ -199,7 +199,7 @@ export default function ListeningPage() {
               {showText && (
                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
                   className="mt-3 overflow-hidden">
-                  <p className="text-[#94a3b8] text-sm leading-relaxed p-3 bg-white/[0.03] rounded-xl border border-white/[0.06] italic whitespace-pre-line">
+                  <p className="text-[hsl(var(--foreground-muted))] text-sm leading-relaxed p-3 bg-white/[0.03] rounded-xl border border-white/[0.06] italic whitespace-pre-line">
                     {entry.text}
                   </p>
                 </motion.div>
@@ -210,7 +210,7 @@ export default function ListeningPage() {
           {/* Questions trigger */}
           {!showQuestions && (
             <button onClick={() => setShowQuestions(true)}
-              className="w-full py-3 rounded-2xl border border-white/10 text-[#94a3b8] hover:text-white hover:border-white/20 text-sm font-medium transition-all">
+              className="w-full py-3 rounded-2xl border border-white/10 text-[hsl(var(--foreground-muted))] hover:text-white hover:border-white/20 text-sm font-medium transition-all">
               Ответить на вопросы →
             </button>
           )}
@@ -222,16 +222,16 @@ export default function ListeningPage() {
                 <h3 className="text-white font-semibold">Вопросы</h3>
                 {entry.questions.map((q, qi) => (
                   <div key={qi}>
-                    <p className="text-[#94a3b8] text-sm mb-2">{qi + 1}. {q.question}</p>
+                    <p className="text-[hsl(var(--foreground-muted))] text-sm mb-2">{qi + 1}. {q.question}</p>
                     <div className="space-y-2">
                       {q.options.map(opt => {
-                        let cls = 'border-white/10 bg-white/[0.04] text-[#94a3b8] hover:border-[#6366f1]/50 hover:text-white'
+                        let cls = 'border-white/10 bg-white/[0.04] text-[hsl(var(--foreground-muted))] hover:border-[hsl(var(--accent))]/50 hover:text-white'
                         if (checked) {
                           if (opt === q.answer) cls = 'border-[#10b981] bg-[#10b981]/15 text-[#10b981]'
                           else if (opt === answers[qi]) cls = 'border-[#ef4444] bg-[#ef4444]/15 text-[#ef4444]'
-                          else cls = 'border-white/5 bg-white/[0.02] text-[#475569]'
+                          else cls = 'border-white/5 bg-white/[0.02] text-[hsl(var(--foreground-subtle))]'
                         } else if (answers[qi] === opt) {
-                          cls = 'border-[#6366f1] bg-[#6366f1]/15 text-white'
+                          cls = 'border-[hsl(var(--accent))] bg-[hsl(var(--accent))]/15 text-white'
                         }
                         return (
                           <button key={opt} disabled={checked}

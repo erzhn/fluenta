@@ -55,83 +55,71 @@ export default function LoginPage() {
     }
   }
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    background: 'rgba(255,255,255,0.08)',
-    border: '1px solid rgba(255,255,255,0.15)',
-    borderRadius: '0.75rem',
-    padding: '0.875rem 1rem',
-    color: 'white',
-    fontSize: '1rem',
-    outline: 'none',
-    boxSizing: 'border-box',
-  }
-
-  const btnStyle: React.CSSProperties = {
-    width: '100%',
-    marginTop: '1rem',
-    background: 'linear-gradient(135deg, #7c3aed, #2563eb)',
-    color: 'white',
-    border: 'none',
-    borderRadius: '0.75rem',
-    padding: '0.875rem',
-    fontSize: '1rem',
-    fontWeight: 600,
-    cursor: loading ? 'not-allowed' : 'pointer',
-    opacity: loading ? 0.6 : 1,
-  }
-
   return (
-    <div style={{ minHeight: '100vh', background: '#0f0f1a', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-      <div style={{ width: '100%', maxWidth: '420px', background: '#1a1a2e', borderRadius: '1.5rem', padding: '2.5rem', border: '1px solid rgba(255,255,255,0.1)' }}>
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✨</div>
-          <h1 style={{ color: 'white', fontSize: '1.75rem', fontWeight: 700, margin: 0 }}>Войти в Fluenta</h1>
-          <p style={{ color: '#9ca3af', marginTop: '0.5rem' }}>
-            {step === 'email' ? 'Введи email — отправим код для входа' : 'Код отправлен на ' + email}
+    <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--background-secondary))] p-4">
+      <div className="card w-full max-w-sm p-8 shadow-lg">
+        <div className="text-center mb-8">
+          <div className="w-10 h-10 rounded-xl bg-[hsl(var(--accent))] flex items-center justify-center text-white font-bold text-lg mx-auto mb-4">
+            F
+          </div>
+          <h1 className="text-xl font-semibold text-[hsl(var(--foreground))]">Войти в Fluenta</h1>
+          <p className="text-sm text-[hsl(var(--foreground-muted))] mt-1">
+            {step === 'email' ? 'Введи email — отправим код для входа' : `Код отправлен на ${email}`}
           </p>
         </div>
 
-        {error ? (
-          <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)', borderRadius: '0.75rem', color: '#fca5a5', fontSize: '0.875rem' }}>
+        {error && (
+          <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 text-sm">
             {error}
           </div>
-        ) : null}
+        )}
 
         {step === 'email' ? (
-          <form onSubmit={sendCode}>
-            <label style={{ display: 'block', color: '#9ca3af', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="your@email.com"
-              required
-              style={inputStyle}
-            />
-            <button type="submit" disabled={loading} style={btnStyle}>
+          <form onSubmit={sendCode} className="space-y-4">
+            <div>
+              <label className="block text-sm text-[hsl(var(--foreground-muted))] mb-1.5">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                required
+                className="w-full bg-[hsl(var(--background-secondary))] border border-[hsl(var(--border))] rounded-lg px-3.5 py-2.5 text-[hsl(var(--foreground))] text-sm placeholder:text-[hsl(var(--foreground-subtle))] focus:outline-none focus:border-[hsl(var(--accent))] transition-colors"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[hsl(var(--accent))] text-white rounded-lg py-2.5 text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
+            >
               {loading ? 'Отправляем...' : 'Получить код →'}
             </button>
           </form>
         ) : (
-          <form onSubmit={verifyCode}>
-            <label style={{ display: 'block', color: '#9ca3af', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Код из письма</label>
-            <input
-              type="text"
-              value={code}
-              onChange={e => setCode(e.target.value)}
-              placeholder="12345678"
-              required
-              maxLength={8}
-              style={{ ...inputStyle, fontSize: '2rem', fontWeight: 700, textAlign: 'center', letterSpacing: '0.5rem' }}
-            />
-            <button type="submit" disabled={loading} style={btnStyle}>
+          <form onSubmit={verifyCode} className="space-y-4">
+            <div>
+              <label className="block text-sm text-[hsl(var(--foreground-muted))] mb-1.5">Код из письма</label>
+              <input
+                type="text"
+                value={code}
+                onChange={e => setCode(e.target.value)}
+                placeholder="12345678"
+                required
+                maxLength={8}
+                className="w-full bg-[hsl(var(--background-secondary))] border border-[hsl(var(--border))] rounded-lg px-3.5 py-2.5 text-[hsl(var(--foreground))] text-2xl font-bold text-center tracking-[0.5rem] focus:outline-none focus:border-[hsl(var(--accent))] transition-colors"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[hsl(var(--accent))] text-white rounded-lg py-2.5 text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
+            >
               {loading ? 'Проверяем...' : 'Войти →'}
             </button>
             <button
               type="button"
               onClick={() => { setStep('email'); setError('') }}
-              style={{ width: '100%', marginTop: '0.75rem', background: 'transparent', border: 'none', color: '#6b7280', fontSize: '0.875rem', cursor: 'pointer', padding: '0.5rem' }}
+              className="w-full text-sm text-[hsl(var(--foreground-muted))] hover:text-[hsl(var(--foreground))] transition-colors py-1"
             >
               ← Изменить email
             </button>

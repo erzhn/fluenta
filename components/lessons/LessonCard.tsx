@@ -22,12 +22,12 @@ export function LessonCard({ lesson, locked, progress }: LessonCardProps) {
     <motion.div
       whileHover={locked ? {} : { y: -2, scale: 1.01 }}
       whileTap={locked ? {} : { scale: 0.99 }}
-      className={`relative flex flex-col h-full rounded-2xl border transition-all overflow-hidden ${
+      className={`relative flex flex-col h-full rounded-xl border transition-all overflow-hidden ${
         locked
-          ? "border-[#1E293B] bg-[#0D1628] opacity-70 cursor-not-allowed"
+          ? "border-[hsl(var(--card-border))] bg-[hsl(var(--background-secondary))] opacity-70 cursor-not-allowed"
           : completed
-          ? "border-[#10B981]/30 bg-[#1E293B] hover:border-[#10B981]/60"
-          : "border-[#334155] bg-[#1E293B] hover:border-[#6366F1]/50 hover:shadow-lg hover:shadow-[#6366F1]/5"
+          ? "border-green-200 dark:border-green-900/30 bg-[hsl(var(--card))] hover:border-green-400 dark:hover:border-green-700"
+          : "border-[hsl(var(--card-border))] bg-[hsl(var(--card))] hover:border-[hsl(var(--accent))/50] hover:shadow-md"
       }`}
     >
       <div className="h-1 w-full" style={{ backgroundColor: color }} />
@@ -35,22 +35,22 @@ export function LessonCard({ lesson, locked, progress }: LessonCardProps) {
       <div className="flex flex-col flex-1 p-5">
         <div className="flex items-start justify-between mb-3">
           <div className="text-xs font-extrabold px-2.5 py-1 rounded-lg"
-            style={{ backgroundColor: `${color}20`, color }}>
+            style={{ backgroundColor: `${color}18`, color }}>
             {lesson.level}
           </div>
           <div className="flex items-center gap-2">
-            {completed && <span className="text-xs text-[#10B981] font-medium">✓ Пройдено</span>}
+            {completed && <span className="text-xs text-green-600 dark:text-green-400 font-medium">✓ Пройдено</span>}
             <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${color}15` }}>
               {locked ? <Lock className="w-3.5 h-3.5" style={{ color }} /> : <BookOpen className="w-3.5 h-3.5" style={{ color }} />}
             </div>
           </div>
         </div>
 
-        <h3 className="font-bold text-white text-sm leading-snug mb-1">{lesson.title}</h3>
-        <p className="text-[#475569] text-xs mb-4">Блок {lesson.block} · {lesson.blockName}</p>
+        <h3 className="font-bold text-[hsl(var(--foreground))] text-sm leading-snug mb-1">{lesson.title}</h3>
+        <p className="text-[hsl(var(--foreground-subtle))] text-xs mb-4">Блок {lesson.block} · {lesson.blockName}</p>
 
         <div className="mt-auto">
-          <div className="flex items-center justify-between text-xs text-[#475569] mb-3">
+          <div className="flex items-center justify-between text-xs text-[hsl(var(--foreground-muted))] mb-3">
             <span className="flex items-center gap-1">
               <Clock className="w-3.5 h-3.5" />{lesson.duration}
             </span>
@@ -60,9 +60,11 @@ export function LessonCard({ lesson, locked, progress }: LessonCardProps) {
           </div>
 
           <div
-            className={`w-full py-2.5 rounded-xl text-xs font-semibold text-center transition-all ${
-              locked ? "bg-[#0F172A] text-[#334155]"
-                : completed ? "bg-[#10B981]/15 text-[#10B981]"
+            className={`w-full py-2.5 rounded-lg text-xs font-semibold text-center transition-all ${
+              locked
+                ? "bg-[hsl(var(--background-secondary))] text-[hsl(var(--foreground-muted))]"
+                : completed
+                ? "bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400"
                 : "text-white"
             }`}
             style={locked || completed ? {} : { background: `linear-gradient(135deg, ${color}dd, ${color}99)` }}

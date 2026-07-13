@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -113,7 +113,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 text-[#6366F1] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[hsl(var(--accent))] animate-spin" />
       </div>
     );
   }
@@ -126,7 +126,7 @@ export default function ProfilePage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-[#1E293B] border border-[#334155] rounded-2xl p-6"
+        className="bg-[hsl(var(--background-secondary))] border border-[hsl(var(--border))] rounded-2xl p-6"
       >
         <div className="flex items-center gap-4 mb-5">
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center text-white text-2xl font-bold shrink-0">
@@ -144,10 +144,10 @@ export default function ProfilePage() {
               >
                 {cefrLevel}
               </span>
-              <span className="text-[#64748B] text-sm">{CEFR_LABELS[cefrLevel]}</span>
+              <span className="text-[hsl(var(--foreground-muted))] text-sm">{CEFR_LABELS[cefrLevel]}</span>
             </div>
             {levelInfo && (
-              <p className="text-[#475569] text-xs mt-0.5">
+              <p className="text-[hsl(var(--foreground-subtle))] text-xs mt-0.5">
                 Уровень {levelInfo.level} · {levelInfo.name.replace(/[🌱📖⚡🎯🚀💎🏆👑]/g, "").trim()}
               </p>
             )}
@@ -161,12 +161,12 @@ export default function ProfilePage() {
             { icon: Flame,    label: "Серия дней",  value: `${profile?.streak ?? 0} д.`,        color: "#F59E0B" },
             { icon: BookOpen, label: "Уроков",       value: String(profile?.total_lessons ?? 0), color: "#10B981" },
           ].map((s) => (
-            <div key={s.label} className="bg-[#0F172A] rounded-xl p-3 text-center">
+            <div key={s.label} className="bg-[hsl(var(--background))] rounded-xl p-3 text-center">
               <div className="flex justify-center mb-1">
                 <s.icon className="w-4 h-4" style={{ color: s.color }} />
               </div>
               <div className="font-bold text-white text-sm">{s.value}</div>
-              <div className="text-[#475569] text-[10px] mt-0.5">{s.label}</div>
+              <div className="text-[hsl(var(--foreground-subtle))] text-[10px] mt-0.5">{s.label}</div>
             </div>
           ))}
         </div>
@@ -174,11 +174,11 @@ export default function ProfilePage() {
         {/* XP progress */}
         {levelInfo && (
           <div className="mt-4">
-            <div className="flex justify-between text-[11px] text-[#475569] mb-1">
+            <div className="flex justify-between text-[11px] text-[hsl(var(--foreground-subtle))] mb-1">
               <span>Уровень {levelInfo.level}</span>
               <span>{levelInfo.current.toLocaleString()} / {levelInfo.next.toLocaleString()} XP</span>
             </div>
-            <div className="h-2 bg-[#0F172A] rounded-full overflow-hidden">
+            <div className="h-2 bg-[hsl(var(--background))] rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${levelInfo.progress}%` }}
@@ -195,31 +195,31 @@ export default function ProfilePage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
-        className="bg-[#1E293B] border border-[#334155] rounded-2xl p-5 space-y-4"
+        className="bg-[hsl(var(--background-secondary))] border border-[hsl(var(--border))] rounded-2xl p-5 space-y-4"
       >
         <h3 className="font-semibold text-white">Личные данные</h3>
 
         <div>
-          <label className="block text-xs font-medium text-[#64748B] mb-1.5">Имя</label>
+          <label className="block text-xs font-medium text-[hsl(var(--foreground-muted))] mb-1.5">Имя</label>
           <div className="relative">
-            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#475569]" />
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(var(--foreground-subtle))]" />
             <input
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="Ваше имя"
-              className="w-full bg-[#0F172A] border border-[#334155] rounded-xl pl-10 pr-4 py-2.5 text-white text-sm placeholder:text-[#334155] focus:outline-none focus:border-[#6366F1] transition-colors"
+              className="w-full bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-xl pl-10 pr-4 py-2.5 text-white text-sm placeholder:text-[#334155] focus:outline-none focus:border-[hsl(var(--accent))] transition-colors"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-[#64748B] mb-1.5">Родной язык</label>
+          <label className="block text-xs font-medium text-[hsl(var(--foreground-muted))] mb-1.5">Родной язык</label>
           <div className="relative">
-            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#475569]" />
+            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(var(--foreground-subtle))]" />
             <select
               value={nativeLang}
               onChange={(e) => setNativeLang(e.target.value)}
-              className="w-full bg-[#0F172A] border border-[#334155] rounded-xl pl-10 pr-4 py-2.5 text-white text-sm focus:outline-none focus:border-[#6366F1] transition-colors appearance-none"
+              className="w-full bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-xl pl-10 pr-4 py-2.5 text-white text-sm focus:outline-none focus:border-[hsl(var(--accent))] transition-colors appearance-none"
             >
               {["Русский", "Казахский", "Украинский", "Узбекский", "Кыргызский"].map(l => (
                 <option key={l} value={l}>{l}</option>
@@ -229,10 +229,10 @@ export default function ProfilePage() {
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-[#64748B] mb-1.5">Email</label>
+          <label className="block text-xs font-medium text-[hsl(var(--foreground-muted))] mb-1.5">Email</label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#475569]" />
-            <div className="w-full bg-[#0F172A]/50 border border-[#1E293B] rounded-xl pl-10 pr-4 py-2.5 text-[#475569] text-sm select-none">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(var(--foreground-subtle))]" />
+            <div className="w-full bg-[hsl(var(--background))]/50 border border-[#1E293B] rounded-xl pl-10 pr-4 py-2.5 text-[hsl(var(--foreground-subtle))] text-sm select-none">
               {profile?.user_id ? "Изменить можно в Supabase" : "—"}
             </div>
           </div>
@@ -244,7 +244,7 @@ export default function ProfilePage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="bg-[#1E293B] border border-[#334155] rounded-2xl p-5"
+        className="bg-[hsl(var(--background-secondary))] border border-[hsl(var(--border))] rounded-2xl p-5"
       >
         <h3 className="font-semibold text-white mb-3">Уровень английского</h3>
         <div className="grid grid-cols-3 gap-2 mb-3">
@@ -255,7 +255,7 @@ export default function ProfilePage() {
               className={`py-2.5 rounded-xl text-sm font-semibold transition-all ${
                 cefrLevel === l
                   ? "scale-[1.03]"
-                  : "bg-[#0F172A] text-[#64748B] border border-[#334155] hover:border-[#475569] hover:text-white"
+                  : "bg-[hsl(var(--background))] text-[hsl(var(--foreground-muted))] border border-[hsl(var(--border))] hover:border-[#475569] hover:text-white"
               }`}
               style={cefrLevel === l ? {
                 backgroundColor: `${CEFR_COLORS[l]}20`,
@@ -270,13 +270,13 @@ export default function ProfilePage() {
         </div>
         <Link
           href="/lessons"
-          className="flex items-center justify-between px-4 py-3 bg-[#0F172A] border border-[#334155] hover:border-[#6366F1]/50 rounded-xl transition-all group"
+          className="flex items-center justify-between px-4 py-3 bg-[hsl(var(--background))] border border-[hsl(var(--border))] hover:border-[hsl(var(--accent))]/50 rounded-xl transition-all group"
         >
           <div>
             <p className="text-white text-sm font-medium">Пройти тест на уровень</p>
-            <p className="text-[#475569] text-xs mt-0.5">Определи свой точный уровень CEFR</p>
+            <p className="text-[hsl(var(--foreground-subtle))] text-xs mt-0.5">Определи свой точный уровень CEFR</p>
           </div>
-          <ChevronRight className="w-4 h-4 text-[#475569] group-hover:text-[#6366F1] transition-colors" />
+          <ChevronRight className="w-4 h-4 text-[hsl(var(--foreground-subtle))] group-hover:text-[hsl(var(--accent))] transition-colors" />
         </Link>
       </motion.div>
 
@@ -285,7 +285,7 @@ export default function ProfilePage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
-        className="bg-[#1E293B] border border-[#334155] rounded-2xl p-5"
+        className="bg-[hsl(var(--background-secondary))] border border-[hsl(var(--border))] rounded-2xl p-5"
       >
         <div className="flex items-center gap-2 mb-3">
           <Target className="w-4 h-4 text-[#10B981]" />
@@ -299,7 +299,7 @@ export default function ProfilePage() {
               className={`py-3 rounded-xl text-sm font-semibold transition-all ${
                 dailyGoal === mins
                   ? "bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/40"
-                  : "bg-[#0F172A] text-[#64748B] border border-[#334155] hover:border-[#475569] hover:text-white"
+                  : "bg-[hsl(var(--background))] text-[hsl(var(--foreground-muted))] border border-[hsl(var(--border))] hover:border-[#475569] hover:text-white"
               }`}
             >
               {mins} мин
@@ -313,7 +313,7 @@ export default function ProfilePage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="bg-[#1E293B] border border-[#334155] rounded-2xl p-5"
+        className="bg-[hsl(var(--background-secondary))] border border-[hsl(var(--border))] rounded-2xl p-5"
       >
         <div className="flex items-center gap-2 mb-3">
           <Trophy className="w-4 h-4 text-[#F59E0B]" />
@@ -326,12 +326,12 @@ export default function ProfilePage() {
               onClick={() => setLearningGoal(goal)}
               className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all text-left ${
                 learningGoal === goal
-                  ? "bg-[#6366F1]/15 text-white border border-[#6366F1]/40"
-                  : "bg-[#0F172A] text-[#64748B] border border-[#334155] hover:border-[#475569] hover:text-white"
+                  ? "bg-[hsl(var(--accent))]/15 text-white border border-[hsl(var(--accent))]/40"
+                  : "bg-[hsl(var(--background))] text-[hsl(var(--foreground-muted))] border border-[hsl(var(--border))] hover:border-[#475569] hover:text-white"
               }`}
             >
               {goal}
-              {learningGoal === goal && <Check className="w-4 h-4 text-[#6366F1] shrink-0" />}
+              {learningGoal === goal && <Check className="w-4 h-4 text-[hsl(var(--accent))] shrink-0" />}
             </button>
           ))}
         </div>
@@ -342,29 +342,29 @@ export default function ProfilePage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.25 }}
-        className="bg-[#1E293B] border border-[#334155] rounded-2xl p-5"
+        className="bg-[hsl(var(--background-secondary))] border border-[hsl(var(--border))] rounded-2xl p-5"
       >
         <h3 className="font-semibold text-white mb-3">Уведомления</h3>
         <button
           onClick={() => setNotificationsOn(!notificationsOn)}
-          className="w-full flex items-center justify-between px-4 py-3 bg-[#0F172A] border border-[#334155] hover:border-[#475569] rounded-xl transition-all"
+          className="w-full flex items-center justify-between px-4 py-3 bg-[hsl(var(--background))] border border-[hsl(var(--border))] hover:border-[#475569] rounded-xl transition-all"
         >
           <div className="flex items-center gap-3">
             {notificationsOn ? (
-              <Bell className="w-4 h-4 text-[#6366F1]" />
+              <Bell className="w-4 h-4 text-[hsl(var(--accent))]" />
             ) : (
-              <BellOff className="w-4 h-4 text-[#475569]" />
+              <BellOff className="w-4 h-4 text-[hsl(var(--foreground-subtle))]" />
             )}
             <div className="text-left">
               <p className="text-white text-sm font-medium">
                 {notificationsOn ? "Уведомления включены" : "Уведомления выключены"}
               </p>
-              <p className="text-[#475569] text-xs mt-0.5">
+              <p className="text-[hsl(var(--foreground-subtle))] text-xs mt-0.5">
                 {notificationsOn ? "Напоминания об учёбе активны" : "Нажми, чтобы включить"}
               </p>
             </div>
           </div>
-          <div className={`w-11 h-6 rounded-full transition-colors shrink-0 ${notificationsOn ? "bg-[#6366F1]" : "bg-[#334155]"}`}>
+          <div className={`w-11 h-6 rounded-full transition-colors shrink-0 ${notificationsOn ? "bg-[hsl(var(--accent))]" : "bg-[#334155]"}`}>
             <div
               className={`w-5 h-5 rounded-full bg-white shadow-md mt-0.5 transition-transform ${
                 notificationsOn ? "translate-x-[22px]" : "translate-x-0.5"

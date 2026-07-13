@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -50,17 +50,17 @@ function UnlockCelebration({ achievement, onClose }: { achievement: AchievementW
         exit={{ scale: 0.8, opacity: 0 }}
         transition={{ type: "spring", damping: 15, stiffness: 200 }}
         onClick={(e) => e.stopPropagation()}
-        className="relative bg-[#0F172A] border border-[#6366F1]/40 rounded-3xl p-10 text-center max-w-sm mx-4 shadow-2xl"
+        className="relative bg-[hsl(var(--background))] border border-[hsl(var(--accent))]/40 rounded-3xl p-10 text-center max-w-sm mx-4 shadow-2xl"
         style={{ boxShadow: "0 0 60px #6366F140" }}
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 w-8 h-8 rounded-lg flex items-center justify-center text-[#475569] hover:text-white hover:bg-white/5 transition-all"
+          className="absolute top-4 right-4 w-8 h-8 rounded-lg flex items-center justify-center text-[hsl(var(--foreground-subtle))] hover:text-white hover:bg-white/5 transition-all"
         >
           <X className="w-4 h-4" />
         </button>
 
-        <div className="text-xs font-bold tracking-widest text-[#6366F1] uppercase mb-4">
+        <div className="text-xs font-bold tracking-widest text-[hsl(var(--accent))] uppercase mb-4">
           Достижение разблокировано!
         </div>
 
@@ -73,11 +73,11 @@ function UnlockCelebration({ achievement, onClose }: { achievement: AchievementW
         </motion.div>
 
         <h3 className="text-white font-extrabold text-xl mb-2">{achievement.title}</h3>
-        <p className="text-[#64748B] text-sm mb-6">{achievement.desc}</p>
+        <p className="text-[hsl(var(--foreground-muted))] text-sm mb-6">{achievement.desc}</p>
 
         <div className="flex items-center justify-center gap-2 bg-[#F59E0B]/10 border border-[#F59E0B]/30 rounded-xl px-4 py-2 mb-6">
           <span className="text-[#F59E0B] font-bold">+{achievement.xp_reward} XP</span>
-          <span className="text-[#64748B] text-sm">заработано</span>
+          <span className="text-[hsl(var(--foreground-muted))] text-sm">заработано</span>
         </div>
 
         <motion.button
@@ -120,7 +120,7 @@ export function AchievementBadge({ achievement, showCelebration = false, size = 
         whileTap={{ scale: 0.97 }}
         className={`relative flex flex-col items-center ${pad} rounded-2xl border text-center transition-all cursor-default overflow-hidden ${
           achievement.unlocked
-            ? "bg-[#1E293B] border-[#6366F1]/30 hover:border-[#6366F1]/60"
+            ? "bg-[hsl(var(--background-secondary))] border-[hsl(var(--accent))]/30 hover:border-[hsl(var(--accent))]/60"
             : "bg-[#0D1628] border-[#1E293B] opacity-70"
         }`}
         style={achievement.unlocked ? { boxShadow: "0 0 20px #6366F108" } : {}}
@@ -143,14 +143,14 @@ export function AchievementBadge({ achievement, showCelebration = false, size = 
         </div>
 
         <div className={`${titleSize} font-bold text-white leading-snug mb-1`}>{achievement.title}</div>
-        <div className="text-[#475569] text-xs leading-snug">{achievement.desc}</div>
+        <div className="text-[hsl(var(--foreground-subtle))] text-xs leading-snug">{achievement.desc}</div>
 
         {achievement.unlocked ? (
           <div className="mt-2 text-xs text-[#F59E0B] font-semibold">+{achievement.xp_reward} XP</div>
         ) : (
           achievement.progress !== undefined && achievement.progress > 0 && (
             <div className="mt-2.5 w-full">
-              <div className="h-1 bg-[#1E293B] rounded-full overflow-hidden">
+              <div className="h-1 bg-[hsl(var(--background-secondary))] rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${achievement.progress}%` }}

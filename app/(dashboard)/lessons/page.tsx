@@ -120,11 +120,11 @@ function ExamplesStep({ lesson, onNext }: { lesson: Lesson; onNext: () => void }
             {/* Front вЂ” English */}
             <div className="absolute inset-0 bg-white/[0.06] border border-white/10 rounded-2xl flex flex-col items-center justify-center p-6 text-center"
               style={{ backfaceVisibility: 'hidden' }}>
-              <div className="text-[#475569] text-[10px] uppercase tracking-widest mb-3 flex items-center gap-1.5">
+              <div className="text-[hsl(var(--foreground-subtle))] text-[10px] uppercase tracking-widest mb-3 flex items-center gap-1.5">
                 <FlipHorizontal className="w-3 h-3" />English
               </div>
               <div className="text-white font-bold text-lg leading-snug">{ex.english}</div>
-              <div className="text-[#6366f1] text-xs mt-4 opacity-60">нажми чтобы перевернуть</div>
+              <div className="text-[hsl(var(--accent))] text-xs mt-4 opacity-60">нажми чтобы перевернуть</div>
             </div>
             {/* Back — Russian */}
             <div className="absolute inset-0 rounded-2xl flex flex-col items-center justify-center p-6 text-center"
@@ -135,7 +135,7 @@ function ExamplesStep({ lesson, onNext }: { lesson: Lesson; onNext: () => void }
           </motion.div>
         </div>
 
-        <p className="text-[#475569] text-xs">
+        <p className="text-[hsl(var(--foreground-subtle))] text-xs">
           {cur + 1} / {lesson.theory.examples.length}
         </p>
       </div>
@@ -203,7 +203,7 @@ function ExercisesStep({ lesson, onNext, module: mod }: { lesson: Lesson; onNext
           onComplete={() => setSpeakingDone(true)}
         />
         <button onClick={() => setSpeakingDone(true)}
-          className="text-[#64748b] hover:text-white text-sm text-center transition-colors">
+          className="text-[hsl(var(--foreground-muted))] hover:text-white text-sm text-center transition-colors">
           Пропустить → к упражнениям
         </button>
       </div>
@@ -213,7 +213,7 @@ function ExercisesStep({ lesson, onNext, module: mod }: { lesson: Lesson; onNext
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between mb-4">
-        <span className="text-[#64748b] text-xs">Упражнение {cur + 1} из {lesson.exercises.length}</span>
+        <span className="text-[hsl(var(--foreground-muted))] text-xs">Упражнение {cur + 1} из {lesson.exercises.length}</span>
         <div className="flex gap-1">
           {lesson.exercises.map((_, i) => (
             <div key={i} className="w-5 h-1.5 rounded-full transition-all"
@@ -237,13 +237,13 @@ function ExercisesStep({ lesson, onNext, module: mod }: { lesson: Lesson; onNext
                           onKeyDown={e => e.key === 'Enter' && !answered && canCheck && check()}
                           disabled={answered} placeholder="______"
                           className={`w-28 border-b-2 bg-transparent text-center font-bold outline-none px-1 transition-colors ${
-                            answered ? (correct ? 'border-[#10b981] text-[#10b981]' : 'border-[#ef4444] text-[#ef4444]') : 'border-[#6366f1] text-[#a5b4fc]'
+                            answered ? (correct ? 'border-[#10b981] text-[#10b981]' : 'border-[#ef4444] text-[#ef4444]') : 'border-[hsl(var(--accent))] text-[#a5b4fc]'
                           }`} />
                       )}
                     </span>
                   ))}
                 </div>
-                {ex.hint && !answered && <p className="text-[#475569] text-xs">💡 {ex.hint}</p>}
+                {ex.hint && !answered && <p className="text-[hsl(var(--foreground-subtle))] text-xs">💡 {ex.hint}</p>}
               </div>
             )}
 
@@ -256,9 +256,9 @@ function ExercisesStep({ lesson, onNext, module: mod }: { lesson: Lesson; onNext
                       answered
                         ? opt === ex.answer ? 'border-[#10b981] bg-[#10b981]/15 text-[#10b981]'
                           : opt === selected ? 'border-[#ef4444] bg-[#ef4444]/15 text-[#ef4444]'
-                          : 'border-white/[0.05] text-[#475569]'
-                        : opt === selected ? 'border-[#6366f1] bg-[#6366f1]/10 text-white'
-                          : 'border-white/10 text-[#94a3b8] hover:border-white/20 hover:text-white'
+                          : 'border-white/[0.05] text-[hsl(var(--foreground-subtle))]'
+                        : opt === selected ? 'border-[hsl(var(--accent))] bg-[hsl(var(--accent))]/10 text-white'
+                          : 'border-white/10 text-[hsl(var(--foreground-muted))] hover:border-white/20 hover:text-white'
                     }`}>
                     {opt}
                   </button>
@@ -268,14 +268,14 @@ function ExercisesStep({ lesson, onNext, module: mod }: { lesson: Lesson; onNext
 
             {ex.type === 'build_sentence' && (
               <div className="space-y-4">
-                <p className="text-[#94a3b8] text-sm">{ex.question || 'Собери предложение:'}</p>
+                <p className="text-[hsl(var(--foreground-muted))] text-sm">{ex.question || 'Собери предложение:'}</p>
                 <div className="min-h-12 flex flex-wrap gap-2 p-3 rounded-xl border-2 border-dashed border-white/10 bg-white/[0.02]">
                   {built.length === 0 && <span className="text-[#334155] text-sm self-center">Нажми на слова снизу...</span>}
                   {built.map((w, i) => (
                     <button key={`b${i}`} onClick={() => { if (answered) return; setBuilt(b => b.filter((_, j) => j !== i)); setAvail(a => [...a, w]) }} disabled={answered}
                       className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all ${
                         answered ? (correct ? 'bg-[#10b981]/15 border-[#10b981]/40 text-[#10b981]' : 'bg-[#ef4444]/15 border-[#ef4444]/40 text-[#ef4444]')
-                          : 'bg-[#6366f1]/15 border-[#6366f1]/40 text-[#a5b4fc] hover:bg-[#6366f1]/25'
+                          : 'bg-[hsl(var(--accent))]/15 border-[hsl(var(--accent))]/40 text-[#a5b4fc] hover:bg-[hsl(var(--accent))]/25'
                       }`}>
                       {w}
                     </button>
@@ -355,7 +355,7 @@ function QuizStep({ lesson, onFinish }: { lesson: Lesson; onFinish: (score: numb
       <div className="flex flex-col items-center justify-center h-full text-center px-4">
         <div className="text-6xl mb-4">{pass ? '🎉' : '💪'}</div>
         <h3 className="text-white font-black text-xl mb-2">{pass ? 'Урок завершён!' : 'Попробуй снова'}</h3>
-        <p className="text-[#64748b] text-sm mb-2">{finalScore} из {lesson.quiz.length} правильно</p>
+        <p className="text-[hsl(var(--foreground-muted))] text-sm mb-2">{finalScore} из {lesson.quiz.length} правильно</p>
         {pass && (
           <div className="flex items-center gap-2 text-[#f59e0b] font-bold text-sm mb-6">
             <Zap className="w-4 h-4" />+{xpForLesson(lesson)} XP
@@ -374,7 +374,7 @@ function QuizStep({ lesson, onFinish }: { lesson: Lesson; onFinish: (score: numb
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between mb-4">
-        <span className="text-[#64748b] text-xs">Вопрос {cur + 1} из {lesson.quiz.length}</span>
+        <span className="text-[hsl(var(--foreground-muted))] text-xs">Вопрос {cur + 1} из {lesson.quiz.length}</span>
         <div className="flex gap-1">
           {lesson.quiz.map((_, i) => (
             <div key={i} className="w-4 h-1.5 rounded-full transition-all"
@@ -388,7 +388,7 @@ function QuizStep({ lesson, onFinish }: { lesson: Lesson; onFinish: (score: numb
         {q.options.map(opt => (
           <button key={opt} onClick={() => !selected && setSelected(opt)}
             className={`w-full text-left px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all ${
-              selected === opt ? 'border-[#6366f1] bg-[#6366f1]/10 text-white' : 'border-white/10 text-[#94a3b8] hover:border-white/20 hover:text-white'
+              selected === opt ? 'border-[hsl(var(--accent))] bg-[hsl(var(--accent))]/10 text-white' : 'border-white/10 text-[hsl(var(--foreground-muted))] hover:border-white/20 hover:text-white'
             }`}>
             {opt}
           </button>
@@ -422,7 +422,7 @@ function LessonPlayer({ lesson, onBack, onComplete }: {
       {/* Header */}
       <div className="flex items-center gap-3 mb-5 shrink-0">
         <button onClick={onBack}
-          className="flex items-center gap-1.5 text-[#64748b] hover:text-white text-sm transition-colors">
+          className="flex items-center gap-1.5 text-[hsl(var(--foreground-muted))] hover:text-white text-sm transition-colors">
           <ChevronLeft className="w-4 h-4" />Назад
         </button>
         <div className="flex-1" />
@@ -430,7 +430,7 @@ function LessonPlayer({ lesson, onBack, onComplete }: {
           style={{ backgroundColor: `${c}20`, color: c }}>
           {lesson.level}
         </span>
-        <span className="text-[#64748b] text-xs">{lesson.duration}</span>
+        <span className="text-[hsl(var(--foreground-muted))] text-xs">{lesson.duration}</span>
       </div>
 
       <h2 className="text-white font-black text-lg mb-4 shrink-0">{lesson.title}</h2>
@@ -484,14 +484,14 @@ function LessonCard({ lesson, unlocked, completed, current, onClick }: {
       className={`card-lift w-full text-left bg-white/[0.04] border rounded-2xl p-4 transition-all ${
         !unlocked ? 'opacity-40 grayscale cursor-not-allowed border-white/[0.06]'
           : completed ? 'border-[#10b981]/40 hover:border-[#10b981]/60'
-          : current ? 'border-[#6366f1] shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:border-[#6366f1]'
+          : current ? 'border-[hsl(var(--accent))] shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:border-[hsl(var(--accent))]'
           : 'border-white/10 hover:border-white/20'
       }`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <p className="text-white font-bold text-sm leading-snug truncate">{lesson.title}</p>
-          <p className="text-[#475569] text-xs mt-1">{lesson.duration}</p>
+          <p className="text-[hsl(var(--foreground-subtle))] text-xs mt-1">{lesson.duration}</p>
         </div>
         <div className="shrink-0 mt-0.5">
           {!unlocked ? <Lock className="w-4 h-4 text-[#334155]" />
@@ -619,7 +619,7 @@ export default function LessonsPage() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h1 className="text-2xl font-black text-white"><span className="gradient-text">Уроки</span> 📚</h1>
-                <p className="text-[#64748b] text-sm mt-0.5">
+                <p className="text-[hsl(var(--foreground-muted))] text-sm mt-0.5">
                   {activeModule
                     ? `${currentModuleMeta?.title ?? ''} · ${moduleLessons.filter(l => progress.completedLessons[l.id]).length}/${moduleLessons.length} уроков`
                     : `${totalCompleted}/${totalInLevel} на уровне ${activeLevel}`}
@@ -642,7 +642,7 @@ export default function LessonsPage() {
                     className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all whitespace-nowrap shrink-0 ${
                       active
                         ? 'bg-indigo-500/20 border-indigo-500/60 text-indigo-300'
-                        : 'border-white/10 text-[#64748b] hover:text-white hover:border-white/20'
+                        : 'border-white/10 text-[hsl(var(--foreground-muted))] hover:text-white hover:border-white/20'
                     }`}
                   >
                     {tab.label}
@@ -661,9 +661,9 @@ export default function LessonsPage() {
                     <section key={blockNum}>
                       <div className="flex items-center gap-3 mb-3">
                         <div className="text-white font-black text-sm">Блок {blockNum}</div>
-                        <div className="text-[#64748b] text-sm">— {name}</div>
+                        <div className="text-[hsl(var(--foreground-muted))] text-sm">— {name}</div>
                         <div className="flex-1 h-px bg-white/[0.06]" />
-                        <div className="text-[#475569] text-xs">{doneInBlock} из {lessons.length}</div>
+                        <div className="text-[hsl(var(--foreground-subtle))] text-xs">{doneInBlock} из {lessons.length}</div>
                       </div>
                       <div className="h-1 bg-white/[0.06] rounded-full mb-4 overflow-hidden">
                         <div className="h-full rounded-full transition-all"
@@ -696,7 +696,7 @@ export default function LessonsPage() {
                     return (
                       <button key={lv} onClick={() => setActiveLevel(lv)}
                         className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all ${
-                          active ? 'text-white' : 'border-white/10 text-[#64748b] hover:text-white hover:border-white/20'
+                          active ? 'text-white' : 'border-white/10 text-[hsl(var(--foreground-muted))] hover:text-white hover:border-white/20'
                         }`}
                         style={active ? { backgroundColor: `${lc}20`, borderColor: lc, color: lc } : {}}>
                         {lv}
@@ -715,9 +715,9 @@ export default function LessonsPage() {
                       <section key={blockNum}>
                         <div className="flex items-center gap-3 mb-3">
                           <div className="text-white font-black text-sm">Блок {blockNum}</div>
-                          <div className="text-[#64748b] text-sm">— {name}</div>
+                          <div className="text-[hsl(var(--foreground-muted))] text-sm">— {name}</div>
                           <div className="flex-1 h-px bg-white/[0.06]" />
-                          <div className="text-[#475569] text-xs">{doneInBlock} из {lessons.length}</div>
+                          <div className="text-[hsl(var(--foreground-subtle))] text-xs">{doneInBlock} из {lessons.length}</div>
                         </div>
                         <div className="h-1 bg-white/[0.06] rounded-full mb-4 overflow-hidden">
                           <div className="h-full rounded-full transition-all"
@@ -756,14 +756,14 @@ export default function LessonsPage() {
               className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl">
               <div className="text-5xl mb-4">🔒</div>
               <h2 className="text-white font-bold text-xl mb-2">Зарегистрируйся бесплатно</h2>
-              <p className="text-[#64748b] text-sm mb-6">Чтобы продолжить обучение, создай бесплатный аккаунт и получи доступ ко всем 95 урокам</p>
+              <p className="text-[hsl(var(--foreground-muted))] text-sm mb-6">Чтобы продолжить обучение, создай бесплатный аккаунт и получи доступ ко всем 95 урокам</p>
               <div className="flex flex-col gap-3">
                 <a href="/auth/login"
                   className="block w-full py-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white font-semibold hover:opacity-90 transition-opacity">
                   Войти / Зарегистрироваться
                 </a>
                 <button onClick={() => setShowDemoModal(false)}
-                  className="text-[#475569] hover:text-white text-sm transition-colors">
+                  className="text-[hsl(var(--foreground-subtle))] hover:text-white text-sm transition-colors">
                   Продолжить демо
                 </button>
               </div>

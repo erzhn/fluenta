@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { motion } from "framer-motion";
@@ -34,7 +34,7 @@ function MessageText({ text }: { text: string }) {
           return (
             <div
               key={i}
-              className="flex items-start gap-1.5 bg-white/5 rounded-lg px-2.5 py-1.5 text-[#94A3B8] text-xs italic"
+              className="flex items-start gap-1.5 bg-white/5 rounded-lg px-2.5 py-1.5 text-[hsl(var(--foreground-muted))] text-xs italic"
             >
               <span>🇷🇺</span>
               <span>{line.slice(3).trim()}</span>
@@ -57,7 +57,7 @@ function MessageText({ text }: { text: string }) {
           return (
             <div
               key={i}
-              className="bg-[#6366F1]/10 border border-[#6366F1]/25 rounded-lg px-2.5 py-1.5 text-sm"
+              className="bg-[hsl(var(--accent))]/10 border border-[hsl(var(--accent))]/25 rounded-lg px-2.5 py-1.5 text-sm"
             >
               {line}
             </div>
@@ -115,7 +115,7 @@ export function ChatMessage({ message, userId, streaming }: ChatMessageProps) {
         className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-sm font-bold select-none ${
           isUser
             ? "bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] text-white"
-            : "bg-[#1E293B] border border-[#334155] text-lg"
+            : "bg-[hsl(var(--background-secondary))] border border-[hsl(var(--border))] text-lg"
         }`}
       >
         {isUser ? "Вы" : "👨‍🏫"}
@@ -123,7 +123,7 @@ export function ChatMessage({ message, userId, streaming }: ChatMessageProps) {
 
       <div className={`max-w-[78%] flex flex-col gap-1 ${isUser ? "items-end" : "items-start"}`}>
         {/* Sender label */}
-        <div className={`text-[11px] font-medium ${isUser ? "text-[#475569]" : "text-[#6366F1]"}`}>
+        <div className={`text-[11px] font-medium ${isUser ? "text-[hsl(var(--foreground-subtle))]" : "text-[hsl(var(--accent))]"}`}>
           {isUser ? "Вы" : "Zhan"}
         </div>
 
@@ -131,8 +131,8 @@ export function ChatMessage({ message, userId, streaming }: ChatMessageProps) {
         <div
           className={`rounded-2xl px-4 py-3 text-sm ${
             isUser
-              ? "bg-[#6366F1] text-white rounded-tr-sm"
-              : "bg-[#1E293B] border border-[#334155] text-[#E2E8F0] rounded-tl-sm"
+              ? "bg-[hsl(var(--accent))] text-white rounded-tr-sm"
+              : "bg-[hsl(var(--background-secondary))] border border-[hsl(var(--border))] text-[#E2E8F0] rounded-tl-sm"
           }`}
         >
           {isUser ? (
@@ -143,7 +143,7 @@ export function ChatMessage({ message, userId, streaming }: ChatMessageProps) {
 
           {/* Streaming cursor */}
           {streaming && !isUser && (
-            <span className="inline-block w-0.5 h-4 bg-[#6366F1] animate-pulse ml-0.5 rounded-full" />
+            <span className="inline-block w-0.5 h-4 bg-[hsl(var(--accent))] animate-pulse ml-0.5 rounded-full" />
           )}
         </div>
 
@@ -160,7 +160,7 @@ export function ChatMessage({ message, userId, streaming }: ChatMessageProps) {
                 className={`flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full border transition-all ${
                   savedWords.has(word)
                     ? "border-[#10B981]/40 bg-[#10B981]/10 text-[#10B981]"
-                    : "border-[#334155] bg-[#0F172A] text-[#64748B] hover:border-[#6366F1]/50 hover:text-[#818CF8]"
+                    : "border-[hsl(var(--border))] bg-[hsl(var(--background))] text-[hsl(var(--foreground-muted))] hover:border-[hsl(var(--accent))]/50 hover:text-[#818CF8]"
                 }`}
               >
                 {savedWords.has(word) ? (

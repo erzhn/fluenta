@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -68,7 +68,7 @@ function renderText(text: string, vocabulary: Record<string, string>, onWordClic
     p.vocab ? (
       <span key={i}
         onClick={() => onWordClick(p.vocab!)}
-        className="border-b-2 border-dotted border-[#6366f1] cursor-pointer hover:bg-[#6366f1]/10 rounded px-0.5 transition-colors text-[#a5b4fc]">
+        className="border-b-2 border-dotted border-[hsl(var(--accent))] cursor-pointer hover:bg-[hsl(var(--accent))]/10 rounded px-0.5 transition-colors text-[#a5b4fc]">
         {p.text}
       </span>
     ) : (
@@ -177,7 +177,7 @@ export default function ReadingPage() {
     <div className="max-w-3xl mx-auto p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white"><span className="gradient-text">Чтение</span></h1>
-        <p className="text-[#64748b] text-sm">Читай, учи слова, отвечай на вопросы</p>
+        <p className="text-[hsl(var(--foreground-muted))] text-sm">Читай, учи слова, отвечай на вопросы</p>
       </div>
 
       {generatingAI && <SkeletonCard />}
@@ -209,16 +209,16 @@ export default function ReadingPage() {
               </div>
               <div className="flex gap-2 flex-wrap">
                 <button onClick={nextText}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 text-[#94a3b8] hover:text-white text-sm transition-colors">
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 text-[hsl(var(--foreground-muted))] hover:text-white text-sm transition-colors">
                   <RefreshCw className="w-3.5 h-3.5" /> Другой текст
                 </button>
                 <button onClick={handleListen}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 text-[#94a3b8] hover:text-white text-sm transition-colors">
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 text-[hsl(var(--foreground-muted))] hover:text-white text-sm transition-colors">
                   <Volume2 className="w-3.5 h-3.5" />
                   {speaking ? 'Стоп' : 'Слушать'}
                 </button>
                 <button onClick={generateAI} disabled={generatingAI}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#6366f1]/15 border border-[#6366f1]/30 text-[#a5b4fc] hover:text-white text-sm transition-colors disabled:opacity-50">
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[hsl(var(--accent))]/15 border border-[hsl(var(--accent))]/30 text-[#a5b4fc] hover:text-white text-sm transition-colors disabled:opacity-50">
                   <Sparkles className="w-3.5 h-3.5" /> {generatingAI ? 'AI...' : 'AI текст'}
                 </button>
               </div>
@@ -228,19 +228,19 @@ export default function ReadingPage() {
             <AnimatePresence>
               {popup && (
                 <motion.div initial={{ opacity: 0, scale: 0.95, y: -4 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
-                  className="absolute top-16 right-6 bg-[#1e1b4b] border border-[#6366f1]/40 rounded-xl px-4 py-3 shadow-2xl z-20 min-w-[200px]">
+                  className="absolute top-16 right-6 bg-[#1e1b4b] border border-[hsl(var(--accent))]/40 rounded-xl px-4 py-3 shadow-2xl z-20 min-w-[200px]">
                   <div className="flex items-center justify-between gap-3 mb-2">
                     <span className="text-white font-semibold">{popup.word}</span>
-                    <button onClick={() => setPopup(null)}><X className="w-3.5 h-3.5 text-[#475569] hover:text-white" /></button>
+                    <button onClick={() => setPopup(null)}><X className="w-3.5 h-3.5 text-[hsl(var(--foreground-subtle))] hover:text-white" /></button>
                   </div>
-                  <p className="text-[#94a3b8] text-sm mb-3">{popup.translation}</p>
+                  <p className="text-[hsl(var(--foreground-muted))] text-sm mb-3">{popup.translation}</p>
                   {savedWords.has(popup.word) ? (
                     <div className="flex items-center gap-1.5 text-[#10b981] text-xs font-medium">
                       <Check className="w-3.5 h-3.5" /> Добавлено в словарь
                     </div>
                   ) : (
                     <button onClick={() => handleAddToVocab(popup)}
-                      className="flex items-center gap-1.5 text-xs font-medium text-[#6366f1] hover:text-[#818cf8] transition-colors">
+                      className="flex items-center gap-1.5 text-xs font-medium text-[hsl(var(--accent))] hover:text-[#818cf8] transition-colors">
                       <Plus className="w-3.5 h-3.5" /> В словарь
                     </button>
                   )}
@@ -259,14 +259,14 @@ export default function ReadingPage() {
                 {Object.entries(entry.vocabulary).map(([word, translation]) => (
                   <span key={word}
                     onClick={() => handleWordClick({ word, translation })}
-                    className="text-xs px-2.5 py-1 rounded-lg bg-[#6366f1]/10 border border-[#6366f1]/20 text-[#a5b4fc] cursor-pointer hover:bg-[#6366f1]/20 transition-colors">
+                    className="text-xs px-2.5 py-1 rounded-lg bg-[hsl(var(--accent))]/10 border border-[hsl(var(--accent))]/20 text-[#a5b4fc] cursor-pointer hover:bg-[hsl(var(--accent))]/20 transition-colors">
                     {word}
                     {savedWords.has(word) && <Check className="w-2.5 h-2.5 inline ml-1 text-[#10b981]" />}
                   </span>
                 ))}
               </div>
             )}
-            <p className="text-xs text-[#475569] mt-3">Кликни на подсвеченное слово → перевод + добавить в словарь</p>
+            <p className="text-xs text-[hsl(var(--foreground-subtle))] mt-3">Кликни на подсвеченное слово → перевод + добавить в словарь</p>
           </div>
 
           {/* Questions */}
@@ -275,16 +275,16 @@ export default function ReadingPage() {
               <h3 className="text-white font-semibold">Вопросы к тексту</h3>
               {entry.questions.map((q, qi) => (
                 <div key={qi}>
-                  <p className="text-[#94a3b8] text-sm mb-2">{qi + 1}. {q.question}</p>
+                  <p className="text-[hsl(var(--foreground-muted))] text-sm mb-2">{qi + 1}. {q.question}</p>
                   <div className="grid grid-cols-2 gap-2">
                     {q.options.map(opt => {
-                      let cls = 'border-white/10 bg-white/[0.04] text-[#94a3b8] hover:border-[#6366f1]/50 hover:text-white'
+                      let cls = 'border-white/10 bg-white/[0.04] text-[hsl(var(--foreground-muted))] hover:border-[hsl(var(--accent))]/50 hover:text-white'
                       if (checked) {
                         if (opt === q.answer) cls = 'border-[#10b981] bg-[#10b981]/15 text-[#10b981]'
                         else if (opt === answers[qi]) cls = 'border-[#ef4444] bg-[#ef4444]/15 text-[#ef4444]'
-                        else cls = 'border-white/5 bg-white/[0.02] text-[#475569]'
+                        else cls = 'border-white/5 bg-white/[0.02] text-[hsl(var(--foreground-subtle))]'
                       } else if (answers[qi] === opt) {
-                        cls = 'border-[#6366f1] bg-[#6366f1]/15 text-white'
+                        cls = 'border-[hsl(var(--accent))] bg-[hsl(var(--accent))]/15 text-white'
                       }
                       return (
                         <button key={opt} disabled={checked}
@@ -309,7 +309,7 @@ export default function ReadingPage() {
                     {correctCount === entry.questions.length ? '🎉 Все ответы правильные!' : `${correctCount} из ${entry.questions.length} правильно`}
                   </div>
                   {savedWords.size > 0 && (
-                    <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-[#6366f1]/10 border border-[#6366f1]/20 text-sm text-[#a5b4fc]">
+                    <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-[hsl(var(--accent))]/10 border border-[hsl(var(--accent))]/20 text-sm text-[#a5b4fc]">
                       <Check className="w-4 h-4 text-[#10b981]" />
                       Сохранено {savedWords.size} {savedWords.size === 1 ? 'слово' : 'слов'} в словарь
                     </div>

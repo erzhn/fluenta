@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState } from 'react'
 import { AFFIXES } from '@/lib/word-formation-data'
 
@@ -31,29 +31,29 @@ export default function WordFormationPage() {
   return (
     <div className="p-4 sm:p-8 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold text-white mb-2">Словообразование</h1>
-      <p className="text-[#64748b] text-sm mb-6">Префиксы и суффиксы английского языка</p>
+      <p className="text-[hsl(var(--foreground-muted))] text-sm mb-6">Префиксы и суффиксы английского языка</p>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Левая панель — список аффиксов */}
         <div className="lg:col-span-1">
-          <p className="text-[#475569] text-xs uppercase tracking-wider mb-2">Префиксы</p>
+          <p className="text-[hsl(var(--foreground-subtle))] text-xs uppercase tracking-wider mb-2">Префиксы</p>
           <div className="space-y-1 mb-4">
             {prefixes.map(a => (
               <button key={a.id} onClick={() => { setSelected(a); setQuizMode(false); setQuizIdx(0) }}
                 className={`w-full text-left px-4 py-2.5 rounded-xl transition-all flex items-center justify-between ${
-                  selected.id === a.id ? 'bg-[#6366f1]/20 text-white' : 'text-[#94a3b8] hover:text-white hover:bg-white/[0.04]'
+                  selected.id === a.id ? 'bg-[hsl(var(--accent))]/20 text-white' : 'text-[hsl(var(--foreground-muted))] hover:text-white hover:bg-white/[0.04]'
                 }`}>
                 <span className="font-mono font-bold">{a.affix}</span>
                 <span className="text-xs opacity-60">{a.level}</span>
               </button>
             ))}
           </div>
-          <p className="text-[#475569] text-xs uppercase tracking-wider mb-2">Суффиксы</p>
+          <p className="text-[hsl(var(--foreground-subtle))] text-xs uppercase tracking-wider mb-2">Суффиксы</p>
           <div className="space-y-1">
             {suffixes.map(a => (
               <button key={a.id} onClick={() => { setSelected(a); setQuizMode(false); setQuizIdx(0) }}
                 className={`w-full text-left px-4 py-2.5 rounded-xl transition-all flex items-center justify-between ${
-                  selected.id === a.id ? 'bg-[#6366f1]/20 text-white' : 'text-[#94a3b8] hover:text-white hover:bg-white/[0.04]'
+                  selected.id === a.id ? 'bg-[hsl(var(--accent))]/20 text-white' : 'text-[hsl(var(--foreground-muted))] hover:text-white hover:bg-white/[0.04]'
                 }`}>
                 <span className="font-mono font-bold">{a.affix}</span>
                 <span className="text-xs opacity-60">{a.level}</span>
@@ -66,20 +66,20 @@ export default function WordFormationPage() {
         <div className="lg:col-span-2">
           <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 mb-4">
             <div className="flex items-center gap-3 mb-1">
-              <span className="text-3xl font-bold font-mono text-[#6366f1]">{selected.affix}</span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-white/[0.06] text-[#64748b]">
+              <span className="text-3xl font-bold font-mono text-[hsl(var(--accent))]">{selected.affix}</span>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-white/[0.06] text-[hsl(var(--foreground-muted))]">
                 {selected.type === 'prefix' ? 'Префикс' : 'Суффикс'} · {selected.level}
               </span>
             </div>
-            <p className="text-[#94a3b8] text-sm mb-5">Значение: {selected.meaning}</p>
+            <p className="text-[hsl(var(--foreground-muted))] text-sm mb-5">Значение: {selected.meaning}</p>
 
             <div className="space-y-2">
               {selected.examples.map((ex, i) => (
                 <div key={i} className="flex items-center gap-3 p-3 bg-white/[0.03] rounded-xl">
-                  <span className="text-[#475569] text-sm w-24">{ex.base}</span>
+                  <span className="text-[hsl(var(--foreground-subtle))] text-sm w-24">{ex.base}</span>
                   <span className="text-[#334155]">→</span>
                   <span className="text-white font-semibold flex-1">{ex.formed}</span>
-                  <span className="text-[#64748b] text-sm">{ex.translation}</span>
+                  <span className="text-[hsl(var(--foreground-muted))] text-sm">{ex.translation}</span>
                 </div>
               ))}
             </div>
@@ -89,18 +89,18 @@ export default function WordFormationPage() {
           <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
             <div className="flex items-center justify-between mb-4">
               <p className="text-white font-semibold text-sm">Упражнение</p>
-              <span className="text-[#64748b] text-xs">{score.correct}/{score.total}</span>
+              <span className="text-[hsl(var(--foreground-muted))] text-xs">{score.correct}/{score.total}</span>
             </div>
 
             {!quizMode ? (
               <button onClick={() => setQuizMode(true)}
-                className="w-full py-3 bg-[#6366f1] hover:bg-[#5558e8] text-white font-medium rounded-xl transition-colors">
+                className="w-full py-3 bg-[hsl(var(--accent))] hover:bg-[#5558e8] text-white font-medium rounded-xl transition-colors">
                 Начать упражнение
               </button>
             ) : (
               <>
-                <p className="text-[#64748b] text-sm mb-3">
-                  Добавь <span className="text-[#6366f1] font-bold">{selected.affix}</span> к слову:
+                <p className="text-[hsl(var(--foreground-muted))] text-sm mb-3">
+                  Добавь <span className="text-[hsl(var(--accent))] font-bold">{selected.affix}</span> к слову:
                 </p>
                 <p className="text-white text-2xl font-bold text-center py-4 bg-white/[0.03] rounded-xl mb-4">
                   {quizItem.base}
@@ -111,9 +111,9 @@ export default function WordFormationPage() {
                       onKeyDown={e => e.key === 'Enter' && answer && checkAnswer()}
                       placeholder={`Введи ${selected.type === 'prefix' ? selected.affix + quizItem.base : quizItem.base + selected.affix}...`}
                       className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3
-                        text-white placeholder:text-[#334155] outline-none focus:border-[#6366f1]/50 mb-3" />
+                        text-white placeholder:text-[#334155] outline-none focus:border-[hsl(var(--accent))]/50 mb-3" />
                     <button onClick={checkAnswer} disabled={!answer}
-                      className="w-full py-3 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-40 text-white font-medium rounded-xl transition-colors">
+                      className="w-full py-3 bg-[hsl(var(--accent))] hover:bg-[#5558e8] disabled:opacity-40 text-white font-medium rounded-xl transition-colors">
                       Проверить
                     </button>
                   </>
@@ -123,7 +123,7 @@ export default function WordFormationPage() {
                       <p className={`font-semibold ${result ? 'text-green-400' : 'text-red-400'}`}>
                         {result ? '✓ Правильно!' : `✗ Правильно: ${quizItem.formed}`}
                       </p>
-                      <p className="text-[#64748b] text-sm mt-1">{quizItem.translation}</p>
+                      <p className="text-[hsl(var(--foreground-muted))] text-sm mt-1">{quizItem.translation}</p>
                     </div>
                     <button onClick={nextQuiz}
                       className="w-full py-3 bg-white/[0.06] hover:bg-white/10 text-white font-medium rounded-xl transition-colors">

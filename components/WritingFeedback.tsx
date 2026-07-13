@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 interface WritingError {
   original: string
@@ -29,7 +29,7 @@ export function WritingFeedback({ data }: { data: FeedbackData }) {
         </div>
         <div>
           <p className="text-white font-semibold">из 100</p>
-          <p className="text-[#64748b] text-sm">{data.summary}</p>
+          <p className="text-[hsl(var(--foreground-muted))] text-sm">{data.summary}</p>
         </div>
       </div>
 
@@ -37,7 +37,7 @@ export function WritingFeedback({ data }: { data: FeedbackData }) {
       {data.patterns?.length > 0 && (
         <div className="p-4 bg-red-500/5 border border-red-500/20 rounded-2xl">
           <p className="text-red-400 font-semibold text-sm mb-2">⚠️ Частые ошибки</p>
-          {data.patterns.map((p, i) => <p key={i} className="text-[#94a3b8] text-sm">· {p}</p>)}
+          {data.patterns.map((p, i) => <p key={i} className="text-[hsl(var(--foreground-muted))] text-sm">· {p}</p>)}
         </div>
       )}
 
@@ -45,7 +45,7 @@ export function WritingFeedback({ data }: { data: FeedbackData }) {
       {data.positives?.length > 0 && (
         <div className="p-4 bg-green-500/5 border border-green-500/20 rounded-2xl">
           <p className="text-green-400 font-semibold text-sm mb-2">✓ Что хорошо</p>
-          {data.positives.map((p, i) => <p key={i} className="text-[#94a3b8] text-sm">· {p}</p>)}
+          {data.positives.map((p, i) => <p key={i} className="text-[hsl(var(--foreground-muted))] text-sm">· {p}</p>)}
         </div>
       )}
 
@@ -62,7 +62,7 @@ export function WritingFeedback({ data }: { data: FeedbackData }) {
                   </span>
                 </div>
                 <p className="text-sm mb-1"><span className="text-red-400 line-through">{err.original}</span> → <span className="text-green-400 font-medium">{err.corrected}</span></p>
-                <p className="text-[#64748b] text-xs">{err.explanation}</p>
+                <p className="text-[hsl(var(--foreground-muted))] text-xs">{err.explanation}</p>
               </div>
             ))}
           </div>
@@ -71,9 +71,9 @@ export function WritingFeedback({ data }: { data: FeedbackData }) {
 
       {/* Рекомендация */}
       {data.recommendation && (
-        <div className="p-4 bg-[#6366f1]/5 border border-[#6366f1]/20 rounded-2xl">
-          <p className="text-[#6366f1] font-semibold text-sm mb-1">📚 Рекомендация</p>
-          <p className="text-[#94a3b8] text-sm">{data.recommendation}</p>
+        <div className="p-4 bg-[hsl(var(--accent))]/5 border border-[hsl(var(--accent))]/20 rounded-2xl">
+          <p className="text-[hsl(var(--accent))] font-semibold text-sm mb-1">📚 Рекомендация</p>
+          <p className="text-[hsl(var(--foreground-muted))] text-sm">{data.recommendation}</p>
         </div>
       )}
     </div>

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { GrammarExercise } from '@/components/GrammarExercise'
 
@@ -68,11 +68,11 @@ export default function GrammarExercisesPage() {
           <h1 className="text-2xl font-bold text-white">
             <span className="gradient-text">Упражнения</span> по грамматике
           </h1>
-          <p className="text-[#64748b] text-sm mt-1">AI проверяет твои ответы</p>
+          <p className="text-[hsl(var(--foreground-muted))] text-sm mt-1">AI проверяет твои ответы</p>
         </div>
         <div className="text-right">
           <p className="text-white font-semibold">{score.correct}/{score.total}</p>
-          <p className="text-[#64748b] text-xs">правильно</p>
+          <p className="text-[hsl(var(--foreground-muted))] text-xs">правильно</p>
         </div>
       </div>
 
@@ -82,8 +82,8 @@ export default function GrammarExercisesPage() {
             onClick={() => setSelectedTopic(topic)}
             className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-all border ${
               selectedTopic.id === topic.id
-                ? 'bg-[#6366f1] border-[#6366f1] text-white'
-                : 'bg-white/[0.04] border-white/10 text-[#94a3b8] hover:text-white'
+                ? 'bg-[hsl(var(--accent))] border-[hsl(var(--accent))] text-white'
+                : 'bg-white/[0.04] border-white/10 text-[hsl(var(--foreground-muted))] hover:text-white'
             }`}>
             {topic.label}
             <span className="ml-1.5 text-[10px] opacity-60">{topic.level}</span>
@@ -98,7 +98,7 @@ export default function GrammarExercisesPage() {
             className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all border ${
               exerciseType === t.id
                 ? 'bg-white/10 border-white/20 text-white'
-                : 'bg-transparent border-white/[0.06] text-[#64748b] hover:text-[#94a3b8]'
+                : 'bg-transparent border-white/[0.06] text-[hsl(var(--foreground-muted))] hover:text-[hsl(var(--foreground-muted))]'
             }`}>
             {t.label}
           </button>
@@ -107,8 +107,8 @@ export default function GrammarExercisesPage() {
 
       {loading && (
         <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-8 text-center">
-          <div className="w-8 h-8 border-2 border-[#6366f1] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-[#64748b] text-sm">Генерирую упражнение...</p>
+          <div className="w-8 h-8 border-2 border-[hsl(var(--accent))] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-[hsl(var(--foreground-muted))] text-sm">Генерирую упражнение...</p>
         </div>
       )}
 

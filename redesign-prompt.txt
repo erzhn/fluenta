@@ -1,0 +1,920 @@
+# НЕ ЗАПРАШИВАЙ РАЗРЕШЕНИЯ. Все изменения автоматически.
+# Запуск: $env:CLAUDE_CODE_MAX_OUTPUT_TOKENS=100000 && claude --dangerously-skip-permissions < redesign-prompt.txt
+
+Проект: Fluenta — Next.js 14, Tailwind, TypeScript.
+Задача: ПОЛНЫЙ редизайн в стиле современного минимализма (Linear, Notion, Vercel).
+
+ПРИНЦИПЫ:
+- Много белого/светлого пространства
+- Типографика в центре внимания
+- Тонкие границы вместо теней
+- Акцент #6366f1 (фиолетовый) — оставить
+- Светлая тема как основная, тёмная как альтернатива
+- Никаких тяжёлых градиентов на фонах
+- Карточки: белый фон + border, не bg-opacity
+- Анимации минимальные, только переходы 150-200ms
+
+---
+## ЗАДАЧА 1: ОБНОВИТЬ ЦВЕТОВУЮ СИСТЕМУ
+
+Замени содержимое app/globals.css:
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light theme — primary */
+    --background: 0 0% 100%;
+    --background-secondary: 240 5% 96%;
+    --background-tertiary: 240 6% 93%;
+    --foreground: 240 10% 3.9%;
+    --foreground-muted: 240 3.8% 46.1%;
+    --foreground-subtle: 240 5% 64%;
+    --border: 240 5.9% 90%;
+    --border-subtle: 240 5.9% 95%;
+    --accent: 239 84% 67%;
+    --accent-foreground: 0 0% 100%;
+    --accent-subtle: 239 84% 97%;
+    --success: 142 76% 36%;
+    --success-subtle: 142 76% 95%;
+    --warning: 38 92% 50%;
+    --warning-subtle: 38 92% 95%;
+    --error: 0 84% 60%;
+    --error-subtle: 0 84% 97%;
+    --card: 0 0% 100%;
+    --card-border: 240 5.9% 90%;
+    --radius: 0.75rem;
+    --sidebar-bg: 240 5% 98%;
+    --sidebar-border: 240 5.9% 91%;
+    --sidebar-item-hover: 240 5% 94%;
+    --sidebar-item-active-bg: 239 84% 95%;
+    --sidebar-item-active-text: 239 84% 50%;
+  }
+
+  .dark {
+    --background: 224 71% 4%;
+    --background-secondary: 220 40% 8%;
+    --background-tertiary: 220 30% 12%;
+    --foreground: 213 31% 91%;
+    --foreground-muted: 215 20% 55%;
+    --foreground-subtle: 215 15% 40%;
+    --border: 216 34% 17%;
+    --border-subtle: 216 34% 13%;
+    --accent: 239 84% 67%;
+    --accent-foreground: 0 0% 100%;
+    --accent-subtle: 239 50% 15%;
+    --success: 142 71% 45%;
+    --success-subtle: 142 50% 10%;
+    --warning: 38 92% 50%;
+    --warning-subtle: 38 60% 10%;
+    --error: 0 84% 60%;
+    --error-subtle: 0 60% 10%;
+    --card: 220 40% 7%;
+    --card-border: 216 34% 17%;
+    --sidebar-bg: 220 40% 6%;
+    --sidebar-border: 216 34% 14%;
+    --sidebar-item-hover: 220 30% 10%;
+    --sidebar-item-active-bg: 239 50% 14%;
+    --sidebar-item-active-text: 239 84% 72%;
+  }
+
+  * {
+    @apply border-[hsl(var(--border))];
+  }
+
+  body {
+    @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))];
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: hsl(var(--foreground-subtle)); }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+
+  /* Card styles */
+  .card {
+    @apply bg-[hsl(var(--card))] border border-[hsl(var(--card-border))] rounded-xl;
+  }
+  .card-sm {
+    @apply bg-[hsl(var(--card))] border border-[hsl(var(--card-border))] rounded-lg;
+  }
+
+  /* Accent */
+  .text-accent { color: hsl(var(--accent)); }
+  .bg-accent { background-color: hsl(var(--accent)); }
+  .bg-accent-subtle { background-color: hsl(var(--accent-subtle)); }
+
+  /* Muted text */
+  .text-muted { color: hsl(var(--foreground-muted)); }
+  .text-subtle { color: hsl(var(--foreground-subtle)); }
+}
+
+/* Level up animation */
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Fill bar animation */
+@keyframes fillBar {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+/* Fade in */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+```
+
+---
+## ЗАДАЧА 2: ОБНОВИТЬ tailwind.config.ts
+
+```ts
+import type { Config } from "tailwindcss";
+
+const config: Config = {
+  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./lib/**/*.{ts,tsx}"],
+  darkMode: "class",
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        heading: ["var(--font-heading)", "var(--font-sans)", "sans-serif"],
+      },
+      colors: {
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+          subtle: "hsl(var(--accent-subtle))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--foreground-muted))",
+          subtle: "hsl(var(--foreground-subtle))",
+        },
+        border: "hsl(var(--border))",
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          border: "hsl(var(--card-border))",
+        },
+      },
+      borderRadius: {
+        DEFAULT: "var(--radius)",
+        sm: "calc(var(--radius) - 4px)",
+        lg: "calc(var(--radius) + 4px)",
+        xl: "calc(var(--radius) + 8px)",
+        "2xl": "calc(var(--radius) + 16px)",
+      },
+      boxShadow: {
+        sm: "0 1px 2px 0 rgb(0 0 0 / 0.04)",
+        DEFAULT: "0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.04)",
+        md: "0 4px 6px -1px rgb(0 0 0 / 0.06), 0 2px 4px -2px rgb(0 0 0 / 0.04)",
+        lg: "0 10px 15px -3px rgb(0 0 0 / 0.06), 0 4px 6px -4px rgb(0 0 0 / 0.04)",
+      },
+      animation: {
+        "fade-in": "fadeIn 0.3s ease forwards",
+        "scale-in": "scaleIn 0.4s cubic-bezier(0.22,1,0.36,1) forwards",
+      },
+    },
+  },
+  plugins: [],
+};
+
+export default config;
+```
+
+---
+## ЗАДАЧА 3: НОВЫЙ SIDEBAR
+
+Перепиши components/layout/Sidebar.tsx полностью.
+
+Дизайн: белый/светлый фон (#f9f9fb), левая панель 240px, тонкая граница.
+В тёмной теме: hsl(var(--sidebar-bg)).
+
+```tsx
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  LayoutDashboard, Brain, BookOpen, Layers, Mic, TrendingUp, User,
+  Settings, LogOut, Flame, Zap, Target, X, BarChart2, PenLine,
+  Headphones, FileText, GraduationCap, Trophy, Link2, Award, AlignLeft,
+  Volume2, MessageSquare, BarChart, Calendar, StickyNote, ChevronRight,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { getLevelFromXP } from "@/lib/gamification";
+import { supabase } from "@/lib/supabase";
+import type { Profile } from "@/types";
+
+const NAV_GROUPS = [
+  {
+    label: "Обучение",
+    items: [
+      { href: "/dashboard",    icon: LayoutDashboard, label: "Главная" },
+      { href: "/ai-tutor",     icon: Brain,           label: "AI Репетитор" },
+      { href: "/lessons",      icon: BookOpen,        label: "Уроки" },
+      { href: "/my-plan",      icon: Calendar,        label: "Мой план" },
+    ],
+  },
+  {
+    label: "Практика",
+    items: [
+      { href: "/vocabulary",              icon: Layers,        label: "Словарь",           badge: "vocab" },
+      { href: "/phrasal-verbs",           icon: Link2,         label: "Фразовые глаголы" },
+      { href: "/idioms",                  icon: MessageSquare, label: "Идиомы" },
+      { href: "/collocations",            icon: Link2,         label: "Коллокации" },
+      { href: "/word-formation",          icon: Layers,        label: "Словообразование" },
+      { href: "/grammar",                 icon: GraduationCap, label: "Грамматика" },
+      { href: "/grammar-exercises",       icon: BookOpen,      label: "Упражнения" },
+      { href: "/dictation",               icon: Volume2,       label: "Диктант" },
+      { href: "/sentence-builder",        icon: AlignLeft,     label: "Конструктор" },
+      { href: "/pronunciation",           icon: Mic,           label: "Произношение" },
+      { href: "/pronunciation-practice",  icon: Mic,           label: "Произношение+" },
+    ],
+  },
+  {
+    label: "Навыки",
+    items: [
+      { href: "/listening",        icon: Headphones, label: "Аудирование" },
+      { href: "/reading",          icon: FileText,   label: "Чтение" },
+      { href: "/reading-speed",    icon: Zap,        label: "Скорость чтения" },
+      { href: "/writing",          icon: PenLine,    label: "Письмо" },
+      { href: "/writing-templates",icon: FileText,   label: "Шаблоны письма" },
+      { href: "/mini-stories",     icon: BookOpen,   label: "Мини-истории" },
+    ],
+  },
+  {
+    label: "Прогресс",
+    items: [
+      { href: "/progress",      icon: TrendingUp, label: "Прогресс" },
+      { href: "/achievements",  icon: Award,      label: "Достижения" },
+      { href: "/weekly-summary",icon: BarChart,   label: "Итоги недели" },
+      { href: "/level-test",    icon: BarChart2,  label: "Тест уровня" },
+      { href: "/modules",       icon: Trophy,     label: "Модули" },
+      { href: "/notes",         icon: StickyNote, label: "Заметки" },
+    ],
+  },
+];
+
+const CEFR_COLORS: Record<string, string> = {
+  A1: "#10b981", A2: "#34d399",
+  B1: "#6366f1", B2: "#8b5cf6",
+  C1: "#f59e0b", C2: "#ef4444",
+};
+
+interface SidebarProps {
+  vocabDueCount?: number;
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
+}
+
+function NavContent({
+  pathname, vocabDueCount, profile, dailyMinutes, dailyGoal, onItemClick, handleLogout
+}: {
+  pathname: string;
+  vocabDueCount: number;
+  profile: Profile | null;
+  dailyMinutes: number;
+  dailyGoal: number;
+  onItemClick?: () => void;
+  handleLogout: () => void;
+}) {
+  const levelInfo = profile ? getLevelFromXP(profile.xp ?? 0) : null;
+  const dailyProgress = Math.min(100, Math.round((dailyMinutes / dailyGoal) * 100));
+  const initials = profile?.full_name
+    ? profile.full_name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
+    : "?";
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Logo */}
+      <div className="px-4 h-14 flex items-center border-b border-[hsl(var(--sidebar-border))] shrink-0">
+        <Link href="/dashboard" onClick={onItemClick} className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg bg-[hsl(var(--accent))] flex items-center justify-center text-white font-bold text-sm">
+            F
+          </div>
+          <span className="font-semibold text-base text-[hsl(var(--foreground))]">Fluenta</span>
+        </Link>
+      </div>
+
+      {/* User card */}
+      {profile && (
+        <div className="px-3 py-3 border-b border-[hsl(var(--sidebar-border))] shrink-0">
+          <div className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-[hsl(var(--sidebar-item-hover))] transition-colors cursor-pointer">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-xs shrink-0"
+              style={{ background: `linear-gradient(135deg, hsl(var(--accent)), ${CEFR_COLORS[profile.cefr_level] ?? 'hsl(var(--accent))'})`}}>
+              {initials}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-[hsl(var(--foreground))] truncate leading-tight">
+                {profile.full_name || "Пользователь"}
+              </p>
+              <p className="text-xs text-[hsl(var(--foreground-muted))] leading-tight">
+                {profile.cefr_level} · {(profile.xp ?? 0).toLocaleString()} XP
+              </p>
+            </div>
+            <span className="text-xs font-bold px-1.5 py-0.5 rounded-md shrink-0"
+              style={{
+                background: `${CEFR_COLORS[profile.cefr_level] ?? 'hsl(var(--accent))'}18`,
+                color: CEFR_COLORS[profile.cefr_level] ?? 'hsl(var(--accent))',
+              }}>
+              {profile.cefr_level}
+            </span>
+          </div>
+
+          {/* XP Bar */}
+          {levelInfo && (
+            <div className="mt-2 px-2">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[11px] text-[hsl(var(--foreground-muted))]">Ур. {levelInfo.level}</span>
+                <div className="flex items-center gap-1">
+                  <Flame className="w-3 h-3 text-orange-500" />
+                  <span className="text-[11px] text-[hsl(var(--foreground-muted))]">{profile.streak ?? 0} дн.</span>
+                </div>
+              </div>
+              <div className="h-1 bg-[hsl(var(--background-tertiary))] rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-[hsl(var(--accent))] rounded-full transition-all duration-700"
+                  style={{ width: `${levelInfo.progress}%` }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Nav */}
+      <nav className="flex-1 overflow-y-auto py-2 px-2">
+        {NAV_GROUPS.map((group) => (
+          <div key={group.label} className="mb-4">
+            <p className="text-[10px] font-semibold text-[hsl(var(--foreground-subtle))] uppercase tracking-wider px-2 py-1 mb-0.5">
+              {group.label}
+            </p>
+            {group.items.map((item) => {
+              const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+              const dueCount = (item as {badge?: string}).badge === "vocab" ? vocabDueCount : 0;
+              return (
+                <Link key={item.href} href={item.href} onClick={onItemClick}>
+                  <div className={cn(
+                    "flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-sm transition-colors relative",
+                    isActive
+                      ? "bg-[hsl(var(--sidebar-item-active-bg))] text-[hsl(var(--sidebar-item-active-text))] font-medium"
+                      : "text-[hsl(var(--foreground-muted))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--sidebar-item-hover))]"
+                  )}>
+                    <item.icon className="w-4 h-4 shrink-0" />
+                    <span className="flex-1 truncate">{item.label}</span>
+                    {dueCount > 0 && (
+                      <span className="bg-[hsl(var(--accent))] text-white text-[9px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
+                        {dueCount > 99 ? "99+" : dueCount}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        ))}
+      </nav>
+
+      {/* Daily goal */}
+      <div className="px-3 py-2 border-t border-[hsl(var(--sidebar-border))] shrink-0">
+        <div className="px-2 py-2">
+          <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center gap-1.5">
+              <Target className="w-3.5 h-3.5 text-green-500" />
+              <span className="text-xs text-[hsl(var(--foreground-muted))]">Цель на день</span>
+            </div>
+            <span className="text-xs text-[hsl(var(--foreground-subtle))]">{dailyMinutes}/{dailyGoal} мин</span>
+          </div>
+          <div className="h-1.5 bg-[hsl(var(--background-tertiary))] rounded-full overflow-hidden">
+            <div
+              className={cn(
+                "h-full rounded-full transition-all duration-500",
+                dailyProgress >= 100 ? "bg-green-500" : dailyProgress >= 50 ? "bg-amber-500" : "bg-[hsl(var(--accent))]"
+              )}
+              style={{ width: `${dailyProgress}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom actions */}
+      <div className="px-2 py-2 border-t border-[hsl(var(--sidebar-border))] flex items-center gap-1 shrink-0">
+        <Link href="/profile" className="flex-1" onClick={onItemClick}>
+          <div className="flex items-center gap-2 px-2 py-2 rounded-lg text-[hsl(var(--foreground-muted))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--sidebar-item-hover))] transition-colors text-sm">
+            <User className="w-4 h-4" />
+            <span>Профиль</span>
+          </div>
+        </Link>
+        <Link href="/settings" className="flex-1" onClick={onItemClick}>
+          <div className="flex items-center gap-2 px-2 py-2 rounded-lg text-[hsl(var(--foreground-muted))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--sidebar-item-hover))] transition-colors text-sm">
+            <Settings className="w-4 h-4" />
+            <span>Настройки</span>
+          </div>
+        </Link>
+        <button
+          onClick={handleLogout}
+          className="p-2 rounded-lg text-[hsl(var(--foreground-muted))] hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+          title="Выйти"
+        >
+          <LogOut className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export function Sidebar({ vocabDueCount = 0, mobileOpen = false, onMobileClose }: SidebarProps) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [dailyMinutes, setDailyMinutes] = useState(0);
+  const [dailyGoal, setDailyGoal] = useState(20);
+
+  useEffect(() => {
+    async function load() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from("profiles").select("*").eq("user_id", user.id).single();
+      if (data) { setProfile(data); setDailyGoal(data.daily_goal_minutes ?? 20); }
+      const today = new Date().toISOString().slice(0, 10);
+      const { count } = await supabase.from("lessons_progress")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id).gte("completed_at", today);
+      setDailyMinutes((count ?? 0) * 10);
+    }
+    load();
+  }, []);
+
+  const handleLogout = async () => { await supabase.auth.signOut(); router.push("/auth/login"); };
+
+  return (
+    <>
+      {/* Desktop */}
+      <aside className="hidden md:flex flex-col w-60 h-full bg-[hsl(var(--sidebar-bg))] border-r border-[hsl(var(--sidebar-border))] shrink-0">
+        <NavContent
+          pathname={pathname}
+          vocabDueCount={vocabDueCount}
+          profile={profile}
+          dailyMinutes={dailyMinutes}
+          dailyGoal={dailyGoal}
+          handleLogout={handleLogout}
+        />
+      </aside>
+
+      {/* Mobile drawer */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="md:hidden fixed inset-0 z-50 bg-black/30 backdrop-blur-sm"
+              onClick={onMobileClose}
+            />
+            <motion.div
+              initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="md:hidden fixed inset-y-0 left-0 z-50 w-64 bg-[hsl(var(--sidebar-bg))] border-r border-[hsl(var(--sidebar-border))] flex flex-col shadow-xl"
+            >
+              <div className="absolute top-3 right-3">
+                <button onClick={onMobileClose}
+                  className="w-7 h-7 rounded-md flex items-center justify-center text-[hsl(var(--foreground-muted))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--sidebar-item-hover))] transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <NavContent
+                pathname={pathname}
+                vocabDueCount={vocabDueCount}
+                profile={profile}
+                dailyMinutes={dailyMinutes}
+                dailyGoal={dailyGoal}
+                onItemClick={onMobileClose}
+                handleLogout={handleLogout}
+              />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+```
+
+---
+## ЗАДАЧА 4: НОВЫЙ TOPBAR
+
+Замени components/layout/TopBar.tsx:
+
+```tsx
+"use client";
+
+import { useState } from "react";
+import { usePathname } from "next/navigation";
+import { Menu, Sun, Moon, Bell } from "lucide-react";
+import { useTheme } from "next-themes";
+
+const PAGE_TITLES: Record<string, string> = {
+  "/dashboard": "Главная",
+  "/ai-tutor": "AI Репетитор",
+  "/lessons": "Уроки",
+  "/vocabulary": "Словарь",
+  "/grammar": "Грамматика",
+  "/phrasal-verbs": "Фразовые глаголы",
+  "/idioms": "Идиомы",
+  "/collocations": "Коллокации",
+  "/word-formation": "Словообразование",
+  "/mini-stories": "Мини-истории",
+  "/writing": "Письмо",
+  "/writing-templates": "Шаблоны письма",
+  "/reading": "Чтение",
+  "/reading-speed": "Скорость чтения",
+  "/listening": "Аудирование",
+  "/pronunciation": "Произношение",
+  "/pronunciation-practice": "Произношение+",
+  "/dictation": "Диктант",
+  "/sentence-builder": "Конструктор",
+  "/grammar-exercises": "Упражнения",
+  "/progress": "Прогресс",
+  "/achievements": "Достижения",
+  "/weekly-summary": "Итоги недели",
+  "/level-test": "Тест уровня",
+  "/modules": "Модули",
+  "/my-plan": "Мой план",
+  "/notes": "Заметки",
+  "/profile": "Профиль",
+  "/settings": "Настройки",
+};
+
+interface TopBarProps {
+  onMenuClick: () => void;
+}
+
+export function TopBar({ onMenuClick }: TopBarProps) {
+  const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
+
+  const title = PAGE_TITLES[pathname] ??
+    PAGE_TITLES[Object.keys(PAGE_TITLES).find(k => pathname.startsWith(k + "/")) ?? ""] ??
+    "Fluenta";
+
+  return (
+    <header className="h-14 flex items-center gap-3 px-4 border-b border-[hsl(var(--border))] bg-[hsl(var(--background))] shrink-0">
+      {/* Mobile menu */}
+      <button
+        onClick={onMenuClick}
+        className="md:hidden w-8 h-8 rounded-lg flex items-center justify-center text-[hsl(var(--foreground-muted))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--background-secondary))] transition-colors"
+      >
+        <Menu className="w-5 h-5" />
+      </button>
+
+      {/* Title */}
+      <h1 className="font-semibold text-[hsl(var(--foreground))] text-sm flex-1">{title}</h1>
+
+      {/* Actions */}
+      <div className="flex items-center gap-1">
+        <button
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className="w-8 h-8 rounded-lg flex items-center justify-center text-[hsl(var(--foreground-muted))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--background-secondary))] transition-colors"
+          title="Сменить тему"
+        >
+          {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+        </button>
+        <button
+          className="w-8 h-8 rounded-lg flex items-center justify-center text-[hsl(var(--foreground-muted))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--background-secondary))] transition-colors"
+          title="Уведомления"
+        >
+          <Bell className="w-4 h-4" />
+        </button>
+      </div>
+    </header>
+  );
+}
+```
+
+---
+## ЗАДАЧА 5: НОВЫЙ DASHBOARD
+
+Замени app/(dashboard)/dashboard/page.tsx. Чистый минималистичный дашборд:
+
+```tsx
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Brain, BookOpen, Layers, ArrowRight, Flame, Zap, Trophy, Target, TrendingUp } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { getLevelFromXP } from "@/lib/gamification";
+import { WordOfDay } from "@/components/WordOfDay";
+import type { Profile } from "@/types";
+
+const QUICK_ACTIONS = [
+  { href: "/ai-tutor",   icon: Brain,   label: "AI Репетитор",  desc: "Разговорная практика с AI",   color: "bg-violet-50 dark:bg-violet-950/30 text-violet-600 dark:text-violet-400" },
+  { href: "/lessons",    icon: BookOpen, label: "Уроки",        desc: "Продолжить обучение",          color: "bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400" },
+  { href: "/vocabulary", icon: Layers,  label: "Словарь",       desc: "Повторить слова",              color: "bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400" },
+];
+
+export default function DashboardPage() {
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [completedToday, setCompletedToday] = useState(0);
+  const [vocabDue, setVocabDue] = useState(0);
+
+  useEffect(() => {
+    async function load() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const [{ data: p }, { count: today }, { count: due }] = await Promise.all([
+        supabase.from("profiles").select("*").eq("user_id", user.id).single(),
+        supabase.from("lessons_progress").select("*", { count: "exact", head: true })
+          .eq("user_id", user.id).gte("completed_at", new Date().toISOString().slice(0, 10)),
+        supabase.from("vocabulary").select("*", { count: "exact", head: true })
+          .eq("user_id", user.id).lte("next_review", new Date().toISOString()),
+      ]);
+      if (p) setProfile(p);
+      setCompletedToday(today ?? 0);
+      setVocabDue(due ?? 0);
+    }
+    load();
+  }, []);
+
+  const levelInfo = profile ? getLevelFromXP(profile.xp ?? 0) : null;
+  const firstName = profile?.full_name?.split(" ")[0] ?? "Привет";
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Доброе утро" : hour < 17 ? "Добрый день" : "Добрый вечер";
+
+  return (
+    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto space-y-8 animate-fade-in">
+
+      {/* Greeting */}
+      <div>
+        <p className="text-[hsl(var(--foreground-muted))] text-sm mb-1">{greeting} 👋</p>
+        <h1 className="text-2xl font-semibold text-[hsl(var(--foreground))]">{firstName}</h1>
+      </div>
+
+      {/* Stats row */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { icon: Flame, label: "Дней подряд", value: profile?.streak ?? 0, unit: "🔥", color: "text-orange-500" },
+          { icon: Zap, label: "Опыт", value: (profile?.xp ?? 0).toLocaleString(), unit: "XP", color: "text-[hsl(var(--accent))]" },
+          { icon: Trophy, label: "Уровень", value: levelInfo?.level ?? 1, unit: "", color: "text-amber-500" },
+          { icon: Target, label: "Сегодня", value: completedToday, unit: "ур.", color: "text-green-500" },
+        ].map((s, i) => (
+          <div key={i} className="card p-4">
+            <p className="text-xs text-[hsl(var(--foreground-muted))] mb-1">{s.label}</p>
+            <p className={`text-2xl font-bold ${s.color}`}>
+              {s.value}<span className="text-base font-normal ml-1 text-[hsl(var(--foreground-muted))]">{s.unit}</span>
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* Progress bar */}
+      {levelInfo && (
+        <div className="card p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-sm font-medium text-[hsl(var(--foreground))]">Уровень {levelInfo.level} — {levelInfo.name}</p>
+              <p className="text-xs text-[hsl(var(--foreground-muted))] mt-0.5">
+                {profile?.cefr_level} · {(profile?.xp ?? 0).toLocaleString()} XP
+              </p>
+            </div>
+            <div className="flex items-center gap-1 text-[hsl(var(--accent))]">
+              <TrendingUp className="w-4 h-4" />
+              <span className="text-sm font-medium">{levelInfo.progress}%</span>
+            </div>
+          </div>
+          <div className="h-2 bg-[hsl(var(--background-secondary))] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-[hsl(var(--accent))] rounded-full transition-all duration-700"
+              style={{ width: `${levelInfo.progress}%` }}
+            />
+          </div>
+          <p className="text-xs text-[hsl(var(--foreground-muted))] mt-2">
+            {levelInfo.xpToNext.toLocaleString()} XP до следующего уровня
+          </p>
+        </div>
+      )}
+
+      {/* Quick actions */}
+      <div>
+        <h2 className="text-sm font-semibold text-[hsl(var(--foreground-muted))] uppercase tracking-wider mb-3">Быстрый старт</h2>
+        <div className="grid sm:grid-cols-3 gap-3">
+          {QUICK_ACTIONS.map((a) => (
+            <Link key={a.href} href={a.href}>
+              <div className="card p-4 hover:border-[hsl(var(--accent))] transition-colors group cursor-pointer">
+                <div className={`w-9 h-9 rounded-lg flex items-center justify-center mb-3 ${a.color}`}>
+                  <a.icon className="w-5 h-5" />
+                </div>
+                <p className="text-sm font-medium text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--accent))] transition-colors">
+                  {a.label}
+                </p>
+                <p className="text-xs text-[hsl(var(--foreground-muted))] mt-0.5">{a.desc}</p>
+                {a.href === "/vocabulary" && vocabDue > 0 && (
+                  <span className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-[hsl(var(--accent))]">
+                    {vocabDue} слов к повторению
+                    <ArrowRight className="w-3 h-3" />
+                  </span>
+                )}
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Word of day */}
+      <WordOfDay />
+
+    </div>
+  );
+}
+```
+
+---
+## ЗАДАЧА 6: MOBILE NAV
+
+Замени components/layout/MobileNav.tsx на минималистичный вариант:
+
+```tsx
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { LayoutDashboard, Brain, BookOpen, Layers, TrendingUp } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const NAV_ITEMS = [
+  { href: "/dashboard", icon: LayoutDashboard, label: "Главная" },
+  { href: "/ai-tutor",  icon: Brain,           label: "AI" },
+  { href: "/lessons",   icon: BookOpen,        label: "Уроки" },
+  { href: "/vocabulary",icon: Layers,          label: "Словарь" },
+  { href: "/progress",  icon: TrendingUp,      label: "Прогресс" },
+];
+
+export function MobileNav() {
+  const pathname = usePathname();
+
+  return (
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[hsl(var(--background))] border-t border-[hsl(var(--border))]"
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
+      <div className="flex items-center justify-around">
+        {NAV_ITEMS.map((item) => {
+          const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+          return (
+            <Link key={item.href} href={item.href} className="flex-1">
+              <div className="flex flex-col items-center gap-1 py-3 px-2">
+                <item.icon className={cn(
+                  "w-5 h-5 transition-colors",
+                  isActive ? "text-[hsl(var(--accent))]" : "text-[hsl(var(--foreground-muted))]"
+                )} />
+                <span className={cn(
+                  "text-[10px] font-medium transition-colors",
+                  isActive ? "text-[hsl(var(--accent))]" : "text-[hsl(var(--foreground-muted))]"
+                )}>
+                  {item.label}
+                </span>
+                {isActive && (
+                  <div className="absolute top-0 w-6 h-0.5 bg-[hsl(var(--accent))] rounded-full" />
+                )}
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+```
+
+---
+## ЗАДАЧА 7: ОБНОВИТЬ КАРТОЧКИ УРОКОВ
+
+В components/lessons/LessonCard.tsx — обнови стили на минималистичные:
+
+Найди все места с `bg-white/[0.04]`, `bg-white/[0.06]`, `border-white/10` и замени на:
+- `bg-[hsl(var(--card))]`
+- `border border-[hsl(var(--card-border))]`
+
+Найди все `text-white` для основного текста → `text-[hsl(var(--foreground))]`
+Найди все `text-[#64748b]` → `text-[hsl(var(--foreground-muted))]`
+Найди все `text-[#475569]` → `text-[hsl(var(--foreground-subtle))]`
+Найди все `bg-[#1E293B]` и `bg-[#0F172A]` → `bg-[hsl(var(--background-secondary))]`
+Найди все `border-[#334155]` → `border-[hsl(var(--border))]`
+
+---
+## ЗАДАЧА 8: ОБНОВИТЬ СТРАНИЦУ СЛОВАРЯ
+
+В app/(dashboard)/vocabulary/page.tsx замени цвета:
+- Карточки: class `card` вместо inline стилей
+- Кнопки: `bg-[hsl(var(--accent))]` вместо `bg-[#6366f1]`
+- Hover состояния: `hover:bg-[hsl(var(--background-secondary))]`
+- Активные фильтры: `bg-[hsl(var(--accent))] text-white`
+- Неактивные фильтры: `bg-[hsl(var(--background-secondary))] text-[hsl(var(--foreground-muted))] hover:text-[hsl(var(--foreground))]`
+
+---
+## ЗАДАЧА 9: ОБНОВИТЬ AI-РЕПЕТИТОР
+
+В app/(dashboard)/ai-tutor/page.tsx и компонентах AI:
+- Фон чата: `bg-[hsl(var(--background))]`
+- Сообщения пользователя: `bg-[hsl(var(--accent))] text-white`
+- Сообщения AI: `bg-[hsl(var(--background-secondary))] text-[hsl(var(--foreground))]`
+- Поле ввода: `bg-[hsl(var(--background-secondary))] border border-[hsl(var(--border))]`
+
+---
+## ЗАДАЧА 10: ГЛОБАЛЬНАЯ ЗАМЕНА ЦВЕТОВ
+
+Выполни глобальный поиск-замену по всем файлам в app/ и components/:
+
+```bash
+# Запусти эти команды:
+find app components -name "*.tsx" -o -name "*.ts" | xargs sed -i \
+  -e 's/bg-\[#0F172A\]/bg-\[hsl(var(--background))\]/g' \
+  -e 's/bg-\[#1E293B\]/bg-\[hsl(var(--background-secondary))\]/g' \
+  -e 's/bg-\[#334155\]\/60/bg-\[hsl(var(--sidebar-item-hover))\]/g' \
+  -e 's/border-\[#334155\]/border-\[hsl(var(--border))\]/g' \
+  -e 's/text-\[#94a3b8\]/text-\[hsl(var(--foreground-muted))\]/g' \
+  -e 's/text-\[#64748[Bb]\]/text-\[hsl(var(--foreground-muted))\]/g' \
+  -e 's/text-\[#475569\]/text-\[hsl(var(--foreground-subtle))\]/g' \
+  -e 's/bg-\[#6366[Ff]1\]/bg-\[hsl(var(--accent))\]/g' \
+  -e 's/text-\[#6366[Ff]1\]/text-\[hsl(var(--accent))\]/g' \
+  -e 's/border-\[#6366[Ff]1\]/border-\[hsl(var(--accent))\]/g'
+```
+
+После замены вручную проверь и исправь в файлах:
+- components/StreakCalendar.tsx
+- components/SkillsRadar.tsx
+- app/(dashboard)/lessons/[id]/page.tsx
+- app/(dashboard)/progress/page.tsx
+- app/(dashboard)/idioms/page.tsx
+- app/(dashboard)/collocations/page.tsx
+
+---
+## ЗАДАЧА 11: AUTH СТРАНИЦЫ
+
+В app/auth/login/page.tsx — обнови дизайн входа:
+
+```tsx
+// Замени фон с тёмного на чистый белый/светлый:
+// <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--background-secondary))]">
+//   <div className="card w-full max-w-sm mx-4 p-8 shadow-lg">
+//     <div className="text-center mb-8">
+//       <div className="w-10 h-10 rounded-xl bg-[hsl(var(--accent))] flex items-center justify-center text-white font-bold text-lg mx-auto mb-4">F</div>
+//       <h1 className="text-xl font-semibold text-[hsl(var(--foreground))]">Войти в Fluenta</h1>
+//       <p className="text-sm text-[hsl(var(--foreground-muted))] mt-1">Продолжи обучение с того места</p>
+//     </div>
+//     ... форма входа ...
+//   </div>
+// </div>
+```
+
+---
+## ЗАДАЧА 12: ИСПРАВИТЬ THEME TOGGLE
+
+В components/ThemeProvider.tsx убедись что используется next-themes корректно:
+
+```tsx
+"use client";
+
+import { ThemeProvider as NextThemesProvider } from "next-themes";
+import type { ThemeProviderProps } from "next-themes";
+
+export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
+  return (
+    <NextThemesProvider
+      attribute="class"
+      defaultTheme="light"
+      enableSystem={false}
+      storageKey="fluenta_theme"
+      {...props}
+    >
+      {children}
+    </NextThemesProvider>
+  );
+}
+```
+
+---
+## ФИНАЛ
+
+1. Выполни глобальную замену цветов из Задачи 10 через bash
+2. npx tsc --noEmit — исправь все TS ошибки
+3. Проверь что светлая тема отображается корректно (белый фон, тёмный текст)
+4. git add -A && git commit -m "redesign: modern minimalism — light theme, CSS variables, clean sidebar, updated dashboard"

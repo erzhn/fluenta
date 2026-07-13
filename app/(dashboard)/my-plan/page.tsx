@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState } from 'react'
 
 interface Plan {
@@ -55,22 +55,22 @@ Make it specific to the goal (${goal}) and level (${level}). All lesson titles a
   return (
     <div className="p-4 sm:p-8 max-w-3xl mx-auto">
       <h1 className="text-2xl font-bold text-white mb-2">Мой план обучения</h1>
-      <p className="text-[#64748b] text-sm mb-6">AI создаст персональный план на месяц</p>
+      <p className="text-[hsl(var(--foreground-muted))] text-sm mb-6">AI создаст персональный план на месяц</p>
 
       <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5 mb-6 space-y-4">
         <div>
-          <label className="text-[#64748b] text-sm block mb-2">Текущий уровень</label>
+          <label className="text-[hsl(var(--foreground-muted))] text-sm block mb-2">Текущий уровень</label>
           <div className="flex gap-2">
             {['A1','A2','B1','B2','C1'].map(l => (
               <button key={l} onClick={() => setLevel(l)}
                 className={`px-3 py-2 rounded-xl text-sm font-medium transition-all border ${
-                  level === l ? 'bg-[#6366f1] border-[#6366f1] text-white' : 'bg-white/[0.04] border-white/10 text-[#94a3b8] hover:text-white'
+                  level === l ? 'bg-[hsl(var(--accent))] border-[hsl(var(--accent))] text-white' : 'bg-white/[0.04] border-white/10 text-[hsl(var(--foreground-muted))] hover:text-white'
                 }`}>{l}</button>
             ))}
           </div>
         </div>
         <div>
-          <label className="text-[#64748b] text-sm block mb-2">Цель</label>
+          <label className="text-[hsl(var(--foreground-muted))] text-sm block mb-2">Цель</label>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {[
               { id: 'general', label: '🌍 Общий' },
@@ -82,18 +82,18 @@ Make it specific to the goal (${goal}) and level (${level}). All lesson titles a
             ].map(g => (
               <button key={g.id} onClick={() => setGoal(g.id)}
                 className={`py-2 px-3 rounded-xl text-sm transition-all border ${
-                  goal === g.id ? 'bg-[#6366f1]/20 border-[#6366f1]/50 text-white' : 'bg-white/[0.03] border-white/[0.06] text-[#94a3b8] hover:text-white'
+                  goal === g.id ? 'bg-[hsl(var(--accent))]/20 border-[hsl(var(--accent))]/50 text-white' : 'bg-white/[0.03] border-white/[0.06] text-[hsl(var(--foreground-muted))] hover:text-white'
                 }`}>{g.label}</button>
             ))}
           </div>
         </div>
         <div>
-          <label className="text-[#64748b] text-sm block mb-2">Часов в неделю: <span className="text-white font-bold">{hoursPerWeek}</span></label>
+          <label className="text-[hsl(var(--foreground-muted))] text-sm block mb-2">Часов в неделю: <span className="text-white font-bold">{hoursPerWeek}</span></label>
           <input type="range" min={1} max={10} value={hoursPerWeek} onChange={e => setHoursPerWeek(Number(e.target.value))}
             className="w-full accent-[#6366f1]" />
         </div>
         <button onClick={generatePlan} disabled={loading}
-          className="w-full py-3 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-50 text-white font-semibold rounded-xl transition-colors">
+          className="w-full py-3 bg-[hsl(var(--accent))] hover:bg-[#5558e8] disabled:opacity-50 text-white font-semibold rounded-xl transition-colors">
           {loading ? '⏳ Создаю план...' : '✨ Создать план с AI'}
         </button>
       </div>
@@ -103,23 +103,23 @@ Make it specific to the goal (${goal}) and level (${level}). All lesson titles a
           {plan.map((week) => (
             <div key={week.week} className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
               <div className="flex items-center gap-3 mb-3">
-                <span className="w-8 h-8 rounded-full bg-[#6366f1]/20 border border-[#6366f1]/30 flex items-center justify-center text-[#6366f1] font-bold text-sm">
+                <span className="w-8 h-8 rounded-full bg-[hsl(var(--accent))]/20 border border-[hsl(var(--accent))]/30 flex items-center justify-center text-[hsl(var(--accent))] font-bold text-sm">
                   {week.week}
                 </span>
                 <p className="text-white font-semibold">{week.focus}</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <div>
-                  <p className="text-[#475569] text-xs mb-1">Уроки</p>
-                  {week.lessons?.map((l, i) => <p key={i} className="text-[#94a3b8]">· {l}</p>)}
+                  <p className="text-[hsl(var(--foreground-subtle))] text-xs mb-1">Уроки</p>
+                  {week.lessons?.map((l, i) => <p key={i} className="text-[hsl(var(--foreground-muted))]">· {l}</p>)}
                 </div>
                 <div>
-                  <p className="text-[#475569] text-xs mb-1">Практика</p>
-                  <p className="text-[#94a3b8]">{week.practice}</p>
+                  <p className="text-[hsl(var(--foreground-subtle))] text-xs mb-1">Практика</p>
+                  <p className="text-[hsl(var(--foreground-muted))]">{week.practice}</p>
                 </div>
                 <div className="sm:col-span-2">
-                  <p className="text-[#475569] text-xs mb-1">Цель недели</p>
-                  <p className="text-[#6366f1]">✓ {week.goal}</p>
+                  <p className="text-[hsl(var(--foreground-subtle))] text-xs mb-1">Цель недели</p>
+                  <p className="text-[hsl(var(--accent))]">✓ {week.goal}</p>
                 </div>
               </div>
             </div>
