@@ -40,7 +40,8 @@
       "PowerShell(python \"C:\\\\Users\\\\D3B8~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\D--Projects-with---fluenta\\\\681d2635-7ae1-4d63-95eb-d7db9f31cc31\\\\scratchpad\\\\fix_mojibake.py\" 2>&1)",
       "PowerShell(python \"C:\\\\Users\\\\D3B8~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\D--Projects-with---fluenta\\\\681d2635-7ae1-4d63-95eb-d7db9f31cc31\\\\scratchpad\\\\fix_grammar.py\")",
       "PowerShell(python \"C:\\\\Users\\\\D3B8~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\D--Projects-with---fluenta\\\\681d2635-7ae1-4d63-95eb-d7db9f31cc31\\\\scratchpad\\\\fix_grammar2.py\")",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "PowerShell(cd \"D:\\\\Projects with @\\\\fluenta\"; git add app/\\(dashboard\\)/dictation/page.tsx app/\\(dashboard\\)/sentence-builder/page.tsx app/\\(dashboard\\)/grammar-exercises/page.tsx app/api/ai/check-grammar-exercise/route.ts app/api/ai/generate-grammar-exercise/route.ts components/GrammarExercise.tsx components/layout/Sidebar.tsx components/layout/MobileNav.tsx app/\\(dashboard\\)/grammar/page.tsx; git status)"
     ]
   }
 }

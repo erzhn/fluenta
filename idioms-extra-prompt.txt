@@ -1,0 +1,100 @@
+# НЕ ЗАПРАШИВАЙ РАЗРЕШЕНИЯ. Все изменения автоматически.
+# Запуск: claude --dangerously-skip-permissions < idioms-extra-prompt.txt
+
+Проект: Fluenta — Next.js 14 + TypeScript + Tailwind.
+
+---
+## ЗАДАЧА: РАСШИРИТЬ ИДИОМЫ ДО 100
+
+В файле lib/idioms-data.ts найди массив IDIOMS и добавь идиомы с id '31' по '100'.
+Вставь их после последнего элемента (id: '30') перед закрывающей скобкой массива:
+
+```ts
+  // --- Дополнительные идиомы (31–100) ---
+  { id: '31', idiom: 'Barking up the wrong tree', meaning: 'Искать не там, ошибаться', example: "You're barking up the wrong tree if you think I took it.", category: 'Ошибки', level: 'B1' },
+  { id: '32', idiom: 'Bite the hand that feeds you', meaning: 'Кусать руку, которая кормит', example: "Don't bite the hand that feeds you — be grateful to your employer.", category: 'Отношения', level: 'B2' },
+  { id: '33', idiom: 'Blow hot and cold', meaning: 'Быть непостоянным', example: "He keeps blowing hot and cold about the project.", category: 'Характер', level: 'B2' },
+  { id: '34', idiom: 'Break a leg', meaning: 'Ни пуха ни пера! (пожелание удачи)', example: "Break a leg at your audition tonight!", category: 'Общение', level: 'A2' },
+  { id: '35', idiom: 'Burn the midnight oil', meaning: 'Работать допоздна', example: "She burned the midnight oil to finish the report.", category: 'Работа', level: 'B1' },
+  { id: '36', idiom: 'Caught red-handed', meaning: 'Поймать с поличным', example: "He was caught red-handed stealing from the store.", category: 'Ситуации', level: 'B1' },
+  { id: '37', idiom: 'Cry over spilt milk', meaning: 'Плакать над пролитым молоком / жалеть о прошлом', example: "What's done is done — no use crying over spilt milk.", category: 'Жизнь', level: 'A2' },
+  { id: '38', idiom: 'Don\'t judge a book by its cover', meaning: 'Не судить по внешности', example: "Don't judge a book by its cover — he's actually very kind.", category: 'Мудрость', level: 'A2' },
+  { id: '39', idiom: 'Every cloud has a silver lining', meaning: 'Нет худа без добра', example: "Every cloud has a silver lining — at least we learned from it.", category: 'Оптимизм', level: 'B1' },
+  { id: '40', idiom: 'Face the music', meaning: 'Принять последствия своих действий', example: "It's time to face the music and apologise.", category: 'Ответственность', level: 'B1' },
+  { id: '41', idiom: 'Feel under the gun', meaning: 'Быть под давлением', example: "I really feel under the gun with this deadline.", category: 'Работа', level: 'B2' },
+  { id: '42', idiom: 'Get a taste of your own medicine', meaning: 'Получить по заслугам', example: "He got a taste of his own medicine when they ignored him.", category: 'Справедливость', level: 'B2' },
+  { id: '43', idiom: 'Get cold feet', meaning: 'Струсить в последний момент', example: "She got cold feet and didn't give the speech.", category: 'Эмоции', level: 'B1' },
+  { id: '44', idiom: 'Get the ball rolling', meaning: 'Начать дело', example: "Let's get the ball rolling on this project.", category: 'Работа', level: 'B1' },
+  { id: '45', idiom: 'Give the benefit of the doubt', meaning: 'Дать кредит доверия', example: "I'll give him the benefit of the doubt this time.", category: 'Отношения', level: 'B2' },
+  { id: '46', idiom: 'Go back to the drawing board', meaning: 'Начать всё заново', example: "The plan failed — we need to go back to the drawing board.", category: 'Работа', level: 'B1' },
+  { id: '47', idiom: 'Hang in there', meaning: 'Держись! Не сдавайся!', example: "Hang in there — things will get better soon.", category: 'Поддержка', level: 'A2' },
+  { id: '48', idiom: 'Hit the books', meaning: 'Засесть за учёбу', example: "I need to hit the books before the exam.", category: 'Учёба', level: 'A2' },
+  { id: '49', idiom: 'Hit the nail on the head', meaning: 'Попасть в точку', example: "You hit the nail on the head with that comment.", category: 'Общение', level: 'B1' },
+  { id: '50', idiom: 'It takes two to tango', meaning: 'Для танго нужны двое / в ссоре виноваты оба', example: "Don't blame only her — it takes two to tango.", category: 'Отношения', level: 'B2' },
+  { id: '51', idiom: 'Keep your chin up', meaning: 'Не вешай нос, держись', example: "Keep your chin up — you'll find another job.", category: 'Поддержка', level: 'A2' },
+  { id: '52', idiom: 'Kick the bucket', meaning: 'Умереть (разг.)', example: "Old MacDonald finally kicked the bucket at 95.", category: 'Юмор', level: 'B1' },
+  { id: '53', idiom: 'Know the ropes', meaning: 'Знать всё как свои пять пальцев', example: "Ask Sarah — she knows the ropes around here.", category: 'Опыт', level: 'B1' },
+  { id: '54', idiom: 'Leave no stone unturned', meaning: 'Перевернуть всё вверх дном / сделать всё возможное', example: "We'll leave no stone unturned in our investigation.", category: 'Усилия', level: 'B2' },
+  { id: '55', idiom: 'Let sleeping dogs lie', meaning: 'Не буди лихо пока тихо', example: "Don't bring up the old argument — let sleeping dogs lie.", category: 'Мудрость', level: 'B1' },
+  { id: '56', idiom: 'Look before you leap', meaning: 'Семь раз отмерь, один раз отрежь', example: "Look before you leap — don't sign the contract too quickly.", category: 'Мудрость', level: 'B1' },
+  { id: '57', idiom: 'Lose your touch', meaning: 'Потерять сноровку', example: "He used to be great at chess but seems to have lost his touch.", category: 'Навыки', level: 'B2' },
+  { id: '58', idiom: 'Make a long story short', meaning: 'Короче говоря', example: "To make a long story short, we missed the train.", category: 'Общение', level: 'A2' },
+  { id: '59', idiom: 'Make ends meet', meaning: 'Сводить концы с концами', example: "It's hard to make ends meet on minimum wage.", category: 'Деньги', level: 'B1' },
+  { id: '60', idiom: 'No pain, no gain', meaning: 'Без труда не вытащишь рыбку', example: "Train harder — no pain, no gain!", category: 'Мотивация', level: 'A2' },
+  { id: '61', idiom: 'Not rocket science', meaning: 'Не ядерная физика / не так уж сложно', example: "It's not rocket science — just follow the instructions.", category: 'Простота', level: 'A2' },
+  { id: '62', idiom: 'Off the top of my head', meaning: 'Навскидку, сходу', example: "Off the top of my head, I'd say around fifty people attended.", category: 'Общение', level: 'B1' },
+  { id: '63', idiom: 'On the ball', meaning: 'Быть в форме, быть начеку', example: "You need to be on the ball during the presentation.", category: 'Работа', level: 'B1' },
+  { id: '64', idiom: 'On the tip of my tongue', meaning: 'На кончике языка / вертится в голове', example: "His name is on the tip of my tongue — I'll remember it!", category: 'Память', level: 'A2' },
+  { id: '65', idiom: 'Out of the blue', meaning: 'Вдруг, ни с того ни с сего', example: "Out of the blue, she called me after five years.", category: 'Неожиданность', level: 'B1' },
+  { id: '66', idiom: 'Over the moon', meaning: 'На седьмом небе от счастья', example: "She was over the moon when she got the promotion.", category: 'Эмоции', level: 'B1' },
+  { id: '67', idiom: 'Pass the buck', meaning: 'Перекладывать ответственность', example: "Stop passing the buck and take responsibility.", category: 'Ответственность', level: 'B2' },
+  { id: '68', idiom: 'Piece of cake', meaning: 'Проще простого', example: "The exam was a piece of cake!", category: 'Простота', level: 'A2' },
+  { id: '69', idiom: 'Play it by ear', meaning: 'Действовать по ситуации', example: "Let's not plan too much — we'll play it by ear.", category: 'Планирование', level: 'B1' },
+  { id: '70', idiom: 'Pull strings', meaning: 'Использовать связи', example: "He pulled strings to get his son the job.", category: 'Связи', level: 'B2' },
+  { id: '71', idiom: 'Put your foot in your mouth', meaning: 'Попасть впросак, сказать что-то неловкое', example: "I really put my foot in my mouth when I asked about her ex.", category: 'Ошибки', level: 'B1' },
+  { id: '72', idiom: 'Raise the bar', meaning: 'Поднять планку', example: "This project has really raised the bar for quality.", category: 'Стандарты', level: 'B2' },
+  { id: '73', idiom: 'Ring a bell', meaning: 'Что-то напоминать', example: "Does the name John Smith ring a bell?", category: 'Память', level: 'B1' },
+  { id: '74', idiom: 'Rock the boat', meaning: 'Раскачивать лодку / нарушать стабильность', example: "Don't rock the boat — everything is going well.", category: 'Стабильность', level: 'B2' },
+  { id: '75', idiom: 'Saved by the bell', meaning: 'Спастись в последний момент', example: "I was saved by the bell when the phone rang mid-argument.", category: 'Удача', level: 'B1' },
+  { id: '76', idiom: 'See eye to eye', meaning: 'Сходиться во мнениях', example: "We don't always see eye to eye, but we respect each other.", category: 'Отношения', level: 'B1' },
+  { id: '77', idiom: 'Shoot the breeze', meaning: 'Болтать ни о чём', example: "We spent the afternoon just shooting the breeze.", category: 'Общение', level: 'B1' },
+  { id: '78', idiom: 'Sit tight', meaning: 'Сидеть тихо, ждать', example: "Just sit tight — help is on the way.", category: 'Ожидание', level: 'A2' },
+  { id: '79', idiom: 'Skeleton in the closet', meaning: 'Скелет в шкафу / тайный грех', example: "Every family has a skeleton in the closet.", category: 'Секреты', level: 'B2' },
+  { id: '80', idiom: 'Sleeping on the job', meaning: 'Халтурить, работать спустя рукава', example: "We can't afford anyone sleeping on the job right now.", category: 'Работа', level: 'B1' },
+  { id: '81', idiom: 'Speak of the devil', meaning: 'Лёгок на помине', example: "Speak of the devil — we were just talking about you!", category: 'Общение', level: 'A2' },
+  { id: '82', idiom: 'Stab someone in the back', meaning: 'Предать, ударить в спину', example: "I trusted him and he stabbed me in the back.", category: 'Предательство', level: 'B2' },
+  { id: '83', idiom: 'Step up your game', meaning: 'Подтянуться, показать лучший результат', example: "You need to step up your game if you want that promotion.", category: 'Мотивация', level: 'B1' },
+  { id: '84', idiom: 'Take it with a grain of salt', meaning: 'Воспринимать скептически', example: "Take his advice with a grain of salt — he exaggerates.", category: 'Скептицизм', level: 'B2' },
+  { id: '85', idiom: 'The last straw', meaning: 'Последняя капля', example: "That rude comment was the last straw.", category: 'Эмоции', level: 'B1' },
+  { id: '86', idiom: 'The tip of the iceberg', meaning: 'Верхушка айсберга', example: "This problem is just the tip of the iceberg.", category: 'Ситуации', level: 'B1' },
+  { id: '87', idiom: 'Throw in the towel', meaning: 'Признать поражение, сдаться', example: "After three failed attempts, he threw in the towel.", category: 'Сдача', level: 'B1' },
+  { id: '88', idiom: 'Tie the knot', meaning: 'Пожениться', example: "They finally tied the knot after ten years together.", category: 'Отношения', level: 'A2' },
+  { id: '89', idiom: 'Time flies', meaning: 'Время летит', example: "Time flies when you're having fun!", category: 'Время', level: 'A1' },
+  { id: '90', idiom: 'Under the thumb', meaning: 'Быть под каблуком', example: "He's completely under her thumb.", category: 'Отношения', level: 'B2' },
+  { id: '91', idiom: 'Up in the air', meaning: 'Неопределённо, под вопросом', example: "The deal is still up in the air.", category: 'Неопределённость', level: 'B1' },
+  { id: '92', idiom: 'Vanish into thin air', meaning: 'Исчезнуть без следа', example: "My keys have vanished into thin air!", category: 'Исчезновение', level: 'B1' },
+  { id: '93', idiom: 'Wear your heart on your sleeve', meaning: 'Носить сердце на рукаве / быть открытым', example: "She wears her heart on her sleeve — you always know how she feels.", category: 'Характер', level: 'B2' },
+  { id: '94', idiom: 'When pigs fly', meaning: 'Когда рак на горе свистнет / никогда', example: "He'll apologise when pigs fly.", category: 'Юмор', level: 'B1' },
+  { id: '95', idiom: 'With flying colours', meaning: 'С блеском, на отлично', example: "She passed the exam with flying colours.", category: 'Успех', level: 'B1' },
+  { id: '96', idiom: 'You can\'t have your cake and eat it', meaning: 'Нельзя и рыбку съесть, и...',  example: "You can't have your cake and eat it — choose one.", category: 'Мудрость', level: 'B2' },
+  { id: '97', idiom: 'Actions speak louder than words', meaning: 'Поступки говорят громче слов', example: "Actions speak louder than words — show me, don't tell me.", category: 'Мудрость', level: 'B1' },
+  { id: '98', idiom: 'Add fuel to the fire', meaning: 'Подливать масло в огонь', example: "His comment only added fuel to the fire.", category: 'Конфликт', level: 'B2' },
+  { id: '99', idiom: 'At the drop of a hat', meaning: 'Сразу же, незамедлительно', example: "She would travel anywhere at the drop of a hat.", category: 'Готовность', level: 'B2' },
+  { id: '100', idiom: 'Back to square one', meaning: 'Вернуться к началу', example: "The project failed — it's back to square one.", category: 'Начало', level: 'B1' },
+```
+
+Также обнови экспорт IDIOM_CATEGORIES чтобы включал новые категории:
+```ts
+export const IDIOM_CATEGORIES = [...new Set(IDIOMS.map(i => i.category))].sort()
+```
+
+И обнови статистику в заголовке страницы idioms/page.tsx:
+```tsx
+<p className="text-[#64748b] text-sm mt-1">{IDIOMS.length} идиом · {learned.size} изучено</p>
+```
+(эта строка уже правильная, просто теперь покажет 100)
+
+---
+## ФИНАЛ
+1. npx tsc --noEmit — исправь все TypeScript ошибки
+2. git add -A && git commit -m "feat: expand idioms to 100 (added 70 new idioms across 20 categories)" && git push

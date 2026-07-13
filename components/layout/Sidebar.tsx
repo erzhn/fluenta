@@ -50,25 +50,25 @@ const NAV_ITEMS = [
   { href: "/listening",    icon: Headphones,      label: "Аудирование",  badge: null },
   { href: "/reading",      icon: FileText,        label: "Чтение",       badge: null },
   { href: "/writing",      icon: PenLine,         label: "Письмо",       badge: null },
-  { href: "/grammar",        icon: GraduationCap,   label: "Грамматика",         badge: null },
-  { href: "/phrasal-verbs",    icon: Link2,      label: "Фразовые глаголы",   badge: null },
-  { href: "/dictation",        icon: Volume2,    label: "Диктант",            badge: null },
-  { href: "/sentence-builder", icon: AlignLeft,  label: "Предложения",        badge: null },
-  { href: "/grammar-exercises",icon: BookOpen,   label: "Упражнения",         badge: null },
-  { href: "/idioms",            icon: MessageSquare, label: "Идиомы",          badge: null },
-  { href: "/reading-speed",    icon: Zap,        label: "Скорость чтения",    badge: null },
-  { href: "/pronunciation-practice", icon: Mic,  label: "Произношение+",      badge: null },
-  { href: "/collocations",      icon: Link2,      label: "Коллокации",         badge: null },
-  { href: "/word-formation",   icon: Layers,     label: "Словообразование",   badge: null },
-  { href: "/mini-stories",     icon: BookOpen,   label: "Истории",            badge: null },
-  { href: "/writing-templates",icon: FileText,   label: "Шаблоны письма",     badge: null },
-  { href: "/my-plan",          icon: Calendar,   label: "Мой план",           badge: null },
-  { href: "/notes",            icon: StickyNote, label: "Заметки",            badge: null },
-  { href: "/weekly-summary",   icon: BarChart,   label: "Итоги недели",       badge: null },
-  { href: "/modules",          icon: Trophy,     label: "Модули",             badge: null },
-  { href: "/achievements",  icon: Award,           label: "Достижения",   badge: null },
-  { href: "/level-test",   icon: BarChart2,       label: "Тест уровня",  badge: null },
-  { href: "/progress",     icon: TrendingUp,      label: "Прогресс",     badge: null },
+  { href: "/grammar",            icon: GraduationCap, label: "Грамматика",         badge: null },
+  { href: "/phrasal-verbs",      icon: Link2,         label: "Фразовые глаголы",   badge: null },
+  { href: "/dictation",          icon: Volume2,       label: "Диктант",            badge: null },
+  { href: "/sentence-builder",   icon: AlignLeft,     label: "Предложения",        badge: null },
+  { href: "/grammar-exercises",  icon: BookOpen,      label: "Упражнения",         badge: null },
+  { href: "/idioms",             icon: MessageSquare, label: "Идиомы",             badge: null },
+  { href: "/collocations",       icon: Link2,         label: "Коллокации",         badge: null },
+  { href: "/word-formation",     icon: Layers,        label: "Словообразование",   badge: null },
+  { href: "/mini-stories",       icon: BookOpen,      label: "Истории",            badge: null },
+  { href: "/writing-templates",  icon: FileText,      label: "Шаблоны письма",     badge: null },
+  { href: "/reading-speed",      icon: Zap,           label: "Скорость чтения",    badge: null },
+  { href: "/pronunciation-practice", icon: Mic,       label: "Произношение+",      badge: null },
+  { href: "/my-plan",            icon: Calendar,      label: "Мой план",           badge: null },
+  { href: "/notes",              icon: StickyNote,    label: "Заметки",            badge: null },
+  { href: "/weekly-summary",     icon: BarChart,      label: "Итоги недели",       badge: null },
+  { href: "/modules",            icon: Trophy,        label: "Модули",             badge: null },
+  { href: "/achievements",       icon: Award,         label: "Достижения",         badge: null },
+  { href: "/level-test",         icon: BarChart2,     label: "Тест уровня",        badge: null },
+  { href: "/progress",           icon: TrendingUp,    label: "Прогресс",           badge: null },
 ];
 
 const CEFR_LABELS: Record<string, string> = {
@@ -110,7 +110,6 @@ export function Sidebar({ vocabDueCount = 0, mobileOpen = false, onMobileClose }
         setProfile(data);
         setDailyGoal(data.daily_goal_minutes ?? 20);
       }
-      // Approximate daily minutes from today's lesson count
       const today = new Date().toISOString().slice(0, 10);
       const { count } = await supabase
         .from("lessons_progress")
@@ -140,7 +139,7 @@ export function Sidebar({ vocabDueCount = 0, mobileOpen = false, onMobileClose }
       transition={{ duration: 0.25, ease: "easeInOut" }}
       className="hidden md:flex flex-col h-full bg-[#1E293B] border-r border-[#334155] overflow-hidden shrink-0"
     >
-      {/* Logo + collapse button */}
+      {/* Logo */}
       <div className={cn(
         "flex items-center border-b border-[#334155] shrink-0",
         collapsed ? "justify-center px-0 py-4 h-16" : "justify-between px-4 py-4 h-16"
@@ -189,12 +188,10 @@ export function Sidebar({ vocabDueCount = 0, mobileOpen = false, onMobileClose }
               </div>
             </div>
           </div>
-
-          {/* XP Bar */}
           {levelInfo && (
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[#64748B] text-[10px]">Ур. {levelInfo.level} · {levelInfo.name.replace(/[^\wА-яЁё ]/g, "").trim()}</span>
+                <span className="text-[#64748B] text-[10px]">Ур. {levelInfo.level}</span>
                 <div className="flex items-center gap-1">
                   <Zap className="w-3 h-3 text-[#6366F1]" />
                   <span className="text-[#6366F1] text-[10px] font-bold">{(profile.xp ?? 0).toLocaleString()}</span>
@@ -213,7 +210,6 @@ export function Sidebar({ vocabDueCount = 0, mobileOpen = false, onMobileClose }
         </div>
       )}
 
-      {/* Collapsed user avatar */}
       {profile && collapsed && (
         <div className="flex justify-center py-3 border-b border-[#334155] shrink-0">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center text-white font-bold text-xs">
@@ -243,7 +239,6 @@ export function Sidebar({ vocabDueCount = 0, mobileOpen = false, onMobileClose }
               >
                 <item.icon className={cn("shrink-0", collapsed ? "w-5 h-5" : "w-4.5 h-4.5")} />
                 {!collapsed && <span className="flex-1">{item.label}</span>}
-                {/* Due badge */}
                 {dueCount > 0 && (
                   <span className={cn(
                     "bg-[#EF4444] text-white text-[9px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1",
@@ -344,7 +339,6 @@ export function Sidebar({ vocabDueCount = 0, mobileOpen = false, onMobileClose }
     <AnimatePresence>
       {mobileOpen && (
         <>
-          {/* Overlay */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -353,7 +347,6 @@ export function Sidebar({ vocabDueCount = 0, mobileOpen = false, onMobileClose }
             className="md:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
             onClick={onMobileClose}
           />
-          {/* Drawer */}
           <motion.div
             initial={{ x: "-100%" }}
             animate={{ x: 0 }}
@@ -380,7 +373,7 @@ export function Sidebar({ vocabDueCount = 0, mobileOpen = false, onMobileClose }
             {/* User card */}
             {profile && (
               <div className="px-4 py-4 border-b border-[#334155] shrink-0">
-                <div className="flex items-center gap-3 mb-3">
+                <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center text-white font-bold text-sm shrink-0">
                     {initials}
                   </div>
@@ -400,23 +393,6 @@ export function Sidebar({ vocabDueCount = 0, mobileOpen = false, onMobileClose }
                     </div>
                   </div>
                 </div>
-                {levelInfo && (
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[#64748B] text-[10px]">Уровень {levelInfo.level}</span>
-                      <div className="flex items-center gap-1">
-                        <Zap className="w-3 h-3 text-[#6366F1]" />
-                        <span className="text-[#6366F1] text-[10px] font-bold">{(profile.xp ?? 0).toLocaleString()} XP</span>
-                      </div>
-                    </div>
-                    <div className="h-1.5 bg-[#0F172A] rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] rounded-full transition-all duration-700"
-                        style={{ width: `${levelInfo.progress}%` }}
-                      />
-                    </div>
-                  </div>
-                )}
               </div>
             )}
 
@@ -448,19 +424,25 @@ export function Sidebar({ vocabDueCount = 0, mobileOpen = false, onMobileClose }
             </nav>
 
             {/* Bottom */}
-            <div className="border-t border-[#334155] py-2 px-2 shrink-0">
+            <div className="border-t border-[#334155] py-2 px-2 flex flex-col gap-1 shrink-0">
               <Link href="/profile" onClick={onMobileClose}>
-                <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[#64748B] hover:text-white hover:bg-[#334155]/60 transition-all text-sm font-medium">
-                  <User className="w-4.5 h-4.5" />
-                  Профиль
+                <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#64748B] hover:text-white hover:bg-[#334155]/60 transition-all text-sm font-medium">
+                  <User className="w-5 h-5 shrink-0" />
+                  <span>Профиль</span>
+                </div>
+              </Link>
+              <Link href="/settings" onClick={onMobileClose}>
+                <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#64748B] hover:text-white hover:bg-[#334155]/60 transition-all text-sm font-medium">
+                  <Settings className="w-5 h-5 shrink-0" />
+                  <span>Настройки</span>
                 </div>
               </Link>
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[#64748B] hover:text-[#EF4444] hover:bg-[#EF4444]/10 transition-all text-sm font-medium"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#64748B] hover:text-[#EF4444] hover:bg-[#EF4444]/10 transition-all text-sm font-medium w-full"
               >
-                <LogOut className="w-4.5 h-4.5" />
-                Выйти
+                <LogOut className="w-5 h-5 shrink-0" />
+                <span>Выйти</span>
               </button>
             </div>
           </motion.div>

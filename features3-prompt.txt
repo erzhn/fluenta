@@ -1,0 +1,1681 @@
+# НЕ ЗАПРАШИВАЙ РАЗРЕШЕНИЯ. Все изменения автоматически.
+# Запуск: $env:CLAUDE_CODE_MAX_OUTPUT_TOKENS=100000 && claude --dangerously-skip-permissions < features3-prompt.txt
+
+Проект: Fluenta — Next.js 14 + TypeScript + Tailwind + Supabase + Groq API. Акцент #6366f1.
+
+---
+## ЗАДАЧА 1: КОЛЛОКАЦИИ
+
+Создай lib/collocations-data.ts:
+
+```ts
+export interface Collocation {
+  id: string
+  collocation: string
+  verb?: string
+  noun?: string
+  adjective?: string
+  translation: string
+  example: string
+  wrongExample?: string
+  category: string
+  level: string
+}
+
+export const COLLOCATIONS: Collocation[] = [
+  // MAKE
+  { id: 'c1', collocation: 'make a decision', verb: 'make', translation: 'принять решение', example: 'She had to make a difficult decision.', wrongExample: '❌ do a decision', category: 'MAKE', level: 'A2' },
+  { id: 'c2', collocation: 'make a mistake', verb: 'make', translation: 'совершить ошибку', example: 'Everyone makes mistakes sometimes.', wrongExample: '❌ do a mistake', category: 'MAKE', level: 'A1' },
+  { id: 'c3', collocation: 'make progress', verb: 'make', translation: 'делать прогресс', example: 'You are making great progress with English!', category: 'MAKE', level: 'A2' },
+  { id: 'c4', collocation: 'make an effort', verb: 'make', translation: 'прилагать усилия', example: 'Please make an effort to be on time.', category: 'MAKE', level: 'B1' },
+  { id: 'c5', collocation: 'make an appointment', verb: 'make', translation: 'записаться на приём', example: 'I need to make an appointment with the doctor.', category: 'MAKE', level: 'A2' },
+  { id: 'c6', collocation: 'make a difference', verb: 'make', translation: 'иметь значение', example: 'Every small action can make a difference.', category: 'MAKE', level: 'B1' },
+  { id: 'c7', collocation: 'make friends', verb: 'make', translation: 'заводить друзей', example: 'It\'s easy to make friends at university.', wrongExample: '❌ do friends', category: 'MAKE', level: 'A1' },
+  { id: 'c8', collocation: 'make money', verb: 'make', translation: 'зарабатывать деньги', example: 'He makes money by selling online.', wrongExample: '❌ earn/win money (different meaning)', category: 'MAKE', level: 'A2' },
+  // DO
+  { id: 'c9', collocation: 'do homework', verb: 'do', translation: 'делать домашнее задание', example: 'Did you do your homework?', wrongExample: '❌ make homework', category: 'DO', level: 'A1' },
+  { id: 'c10', collocation: 'do exercise', verb: 'do', translation: 'заниматься спортом', example: 'She does exercise every morning.', wrongExample: '❌ make exercise', category: 'DO', level: 'A1' },
+  { id: 'c11', collocation: 'do research', verb: 'do', translation: 'проводить исследование', example: 'We need to do more research on this topic.', wrongExample: '❌ make research', category: 'DO', level: 'B1' },
+  { id: 'c12', collocation: 'do someone a favour', verb: 'do', translation: 'оказать кому-то услугу', example: 'Could you do me a favour and pick up the kids?', category: 'DO', level: 'A2' },
+  { id: 'c13', collocation: 'do the dishes', verb: 'do', translation: 'мыть посуду', example: 'It\'s your turn to do the dishes.', category: 'DO', level: 'A1' },
+  { id: 'c14', collocation: 'do business', verb: 'do', translation: 'вести бизнес', example: 'We do business with companies in 20 countries.', category: 'DO', level: 'B1' },
+  // TAKE
+  { id: 'c15', collocation: 'take a photo', verb: 'take', translation: 'сделать фото', example: 'Can you take a photo of us?', wrongExample: '❌ make/do a photo', category: 'TAKE', level: 'A1' },
+  { id: 'c16', collocation: 'take a break', verb: 'take', translation: 'сделать перерыв', example: 'Let\'s take a break — we\'ve been working for hours.', category: 'TAKE', level: 'A2' },
+  { id: 'c17', collocation: 'take a shower', verb: 'take', translation: 'принять душ', example: 'I always take a shower in the morning.', wrongExample: '❌ make/do a shower', category: 'TAKE', level: 'A1' },
+  { id: 'c18', collocation: 'take responsibility', verb: 'take', translation: 'взять ответственность', example: 'You need to take responsibility for your actions.', category: 'TAKE', level: 'B1' },
+  { id: 'c19', collocation: 'take an exam', verb: 'take', translation: 'сдавать экзамен', example: 'She took the IELTS exam last week.', wrongExample: '❌ make/do an exam (do exam = OK in British)', category: 'TAKE', level: 'A2' },
+  { id: 'c20', collocation: 'take notes', verb: 'take', translation: 'делать заметки', example: 'Always take notes during lectures.', wrongExample: '❌ make notes (also correct but less common)', category: 'TAKE', level: 'A2' },
+  // HAVE
+  { id: 'c21', collocation: 'have a meeting', verb: 'have', translation: 'проводить встречу', example: 'We have a meeting at 3 pm.', wrongExample: '❌ make/do a meeting', category: 'HAVE', level: 'A2' },
+  { id: 'c22', collocation: 'have a conversation', verb: 'have', translation: 'вести разговор', example: 'We had a long conversation about the future.', category: 'HAVE', level: 'A2' },
+  { id: 'c23', collocation: 'have an argument', verb: 'have', translation: 'поспорить, поссориться', example: 'They had an argument about money.', category: 'HAVE', level: 'B1' },
+  { id: 'c24', collocation: 'have fun', verb: 'have', translation: 'веселиться', example: 'Did you have fun at the party?', wrongExample: '❌ make fun (different meaning!)', category: 'HAVE', level: 'A1' },
+  { id: 'c25', collocation: 'have a look', verb: 'have', translation: 'взглянуть', example: 'Can you have a look at this email?', category: 'HAVE', level: 'A2' },
+  // ADJECTIVE + NOUN
+  { id: 'c26', collocation: 'heavy rain', adjective: 'heavy', translation: 'сильный дождь', example: 'We got caught in heavy rain.', wrongExample: '❌ strong rain / hard rain', category: 'Прилагательные', level: 'A2' },
+  { id: 'c27', collocation: 'heavy traffic', adjective: 'heavy', translation: 'сильные пробки', example: 'There was heavy traffic on the motorway.', category: 'Прилагательные', level: 'A2' },
+  { id: 'c28', collocation: 'strong coffee', adjective: 'strong', translation: 'крепкий кофе', example: 'I need a strong coffee to wake up.', wrongExample: '❌ heavy coffee', category: 'Прилагательные', level: 'A1' },
+  { id: 'c29', collocation: 'strong opinion', adjective: 'strong', translation: 'твёрдое мнение', example: 'She has strong opinions about politics.', category: 'Прилагательные', level: 'B1' },
+  { id: 'c30', collocation: 'fast food', adjective: 'fast', translation: 'быстрое питание', example: 'He eats too much fast food.', wrongExample: '❌ quick food', category: 'Прилагательные', level: 'A1' },
+  { id: 'c31', collocation: 'deep sleep', adjective: 'deep', translation: 'глубокий сон', example: 'She fell into a deep sleep immediately.', wrongExample: '❌ heavy sleep', category: 'Прилагательные', level: 'B1' },
+  { id: 'c32', collocation: 'sharp pain', adjective: 'sharp', translation: 'острая боль', example: 'I felt a sharp pain in my chest.', wrongExample: '❌ strong pain', category: 'Прилагательные', level: 'B1' },
+  { id: 'c33', collocation: 'wide range', adjective: 'wide', translation: 'широкий ассортимент/диапазон', example: 'We offer a wide range of products.', wrongExample: '❌ big range', category: 'Прилагательные', level: 'B1' },
+  { id: 'c34', collocation: 'high demand', adjective: 'high', translation: 'высокий спрос', example: 'There is high demand for English teachers.', wrongExample: '❌ big demand', category: 'Прилагательные', level: 'B2' },
+  { id: 'c35', collocation: 'low income', adjective: 'low', translation: 'низкий доход', example: 'Many families live on a low income.', wrongExample: '❌ small income', category: 'Прилагательные', level: 'B1' },
+  // GO
+  { id: 'c36', collocation: 'go on holiday', verb: 'go', translation: 'поехать в отпуск', example: 'We go on holiday every summer.', wrongExample: '❌ make holiday', category: 'GO', level: 'A1' },
+  { id: 'c37', collocation: 'go for a walk', verb: 'go', translation: 'пойти на прогулку', example: 'Let\'s go for a walk in the park.', category: 'GO', level: 'A1' },
+  { id: 'c38', collocation: 'go wrong', verb: 'go', translation: 'пойти не так', example: 'Something went wrong with the plan.', category: 'GO', level: 'A2' },
+  { id: 'c39', collocation: 'go bankrupt', verb: 'go', translation: 'обанкротиться', example: 'The company went bankrupt last year.', category: 'GO', level: 'B2' },
+  { id: 'c40', collocation: 'go viral', verb: 'go', translation: 'стать вирусным', example: 'Her video went viral overnight.', category: 'GO', level: 'B1' },
+]
+
+export const COLLOCATION_CATEGORIES = [...new Set(COLLOCATIONS.map(c => c.category))]
+```
+
+Создай app/(dashboard)/collocations/page.tsx:
+
+```tsx
+'use client'
+import { useState } from 'react'
+import { COLLOCATIONS, COLLOCATION_CATEGORIES } from '@/lib/collocations-data'
+
+export default function CollocationsPage() {
+  const [category, setCategory] = useState('Все')
+  const [search, setSearch] = useState('')
+  const [learned, setLearned] = useState<Set<string>>(new Set())
+  const [showWrong, setShowWrong] = useState<Set<string>>(new Set())
+
+  const filtered = COLLOCATIONS.filter(c => {
+    const matchSearch = c.collocation.toLowerCase().includes(search.toLowerCase()) ||
+      c.translation.toLowerCase().includes(search.toLowerCase())
+    const matchCat = category === 'Все' || c.category === category
+    return matchSearch && matchCat
+  })
+
+  function toggleLearn(id: string) {
+    setLearned(l => { const n = new Set(l); n.has(id) ? n.delete(id) : n.add(id); return n })
+  }
+
+  function speak(text: string) {
+    const u = new SpeechSynthesisUtterance(text)
+    u.lang = 'en-US'; u.rate = 0.85
+    window.speechSynthesis.speak(u)
+  }
+
+  return (
+    <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-white">Коллокации</h1>
+        <p className="text-[#64748b] text-sm mt-1">Слова которые «ходят вместе» · {COLLOCATIONS.length} коллокаций · {learned.size} изучено</p>
+      </div>
+
+      <input type="text" value={search} onChange={e => setSearch(e.target.value)}
+        placeholder="Поиск: make, decision, решение..."
+        className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-white
+          placeholder:text-[#334155] outline-none focus:border-[#6366f1]/50 transition-colors mb-4" />
+
+      <div className="flex gap-2 flex-wrap mb-6">
+        {['Все', ...COLLOCATION_CATEGORIES].map(cat => (
+          <button key={cat} onClick={() => setCategory(cat)}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${
+              category === cat ? 'bg-[#6366f1] border-[#6366f1] text-white' : 'bg-white/[0.04] border-white/10 text-[#94a3b8] hover:text-white'
+            }`}>
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {filtered.map(col => (
+          <div key={col.id}
+            className={`rounded-2xl border p-5 transition-all ${
+              learned.has(col.id) ? 'bg-green-500/5 border-green-500/15' : 'bg-white/[0.04] border-white/10'
+            }`}>
+            <div className="flex items-start justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-[#6366f1]/10 text-[#6366f1] font-mono font-bold">
+                  {col.verb ?? col.adjective ?? '•'}
+                </span>
+                <span className="text-xs text-[#475569]">{col.level}</span>
+              </div>
+              <div className="flex gap-1.5">
+                <button onClick={() => speak(col.collocation)}
+                  className="w-7 h-7 rounded-lg bg-white/[0.06] hover:bg-white/10 flex items-center justify-center text-xs">🔊</button>
+                <button onClick={() => toggleLearn(col.id)}
+                  className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs transition-all ${
+                    learned.has(col.id) ? 'bg-green-500/20 text-green-400' : 'bg-white/[0.06] text-[#64748b] hover:text-white'
+                  }`}>
+                  {learned.has(col.id) ? '✓' : '+'}
+                </button>
+              </div>
+            </div>
+
+            <p className="text-white text-lg font-bold mb-1">{col.collocation}</p>
+            <p className="text-[#6366f1] text-sm font-medium mb-2">{col.translation}</p>
+            <p className="text-[#64748b] text-sm italic mb-3">"{col.example}"</p>
+
+            {col.wrongExample && (
+              <button onClick={() => setShowWrong(s => { const n = new Set(s); n.has(col.id) ? n.delete(col.id) : n.add(col.id); return n })}
+                className="text-xs text-[#475569] hover:text-[#64748b] transition-colors">
+                {showWrong.has(col.id) ? (
+                  <span className="text-red-400/80">{col.wrongExample}</span>
+                ) : '⚠️ Показать частую ошибку'}
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+```
+
+Добавь в Sidebar.tsx и MobileNav.tsx: `{ href: '/collocations', label: 'Коллокации', icon: Link2 }`
+
+---
+## ЗАДАЧА 2: СЛОВООБРАЗОВАНИЕ
+
+Создай lib/word-formation-data.ts:
+
+```ts
+export interface Affix {
+  id: string
+  affix: string
+  type: 'prefix' | 'suffix'
+  meaning: string
+  examples: { base: string; formed: string; translation: string }[]
+  level: string
+}
+
+export const AFFIXES: Affix[] = [
+  { id: 'un', affix: 'un-', type: 'prefix', meaning: 'не-, обратное действие', level: 'A2',
+    examples: [
+      { base: 'happy', formed: 'unhappy', translation: 'несчастный' },
+      { base: 'do', formed: 'undo', translation: 'отменить' },
+      { base: 'lock', formed: 'unlock', translation: 'открыть (замок)' },
+      { base: 'comfortable', formed: 'uncomfortable', translation: 'некомфортный' },
+      { base: 'expected', formed: 'unexpected', translation: 'неожиданный' },
+    ]},
+  { id: 're', affix: 're-', type: 'prefix', meaning: 'снова, повторно', level: 'A2',
+    examples: [
+      { base: 'do', formed: 'redo', translation: 'переделать' },
+      { base: 'write', formed: 'rewrite', translation: 'переписать' },
+      { base: 'start', formed: 'restart', translation: 'перезапустить' },
+      { base: 'read', formed: 'reread', translation: 'перечитать' },
+      { base: 'build', formed: 'rebuild', translation: 'перестроить' },
+    ]},
+  { id: 'dis', affix: 'dis-', type: 'prefix', meaning: 'не-, противоположное', level: 'B1',
+    examples: [
+      { base: 'agree', formed: 'disagree', translation: 'не соглашаться' },
+      { base: 'honest', formed: 'dishonest', translation: 'нечестный' },
+      { base: 'appear', formed: 'disappear', translation: 'исчезнуть' },
+      { base: 'like', formed: 'dislike', translation: 'не нравиться' },
+      { base: 'connect', formed: 'disconnect', translation: 'отключить' },
+    ]},
+  { id: 'mis', affix: 'mis-', type: 'prefix', meaning: 'неправильно', level: 'B1',
+    examples: [
+      { base: 'understand', formed: 'misunderstand', translation: 'неправильно понять' },
+      { base: 'pronounce', formed: 'mispronounce', translation: 'неправильно произнести' },
+      { base: 'spell', formed: 'misspell', translation: 'написать с ошибкой' },
+      { base: 'lead', formed: 'mislead', translation: 'вводить в заблуждение' },
+    ]},
+  { id: 'over', affix: 'over-', type: 'prefix', meaning: 'слишком много, сверх', level: 'B1',
+    examples: [
+      { base: 'work', formed: 'overwork', translation: 'перерабатывать' },
+      { base: 'sleep', formed: 'oversleep', translation: 'проспать' },
+      { base: 'eat', formed: 'overeat', translation: 'переесть' },
+      { base: 'estimate', formed: 'overestimate', translation: 'переоценивать' },
+    ]},
+  { id: 'pre', affix: 'pre-', type: 'prefix', meaning: 'до, заранее', level: 'B2',
+    examples: [
+      { base: 'view', formed: 'preview', translation: 'предварительный просмотр' },
+      { base: 'heat', formed: 'preheat', translation: 'предварительно разогреть' },
+      { base: 'historic', formed: 'prehistoric', translation: 'доисторический' },
+      { base: 'paid', formed: 'prepaid', translation: 'предоплаченный' },
+    ]},
+  { id: 'tion', affix: '-tion / -sion', type: 'suffix', meaning: 'существительное от глагола', level: 'A2',
+    examples: [
+      { base: 'educate', formed: 'education', translation: 'образование' },
+      { base: 'communicate', formed: 'communication', translation: 'общение' },
+      { base: 'decide', formed: 'decision', translation: 'решение' },
+      { base: 'discuss', formed: 'discussion', translation: 'обсуждение' },
+      { base: 'produce', formed: 'production', translation: 'производство' },
+    ]},
+  { id: 'ness', affix: '-ness', type: 'suffix', meaning: 'существительное от прилагательного', level: 'B1',
+    examples: [
+      { base: 'happy', formed: 'happiness', translation: 'счастье' },
+      { base: 'kind', formed: 'kindness', translation: 'доброта' },
+      { base: 'dark', formed: 'darkness', translation: 'темнота' },
+      { base: 'aware', formed: 'awareness', translation: 'осознанность' },
+      { base: 'sad', formed: 'sadness', translation: 'грусть' },
+    ]},
+  { id: 'ly', affix: '-ly', type: 'suffix', meaning: 'наречие от прилагательного', level: 'A1',
+    examples: [
+      { base: 'quick', formed: 'quickly', translation: 'быстро' },
+      { base: 'beautiful', formed: 'beautifully', translation: 'красиво' },
+      { base: 'careful', formed: 'carefully', translation: 'осторожно' },
+      { base: 'serious', formed: 'seriously', translation: 'серьёзно' },
+      { base: 'complete', formed: 'completely', translation: 'полностью' },
+    ]},
+  { id: 'er', affix: '-er / -or', type: 'suffix', meaning: 'тот кто делает (деятель)', level: 'A1',
+    examples: [
+      { base: 'teach', formed: 'teacher', translation: 'учитель' },
+      { base: 'write', formed: 'writer', translation: 'писатель' },
+      { base: 'act', formed: 'actor', translation: 'актёр' },
+      { base: 'manage', formed: 'manager', translation: 'менеджер' },
+      { base: 'direct', formed: 'director', translation: 'директор' },
+    ]},
+  { id: 'ful', affix: '-ful', type: 'suffix', meaning: 'полный чего-то (прилагательное)', level: 'A2',
+    examples: [
+      { base: 'help', formed: 'helpful', translation: 'полезный' },
+      { base: 'beauty', formed: 'beautiful', translation: 'красивый' },
+      { base: 'care', formed: 'careful', translation: 'осторожный' },
+      { base: 'power', formed: 'powerful', translation: 'мощный' },
+      { base: 'success', formed: 'successful', translation: 'успешный' },
+    ]},
+  { id: 'less', affix: '-less', type: 'suffix', meaning: 'без чего-то (прилагательное)', level: 'B1',
+    examples: [
+      { base: 'help', formed: 'helpless', translation: 'беспомощный' },
+      { base: 'care', formed: 'careless', translation: 'беспечный' },
+      { base: 'home', formed: 'homeless', translation: 'бездомный' },
+      { base: 'use', formed: 'useless', translation: 'бесполезный' },
+      { base: 'end', formed: 'endless', translation: 'бесконечный' },
+    ]},
+]
+```
+
+Создай app/(dashboard)/word-formation/page.tsx:
+
+```tsx
+'use client'
+import { useState } from 'react'
+import { AFFIXES } from '@/lib/word-formation-data'
+
+export default function WordFormationPage() {
+  const [selected, setSelected] = useState(AFFIXES[0])
+  const [quizMode, setQuizMode] = useState(false)
+  const [quizIdx, setQuizIdx] = useState(0)
+  const [answer, setAnswer] = useState('')
+  const [result, setResult] = useState<boolean | null>(null)
+  const [score, setScore] = useState({ correct: 0, total: 0 })
+
+  const prefixes = AFFIXES.filter(a => a.type === 'prefix')
+  const suffixes = AFFIXES.filter(a => a.type === 'suffix')
+
+  const quizItems = selected.examples
+  const quizItem = quizItems[quizIdx % quizItems.length]
+
+  function checkAnswer() {
+    const correct = answer.trim().toLowerCase() === quizItem.formed.toLowerCase()
+    setResult(correct)
+    setScore(s => ({ correct: s.correct + (correct ? 1 : 0), total: s.total + 1 }))
+  }
+
+  function nextQuiz() {
+    setQuizIdx(i => i + 1)
+    setAnswer('')
+    setResult(null)
+  }
+
+  return (
+    <div className="p-4 sm:p-8 max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold text-white mb-2">Словообразование</h1>
+      <p className="text-[#64748b] text-sm mb-6">Префиксы и суффиксы английского языка</p>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Левая панель — список аффиксов */}
+        <div className="lg:col-span-1">
+          <p className="text-[#475569] text-xs uppercase tracking-wider mb-2">Префиксы</p>
+          <div className="space-y-1 mb-4">
+            {prefixes.map(a => (
+              <button key={a.id} onClick={() => { setSelected(a); setQuizMode(false); setQuizIdx(0) }}
+                className={`w-full text-left px-4 py-2.5 rounded-xl transition-all flex items-center justify-between ${
+                  selected.id === a.id ? 'bg-[#6366f1]/20 text-white' : 'text-[#94a3b8] hover:text-white hover:bg-white/[0.04]'
+                }`}>
+                <span className="font-mono font-bold">{a.affix}</span>
+                <span className="text-xs opacity-60">{a.level}</span>
+              </button>
+            ))}
+          </div>
+          <p className="text-[#475569] text-xs uppercase tracking-wider mb-2">Суффиксы</p>
+          <div className="space-y-1">
+            {suffixes.map(a => (
+              <button key={a.id} onClick={() => { setSelected(a); setQuizMode(false); setQuizIdx(0) }}
+                className={`w-full text-left px-4 py-2.5 rounded-xl transition-all flex items-center justify-between ${
+                  selected.id === a.id ? 'bg-[#6366f1]/20 text-white' : 'text-[#94a3b8] hover:text-white hover:bg-white/[0.04]'
+                }`}>
+                <span className="font-mono font-bold">{a.affix}</span>
+                <span className="text-xs opacity-60">{a.level}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Правая панель — детали */}
+        <div className="lg:col-span-2">
+          <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 mb-4">
+            <div className="flex items-center gap-3 mb-1">
+              <span className="text-3xl font-bold font-mono text-[#6366f1]">{selected.affix}</span>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-white/[0.06] text-[#64748b]">
+                {selected.type === 'prefix' ? 'Префикс' : 'Суффикс'} · {selected.level}
+              </span>
+            </div>
+            <p className="text-[#94a3b8] text-sm mb-5">Значение: {selected.meaning}</p>
+
+            <div className="space-y-2">
+              {selected.examples.map((ex, i) => (
+                <div key={i} className="flex items-center gap-3 p-3 bg-white/[0.03] rounded-xl">
+                  <span className="text-[#475569] text-sm w-24">{ex.base}</span>
+                  <span className="text-[#334155]">→</span>
+                  <span className="text-white font-semibold flex-1">{ex.formed}</span>
+                  <span className="text-[#64748b] text-sm">{ex.translation}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Упражнение */}
+          <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-white font-semibold text-sm">Упражнение</p>
+              <span className="text-[#64748b] text-xs">{score.correct}/{score.total}</span>
+            </div>
+
+            {!quizMode ? (
+              <button onClick={() => setQuizMode(true)}
+                className="w-full py-3 bg-[#6366f1] hover:bg-[#5558e8] text-white font-medium rounded-xl transition-colors">
+                Начать упражнение
+              </button>
+            ) : (
+              <>
+                <p className="text-[#64748b] text-sm mb-3">
+                  Добавь <span className="text-[#6366f1] font-bold">{selected.affix}</span> к слову:
+                </p>
+                <p className="text-white text-2xl font-bold text-center py-4 bg-white/[0.03] rounded-xl mb-4">
+                  {quizItem.base}
+                </p>
+                {result === null ? (
+                  <>
+                    <input type="text" value={answer} onChange={e => setAnswer(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && answer && checkAnswer()}
+                      placeholder={`Введи ${selected.type === 'prefix' ? selected.affix + quizItem.base : quizItem.base + selected.affix}...`}
+                      className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3
+                        text-white placeholder:text-[#334155] outline-none focus:border-[#6366f1]/50 mb-3" />
+                    <button onClick={checkAnswer} disabled={!answer}
+                      className="w-full py-3 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-40 text-white font-medium rounded-xl transition-colors">
+                      Проверить
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className={`p-3 rounded-xl mb-3 text-center border ${result ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
+                      <p className={`font-semibold ${result ? 'text-green-400' : 'text-red-400'}`}>
+                        {result ? '✓ Правильно!' : `✗ Правильно: ${quizItem.formed}`}
+                      </p>
+                      <p className="text-[#64748b] text-sm mt-1">{quizItem.translation}</p>
+                    </div>
+                    <button onClick={nextQuiz}
+                      className="w-full py-3 bg-white/[0.06] hover:bg-white/10 text-white font-medium rounded-xl transition-colors">
+                      Следующее →
+                    </button>
+                  </>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+```
+
+Добавь в навигацию: `{ href: '/word-formation', label: 'Словообразование', icon: Layers }`
+
+---
+## ЗАДАЧА 3: МИНИ-ИСТОРИИ
+
+Создай lib/mini-stories-data.ts:
+
+```ts
+export interface MiniStory {
+  id: string
+  title: string
+  level: string
+  topic: string
+  text: string
+  vocabWords: { word: string; translation: string; highlighted: boolean }[]
+  questions: { q: string; a: string }[]
+}
+
+export const MINI_STORIES: MiniStory[] = [
+  {
+    id: 'ms1', title: 'A New Beginning', level: 'A1', topic: 'Everyday Life',
+    text: `My name is Emma. I am **twenty-five** years old. I live in a small **apartment** in London. Every morning I **wake up** at seven o'clock. I drink **coffee** and eat **breakfast**. Then I go to work by **bus**. I work in an office. I like my job because my **colleagues** are friendly. After work I go to the **gym**. In the evening I **cook** dinner and watch TV. I am **happy** with my life.`,
+    vocabWords: [
+      { word: 'apartment', translation: 'квартира', highlighted: true },
+      { word: 'wake up', translation: 'просыпаться', highlighted: true },
+      { word: 'colleagues', translation: 'коллеги', highlighted: true },
+      { word: 'gym', translation: 'спортзал', highlighted: true },
+      { word: 'cook', translation: 'готовить', highlighted: true },
+    ],
+    questions: [
+      { q: 'Where does Emma live?', a: 'She lives in a small apartment in London.' },
+      { q: 'How does she go to work?', a: 'She goes to work by bus.' },
+      { q: 'What does she do after work?', a: 'She goes to the gym.' },
+    ]
+  },
+  {
+    id: 'ms2', title: 'The Job Interview', level: 'B1', topic: 'Work',
+    text: `David had been **unemployed** for three months when he finally got an **invitation** to a job interview. He was **nervous** but **determined** to make a good **impression**. The night before, he **prepared** his answers carefully and chose his best suit. At the interview, the **recruiter** asked him about his **experience** and **strengths**. David spoke **confidently** about his skills. He admitted his **weaknesses** honestly, which **impressed** the panel. Two days later, he received a call with a job **offer**. His **perseverance** had paid off.`,
+    vocabWords: [
+      { word: 'unemployed', translation: 'безработный', highlighted: true },
+      { word: 'determined', translation: 'решительный', highlighted: true },
+      { word: 'impression', translation: 'впечатление', highlighted: true },
+      { word: 'recruiter', translation: 'рекрутер', highlighted: true },
+      { word: 'perseverance', translation: 'настойчивость', highlighted: true },
+      { word: 'confidently', translation: 'уверенно', highlighted: true },
+    ],
+    questions: [
+      { q: 'How long had David been unemployed?', a: 'He had been unemployed for three months.' },
+      { q: 'What did he do the night before the interview?', a: 'He prepared his answers and chose his best suit.' },
+      { q: 'What impressed the panel?', a: 'He admitted his weaknesses honestly.' },
+    ]
+  },
+  {
+    id: 'ms3', title: 'The Startup Dream', level: 'B2', topic: 'Business',
+    text: `When Sofia **launched** her tech startup, most people thought she was taking an **enormous** risk. She had **quit** her **stable** corporate job to pursue an **ambitious** idea: an app that would **revolutionise** how small businesses manage their **finances**. The early months were **gruelling** — she worked eighteen-hour days, faced constant **setbacks**, and nearly ran out of **funding**. But Sofia was **resilient**. She **pivoted** her business model twice, **collaborated** with unexpected **partners**, and eventually **secured** a significant **investment** from a venture capital firm. Her story became an **inspiration** for aspiring entrepreneurs everywhere.`,
+    vocabWords: [
+      { word: 'launched', translation: 'запустила', highlighted: true },
+      { word: 'ambitious', translation: 'амбициозная', highlighted: true },
+      { word: 'revolutionise', translation: 'революционизировать', highlighted: true },
+      { word: 'gruelling', translation: 'изнурительный', highlighted: true },
+      { word: 'resilient', translation: 'устойчивая', highlighted: true },
+      { word: 'pivoted', translation: 'изменила направление', highlighted: true },
+      { word: 'secured', translation: 'получила, обеспечила', highlighted: true },
+    ],
+    questions: [
+      { q: 'What was Sofia\'s idea?', a: 'An app to help small businesses manage their finances.' },
+      { q: 'What challenges did she face?', a: 'She worked 18-hour days, had setbacks, and nearly ran out of funding.' },
+      { q: 'How did she eventually succeed?', a: 'She pivoted her model twice and secured venture capital investment.' },
+    ]
+  },
+  {
+    id: 'ms4', title: 'Learning a Language', level: 'A2', topic: 'Education',
+    text: `Maria decided to **learn** English when she was thirty years old. At first, it seemed **impossible**. She could not **understand** anything people said on TV. She made many **grammar** mistakes and felt **embarrassed**. But she did not **give up**. She studied for one hour every day. She also found a **language partner** online. After six months, she could have simple **conversations**. After one year, she watched movies without **subtitles**. Maria learned an important **lesson**: if you **practise** every day, you will **improve**.`,
+    vocabWords: [
+      { word: 'impossible', translation: 'невозможно', highlighted: true },
+      { word: 'embarrassed', translation: 'смущённый', highlighted: true },
+      { word: 'give up', translation: 'сдаваться', highlighted: true },
+      { word: 'language partner', translation: 'языковой партнёр', highlighted: true },
+      { word: 'subtitles', translation: 'субтитры', highlighted: true },
+      { word: 'practise', translation: 'практиковаться', highlighted: true },
+    ],
+    questions: [
+      { q: 'How old was Maria when she started learning English?', a: 'She was thirty years old.' },
+      { q: 'How long did she study every day?', a: 'She studied for one hour every day.' },
+      { q: 'What could she do after one year?', a: 'She could watch movies without subtitles.' },
+    ]
+  },
+  {
+    id: 'ms5', title: 'The Climate Crisis', level: 'C1', topic: 'Environment',
+    text: `The **paradox** of the climate crisis is that those who have **contributed** least to it are **disproportionately** affected by its **consequences**. Small island nations face **existential** threats from rising sea levels, while **industrialised** countries that **emit** the most carbon dioxide continue to **debate** the **urgency** of action. Scientists are **unequivocal**: without **unprecedented** global **cooperation** and a radical **transition** to renewable energy, the window for **averting** catastrophic warming is narrowing rapidly. The question is no longer whether climate change is happening, but whether humanity has the **collective** will to **confront** it.`,
+    vocabWords: [
+      { word: 'paradox', translation: 'парадокс', highlighted: true },
+      { word: 'disproportionately', translation: 'непропорционально', highlighted: true },
+      { word: 'existential', translation: 'экзистенциальный, угрожающий существованию', highlighted: true },
+      { word: 'unequivocal', translation: 'однозначный', highlighted: true },
+      { word: 'unprecedented', translation: 'беспрецедентный', highlighted: true },
+      { word: 'averting', translation: 'предотвращение', highlighted: true },
+      { word: 'collective', translation: 'коллективный', highlighted: true },
+    ],
+    questions: [
+      { q: 'Who is most affected by the climate crisis?', a: 'Those who contributed least — small island nations.' },
+      { q: 'What do scientists say about climate change?', a: 'They are unequivocal that urgent action is needed.' },
+      { q: 'What is needed to avert catastrophic warming?', a: 'Unprecedented global cooperation and transition to renewable energy.' },
+    ]
+  },
+]
+```
+
+Создай app/(dashboard)/mini-stories/page.tsx:
+
+```tsx
+'use client'
+import { useState } from 'react'
+import { MINI_STORIES, MiniStory } from '@/lib/mini-stories-data'
+
+function addWordsToSR(words: MiniStory['vocabWords']) {
+  const cards = JSON.parse(localStorage.getItem('fluenta_sr_cards') ?? '[]')
+  let added = 0
+  words.forEach(w => {
+    if (!cards.some((c: {wordId: string}) => c.wordId === `story_${w.word}`)) {
+      cards.push({
+        wordId: `story_${w.word}`,
+        word: w.word, translation: w.translation,
+        easeFactor: 2.5, interval: 1, repetitions: 0,
+        dueDate: new Date().toISOString().slice(0, 10),
+      })
+      added++
+    }
+  })
+  localStorage.setItem('fluenta_sr_cards', JSON.stringify(cards))
+  return added
+}
+
+export default function MiniStoriesPage() {
+  const [level, setLevel] = useState('A1')
+  const [selected, setSelected] = useState<MiniStory | null>(null)
+  const [showVocab, setShowVocab] = useState(false)
+  const [showQuestions, setShowQuestions] = useState(false)
+  const [answers, setAnswers] = useState<string[]>([])
+  const [checked, setChecked] = useState(false)
+  const [addedCount, setAddedCount] = useState(0)
+
+  const filtered = MINI_STORIES.filter(s => s.level === level)
+
+  function renderText(text: string) {
+    return text.replace(/\*\*(.+?)\*\*/g, '<strong class="text-[#a5b4fc] font-semibold">$1</strong>')
+  }
+
+  function handleAddWords() {
+    if (!selected) return
+    const count = addWordsToSR(selected.vocabWords)
+    setAddedCount(count)
+  }
+
+  function speak(text: string) {
+    window.speechSynthesis.cancel()
+    const plain = text.replace(/\*\*/g, '')
+    const u = new SpeechSynthesisUtterance(plain)
+    u.lang = 'en-US'; u.rate = 0.85
+    window.speechSynthesis.speak(u)
+  }
+
+  if (selected) return (
+    <div className="p-4 sm:p-8 max-w-3xl mx-auto">
+      <button onClick={() => { setSelected(null); setShowVocab(false); setShowQuestions(false); setChecked(false); setAnswers([]) }}
+        className="text-[#64748b] hover:text-white text-sm mb-6 flex items-center gap-2 transition-colors">
+        ← Все истории
+      </button>
+
+      <div className="flex items-center gap-3 mb-2">
+        <span className="text-xs px-2 py-0.5 rounded-full bg-[#6366f1]/10 text-[#6366f1]">{selected.level}</span>
+        <span className="text-[#475569] text-xs">{selected.topic}</span>
+      </div>
+      <h1 className="text-2xl font-bold text-white mb-6">{selected.title}</h1>
+
+      {/* Текст истории */}
+      <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 mb-4">
+        <div className="flex justify-end mb-4">
+          <button onClick={() => speak(selected.text)}
+            className="px-4 py-2 bg-white/[0.06] hover:bg-white/10 text-[#94a3b8] text-sm rounded-xl border border-white/10 transition-colors">
+            🔊 Прослушать
+          </button>
+        </div>
+        <p className="text-[#e2e8f0] text-lg leading-8"
+          dangerouslySetInnerHTML={{ __html: renderText(selected.text) }} />
+      </div>
+
+      {/* Словарь */}
+      <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5 mb-4">
+        <button onClick={() => setShowVocab(!showVocab)}
+          className="w-full flex items-center justify-between text-white font-semibold">
+          <span>📚 Словарь ({selected.vocabWords.length} слов)</span>
+          <span className="text-[#64748b]">{showVocab ? '▲' : '▼'}</span>
+        </button>
+        {showVocab && (
+          <>
+            <div className="mt-4 space-y-2">
+              {selected.vocabWords.map((w, i) => (
+                <div key={i} className="flex items-center justify-between py-2 border-b border-white/[0.04] last:border-0">
+                  <span className="text-[#a5b4fc] font-semibold">{w.word}</span>
+                  <span className="text-[#64748b] text-sm">{w.translation}</span>
+                </div>
+              ))}
+            </div>
+            <button onClick={handleAddWords}
+              className={`w-full mt-4 py-2.5 rounded-xl text-sm font-medium transition-all border ${
+                addedCount > 0
+                  ? 'bg-green-500/10 border-green-500/20 text-green-400'
+                  : 'bg-[#6366f1]/10 border-[#6366f1]/20 text-[#6366f1] hover:bg-[#6366f1]/20'
+              }`}>
+              {addedCount > 0 ? `✓ ${addedCount} слов добавлено в повторение` : '+ Добавить все слова в повторение (SR)'}
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* Вопросы */}
+      <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
+        <button onClick={() => setShowQuestions(!showQuestions)}
+          className="w-full flex items-center justify-between text-white font-semibold">
+          <span>❓ Вопросы к тексту</span>
+          <span className="text-[#64748b]">{showQuestions ? '▲' : '▼'}</span>
+        </button>
+        {showQuestions && (
+          <div className="mt-4 space-y-4">
+            {selected.questions.map((q, i) => (
+              <div key={i}>
+                <p className="text-white text-sm font-medium mb-2">{i + 1}. {q.q}</p>
+                {!checked ? (
+                  <input type="text"
+                    value={answers[i] ?? ''}
+                    onChange={e => {
+                      const n = [...answers]; n[i] = e.target.value; setAnswers(n)
+                    }}
+                    placeholder="Твой ответ..."
+                    className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-3 py-2
+                      text-white text-sm placeholder:text-[#334155] outline-none focus:border-[#6366f1]/50" />
+                ) : (
+                  <p className="text-[#6366f1] text-sm bg-[#6366f1]/5 rounded-xl px-3 py-2 border border-[#6366f1]/20">
+                    {q.a}
+                  </p>
+                )}
+              </div>
+            ))}
+            {!checked && (
+              <button onClick={() => setChecked(true)}
+                className="w-full py-3 bg-[#6366f1] hover:bg-[#5558e8] text-white font-medium rounded-xl transition-colors">
+                Показать ответы
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="p-4 sm:p-8 max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold text-white mb-2">Мини-истории</h1>
+      <p className="text-[#64748b] text-sm mb-6">Читай историю · учи слова · отвечай на вопросы</p>
+
+      <div className="flex gap-2 mb-6">
+        {['A1','A2','B1','B2','C1'].map(l => (
+          <button key={l} onClick={() => setLevel(l)}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all border ${
+              level === l ? 'bg-[#6366f1] border-[#6366f1] text-white' : 'bg-white/[0.04] border-white/10 text-[#94a3b8] hover:text-white'
+            }`}>{l}</button>
+        ))}
+      </div>
+
+      <div className="grid gap-4">
+        {filtered.map(story => (
+          <button key={story.id} onClick={() => setSelected(story)}
+            className="w-full text-left bg-white/[0.04] border border-white/10 hover:border-white/20
+              rounded-2xl p-5 transition-all group">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-[#6366f1]/10 text-[#6366f1]">{story.level}</span>
+              <span className="text-[#475569] text-xs">{story.topic}</span>
+              <span className="text-[#475569] text-xs">· {story.vocabWords.length} слов</span>
+            </div>
+            <p className="text-white font-semibold group-hover:text-[#a5b4fc] transition-colors">{story.title}</p>
+            <p className="text-[#64748b] text-sm mt-1 line-clamp-2">
+              {story.text.replace(/\*\*/g, '').slice(0, 120)}...
+            </p>
+          </button>
+        ))}
+        {filtered.length === 0 && (
+          <p className="text-[#475569] text-center py-12">Историй для уровня {level} пока нет</p>
+        )}
+      </div>
+    </div>
+  )
+}
+```
+
+Добавь в навигацию: `{ href: '/mini-stories', label: 'Истории', icon: BookOpen }`
+
+---
+## ЗАДАЧА 4: ШАБЛОНЫ ДЛЯ ПИСЬМА
+
+Создай app/(dashboard)/writing-templates/page.tsx:
+
+```tsx
+'use client'
+import { useState } from 'react'
+
+interface Template {
+  id: string
+  title: string
+  type: string
+  level: string
+  description: string
+  structure: { label: string; placeholder: string; example: string }[]
+  tips: string[]
+  wordCount: string
+}
+
+const TEMPLATES: Template[] = [
+  {
+    id: 'ielts-opinion',
+    title: 'IELTS Opinion Essay',
+    type: 'IELTS',
+    level: 'B2-C1',
+    description: 'Task 2 — эссе с мнением',
+    wordCount: '250+ слов',
+    tips: [
+      'Чётко выражай свою позицию с первого абзаца',
+      'Используй linking words: Furthermore, However, In conclusion',
+      'Приводи конкретные примеры',
+      'Избегай слов "I think" — используй "It is argued that"',
+    ],
+    structure: [
+      { label: 'Introduction', placeholder: 'Перефразируй вопрос + выражи позицию...', example: 'In recent years, [TOPIC] has become a subject of considerable debate. While some argue that [COUNTER], I firmly believe that [YOUR POSITION].' },
+      { label: 'Body Paragraph 1 — Main argument', placeholder: 'Главный аргумент + пример...', example: 'The most compelling reason for [POSITION] is [ARGUMENT]. For instance, [SPECIFIC EXAMPLE]. This clearly demonstrates that [CONCLUSION].' },
+      { label: 'Body Paragraph 2 — Second argument', placeholder: 'Второй аргумент + пример...', example: 'Furthermore, [SECOND ARGUMENT]. Research has shown that [EVIDENCE]. Consequently, [RESULT].' },
+      { label: 'Conclusion', placeholder: 'Итог + повтор позиции...', example: 'In conclusion, while [ACKNOWLEDGE OTHER SIDE], I maintain that [RESTATE POSITION]. It is essential that [RECOMMENDATION].' },
+    ],
+  },
+  {
+    id: 'formal-email',
+    title: 'Деловое письмо',
+    type: 'Business',
+    level: 'B1-B2',
+    description: 'Formal email / Business letter',
+    wordCount: '150-200 слов',
+    tips: [
+      'Начинай с Dear Mr/Ms + фамилия (если знаешь) или Dear Sir/Madam',
+      'Первое предложение — цель письма',
+      'Один абзац — одна мысль',
+      'Заканчивай: Yours sincerely (знаешь имя) / Yours faithfully (не знаешь)',
+    ],
+    structure: [
+      { label: 'Subject line', placeholder: 'Тема письма...', example: 'Re: Application for Marketing Manager Position' },
+      { label: 'Opening', placeholder: 'Приветствие и цель...', example: 'Dear Ms Johnson,\n\nI am writing with reference to [REASON]. I would like to [PURPOSE].' },
+      { label: 'Main body', placeholder: 'Основная информация...', example: 'As you can see from my attached CV, I have [X years] of experience in [FIELD]. In my current role at [COMPANY], I have been responsible for [RESPONSIBILITIES].' },
+      { label: 'Request / Call to action', placeholder: 'Что ты просишь сделать...', example: 'I would be grateful if you could [REQUEST]. Please do not hesitate to contact me if you require any further information.' },
+      { label: 'Closing', placeholder: 'Завершение...', example: 'I look forward to hearing from you.\n\nYours sincerely,\n[YOUR NAME]' },
+    ],
+  },
+  {
+    id: 'complaint-letter',
+    title: 'Письмо-жалоба',
+    type: 'Business',
+    level: 'B1',
+    description: 'Complaint letter / email',
+    wordCount: '150-180 слов',
+    tips: [
+      'Будь вежлив, даже если недоволен',
+      'Чётко опиши проблему с датой и деталями',
+      'Скажи что ты хочешь (возврат, замена, извинение)',
+      'Не используй агрессивный тон',
+    ],
+    structure: [
+      { label: 'Opening', placeholder: 'Цель письма...', example: 'I am writing to express my dissatisfaction with [PRODUCT/SERVICE] that I purchased/received on [DATE].' },
+      { label: 'Problem description', placeholder: 'Опиши проблему...', example: 'The [ITEM/SERVICE] was [DESCRIBE PROBLEM]. This is unacceptable because [REASON]. I have enclosed [RECEIPT/PHOTO] as evidence.' },
+      { label: 'Desired resolution', placeholder: 'Что ты хочешь...', example: 'I would appreciate it if you could [REFUND/REPLACE/REPAIR] as soon as possible. I would also expect an apology for the inconvenience caused.' },
+      { label: 'Closing', placeholder: 'Завершение...', example: 'I look forward to your prompt response. Please contact me at [EMAIL/PHONE].\n\nYours faithfully,\n[NAME]' },
+    ],
+  },
+  {
+    id: 'ielts-advantages',
+    title: 'IELTS Advantages/Disadvantages',
+    type: 'IELTS',
+    level: 'B2',
+    description: 'Task 2 — плюсы и минусы',
+    wordCount: '250+ слов',
+    tips: [
+      'Посвяти один абзац плюсам, один — минусам',
+      'В заключении выражай своё мнение',
+      'Используй: On the one hand... On the other hand...',
+      'Linking words: Although, Despite, Nevertheless, Whereas',
+    ],
+    structure: [
+      { label: 'Introduction', placeholder: 'Вступление...', example: 'The question of [TOPIC] has sparked much discussion. This essay will examine the advantages and disadvantages of [TOPIC] before reaching a conclusion.' },
+      { label: 'Advantages paragraph', placeholder: 'Плюсы...', example: 'On the one hand, [ADVANTAGE 1]. This is beneficial because [REASON]. Moreover, [ADVANTAGE 2], which means that [IMPACT].' },
+      { label: 'Disadvantages paragraph', placeholder: 'Минусы...', example: 'On the other hand, there are clear drawbacks. First, [DISADVANTAGE 1]. Furthermore, [DISADVANTAGE 2], which can lead to [NEGATIVE CONSEQUENCE].' },
+      { label: 'Conclusion', placeholder: 'Заключение с мнением...', example: 'In conclusion, while [TOPIC] offers [BENEFITS], the [DRAWBACKS] cannot be ignored. Overall, I believe that [YOUR OPINION].' },
+    ],
+  },
+  {
+    id: 'informal-email',
+    title: 'Неформальное письмо',
+    type: 'Personal',
+    level: 'A2-B1',
+    description: 'Friendly email / letter to a friend',
+    wordCount: '120-180 слов',
+    tips: [
+      'Начинай с Hi / Hey / Dear [first name]',
+      'Используй разговорные фразы: How are you? / It was great to hear from you!',
+      'Можно сокращения: I\'m, don\'t, can\'t',
+      'Заканчивай: Best wishes / Take care / Love',
+    ],
+    structure: [
+      { label: 'Opening', placeholder: 'Приветствие...', example: 'Hi [NAME]!\n\nHow are you? It was so good to hear from you! Sorry I\'ve been so busy lately — life has been crazy!' },
+      { label: 'Main news / reason for writing', placeholder: 'Главная новость...', example: 'Anyway, the reason I\'m writing is [REASON]. I\'m so excited/nervous about [EVENT].' },
+      { label: 'Questions / responses', placeholder: 'Вопросы другу...', example: 'By the way, how did your [EXAM/TRIP/JOB] go? I\'ve been thinking about you! And did you manage to [SOMETHING]?' },
+      { label: 'Closing', placeholder: 'Завершение...', example: 'Well, I\'d better go now — I have to [REASON]. Write back soon!\n\nLots of love,\n[YOUR NAME]' },
+    ],
+  },
+]
+
+export default function WritingTemplatesPage() {
+  const [selected, setSelected] = useState<Template | null>(null)
+  const [userText, setUserText] = useState<Record<string, string>>({})
+  const [filter, setFilter] = useState('Все')
+  const [generating, setGenerating] = useState(false)
+  const [aiSuggestion, setAiSuggestion] = useState('')
+
+  const types = ['Все', 'IELTS', 'Business', 'Personal']
+  const filtered = TEMPLATES.filter(t => filter === 'Все' || t.type === filter)
+
+  async function generateWithAI() {
+    if (!selected) return
+    setGenerating(true)
+    setAiSuggestion('')
+    const filledParts = selected.structure
+      .map((s, i) => `${s.label}:\n${userText[`${selected.id}_${i}`] || s.example}`)
+      .join('\n\n')
+
+    try {
+      const res = await fetch('/api/ai/grammar-examples', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          word: 'writing feedback',
+          type: 'feedback',
+          customPrompt: `You are an English writing coach. The student wrote the following ${selected.title}:\n\n${filledParts}\n\nProvide brief feedback in Russian:\n1. Что хорошо (2-3 пункта)\n2. Что улучшить (2-3 пункта)\n3. Исправленная версия introduction (если нужно)\nBe encouraging and specific.`
+        }),
+      })
+      const data = await res.json()
+      setAiSuggestion(data.explanation ?? data.examples ?? 'Не удалось получить ответ')
+    } catch {
+      setAiSuggestion('Ошибка AI. Попробуй снова.')
+    } finally {
+      setGenerating(false)
+    }
+  }
+
+  if (selected) return (
+    <div className="p-4 sm:p-8 max-w-3xl mx-auto">
+      <button onClick={() => { setSelected(null); setUserText({}); setAiSuggestion('') }}
+        className="text-[#64748b] hover:text-white text-sm mb-6 flex items-center gap-2 transition-colors">
+        ← Все шаблоны
+      </button>
+
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-xs px-2 py-0.5 rounded-full bg-[#6366f1]/10 text-[#6366f1]">{selected.type}</span>
+        <span className="text-[#475569] text-xs">{selected.level} · {selected.wordCount}</span>
+      </div>
+      <h1 className="text-2xl font-bold text-white mb-2">{selected.title}</h1>
+      <p className="text-[#64748b] text-sm mb-6">{selected.description}</p>
+
+      {/* Советы */}
+      <div className="bg-[#f59e0b]/5 border border-[#f59e0b]/20 rounded-2xl p-4 mb-6">
+        <p className="text-[#f59e0b] font-semibold text-sm mb-2">💡 Советы</p>
+        <ul className="space-y-1">
+          {selected.tips.map((tip, i) => (
+            <li key={i} className="text-[#94a3b8] text-sm flex gap-2">
+              <span className="text-[#f59e0b]">·</span>{tip}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Структура */}
+      <div className="space-y-4 mb-6">
+        {selected.structure.map((part, i) => (
+          <div key={i} className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
+            <p className="text-white font-semibold text-sm mb-1">{part.label}</p>
+            <p className="text-[#475569] text-xs mb-3 italic">{part.example}</p>
+            <textarea
+              value={userText[`${selected.id}_${i}`] ?? ''}
+              onChange={e => setUserText(prev => ({ ...prev, [`${selected.id}_${i}`]: e.target.value }))}
+              placeholder={part.placeholder}
+              rows={4}
+              className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-white
+                placeholder:text-[#334155] outline-none focus:border-[#6366f1]/50 transition-colors text-sm resize-none"
+            />
+          </div>
+        ))}
+      </div>
+
+      <button onClick={generateWithAI} disabled={generating}
+        className="w-full py-4 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-50 text-white font-semibold rounded-2xl transition-colors mb-4">
+        {generating ? '⏳ AI анализирует...' : '✨ Получить AI-обратную связь'}
+      </button>
+
+      {aiSuggestion && (
+        <div className="bg-[#6366f1]/5 border border-[#6366f1]/20 rounded-2xl p-5">
+          <p className="text-[#6366f1] font-semibold text-sm mb-3">AI Обратная связь</p>
+          <p className="text-[#94a3b8] text-sm whitespace-pre-wrap leading-relaxed">{aiSuggestion}</p>
+        </div>
+      )}
+    </div>
+  )
+
+  return (
+    <div className="p-4 sm:p-8 max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold text-white mb-2">Шаблоны для письма</h1>
+      <p className="text-[#64748b] text-sm mb-6">IELTS · деловые письма · жалобы · эссе</p>
+
+      <div className="flex gap-2 mb-6">
+        {types.map(t => (
+          <button key={t} onClick={() => setFilter(t)}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all border ${
+              filter === t ? 'bg-[#6366f1] border-[#6366f1] text-white' : 'bg-white/[0.04] border-white/10 text-[#94a3b8] hover:text-white'
+            }`}>{t}</button>
+        ))}
+      </div>
+
+      <div className="grid sm:grid-cols-2 gap-4">
+        {filtered.map(t => (
+          <button key={t.id} onClick={() => setSelected(t)}
+            className="text-left bg-white/[0.04] border border-white/10 hover:border-white/20 rounded-2xl p-5 transition-all group">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-[#6366f1]/10 text-[#6366f1]">{t.type}</span>
+              <span className="text-[#475569] text-xs">{t.level}</span>
+            </div>
+            <p className="text-white font-semibold group-hover:text-[#a5b4fc] transition-colors">{t.title}</p>
+            <p className="text-[#64748b] text-sm mt-1">{t.description}</p>
+            <p className="text-[#475569] text-xs mt-2">{t.wordCount}</p>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+```
+
+Добавь в навигацию: `{ href: '/writing-templates', label: 'Шаблоны письма', icon: FileText }`
+
+---
+## ЗАДАЧА 5: АНИМАЦИЯ ПОВЫШЕНИЯ УРОВНЯ
+
+Создай components/LevelUpModal.tsx:
+
+```tsx
+'use client'
+import { useEffect } from 'react'
+import confetti from 'canvas-confetti'
+
+interface LevelUpModalProps {
+  fromLevel: string
+  toLevel: string
+  onClose: () => void
+}
+
+const LEVEL_DESCRIPTIONS: Record<string, string> = {
+  A2: 'Ты можешь общаться на простые темы и понимать основные фразы',
+  B1: 'Ты можешь справляться с большинством ситуаций в путешествии',
+  B2: 'Ты можешь свободно общаться с носителями языка',
+  C1: 'Ты владеешь языком на продвинутом уровне!',
+}
+
+const LEVEL_EMOJI: Record<string, string> = {
+  A2: '⭐', B1: '🌟', B2: '💫', C1: '👑'
+}
+
+export function LevelUpModal({ fromLevel, toLevel, onClose }: LevelUpModalProps) {
+  useEffect(() => {
+    // Конфетти несколько раз
+    const fire = (opts: confetti.Options) => confetti({ ...opts, disableForReducedMotion: true })
+
+    fire({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#6366f1','#8b5cf6','#f59e0b','#10b981'] })
+    setTimeout(() => fire({ particleCount: 50, angle: 60, spread: 55, origin: { x: 0 } }), 400)
+    setTimeout(() => fire({ particleCount: 50, angle: 120, spread: 55, origin: { x: 1 } }), 800)
+    setTimeout(() => fire({ particleCount: 30, spread: 100, origin: { y: 0.5 }, shapes: ['star'], colors: ['#f59e0b','#fbbf24'] }), 1200)
+  }, [])
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+      <div className="bg-[#0F172A] border border-[#6366f1]/30 rounded-3xl p-8 sm:p-12 max-w-md w-full mx-4 text-center
+        shadow-2xl shadow-[#6366f1]/20 animate-[scaleIn_0.5s_cubic-bezier(0.22,1,0.36,1)]">
+
+        {/* Иконка уровня */}
+        <div className="w-24 h-24 rounded-3xl mx-auto mb-6 flex items-center justify-center text-5xl
+          bg-gradient-to-br from-[#6366f1]/20 to-[#8b5cf6]/20 border border-[#6366f1]/30">
+          {LEVEL_EMOJI[toLevel] ?? '🎉'}
+        </div>
+
+        <p className="text-[#6366f1] text-sm font-semibold uppercase tracking-widest mb-2">Поздравляем!</p>
+        <h2 className="text-white text-3xl font-bold mb-1">
+          Уровень <span style={{
+            background: 'linear-gradient(135deg, #6366f1, #8b5cf6, #06b6d4)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}>{toLevel}</span>
+        </h2>
+        <p className="text-[#64748b] mb-2">{fromLevel} → {toLevel}</p>
+
+        <div className="my-6 h-px bg-white/[0.06]" />
+
+        <p className="text-[#94a3b8] text-base leading-relaxed mb-8">
+          {LEVEL_DESCRIPTIONS[toLevel] ?? 'Отличная работа!'}
+        </p>
+
+        {/* Прогресс-бар заполняется */}
+        <div className="h-2 bg-white/[0.06] rounded-full overflow-hidden mb-8">
+          <div className="h-full rounded-full bg-gradient-to-r from-[#6366f1] to-[#8b5cf6]
+            animate-[fillBar_1.5s_cubic-bezier(0.22,1,0.36,1)_0.5s_forwards] w-0" />
+        </div>
+
+        <button onClick={onClose}
+          className="w-full py-4 bg-[#6366f1] hover:bg-[#5558e8] text-white font-bold rounded-2xl text-lg
+            transition-all hover:scale-[1.02] active:scale-[0.98]">
+          Продолжить обучение 🚀
+        </button>
+      </div>
+    </div>
+  )
+}
+```
+
+В globals.css добавь:
+```css
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+```
+
+В app/(dashboard)/dashboard/page.tsx добавь:
+```tsx
+import { LevelUpModal } from '@/components/LevelUpModal'
+
+// State:
+const [levelUp, setLevelUp] = useState<{from: string; to: string} | null>(null)
+
+// При загрузке данных — проверяй есть ли новый уровень:
+const prevLevel = localStorage.getItem('fluenta_last_level')
+const currentLevel = userProfile?.level ?? 'A1'
+if (prevLevel && prevLevel !== currentLevel) {
+  setLevelUp({ from: prevLevel, to: currentLevel })
+}
+localStorage.setItem('fluenta_last_level', currentLevel)
+
+// В JSX:
+{levelUp && (
+  <LevelUpModal
+    fromLevel={levelUp.from}
+    toLevel={levelUp.to}
+    onClose={() => setLevelUp(null)}
+  />
+)}
+```
+
+---
+## ЗАДАЧА 6: УМНЫЙ РАЗБОР ОШИБОК ПИСЬМА
+
+В app/api/ai/check-writing/route.ts (файл уже существует) обнови промпт:
+
+Найди промпт для проверки письма и замени на расширенный:
+
+```ts
+const systemPrompt = `You are an expert English writing coach. Analyze the student's writing and provide detailed feedback in Russian.
+
+For each error found, categorize it:
+- Grammar type (Present Perfect vs Past Simple, Articles, Prepositions, etc.)
+- Severity (minor/major)
+
+Return JSON:
+{
+  "overallScore": 75,
+  "correctedText": "...",
+  "summary": "Краткое резюме (1-2 предложения) на русском",
+  "errors": [
+    {
+      "original": "I have went",
+      "corrected": "I went / I have gone",
+      "category": "Past Simple vs Present Perfect",
+      "explanation": "Когда есть конкретное время (yesterday, last week) — используй Past Simple",
+      "severity": "major"
+    }
+  ],
+  "patterns": [
+    "Ты часто путаешь Present Perfect и Past Simple",
+    "Проблемы с артиклями a/the"
+  ],
+  "positives": [
+    "Хорошее использование linking words",
+    "Богатый словарный запас"
+  ],
+  "recommendation": "Порекомендуй конкретную тему для изучения"
+}`
+```
+
+Создай components/WritingFeedback.tsx для отображения детального разбора:
+
+```tsx
+'use client'
+interface WritingError {
+  original: string
+  corrected: string
+  category: string
+  explanation: string
+  severity: 'minor' | 'major'
+}
+
+interface FeedbackData {
+  overallScore: number
+  correctedText: string
+  summary: string
+  errors: WritingError[]
+  patterns: string[]
+  positives: string[]
+  recommendation: string
+}
+
+export function WritingFeedback({ data }: { data: FeedbackData }) {
+  return (
+    <div className="space-y-4">
+      {/* Оценка */}
+      <div className="flex items-center gap-4 p-4 bg-white/[0.04] border border-white/10 rounded-2xl">
+        <div className="text-4xl font-bold"
+          style={{ color: data.overallScore >= 80 ? '#10b981' : data.overallScore >= 60 ? '#f59e0b' : '#ef4444' }}>
+          {data.overallScore}
+        </div>
+        <div>
+          <p className="text-white font-semibold">из 100</p>
+          <p className="text-[#64748b] text-sm">{data.summary}</p>
+        </div>
+      </div>
+
+      {/* Паттерны ошибок */}
+      {data.patterns?.length > 0 && (
+        <div className="p-4 bg-red-500/5 border border-red-500/20 rounded-2xl">
+          <p className="text-red-400 font-semibold text-sm mb-2">⚠️ Частые ошибки</p>
+          {data.patterns.map((p, i) => <p key={i} className="text-[#94a3b8] text-sm">· {p}</p>)}
+        </div>
+      )}
+
+      {/* Что хорошо */}
+      {data.positives?.length > 0 && (
+        <div className="p-4 bg-green-500/5 border border-green-500/20 rounded-2xl">
+          <p className="text-green-400 font-semibold text-sm mb-2">✓ Что хорошо</p>
+          {data.positives.map((p, i) => <p key={i} className="text-[#94a3b8] text-sm">· {p}</p>)}
+        </div>
+      )}
+
+      {/* Детальный разбор ошибок */}
+      {data.errors?.length > 0 && (
+        <div>
+          <p className="text-white font-semibold text-sm mb-2">Разбор ошибок</p>
+          <div className="space-y-2">
+            {data.errors.map((err, i) => (
+              <div key={i} className={`p-4 rounded-xl border ${err.severity === 'major' ? 'bg-red-500/5 border-red-500/15' : 'bg-yellow-500/5 border-yellow-500/15'}`}>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${err.severity === 'major' ? 'bg-red-500/20 text-red-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
+                    {err.category}
+                  </span>
+                </div>
+                <p className="text-sm mb-1"><span className="text-red-400 line-through">{err.original}</span> → <span className="text-green-400 font-medium">{err.corrected}</span></p>
+                <p className="text-[#64748b] text-xs">{err.explanation}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Рекомендация */}
+      {data.recommendation && (
+        <div className="p-4 bg-[#6366f1]/5 border border-[#6366f1]/20 rounded-2xl">
+          <p className="text-[#6366f1] font-semibold text-sm mb-1">📚 Рекомендация</p>
+          <p className="text-[#94a3b8] text-sm">{data.recommendation}</p>
+        </div>
+      )}
+    </div>
+  )
+}
+```
+
+Используй `<WritingFeedback data={feedbackData} />` в app/(dashboard)/writing/page.tsx вместо обычного текстового вывода.
+
+---
+## ЗАДАЧА 7: ПРЕДСКАЗАНИЕ ПРОГРЕССА + AI ПЛАН
+
+Создай components/ProgressPrediction.tsx:
+
+```tsx
+'use client'
+import { useMemo } from 'react'
+
+interface ProgressPredictionProps {
+  completedLessons: number
+  totalLessons: number
+  currentLevel: string
+  dailyAvgMinutes: number
+  streakDays: number
+}
+
+const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1']
+const LESSONS_PER_LEVEL = 19 // ~95 уроков / 5 уровней
+
+export function ProgressPrediction({ completedLessons, totalLessons, currentLevel, dailyAvgMinutes, streakDays }: ProgressPredictionProps) {
+  const prediction = useMemo(() => {
+    const currentLevelIdx = LEVELS.indexOf(currentLevel)
+    const nextLevel = LEVELS[currentLevelIdx + 1]
+    if (!nextLevel) return null
+
+    const lessonsInCurrentLevel = completedLessons % LESSONS_PER_LEVEL
+    const lessonsLeft = LESSONS_PER_LEVEL - lessonsInCurrentLevel
+    const dailyLessons = dailyAvgMinutes >= 20 ? 1 : dailyAvgMinutes >= 10 ? 0.5 : 0.25
+    const daysToNextLevel = Math.ceil(lessonsLeft / dailyLessons)
+    const targetDate = new Date()
+    targetDate.setDate(targetDate.getDate() + daysToNextLevel)
+    const months = Math.floor(daysToNextLevel / 30)
+    const days = daysToNextLevel % 30
+
+    return { nextLevel, daysToNextLevel, targetDate, months, days, lessonsLeft }
+  }, [completedLessons, currentLevel, dailyAvgMinutes])
+
+  if (!prediction) return (
+    <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5 text-center">
+      <p className="text-2xl mb-2">👑</p>
+      <p className="text-white font-semibold">Уровень C1 достигнут!</p>
+    </div>
+  )
+
+  const motivationColor = dailyAvgMinutes >= 20 ? '#10b981' : dailyAvgMinutes >= 10 ? '#f59e0b' : '#ef4444'
+
+  return (
+    <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
+      <p className="text-white font-semibold text-sm mb-4">Предсказание прогресса</p>
+
+      <div className="flex items-center gap-3 mb-4">
+        <div className="flex-1">
+          <p className="text-[#64748b] text-xs mb-1">Текущий уровень</p>
+          <p className="text-white font-bold text-xl">{currentLevel}</p>
+        </div>
+        <div className="text-[#334155] text-2xl">→</div>
+        <div className="flex-1">
+          <p className="text-[#64748b] text-xs mb-1">Следующий</p>
+          <p className="font-bold text-xl" style={{ color: motivationColor }}>{prediction.nextLevel}</p>
+        </div>
+        <div className="text-right">
+          <p className="text-[#64748b] text-xs mb-1">Осталось уроков</p>
+          <p className="text-white font-bold text-xl">{prediction.lessonsLeft}</p>
+        </div>
+      </div>
+
+      <div className="bg-white/[0.03] rounded-xl p-3 mb-3">
+        <p className="text-white text-sm">
+          При темпе <span style={{ color: motivationColor }} className="font-bold">{dailyAvgMinutes} мин/день</span>
+          {' '}ты достигнешь <span className="text-white font-bold">{prediction.nextLevel}</span> через{' '}
+          <span className="text-white font-bold">
+            {prediction.months > 0 ? `${prediction.months} мес. ` : ''}{prediction.days > 0 ? `${prediction.days} дн.` : ''}
+          </span>
+        </p>
+        <p className="text-[#475569] text-xs mt-1">
+          Примерно {prediction.targetDate.toLocaleDateString('ru', { day: 'numeric', month: 'long', year: 'numeric' })}
+        </p>
+      </div>
+
+      {dailyAvgMinutes < 20 && (
+        <p className="text-[#f59e0b] text-xs">
+          💡 Занимайся 20 мин/день — и достигнешь цели на {Math.ceil((1 - dailyAvgMinutes/20) * prediction.daysToNextLevel)} дней раньше
+        </p>
+      )}
+    </div>
+  )
+}
+```
+
+Создай app/(dashboard)/my-plan/page.tsx:
+
+```tsx
+'use client'
+import { useState } from 'react'
+
+interface Plan {
+  week: number
+  focus: string
+  lessons: string[]
+  vocabulary: string
+  practice: string
+  goal: string
+}
+
+export default function MyPlanPage() {
+  const [loading, setLoading] = useState(false)
+  const [plan, setPlan] = useState<Plan[] | null>(null)
+  const [goal, setGoal] = useState('general')
+  const [level, setLevel] = useState('A1')
+  const [hoursPerWeek, setHoursPerWeek] = useState(3)
+
+  async function generatePlan() {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/ai/grammar-examples', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          word: 'study plan',
+          type: 'plan',
+          customPrompt: `Create a 4-week English study plan for a student at level ${level} with goal: ${goal}.
+Available time: ${hoursPerWeek} hours per week.
+
+Return JSON array of 4 weeks:
+[{
+  "week": 1,
+  "focus": "Main grammar/topic focus for the week",
+  "lessons": ["Lesson 1 title", "Lesson 2 title", "Lesson 3 title"],
+  "vocabulary": "10-15 specific vocabulary words to learn this week (comma-separated)",
+  "practice": "Specific practice activity for this week",
+  "goal": "What student should achieve by end of week"
+}]
+
+Make it specific to the goal (${goal}) and level (${level}). All lesson titles and descriptions should be in Russian. Be very specific and practical.`
+        }),
+      })
+      const data = await res.json()
+      const parsed = JSON.parse(data.explanation ?? data.examples ?? '[]')
+      setPlan(Array.isArray(parsed) ? parsed : null)
+    } catch {
+      setPlan(null)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="p-4 sm:p-8 max-w-3xl mx-auto">
+      <h1 className="text-2xl font-bold text-white mb-2">Мой план обучения</h1>
+      <p className="text-[#64748b] text-sm mb-6">AI создаст персональный план на месяц</p>
+
+      <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5 mb-6 space-y-4">
+        <div>
+          <label className="text-[#64748b] text-sm block mb-2">Текущий уровень</label>
+          <div className="flex gap-2">
+            {['A1','A2','B1','B2','C1'].map(l => (
+              <button key={l} onClick={() => setLevel(l)}
+                className={`px-3 py-2 rounded-xl text-sm font-medium transition-all border ${
+                  level === l ? 'bg-[#6366f1] border-[#6366f1] text-white' : 'bg-white/[0.04] border-white/10 text-[#94a3b8] hover:text-white'
+                }`}>{l}</button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <label className="text-[#64748b] text-sm block mb-2">Цель</label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {[
+              { id: 'general', label: '🌍 Общий' },
+              { id: 'travel', label: '✈️ Путешествия' },
+              { id: 'business', label: '💼 Бизнес' },
+              { id: 'ielts', label: '📝 IELTS' },
+              { id: 'it', label: '💻 IT / Tech' },
+              { id: 'conversation', label: '💬 Разговорный' },
+            ].map(g => (
+              <button key={g.id} onClick={() => setGoal(g.id)}
+                className={`py-2 px-3 rounded-xl text-sm transition-all border ${
+                  goal === g.id ? 'bg-[#6366f1]/20 border-[#6366f1]/50 text-white' : 'bg-white/[0.03] border-white/[0.06] text-[#94a3b8] hover:text-white'
+                }`}>{g.label}</button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <label className="text-[#64748b] text-sm block mb-2">Часов в неделю: <span className="text-white font-bold">{hoursPerWeek}</span></label>
+          <input type="range" min={1} max={10} value={hoursPerWeek} onChange={e => setHoursPerWeek(Number(e.target.value))}
+            className="w-full accent-[#6366f1]" />
+        </div>
+        <button onClick={generatePlan} disabled={loading}
+          className="w-full py-3 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-50 text-white font-semibold rounded-xl transition-colors">
+          {loading ? '⏳ Создаю план...' : '✨ Создать план с AI'}
+        </button>
+      </div>
+
+      {plan && (
+        <div className="space-y-4">
+          {plan.map((week) => (
+            <div key={week.week} className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="w-8 h-8 rounded-full bg-[#6366f1]/20 border border-[#6366f1]/30 flex items-center justify-center text-[#6366f1] font-bold text-sm">
+                  {week.week}
+                </span>
+                <p className="text-white font-semibold">{week.focus}</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                <div>
+                  <p className="text-[#475569] text-xs mb-1">Уроки</p>
+                  {week.lessons?.map((l, i) => <p key={i} className="text-[#94a3b8]">· {l}</p>)}
+                </div>
+                <div>
+                  <p className="text-[#475569] text-xs mb-1">Практика</p>
+                  <p className="text-[#94a3b8]">{week.practice}</p>
+                </div>
+                <div className="sm:col-span-2">
+                  <p className="text-[#475569] text-xs mb-1">Цель недели</p>
+                  <p className="text-[#6366f1]">✓ {week.goal}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+```
+
+Добавь в навигацию: `{ href: '/my-plan', label: 'Мой план', icon: Calendar }`
+
+Добавь `<ProgressPrediction>` в app/(dashboard)/progress/page.tsx.
+
+---
+## ЗАДАЧА 8: ЗАМЕТКИ ВО ВРЕМЯ УРОКА
+
+Создай components/LessonNotes.tsx:
+
+```tsx
+'use client'
+import { useState, useEffect } from 'react'
+
+export function LessonNotes({ lessonId }: { lessonId: string }) {
+  const [open, setOpen] = useState(false)
+  const [note, setNote] = useState('')
+  const [saved, setSaved] = useState(false)
+
+  const key = `fluenta_note_${lessonId}`
+
+  useEffect(() => {
+    setNote(localStorage.getItem(key) ?? '')
+  }, [lessonId])
+
+  function save() {
+    localStorage.setItem(key, note)
+    setSaved(true)
+    setTimeout(() => setSaved(false), 1500)
+  }
+
+  return (
+    <div className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40">
+      {open && (
+        <div className="mb-2 w-72 sm:w-80 bg-[#0F172A] border border-white/15 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
+            <p className="text-white text-sm font-semibold">📝 Заметки</p>
+            <button onClick={() => setOpen(false)} className="text-[#475569] hover:text-white text-lg">×</button>
+          </div>
+          <textarea
+            value={note}
+            onChange={e => { setNote(e.target.value); setSaved(false) }}
+            placeholder="Запиши новые слова, правила, примеры..."
+            rows={8}
+            className="w-full bg-transparent px-4 py-3 text-[#94a3b8] text-sm placeholder:text-[#334155]
+              outline-none resize-none leading-relaxed"
+          />
+          <div className="flex items-center justify-between px-4 py-2 border-t border-white/[0.06]">
+            <span className="text-[#334155] text-xs">{note.length} символов</span>
+            <button onClick={save}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                saved ? 'bg-green-500/20 text-green-400' : 'bg-[#6366f1]/20 text-[#6366f1] hover:bg-[#6366f1]/30'
+              }`}>
+              {saved ? '✓ Сохранено' : 'Сохранить'}
+            </button>
+          </div>
+        </div>
+      )}
+      <button
+        onClick={() => setOpen(!open)}
+        className={`w-12 h-12 rounded-2xl flex items-center justify-center text-lg shadow-lg transition-all
+          ${open ? 'bg-[#6366f1] shadow-[#6366f1]/30' : 'bg-white/[0.08] border border-white/15 hover:bg-white/15'}
+          ${note ? 'ring-2 ring-[#6366f1]/40' : ''}`}
+        title="Заметки">
+        📝
+      </button>
+    </div>
+  )
+}
+```
+
+Создай app/(dashboard)/notes/page.tsx для просмотра всех заметок:
+
+```tsx
+'use client'
+import { useState, useEffect } from 'react'
+import { LESSONS } from '@/lib/lessons-data'
+
+export default function NotesPage() {
+  const [notes, setNotes] = useState<{ lessonId: string; title: string; content: string }[]>([])
+
+  useEffect(() => {
+    const result = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key?.startsWith('fluenta_note_')) {
+        const lessonId = key.replace('fluenta_note_', '')
+        const content = localStorage.getItem(key) ?? ''
+        if (content.trim()) {
+          const lesson = LESSONS.find(l => l.id === lessonId)
+          result.push({ lessonId, title: lesson?.title ?? lessonId, content })
+        }
+      }
+    }
+    setNotes(result)
+  }, [])
+
+  function deleteNote(lessonId: string) {
+    localStorage.removeItem(`fluenta_note_${lessonId}`)
+    setNotes(n => n.filter(note => note.lessonId !== lessonId))
+  }
+
+  return (
+    <div className="p-4 sm:p-8 max-w-3xl mx-auto">
+      <h1 className="text-2xl font-bold text-white mb-2">Мои заметки</h1>
+      <p className="text-[#64748b] text-sm mb-6">{notes.length} заметок</p>
+
+      {notes.length === 0 ? (
+        <div className="text-center py-16">
+          <p className="text-4xl mb-4">📝</p>
+          <p className="text-white font-semibold mb-2">Заметок пока нет</p>
+          <p className="text-[#64748b] text-sm">Открой любой урок и нажми на иконку 📝 внизу справа</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {notes.map(note => (
+            <div key={note.lessonId} className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
+              <div className="flex items-start justify-between mb-2">
+                <p className="text-white font-semibold text-sm">{note.title}</p>
+                <button onClick={() => deleteNote(note.lessonId)}
+                  className="text-[#334155] hover:text-red-400 transition-colors text-sm ml-2">✕</button>
+              </div>
+              <p className="text-[#64748b] text-sm whitespace-pre-wrap leading-relaxed">{note.content}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+```
+
+В app/(dashboard)/lessons/[id]/page.tsx добавь внизу:
+```tsx
+import { LessonNotes } from '@/components/LessonNotes'
+// В JSX:
+<LessonNotes lessonId={params.id} />
+```
+
+Добавь в навигацию: `{ href: '/notes', label: 'Заметки', icon: StickyNote }`
+
+---
+## ЗАДАЧА 9: РАСШИРИТЬ ИДИОМЫ ДО 100
+
+В lib/idioms-data.ts найди конец массива IDIOMS и добавь идиомы 31-100:
+
+```ts
+  { id: '31', idiom: 'Barking up the wrong tree', meaning: 'Искать не там, ошибаться', example: "You're barking up the wrong tree if you think I took it.", category: 'Ошибки', level: 'B1' },
+  { id: '32', idiom: 'Bite the hand that feeds you', meaning: 'Кусать руку которая кормит', example: "Don't bite the hand that feeds you.", category: 'Отношения', level: 'B2' },
+  { id: '33', idiom: 'Break a leg', meaning: 'Ни пуха ни пера! (пожелание удачи)', example: "Break a leg at your audition tonight!", category: 'Общение', level: 'A2' },
+  { id: '34', idiom: 'Burn the midnight oil', meaning: 'Работать допоздна', example: "She burned the midnight oil to finish the report.", category: 'Работа', level: 'B1' },
+  { id: '35', idiom: 'Caught red-handed', meaning: 'Поймать с поличным', example: "He was caught red-handed stealing.", category: 'Ситуации', level: 'B1' },
+  { id: '36', idiom: 'Cry over spilt milk', meaning: 'Жалеть о прошлом', example: "No use crying over spilt milk.", category: 'Мудрость', level: 'A2' },
+  { id: '37', idiom: 'Every cloud has a silver lining', meaning: 'Нет худа без добра', example: "Every cloud has a silver lining.", category: 'Оптимизм', level: 'B1' },
+  { id: '38', idiom: 'Face the music', meaning: 'Принять последствия', example: "It's time to face the music.", category: 'Ответственность', level: 'B1' },
+  { id: '39', idiom: 'Get cold feet', meaning: 'Струсить в последний момент', example: "She got cold feet and didn't give the speech.", category: 'Эмоции', level: 'B1' },
+  { id: '40', idiom: 'Get the ball rolling', meaning: 'Начать дело', example: "Let's get the ball rolling on this project.", category: 'Работа', level: 'B1' },
+  { id: '41', idiom: 'Give the benefit of the doubt', meaning: 'Дать кредит доверия', example: "I'll give him the benefit of the doubt.", category: 'Отношения', level: 'B2' },
+  { id: '42', idiom: 'Go back to the drawing board', meaning: 'Начать всё заново', example: "The plan failed — go back to the drawing board.", category: 'Работа', level: 'B1' },
+  { id: '43', idiom: 'Hang in there', meaning: 'Держись! Не сдавайся!', example: "Hang in there — things will get better.", category: 'Поддержка', level: 'A2' },
+  { id: '44', idiom: 'Hit the books', meaning: 'Засесть за учёбу', example: "I need to hit the books before the exam.", category: 'Учёба', level: 'A2' },
+  { id: '45', idiom: 'It takes two to tango', meaning: 'В ссоре виноваты оба', example: "It takes two to tango.", category: 'Отношения', level: 'B2' },
+  { id: '46', idiom: 'Keep your chin up', meaning: 'Не вешай нос', example: "Keep your chin up — you'll find another job.", category: 'Поддержка', level: 'A2' },
+  { id: '47', idiom: 'Kick the bucket', meaning: 'Умереть (разг.)', example: "He finally kicked the bucket at 95.", category: 'Юмор', level: 'B1' },
+  { id: '48', idiom: 'Know the ropes', meaning: 'Знать всё как свои пять пальцев', example: "Ask Sarah — she knows the ropes.", category: 'Опыт', level: 'B1' },
+  { id: '49', idiom: 'Leave no stone unturned', meaning: 'Сделать всё возможное', example: "We'll leave no stone unturned.", category: 'Усилия', level: 'B2' },
+  { id: '50', idiom: 'Let sleeping dogs lie', meaning: 'Не буди лихо пока тихо', example: "Let sleeping dogs lie.", category: 'Мудрость', level: 'B1' },
+  { id: '51', idiom: 'Make a long story short', meaning: 'Короче говоря', example: "To make a long story short, we missed the train.", category: 'Общение', level: 'A2' },
+  { id: '52', idiom: 'Make ends meet', meaning: 'Сводить концы с концами', example: "It's hard to make ends meet.", category: 'Деньги', level: 'B1' },
+  { id: '53', idiom: 'No pain, no gain', meaning: 'Без труда не вытащишь рыбку', example: "Train harder — no pain, no gain!", category: 'Мотивация', level: 'A2' },
+  { id: '54', idiom: 'Not rocket science', meaning: 'Не так уж сложно', example: "It's not rocket science — just follow instructions.", category: 'Простота', level: 'A2' },
+  { id: '55', idiom: 'Off the top of my head', meaning: 'Навскидку', example: "Off the top of my head, I'd say fifty people.", category: 'Общение', level: 'B1' },
+  { id: '56', idiom: 'On the ball', meaning: 'Быть начеку', example: "You need to be on the ball during the presentation.", category: 'Работа', level: 'B1' },
+  { id: '57', idiom: 'On the tip of my tongue', meaning: 'На кончике языка', example: "His name is on the tip of my tongue!", category: 'Память', level: 'A2' },
+  { id: '58', idiom: 'Out of the blue', meaning: 'Вдруг, ни с того ни с сего', example: "Out of the blue, she called me.", category: 'Неожиданность', level: 'B1' },
+  { id: '59', idiom: 'Over the moon', meaning: 'На седьмом небе от счастья', example: "She was over the moon about the promotion.", category: 'Эмоции', level: 'B1' },
+  { id: '60', idiom: 'Pass the buck', meaning: 'Перекладывать ответственность', example: "Stop passing the buck.", category: 'Ответственность', level: 'B2' },
+  { id: '61', idiom: 'Piece of cake', meaning: 'Проще простого', example: "The exam was a piece of cake!", category: 'Простота', level: 'A2' },
+  { id: '62', idiom: 'Play it by ear', meaning: 'Действовать по ситуации', example: "Let's play it by ear.", category: 'Планирование', level: 'B1' },
+  { id: '63', idiom: 'Pull strings', meaning: 'Использовать связи', example: "He pulled strings to get the job.", category: 'Связи', level: 'B2' },
+  { id: '64', idiom: 'Put your foot in your mouth', meaning: 'Попасть впросак', example: "I really put my foot in my mouth.", category: 'Ошибки', level: 'B1' },
+  { id: '65', idiom: 'Raise the bar', meaning: 'Поднять планку', example: "This project has raised the bar.", category: 'Стандарты', level: 'B2' },
+  { id: '66', idiom: 'Ring a bell', meaning: 'Что-то напоминать', example: "Does that name ring a bell?", category: 'Память', level: 'B1' },
+  { id: '67', idiom: 'Rock the boat', meaning: 'Раскачивать лодку', example: "Don't rock the boat — things are going well.", category: 'Стабильность', level: 'B2' },
+  { id: '68', idiom: 'Saved by the bell', meaning: 'Спастись в последний момент', example: "I was saved by the bell.", category: 'Удача', level: 'B1' },
+  { id: '69', idiom: 'See eye to eye', meaning: 'Сходиться во мнениях', example: "We don't always see eye to eye.", category: 'Отношения', level: 'B1' },
+  { id: '70', idiom: 'Shoot the breeze', meaning: 'Болтать ни о чём', example: "We spent the afternoon shooting the breeze.", category: 'Общение', level: 'B1' },
+  { id: '71', idiom: 'Skeleton in the closet', meaning: 'Скелет в шкафу', example: "Every family has a skeleton in the closet.", category: 'Секреты', level: 'B2' },
+  { id: '72', idiom: 'Speak of the devil', meaning: 'Лёгок на помине', example: "Speak of the devil — we were just talking about you!", category: 'Общение', level: 'A2' },
+  { id: '73', idiom: 'Stab someone in the back', meaning: 'Предать', example: "He stabbed me in the back.", category: 'Предательство', level: 'B2' },
+  { id: '74', idiom: 'Step up your game', meaning: 'Подтянуться', example: "You need to step up your game.", category: 'Мотивация', level: 'B1' },
+  { id: '75', idiom: 'Take it with a grain of salt', meaning: 'Воспринимать скептически', example: "Take his advice with a grain of salt.", category: 'Скептицизм', level: 'B2' },
+  { id: '76', idiom: 'The last straw', meaning: 'Последняя капля', example: "That was the last straw.", category: 'Эмоции', level: 'B1' },
+  { id: '77', idiom: 'The tip of the iceberg', meaning: 'Верхушка айсберга', example: "This is just the tip of the iceberg.", category: 'Ситуации', level: 'B1' },
+  { id: '78', idiom: 'Throw in the towel', meaning: 'Сдаться', example: "After three attempts, he threw in the towel.", category: 'Сдача', level: 'B1' },
+  { id: '79', idiom: 'Tie the knot', meaning: 'Пожениться', example: "They finally tied the knot.", category: 'Отношения', level: 'A2' },
+  { id: '80', idiom: 'Time flies', meaning: 'Время летит', example: "Time flies when you're having fun!", category: 'Время', level: 'A1' },
+  { id: '81', idiom: 'Up in the air', meaning: 'Под вопросом', example: "The deal is still up in the air.", category: 'Неопределённость', level: 'B1' },
+  { id: '82', idiom: 'Vanish into thin air', meaning: 'Исчезнуть без следа', example: "My keys have vanished into thin air!", category: 'Исчезновение', level: 'B1' },
+  { id: '83', idiom: 'Wear your heart on your sleeve', meaning: 'Быть открытым, не скрывать чувств', example: "She wears her heart on her sleeve.", category: 'Характер', level: 'B2' },
+  { id: '84', idiom: 'When pigs fly', meaning: 'Когда рак на горе свистнет', example: "He'll apologise when pigs fly.", category: 'Юмор', level: 'B1' },
+  { id: '85', idiom: 'With flying colours', meaning: 'С блеском, на отлично', example: "She passed with flying colours.", category: 'Успех', level: 'B1' },
+  { id: '86', idiom: 'Actions speak louder than words', meaning: 'Поступки говорят громче слов', example: "Actions speak louder than words.", category: 'Мудрость', level: 'B1' },
+  { id: '87', idiom: 'Add fuel to the fire', meaning: 'Подливать масло в огонь', example: "His comment added fuel to the fire.", category: 'Конфликт', level: 'B2' },
+  { id: '88', idiom: 'At the drop of a hat', meaning: 'Сразу же, незамедлительно', example: "She would travel anywhere at the drop of a hat.", category: 'Готовность', level: 'B2' },
+  { id: '89', idiom: 'Back to square one', meaning: 'Вернуться к началу', example: "The project failed — back to square one.", category: 'Начало', level: 'B1' },
+  { id: '90', idiom: 'Bite off more than you can chew', meaning: 'Взять на себя слишком много', example: "He bit off more than he could chew.", category: 'Ошибки', level: 'B2' },
+  { id: '91', idiom: 'Blow hot and cold', meaning: 'Быть непостоянным', example: "He keeps blowing hot and cold.", category: 'Характер', level: 'B2' },
+  { id: '92', idiom: 'Get a taste of your own medicine', meaning: 'Получить по заслугам', example: "He got a taste of his own medicine.", category: 'Справедливость', level: 'B2' },
+  { id: '93', idiom: 'Go viral', meaning: 'Стать вирусным', example: "Her video went viral overnight.", category: 'Современное', level: 'B1' },
+  { id: '94', idiom: 'Hit the ground running', meaning: 'Начать энергично', example: "She hit the ground running in her new role.", category: 'Работа', level: 'B2' },
+  { id: '95', idiom: 'Jump on the bandwagon', meaning: 'Присоединиться к модному течению', example: "Everyone jumped on the social media bandwagon.", category: 'Тренды', level: 'B2' },
+  { id: '96', idiom: 'Miss the boat', meaning: 'Упустить возможность', example: "He missed the boat on that investment.", category: 'Возможности', level: 'B1' },
+  { id: '97', idiom: 'Turn a blind eye', meaning: 'Закрывать глаза', example: "The manager turned a blind eye to their lateness.", category: 'Работа', level: 'B2' },
+  { id: '98', idiom: 'Under the radar', meaning: 'Незамеченный', example: "The startup stayed under the radar.", category: 'Бизнес', level: 'B2' },
+  { id: '99', idiom: 'Wrap your head around', meaning: 'Понять что-то сложное', example: "I can't wrap my head around quantum physics.", category: 'Обучение', level: 'B1' },
+  { id: '100', idiom: 'You can\'t have your cake and eat it', meaning: 'Нельзя иметь всё сразу', example: "You can't have your cake and eat it — choose.", category: 'Мудрость', level: 'B2' },
+```
+
+Также обнови:
+```ts
+export const IDIOM_CATEGORIES = [...new Set(IDIOMS.map(i => i.category))].sort()
+```
+
+---
+## ФИНАЛ
+1. npm install canvas-confetti (если ещё не установлен)
+2. npx tsc --noEmit — исправь все TypeScript ошибки
+3. git add -A && git commit -m "feat: collocations (40 items), word formation prefixes/suffixes, mini-stories (5 stories), writing templates (5 + AI feedback), level-up animation, smart writing error analysis, progress prediction, AI monthly plan, lesson notes widget, idioms expanded to 100" && git push

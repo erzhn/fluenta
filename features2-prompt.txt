@@ -1,0 +1,1231 @@
+# НЕ ЗАПРАШИВАЙ РАЗРЕШЕНИЯ. Все изменения автоматически.
+# Запуск: claude --dangerously-skip-permissions < features2-prompt.txt
+
+Проект: Fluenta — Next.js 14 + TypeScript + Tailwind + Supabase + Groq API.
+Акцент #6366f1. Тёмная тема #0F172A.
+
+---
+## ЗАДАЧА 1: СТРАНИЦА НАСТРОЕК (сейчас 404)
+
+Создай app/(dashboard)/settings/page.tsx:
+
+```tsx
+'use client'
+import { useState, useEffect } from 'react'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { useRouter } from 'next/navigation'
+
+type Goal = 'travel' | 'business' | 'exam' | 'general' | 'work'
+type DailyGoal = 10 | 20 | 30 | 60
+
+interface UserSettings {
+  goal: Goal
+  dailyGoalMinutes: DailyGoal
+  nativeLanguage: string
+  displayName: string
+  reminderEnabled: boolean
+}
+
+const DEFAULT_SETTINGS: UserSettings = {
+  goal: 'general',
+  dailyGoalMinutes: 20,
+  nativeLanguage: 'ru',
+  displayName: '',
+  reminderEnabled: false,
+}
+
+export default function SettingsPage() {
+  const supabase = createClientComponentClient()
+  const router = useRouter()
+  const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS)
+  const [email, setEmail] = useState('')
+  const [saved, setSaved] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
+
+  useEffect(() => {
+    // Загружаем тему
+    const saved = localStorage.getItem('fluenta_theme') as 'dark' | 'light' | null
+    if (saved) setTheme(saved)
+
+    // Загружаем настройки пользователя
+    async function load() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) setEmail(user.email ?? '')
+
+      const raw = localStorage.getItem('fluenta_settings')
+      if (raw) {
+        try { setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(raw) }) } catch {}
+      }
+      setLoading(false)
+    }
+    load()
+  }, [])
+
+  function toggleTheme() {
+    const next = theme === 'dark' ? 'light' : 'dark'
+    setTheme(next)
+    localStorage.setItem('fluenta_theme', next)
+    document.documentElement.classList.toggle('light', next === 'light')
+    document.documentElement.classList.toggle('dark', next === 'dark')
+  }
+
+  function saveSettings() {
+    localStorage.setItem('fluenta_settings', JSON.stringify(settings))
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
+  }
+
+  async function handleSignOut() {
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
+
+  if (loading) return (
+    <div className="p-8 flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-[#6366f1] border-t-transparent rounded-full animate-spin" />
+    </div>
+  )
+
+  return (
+    <div className="p-4 sm:p-8 max-w-2xl mx-auto">
+      <h1 className="text-2xl font-bold text-white mb-8">Настройки</h1>
+
+      {/* Профиль */}
+      <section className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 mb-4">
+        <h2 className="text-white font-semibold mb-4">Профиль</h2>
+        <div className="space-y-4">
+          <div>
+            <label className="text-[#64748b] text-sm block mb-1.5">Имя</label>
+            <input
+              type="text"
+              value={settings.displayName}
+              onChange={e => setSettings(s => ({ ...s, displayName: e.target.value }))}
+              placeholder="Твоё имя"
+              className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-2.5
+                text-white placeholder:text-[#334155] outline-none focus:border-[#6366f1]/50 transition-colors"
+            />
+          </div>
+          <div>
+            <label className="text-[#64748b] text-sm block mb-1.5">Email</label>
+            <input type="text" value={email} disabled
+              className="w-full bg-white/[0.03] border border-white/[0.06] rounded-xl px-4 py-2.5 text-[#475569] cursor-not-allowed" />
+          </div>
+        </div>
+      </section>
+
+      {/* Цель обучения */}
+      <section className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 mb-4">
+        <h2 className="text-white font-semibold mb-4">Цель обучения</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {([
+            { id: 'general', label: '🌍 Общий английский', desc: 'Для повседневного общения' },
+            { id: 'travel', label: '✈️ Путешествия', desc: 'Аэропорты, отели, туризм' },
+            { id: 'business', label: '💼 Бизнес', desc: 'Переговоры, переписка, встречи' },
+            { id: 'exam', label: '📝 Экзамен IELTS/TOEFL', desc: 'Подготовка к тестированию' },
+            { id: 'work', label: '💻 Работа в IT', desc: 'Технический английский' },
+          ] as const).map(g => (
+            <button key={g.id} onClick={() => setSettings(s => ({ ...s, goal: g.id }))}
+              className={`text-left p-4 rounded-xl border transition-all ${
+                settings.goal === g.id
+                  ? 'bg-[#6366f1]/15 border-[#6366f1]/50 text-white'
+                  : 'bg-white/[0.03] border-white/[0.06] text-[#94a3b8] hover:border-white/20'
+              }`}>
+              <p className="font-medium text-sm">{g.label}</p>
+              <p className="text-xs opacity-70 mt-0.5">{g.desc}</p>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Ежедневная цель */}
+      <section className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 mb-4">
+        <h2 className="text-white font-semibold mb-4">Ежедневная цель</h2>
+        <div className="grid grid-cols-4 gap-2">
+          {([10, 20, 30, 60] as DailyGoal[]).map(min => (
+            <button key={min} onClick={() => setSettings(s => ({ ...s, dailyGoalMinutes: min }))}
+              className={`py-3 rounded-xl font-semibold text-sm transition-all border ${
+                settings.dailyGoalMinutes === min
+                  ? 'bg-[#6366f1] border-[#6366f1] text-white'
+                  : 'bg-white/[0.04] border-white/10 text-[#94a3b8] hover:text-white'
+              }`}>
+              {min} мин
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Тема */}
+      <section className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 mb-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-white font-semibold">Тема оформления</h2>
+            <p className="text-[#64748b] text-sm mt-0.5">Сейчас: {theme === 'dark' ? 'Тёмная' : 'Светлая'}</p>
+          </div>
+          <button onClick={toggleTheme}
+            className={`relative w-14 h-7 rounded-full transition-all duration-300 border ${
+              theme === 'light' ? 'bg-[#6366f1] border-[#6366f1]' : 'bg-white/[0.06] border-white/10'
+            }`}>
+            <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-all duration-300 flex items-center justify-center text-xs
+              ${theme === 'light' ? 'left-7' : 'left-0.5'}`}>
+              {theme === 'dark' ? '🌙' : '☀️'}
+            </span>
+          </button>
+        </div>
+      </section>
+
+      {/* Кнопки */}
+      <div className="flex gap-3 mt-6">
+        <button onClick={saveSettings}
+          className="flex-1 py-3 bg-[#6366f1] hover:bg-[#5558e8] text-white font-semibold rounded-xl transition-colors">
+          {saved ? '✓ Сохранено!' : 'Сохранить'}
+        </button>
+        <button onClick={handleSignOut}
+          className="px-6 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-medium rounded-xl transition-colors border border-red-500/20">
+          Выйти
+        </button>
+      </div>
+    </div>
+  )
+}
+```
+
+### Исправь кнопку темы в Sidebar.tsx / TopBar.tsx
+
+Найди кнопку переключения темы. Замени её обработчик на:
+```ts
+function toggleTheme() {
+  const current = document.documentElement.classList.contains('light') ? 'light' : 'dark'
+  const next = current === 'dark' ? 'light' : 'dark'
+  document.documentElement.classList.toggle('light', next === 'light')
+  document.documentElement.classList.toggle('dark', next === 'dark')
+  localStorage.setItem('fluenta_theme', next)
+}
+```
+
+В app/layout.tsx добавь скрипт восстановления темы ДО рендера (в `<head>`):
+```tsx
+<script dangerouslySetInnerHTML={{ __html: `
+  (function() {
+    var t = localStorage.getItem('fluenta_theme');
+    if (t === 'light') document.documentElement.classList.add('light');
+    else document.documentElement.classList.add('dark');
+  })();
+` }} />
+```
+
+В tailwind.config.ts убедись что:
+```ts
+darkMode: 'class',
+```
+
+---
+## ЗАДАЧА 2: СЛОВО ДНЯ НА ДАШБОРДЕ
+
+Создай lib/word-of-day.ts:
+
+```ts
+const WORDS_OF_DAY = [
+  { word: 'serendipity', transcription: '/ˌserənˈdɪpɪti/', translation: 'счастливая случайность', example: 'Finding that book was pure serendipity.', level: 'C1' },
+  { word: 'resilient', transcription: '/rɪˈzɪliənt/', translation: 'устойчивый, упругий', example: 'She is incredibly resilient in difficult times.', level: 'B2' },
+  { word: 'eloquent', transcription: '/ˈeləkwənt/', translation: 'красноречивый', example: 'He gave an eloquent speech at the conference.', level: 'B2' },
+  { word: 'mundane', transcription: '/mʌnˈdeɪn/', translation: 'обыденный, скучный', example: 'Even mundane tasks can become meaningful.', level: 'B2' },
+  { word: 'ephemeral', transcription: '/ɪˈfemərəl/', translation: 'мимолётный, эфемерный', example: 'Fame can be ephemeral.', level: 'C1' },
+  { word: 'meticulous', transcription: '/məˈtɪkjʊləs/', translation: 'тщательный, педантичный', example: 'She is meticulous about her work.', level: 'B2' },
+  { word: 'prolific', transcription: '/prəˈlɪfɪk/', translation: 'плодовитый, продуктивный', example: 'He is a prolific writer with 30 novels.', level: 'C1' },
+  { word: 'candid', transcription: '/ˈkændɪd/', translation: 'откровенный, прямой', example: 'I appreciate your candid feedback.', level: 'B1' },
+  { word: 'eloquence', transcription: '/ˈeləkwəns/', translation: 'красноречие', example: 'Her eloquence won the debate.', level: 'B2' },
+  { word: 'tenacious', transcription: '/tɪˈneɪʃəs/', translation: 'упорный, настойчивый', example: 'You need to be tenacious to succeed.', level: 'B2' },
+  { word: 'ambiguous', transcription: '/æmˈbɪɡjuəs/', translation: 'неоднозначный', example: 'The instructions were ambiguous.', level: 'B1' },
+  { word: 'frugal', transcription: '/ˈfruːɡəl/', translation: 'бережливый, экономный', example: 'Living a frugal lifestyle saves money.', level: 'B2' },
+  { word: 'gregarious', transcription: '/ɡrɪˈɡeəriəs/', translation: 'общительный', example: 'She is gregarious and loves parties.', level: 'C1' },
+  { word: 'nuance', transcription: '/ˈnjuːɑːns/', translation: 'нюанс, тонкость', example: 'The nuance in his tone was subtle.', level: 'B2' },
+  { word: 'pragmatic', transcription: '/præɡˈmætɪk/', translation: 'прагматичный', example: 'We need a pragmatic solution.', level: 'B2' },
+  { word: 'benevolent', transcription: '/bəˈnevələnt/', translation: 'доброжелательный', example: 'The benevolent donor helped thousands.', level: 'C1' },
+  { word: 'intricate', transcription: '/ˈɪntrɪkət/', translation: 'сложный, запутанный', example: 'The design was incredibly intricate.', level: 'B2' },
+  { word: 'diligent', transcription: '/ˈdɪlɪdʒənt/', translation: 'усердный, прилежный', example: 'Diligent students always improve.', level: 'B1' },
+  { word: 'exacerbate', transcription: '/ɪɡˈzæsəbeɪt/', translation: 'усугублять', example: 'Stress can exacerbate health problems.', level: 'C1' },
+  { word: 'versatile', transcription: '/ˈvɜːsətaɪl/', translation: 'разносторонний', example: 'She is a versatile performer.', level: 'B2' },
+  { word: 'lucid', transcription: '/ˈluːsɪd/', translation: 'ясный, чёткий', example: 'His explanation was lucid and helpful.', level: 'B2' },
+  { word: 'ostentatious', transcription: '/ˌɒstənˈteɪʃəs/', translation: 'показной, напыщенный', example: 'His ostentatious lifestyle drew attention.', level: 'C1' },
+  { word: 'impeccable', transcription: '/ɪmˈpekəbl/', translation: 'безупречный', example: 'She has impeccable taste in fashion.', level: 'C1' },
+  { word: 'persevere', transcription: '/ˌpɜːsɪˈvɪə/', translation: 'упорствовать, не сдаваться', example: 'You must persevere through challenges.', level: 'B1' },
+  { word: 'alleviate', transcription: '/əˈliːvieɪt/', translation: 'облегчать, смягчать', example: 'This medicine will alleviate the pain.', level: 'B2' },
+  { word: 'ubiquitous', transcription: '/juːˈbɪkwɪtəs/', translation: 'вездесущий', example: 'Smartphones are ubiquitous today.', level: 'C1' },
+  { word: 'conundrum', transcription: '/kəˈnʌndrəm/', translation: 'головоломка, загадка', example: 'This is a real conundrum for the team.', level: 'C1' },
+  { word: 'succinct', transcription: '/səkˈsɪŋkt/', translation: 'краткий, лаконичный', example: 'Please give a succinct answer.', level: 'B2' },
+  { word: 'arduous', transcription: '/ˈɑːdjuəs/', translation: 'трудный, изнурительный', example: 'The climb was arduous but rewarding.', level: 'C1' },
+  { word: 'obsolete', transcription: '/ˈɒbsəliːt/', translation: 'устаревший', example: 'Fax machines are now obsolete.', level: 'B2' },
+]
+
+export function getWordOfDay() {
+  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000)
+  return WORDS_OF_DAY[dayOfYear % WORDS_OF_DAY.length]
+}
+```
+
+Создай components/WordOfDay.tsx:
+```tsx
+'use client'
+import { useState } from 'react'
+import { getWordOfDay } from '@/lib/word-of-day'
+
+export function WordOfDay() {
+  const word = getWordOfDay()
+  const [added, setAdded] = useState(false)
+
+  function speak() {
+    if (typeof window === 'undefined') return
+    const u = new SpeechSynthesisUtterance(word.word)
+    u.lang = 'en-US'; u.rate = 0.85
+    const voices = window.speechSynthesis.getVoices()
+    const v = voices.find(v => v.lang === 'en-US')
+    if (v) u.voice = v
+    window.speechSynthesis.speak(u)
+  }
+
+  function addToSR() {
+    const cards = JSON.parse(localStorage.getItem('fluenta_sr_cards') ?? '[]')
+    const exists = cards.some((c: {wordId: string}) => c.wordId === `wod_${word.word}`)
+    if (!exists) {
+      cards.push({
+        wordId: `wod_${word.word}`,
+        word: word.word,
+        translation: word.translation,
+        example: word.example,
+        easeFactor: 2.5, interval: 1, repetitions: 0,
+        dueDate: new Date().toISOString().slice(0, 10),
+      })
+      localStorage.setItem('fluenta_sr_cards', JSON.stringify(cards))
+    }
+    setAdded(true)
+  }
+
+  return (
+    <div className="bg-gradient-to-br from-[#6366f1]/10 to-[#8b5cf6]/10 border border-[#6366f1]/20 rounded-2xl p-5">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs font-medium text-[#6366f1] uppercase tracking-wider">Слово дня</span>
+        <span className="text-xs px-2 py-0.5 rounded-full bg-[#6366f1]/20 text-[#a5b4fc]">{word.level}</span>
+      </div>
+      <div className="flex items-center gap-3 mb-2">
+        <h3 className="text-white text-2xl font-bold">{word.word}</h3>
+        <button onClick={speak}
+          className="w-8 h-8 rounded-lg bg-white/[0.06] hover:bg-white/10 flex items-center justify-center text-sm transition-colors"
+          title="Произношение">
+          🔊
+        </button>
+      </div>
+      <p className="text-[#94a3b8] text-sm mb-1">{word.transcription}</p>
+      <p className="text-[#6366f1] font-medium mb-3">{word.translation}</p>
+      <p className="text-[#64748b] text-sm italic mb-4">"{word.example}"</p>
+      <button onClick={addToSR} disabled={added}
+        className={`w-full py-2 rounded-xl text-sm font-medium transition-all ${
+          added
+            ? 'bg-green-500/10 border border-green-500/20 text-green-400'
+            : 'bg-white/[0.06] hover:bg-white/10 border border-white/10 text-[#94a3b8] hover:text-white'
+        }`}>
+        {added ? '✓ Добавлено в повторение' : '+ Добавить в словарь'}
+      </button>
+    </div>
+  )
+}
+```
+
+Добавь `<WordOfDay />` в app/(dashboard)/dashboard/page.tsx — после карточки "Продолжить обучение".
+
+---
+## ЗАДАЧА 3: РОЛЕВЫЕ ИГРЫ В AI РЕПЕТИТОРЕ
+
+В app/(dashboard)/ai-tutor/page.tsx добавь режим ролевых сценариев.
+
+### 3a. Создай lib/roleplay-scenarios.ts:
+
+```ts
+export interface Scenario {
+  id: string
+  title: string
+  emoji: string
+  description: string
+  level: string
+  systemPrompt: string
+  openingLine: string
+}
+
+export const SCENARIOS: Scenario[] = [
+  {
+    id: 'airport',
+    title: 'В аэропорту',
+    emoji: '✈️',
+    description: 'Регистрация, таможня, поиск выхода',
+    level: 'A2',
+    systemPrompt: `You are an airport staff member at check-in. The student is a traveler checking in for their flight.
+Respond only as the staff. Keep responses to 2-3 sentences. Correct major grammar errors naturally within the conversation.
+After 6-8 exchanges, wrap up with "Great job! You handled the airport check-in well!" and give 2-3 grammar tips.`,
+    openingLine: "Good morning! Welcome to check-in. May I see your passport and booking confirmation, please?",
+  },
+  {
+    id: 'restaurant',
+    title: 'В ресторане',
+    emoji: '🍽️',
+    description: 'Заказ еды, вопросы о меню, оплата',
+    level: 'A2',
+    systemPrompt: `You are a friendly waiter at an English restaurant. The student is a customer ordering food.
+Keep responses natural and brief. Gently correct errors. After 8 exchanges end with feedback on language used.`,
+    openingLine: "Good evening! Welcome to The Oak Restaurant. My name is Tom and I'll be your server tonight. Can I start you off with something to drink?",
+  },
+  {
+    id: 'job-interview',
+    title: 'Собеседование',
+    emoji: '💼',
+    description: 'Вопросы HR, рассказ о себе, навыки',
+    level: 'B1',
+    systemPrompt: `You are an HR interviewer for a tech company. The student is applying for a position.
+Ask standard interview questions one at a time. Give encouraging feedback. After 8-10 questions, give a summary of their performance and language strengths/weaknesses.`,
+    openingLine: "Hello, please come in and have a seat! Thank you for coming in today. I'm Sarah, the HR Manager. Before we start, could you tell me a little about yourself and why you're interested in this position?",
+  },
+  {
+    id: 'doctor',
+    title: 'У врача',
+    emoji: '🏥',
+    description: 'Описание симптомов, вопросы о здоровье',
+    level: 'A2',
+    systemPrompt: `You are a friendly doctor. The student is a patient describing their symptoms.
+Ask follow-up questions. Use medical terms but explain them. After the consultation give a brief diagnosis and prescription. Then give language feedback.`,
+    openingLine: "Good morning! Please take a seat. I'm Dr. Williams. What brings you in today? How are you feeling?",
+  },
+  {
+    id: 'hotel',
+    title: 'В отеле',
+    emoji: '🏨',
+    description: 'Заселение, запросы, решение проблем',
+    level: 'A2',
+    systemPrompt: `You are a hotel receptionist. The student is a guest checking in or making a request.
+Be professional and helpful. Handle complaints gracefully. Give language feedback after 6-8 exchanges.`,
+    openingLine: "Welcome to The Grand Hotel! Do you have a reservation with us?",
+  },
+  {
+    id: 'shopping',
+    title: 'В магазине',
+    emoji: '🛍️',
+    description: 'Покупки, возврат товара, размеры',
+    level: 'A1',
+    systemPrompt: `You are a shop assistant in a clothing store. The student is a customer shopping.
+Help them find items, suggest sizes, handle returns. Keep it simple for A1 level. Give feedback at the end.`,
+    openingLine: "Hi there! Welcome to StyleHub. Is there anything I can help you find today?",
+  },
+  {
+    id: 'business-meeting',
+    title: 'Деловая встреча',
+    emoji: '📊',
+    description: 'Презентация, переговоры, обсуждение',
+    level: 'B2',
+    systemPrompt: `You are a business client in a meeting. The student is presenting their proposal.
+Ask tough but fair questions. Use business English. After 10 exchanges give detailed feedback on business language and professionalism.`,
+    openingLine: "Good morning, everyone. Thank you for coming. Before you begin your presentation, could you give us a brief overview of what you'll be covering today?",
+  },
+  {
+    id: 'small-talk',
+    title: 'Светская беседа',
+    emoji: '☕',
+    description: 'Знакомство, погода, хобби, планы',
+    level: 'A2',
+    systemPrompt: `You are a friendly coworker having casual small talk with the student at a coffee machine.
+Topics: weather, weekend plans, hobbies, local events. Keep it light and natural. After 8-10 exchanges comment on their fluency.`,
+    openingLine: "Oh hey! I don't think we've properly met yet — I'm Alex from the marketing team. How are you settling in?",
+  },
+]
+```
+
+### 3b. Обнови app/(dashboard)/ai-tutor/page.tsx
+
+Добавь в начало страницы (до основного чата) панель выбора сценария:
+
+```tsx
+import { SCENARIOS, Scenario } from '@/lib/roleplay-scenarios'
+
+// Добавь state:
+const [mode, setMode] = useState<'chat' | 'roleplay'>('chat')
+const [activeScenario, setActiveScenario] = useState<Scenario | null>(null)
+
+// Панель выбора (показывается когда mode === 'roleplay' и !activeScenario):
+{mode === 'roleplay' && !activeScenario && (
+  <div className="p-4 sm:p-6">
+    <div className="flex items-center justify-between mb-4">
+      <h2 className="text-white font-semibold">Выбери сценарий</h2>
+      <button onClick={() => setMode('chat')} className="text-[#64748b] text-sm hover:text-white">← Обычный чат</button>
+    </div>
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+      {SCENARIOS.map(s => (
+        <button key={s.id}
+          onClick={() => {
+            setActiveScenario(s)
+            // Устанавливаем системный промпт и первое сообщение
+            setMessages([{ role: 'assistant', content: s.openingLine }])
+            setSystemPrompt(s.systemPrompt)
+          }}
+          className="p-4 bg-white/[0.04] border border-white/10 rounded-2xl text-left
+            hover:border-[#6366f1]/40 hover:bg-white/[0.06] transition-all">
+          <span className="text-3xl block mb-2">{s.emoji}</span>
+          <p className="text-white text-sm font-medium">{s.title}</p>
+          <p className="text-[#64748b] text-xs mt-1">{s.description}</p>
+          <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded-full bg-[#6366f1]/10 text-[#6366f1]">{s.level}</span>
+        </button>
+      ))}
+    </div>
+  </div>
+)}
+```
+
+Добавь кнопку "Ролевая игра" рядом с "Учёба" / "Разговор" в хедере чата:
+```tsx
+<button onClick={() => { setMode('roleplay'); setActiveScenario(null) }}
+  className={`px-4 py-1.5 rounded-xl text-sm font-medium transition-all border ${
+    mode === 'roleplay' ? 'bg-[#6366f1] border-[#6366f1] text-white' : 'bg-white/[0.04] border-white/10 text-[#94a3b8]'
+  }`}>
+  🎭 Ролевая игра
+</button>
+```
+
+Когда активен сценарий — добавь в хедер чата:
+```tsx
+{activeScenario && (
+  <div className="flex items-center gap-2">
+    <span>{activeScenario.emoji}</span>
+    <span className="text-white text-sm font-medium">{activeScenario.title}</span>
+    <button onClick={() => setActiveScenario(null)} className="text-[#64748b] text-xs hover:text-white ml-2">✕ Выйти</button>
+  </div>
+)}
+```
+
+---
+## ЗАДАЧА 4: ТРЕНАЖЁР СКОРОСТИ ЧТЕНИЯ
+
+Создай app/(dashboard)/reading-speed/page.tsx:
+
+```tsx
+'use client'
+import { useState, useEffect, useRef } from 'react'
+
+const TEXTS = [
+  {
+    title: "The Power of Habits",
+    level: 'B1',
+    wordCount: 120,
+    text: "Habits are powerful forces in our lives. They shape our daily routines, influence our decisions, and ultimately define who we are. Scientists have discovered that habits work through a neurological loop consisting of three parts: a cue, a routine, and a reward. The cue triggers the brain to go into automatic mode. The routine is the behavior itself. The reward helps the brain decide if this loop is worth remembering for the future. Understanding this loop is the key to changing bad habits and building good ones. When you want to change a habit, you don't actually eliminate it — you replace the routine while keeping the same cue and reward. This insight has helped millions of people transform their lives, from overcoming addiction to becoming more productive at work.",
+  },
+  {
+    title: "Artificial Intelligence Today",
+    level: 'B2',
+    wordCount: 130,
+    text: "Artificial intelligence is no longer a concept confined to science fiction. Today, AI systems make recommendations on what movies to watch, detect fraudulent bank transactions, assist doctors in diagnosing diseases, and even write software code. The technology has advanced at an extraordinary pace over the past decade, largely due to improvements in machine learning algorithms and the availability of massive datasets. However, this rapid progress raises important questions about the future of work, privacy, and human autonomy. While AI can outperform humans in specific narrow tasks, it still lacks the general intelligence, emotional understanding, and common sense that humans possess. The challenge for society is to harness the benefits of AI while carefully managing its risks and ensuring that its rewards are distributed fairly across all segments of the population.",
+  },
+  {
+    title: "Ocean Exploration",
+    level: 'A2',
+    wordCount: 100,
+    text: "The ocean covers more than seventy percent of our planet, yet we have explored less than twenty percent of it. The deep sea remains one of the greatest mysteries on Earth. Scientists believe that millions of species live in the ocean that we have not yet discovered. The pressure at the bottom of the ocean is enormous — about one thousand times greater than at the surface. Special submarines called submersibles allow researchers to explore these dark depths. In recent years, scientists have found fascinating creatures living near hydrothermal vents, where extremely hot water comes out of the ocean floor. These discoveries suggest that life can exist in conditions we once thought were impossible.",
+  },
+  {
+    title: "The Science of Sleep",
+    level: 'B1',
+    wordCount: 115,
+    text: "Sleep is not merely a period of rest but an active process essential for physical and mental health. During sleep, the brain consolidates memories, processes emotions, and clears out toxic waste products that accumulate during waking hours. Adults typically need between seven and nine hours of sleep per night, yet modern lifestyles often make this difficult to achieve. Chronic sleep deprivation has been linked to serious health conditions including obesity, diabetes, cardiovascular disease, and depression. The blue light emitted by smartphones and computers suppresses melatonin production, making it harder to fall asleep. Sleep researchers recommend establishing a consistent sleep schedule, creating a dark and cool sleeping environment, and avoiding screens for at least one hour before bedtime to improve sleep quality significantly.",
+  },
+  {
+    title: "Urban Farming",
+    level: 'B1',
+    wordCount: 108,
+    text: "As cities continue to grow and food security becomes an increasing concern, urban farming is emerging as a creative solution to multiple challenges simultaneously. Rooftop gardens, vertical farms, and community plots are transforming unused urban spaces into productive growing areas. These initiatives not only produce fresh vegetables and fruits but also reduce the carbon footprint associated with transporting food from rural areas. Urban farms can also help manage stormwater runoff, reduce the urban heat island effect, and create green spaces that improve residents' mental health. Some cities are actively encouraging urban agriculture through zoning changes and subsidies. Innovative technologies such as hydroponics and LED lighting allow crops to grow in spaces that receive little natural sunlight, making urban farming viable even in dense city centers.",
+  },
+]
+
+const WPM_NORMS: Record<string, number> = {
+  A1: 80, A2: 120, B1: 180, B2: 230, C1: 280
+}
+
+type Phase = 'intro' | 'reading' | 'questions' | 'result'
+
+export default function ReadingSpeedPage() {
+  const [textIdx, setTextIdx] = useState(0)
+  const [phase, setPhase] = useState<Phase>('intro')
+  const [startTime, setStartTime] = useState(0)
+  const [wpm, setWpm] = useState(0)
+  const [elapsed, setElapsed] = useState(0)
+  const timerRef = useRef<NodeJS.Timeout | null>(null)
+
+  const text = TEXTS[textIdx]
+
+  function startReading() {
+    setPhase('reading')
+    const t = Date.now()
+    setStartTime(t)
+    timerRef.current = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - t) / 1000))
+    }, 1000)
+  }
+
+  function finishReading() {
+    if (timerRef.current) clearInterval(timerRef.current)
+    const minutes = (Date.now() - startTime) / 60000
+    const calculated = Math.round(text.wordCount / minutes)
+    setWpm(calculated)
+    setPhase('result')
+  }
+
+  function nextText() {
+    setTextIdx(i => (i + 1) % TEXTS.length)
+    setPhase('intro')
+    setElapsed(0)
+    setWpm(0)
+  }
+
+  const norm = WPM_NORMS[text.level] ?? 180
+  const percentage = Math.min(150, Math.round((wpm / norm) * 100))
+
+  return (
+    <div className="p-4 sm:p-8 max-w-3xl mx-auto">
+      <h1 className="text-2xl font-bold text-white mb-2">Скорость чтения</h1>
+      <p className="text-[#64748b] mb-6">Читай текст и нажми "Готово" когда закончишь</p>
+
+      {phase === 'intro' && (
+        <>
+          <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-white font-semibold">{text.title}</h2>
+              <span className="text-xs px-2 py-1 rounded-full bg-[#6366f1]/10 text-[#6366f1]">{text.level}</span>
+            </div>
+            <p className="text-[#64748b] text-sm">{text.wordCount} слов · Норма для {text.level}: {norm} слов/мин</p>
+          </div>
+
+          <div className="flex gap-2 mb-6">
+            {TEXTS.map((t, i) => (
+              <button key={i} onClick={() => setTextIdx(i)}
+                className={`px-3 py-1.5 rounded-xl text-sm transition-all border ${
+                  i === textIdx ? 'bg-[#6366f1] border-[#6366f1] text-white' : 'bg-white/[0.04] border-white/10 text-[#94a3b8]'
+                }`}>
+                {t.level}
+              </button>
+            ))}
+          </div>
+
+          <button onClick={startReading}
+            className="w-full py-4 bg-[#6366f1] hover:bg-[#5558e8] text-white font-semibold rounded-2xl text-lg transition-colors">
+            Начать чтение
+          </button>
+        </>
+      )}
+
+      {phase === 'reading' && (
+        <>
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-[#6366f1] font-mono text-lg font-bold">{elapsed}с</span>
+            <span className="text-[#64748b] text-sm">{text.wordCount} слов</span>
+          </div>
+          <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 sm:p-8 mb-6 leading-relaxed">
+            <h2 className="text-white font-bold text-xl mb-4">{text.title}</h2>
+            <p className="text-[#e2e8f0] text-lg leading-8">{text.text}</p>
+          </div>
+          <button onClick={finishReading}
+            className="w-full py-4 bg-green-500 hover:bg-green-400 text-white font-semibold rounded-2xl text-lg transition-colors">
+            ✓ Прочитал
+          </button>
+        </>
+      )}
+
+      {phase === 'result' && (
+        <>
+          <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-8 mb-6 text-center">
+            <p className="text-[#64748b] text-sm mb-2">Твой результат</p>
+            <p className="text-6xl font-bold mb-2"
+              style={{ color: percentage >= 100 ? '#10b981' : percentage >= 70 ? '#f59e0b' : '#ef4444' }}>
+              {wpm}
+            </p>
+            <p className="text-[#64748b] mb-6">слов в минуту</p>
+
+            <div className="h-3 bg-white/[0.06] rounded-full overflow-hidden mb-2">
+              <div className="h-full rounded-full transition-all duration-1000"
+                style={{
+                  width: `${Math.min(100, percentage)}%`,
+                  background: percentage >= 100 ? '#10b981' : percentage >= 70 ? '#f59e0b' : '#ef4444'
+                }} />
+            </div>
+            <div className="flex justify-between text-xs text-[#475569]">
+              <span>0</span>
+              <span>Норма {norm} сл/мин</span>
+              <span>{norm * 1.5}+</span>
+            </div>
+
+            <div className="mt-6 p-4 rounded-xl bg-white/[0.03] text-left">
+              <p className="text-white font-semibold mb-1">
+                {percentage >= 120 ? '🚀 Отлично! Ты читаешь быстрее нормы!' :
+                 percentage >= 90 ? '👍 Хороший результат, близко к норме' :
+                 percentage >= 60 ? '📖 Продолжай практиковаться' :
+                 '🐌 Попробуй читать чуть быстрее'}
+              </p>
+              <p className="text-[#64748b] text-sm">
+                Норма для уровня {text.level}: {norm} слов/мин.
+                {percentage < 100 ? ` Тебе нужно читать на ${norm - wpm} слов/мин быстрее.` : ' Ты достиг нормы!'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <button onClick={nextText}
+              className="flex-1 py-3 bg-[#6366f1] hover:bg-[#5558e8] text-white font-semibold rounded-xl transition-colors">
+              Следующий текст
+            </button>
+            <button onClick={() => setPhase('intro')}
+              className="px-5 py-3 bg-white/[0.06] hover:bg-white/10 text-[#94a3b8] rounded-xl transition-colors border border-white/10">
+              Повторить
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+```
+
+Добавь в навигацию (Sidebar.tsx и MobileNav.tsx):
+```ts
+{ href: '/reading-speed', icon: Zap, label: 'Скорость чтения' }
+```
+
+---
+## ЗАДАЧА 5: ПРОИЗНОШЕНИЕ СО СКОРИНГОМ
+
+Создай app/(dashboard)/pronunciation-practice/page.tsx:
+
+```tsx
+'use client'
+import { useState, useRef } from 'react'
+
+const PHRASES: Record<string, string[]> = {
+  A1: [
+    'Hello, my name is Anna.',
+    'I am from Kazakhstan.',
+    'How are you today?',
+    'I like to eat apples.',
+    'The weather is nice today.',
+    'Can you help me please?',
+    'I want a cup of tea.',
+    'Where is the bathroom?',
+  ],
+  A2: [
+    'I have been learning English for two years.',
+    'Could you speak more slowly please?',
+    'What time does the next bus arrive?',
+    'I would like to book a table for two.',
+    'The meeting starts at nine o\'clock.',
+    'I really enjoy watching movies in English.',
+  ],
+  B1: [
+    'I\'m particularly interested in environmental issues.',
+    'Could you elaborate on that point a little more?',
+    'The situation is considerably more complex than it appears.',
+    'I\'d appreciate it if you could send me the report.',
+    'We need to find a sustainable solution to this problem.',
+  ],
+  B2: [
+    'The unprecedented growth has had far-reaching consequences.',
+    'I\'d like to draw your attention to several key considerations.',
+    'The data suggests a correlation between these two variables.',
+    'We ought to thoroughly evaluate the potential risks involved.',
+  ],
+  C1: [
+    'The multifaceted nature of this phenomenon warrants careful examination.',
+    'One cannot underestimate the ramifications of such a paradigm shift.',
+    'The juxtaposition of these perspectives yields fascinating insights.',
+  ],
+}
+
+type Level = 'A1' | 'A2' | 'B1' | 'B2' | 'C1'
+
+interface Attempt {
+  phrase: string
+  heard: string
+  score: number
+}
+
+export default function PronunciationPracticePage() {
+  const [level, setLevel] = useState<Level>('A1')
+  const [phraseIdx, setPhraseIdx] = useState(0)
+  const [isListening, setIsListening] = useState(false)
+  const [heard, setHeard] = useState('')
+  const [score, setScore] = useState<number | null>(null)
+  const [attempts, setAttempts] = useState<Attempt[]>([])
+  const recognitionRef = useRef<SpeechRecognition | null>(null)
+
+  const phrases = PHRASES[level]
+  const phrase = phrases[phraseIdx % phrases.length]
+
+  function speak() {
+    window.speechSynthesis.cancel()
+    const u = new SpeechSynthesisUtterance(phrase)
+    u.lang = 'en-US'; u.rate = 0.85
+    const voices = window.speechSynthesis.getVoices()
+    const v = voices.find(v => v.lang === 'en-US' && v.name.includes('Female')) ?? voices.find(v => v.lang === 'en-US')
+    if (v) u.voice = v
+    window.speechSynthesis.speak(u)
+  }
+
+  function calculateScore(original: string, heard: string): number {
+    const normalize = (s: string) => s.toLowerCase().replace(/[^a-z\s]/g, '').trim().split(/\s+/)
+    const origWords = normalize(original)
+    const heardWords = normalize(heard)
+    let matches = 0
+    origWords.forEach(w => { if (heardWords.includes(w)) matches++ })
+    return Math.round((matches / origWords.length) * 100)
+  }
+
+  function startListening() {
+    const SpeechRecognition = window.SpeechRecognition || (window as unknown as { webkitSpeechRecognition: typeof SpeechRecognition }).webkitSpeechRecognition
+    if (!SpeechRecognition) {
+      alert('Ваш браузер не поддерживает распознавание речи. Используйте Chrome.')
+      return
+    }
+
+    const recognition = new SpeechRecognition()
+    recognition.lang = 'en-US'
+    recognition.interimResults = false
+    recognition.maxAlternatives = 1
+
+    recognition.onstart = () => setIsListening(true)
+    recognition.onend = () => setIsListening(false)
+    recognition.onerror = () => setIsListening(false)
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript
+      setHeard(transcript)
+      const s = calculateScore(phrase, transcript)
+      setScore(s)
+      setAttempts(a => [...a, { phrase, heard: transcript, score: s }])
+    }
+
+    recognitionRef.current = recognition
+    recognition.start()
+  }
+
+  function stopListening() {
+    recognitionRef.current?.stop()
+    setIsListening(false)
+  }
+
+  function nextPhrase() {
+    setPhraseIdx(i => i + 1)
+    setHeard('')
+    setScore(null)
+  }
+
+  const avgScore = attempts.length > 0 ? Math.round(attempts.reduce((a, b) => a + b.score, 0) / attempts.length) : null
+
+  return (
+    <div className="p-4 sm:p-8 max-w-2xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Произношение</h1>
+          <p className="text-[#64748b] text-sm mt-1">Послушай и повтори фразу</p>
+        </div>
+        {avgScore !== null && (
+          <div className="text-right">
+            <p className="text-white font-semibold text-lg">{avgScore}%</p>
+            <p className="text-[#64748b] text-xs">средний балл</p>
+          </div>
+        )}
+      </div>
+
+      {/* Выбор уровня */}
+      <div className="flex gap-2 mb-6">
+        {(['A1','A2','B1','B2','C1'] as Level[]).map(l => (
+          <button key={l} onClick={() => { setLevel(l); setPhraseIdx(0); setHeard(''); setScore(null) }}
+            className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-all border ${
+              level === l ? 'bg-[#6366f1] border-[#6366f1] text-white' : 'bg-white/[0.04] border-white/10 text-[#94a3b8] hover:text-white'
+            }`}>
+            {l}
+          </button>
+        ))}
+      </div>
+
+      {/* Фраза для повторения */}
+      <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 sm:p-8 mb-6 text-center">
+        <p className="text-[#64748b] text-xs uppercase tracking-wider mb-4">Повтори вслух:</p>
+        <p className="text-white text-xl sm:text-2xl font-medium leading-relaxed mb-6">"{phrase}"</p>
+
+        <button onClick={speak}
+          className="px-6 py-2.5 bg-white/[0.06] hover:bg-white/10 border border-white/10 text-[#94a3b8]
+            hover:text-white rounded-xl text-sm font-medium transition-all inline-flex items-center gap-2">
+          🔊 Послушать произношение
+        </button>
+      </div>
+
+      {/* Кнопка записи */}
+      <div className="flex justify-center mb-6">
+        <button
+          onClick={isListening ? stopListening : startListening}
+          className={`w-20 h-20 rounded-full flex items-center justify-center text-3xl transition-all shadow-lg ${
+            isListening
+              ? 'bg-red-500 shadow-red-500/30 scale-110 animate-pulse'
+              : 'bg-[#6366f1] shadow-[#6366f1]/30 hover:scale-105'
+          }`}>
+          {isListening ? '⏹' : '🎤'}
+        </button>
+      </div>
+      <p className="text-center text-[#475569] text-sm mb-6">
+        {isListening ? 'Слушаю... говори сейчас' : 'Нажми чтобы начать запись'}
+      </p>
+
+      {/* Результат */}
+      {heard && score !== null && (
+        <div className={`rounded-2xl p-5 mb-4 border ${
+          score >= 80 ? 'bg-green-500/10 border-green-500/20' :
+          score >= 50 ? 'bg-yellow-500/10 border-yellow-500/20' :
+          'bg-red-500/10 border-red-500/20'
+        }`}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-white font-semibold">Результат</p>
+            <p className="text-2xl font-bold"
+              style={{ color: score >= 80 ? '#10b981' : score >= 50 ? '#f59e0b' : '#ef4444' }}>
+              {score}%
+            </p>
+          </div>
+          <p className="text-[#64748b] text-sm mb-1">Я услышал:</p>
+          <p className="text-[#94a3b8] italic mb-3">"{heard}"</p>
+          <p className="text-[#64748b] text-sm">
+            {score >= 90 ? '🎉 Превосходное произношение!' :
+             score >= 70 ? '👍 Хорошо! Попробуй ещё раз для совершенства.' :
+             score >= 50 ? '📢 Неплохо! Говори чётче и медленнее.' :
+             '🔄 Попробуй ещё раз. Послушай образец и повтори.'}
+          </p>
+        </div>
+      )}
+
+      {score !== null && (
+        <div className="flex gap-3">
+          <button onClick={() => { setHeard(''); setScore(null) }}
+            className="flex-1 py-3 bg-white/[0.06] hover:bg-white/10 text-[#94a3b8] font-medium rounded-xl transition-colors border border-white/10">
+            ↺ Повторить
+          </button>
+          <button onClick={nextPhrase}
+            className="flex-1 py-3 bg-[#6366f1] hover:bg-[#5558e8] text-white font-semibold rounded-xl transition-colors">
+            Следующая фраза →
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+```
+
+Добавь в навигацию (Sidebar.tsx и MobileNav.tsx):
+```ts
+{ href: '/pronunciation-practice', icon: Mic, label: 'Произношение' }
+```
+
+---
+## ЗАДАЧА 6: РАЗДЕЛ ИДИОМЫ
+
+Создай lib/idioms-data.ts:
+
+```ts
+export interface Idiom {
+  id: string
+  idiom: string
+  meaning: string
+  example: string
+  category: string
+  level: string
+}
+
+export const IDIOMS: Idiom[] = [
+  // Everyday Life
+  { id: '1', idiom: 'Break the ice', meaning: 'Начать разговор, снять напряжение', example: 'He told a joke to break the ice at the meeting.', category: 'Общение', level: 'B1' },
+  { id: '2', idiom: 'Hit the nail on the head', meaning: 'Попасть в точку', example: 'You hit the nail on the head with that analysis.', category: 'Общение', level: 'B1' },
+  { id: '3', idiom: 'Bite the bullet', meaning: 'Стиснуть зубы и сделать что-то неприятное', example: 'I bit the bullet and went to the dentist.', category: 'Решения', level: 'B1' },
+  { id: '4', idiom: 'Under the weather', meaning: 'Чувствовать себя плохо', example: 'I\'m feeling a bit under the weather today.', category: 'Здоровье', level: 'A2' },
+  { id: '5', idiom: 'Once in a blue moon', meaning: 'Очень редко', example: 'We only visit them once in a blue moon.', category: 'Время', level: 'A2' },
+  { id: '6', idiom: 'Spill the beans', meaning: 'Разболтать секрет', example: 'Don\'t spill the beans about the surprise party.', category: 'Общение', level: 'B1' },
+  { id: '7', idiom: 'Hit the sack', meaning: 'Идти спать', example: 'I\'m exhausted — time to hit the sack.', category: 'Быт', level: 'A2' },
+  { id: '8', idiom: 'Cost an arm and a leg', meaning: 'Стоить очень дорого', example: 'That new phone costs an arm and a leg.', category: 'Деньги', level: 'A2' },
+  { id: '9', idiom: 'Beat around the bush', meaning: 'Ходить вокруг да около', example: 'Stop beating around the bush and tell me the truth.', category: 'Общение', level: 'B1' },
+  { id: '10', idiom: 'A blessing in disguise', meaning: 'Что-то плохое, оказавшееся хорошим', example: 'Losing that job was a blessing in disguise.', category: 'Жизнь', level: 'B2' },
+  { id: '11', idiom: 'Get out of hand', meaning: 'Выйти из-под контроля', example: 'The situation got out of hand quickly.', category: 'Ситуации', level: 'B1' },
+  { id: '12', idiom: 'On the fence', meaning: 'Не определиться с решением', example: 'I\'m still on the fence about which job to take.', category: 'Решения', level: 'B1' },
+  { id: '13', idiom: 'Let the cat out of the bag', meaning: 'Случайно раскрыть секрет', example: 'She let the cat out of the bag about the wedding.', category: 'Общение', level: 'B1' },
+  { id: '14', idiom: 'Bite off more than you can chew', meaning: 'Взять на себя слишком много', example: 'He bit off more than he could chew with three projects.', category: 'Работа', level: 'B2' },
+  { id: '15', idiom: 'Kill two birds with one stone', meaning: 'Убить двух зайцев одним выстрелом', example: 'Taking the scenic route kills two birds with one stone.', category: 'Эффективность', level: 'B1' },
+  { id: '16', idiom: 'The ball is in your court', meaning: 'Теперь решение за тобой', example: 'I\'ve made my offer — the ball is in your court now.', category: 'Решения', level: 'B2' },
+  { id: '17', idiom: 'Burn bridges', meaning: 'Сжечь мосты', example: 'Don\'t burn bridges when leaving a job.', category: 'Отношения', level: 'B2' },
+  { id: '18', idiom: 'Cutting corners', meaning: 'Делать кое-как, срезать углы', example: 'They cut corners and now the building has problems.', category: 'Работа', level: 'B1' },
+  { id: '19', idiom: 'Hit the ground running', meaning: 'Начать энергично, с места в карьер', example: 'She hit the ground running in her new role.', category: 'Работа', level: 'B2' },
+  { id: '20', idiom: 'Jump on the bandwagon', meaning: 'Присоединиться к модному течению', example: 'Everyone jumped on the social media bandwagon.', category: 'Тренды', level: 'B2' },
+  { id: '21', idiom: 'Miss the boat', meaning: 'Упустить возможность', example: 'He missed the boat on that investment opportunity.', category: 'Возможности', level: 'B1' },
+  { id: '22', idiom: 'Sit on the fence', meaning: 'Занимать нейтральную позицию', example: 'Politicians often sit on the fence to avoid controversy.', category: 'Политика', level: 'B2' },
+  { id: '23', idiom: 'Steal someone\'s thunder', meaning: 'Перехватить чей-то успех', example: 'She stole his thunder by announcing it first.', category: 'Отношения', level: 'C1' },
+  { id: '24', idiom: 'Turn a blind eye', meaning: 'Закрывать глаза на что-то', example: 'The manager turned a blind eye to their lateness.', category: 'Работа', level: 'B2' },
+  { id: '25', idiom: 'Under the radar', meaning: 'Незамеченный, тайный', example: 'The startup stayed under the radar for two years.', category: 'Бизнес', level: 'B2' },
+  { id: '26', idiom: 'Wrap your head around', meaning: 'Понять что-то сложное', example: 'I can\'t wrap my head around quantum physics.', category: 'Обучение', level: 'B1' },
+  { id: '27', idiom: 'Go the extra mile', meaning: 'Сделать больше чем нужно', example: 'She always goes the extra mile for her clients.', category: 'Работа', level: 'B1' },
+  { id: '28', idiom: 'In hot water', meaning: 'В горячей воде / в беде', example: 'He got in hot water for missing the deadline.', category: 'Проблемы', level: 'B1' },
+  { id: '29', idiom: 'Read between the lines', meaning: 'Читать между строк', example: 'Reading between the lines, she wasn\'t happy.', category: 'Общение', level: 'B2' },
+  { id: '30', idiom: 'Pull someone\'s leg', meaning: 'Разыгрывать кого-то', example: 'Are you serious or just pulling my leg?', category: 'Юмор', level: 'A2' },
+]
+
+export const IDIOM_CATEGORIES = [...new Set(IDIOMS.map(i => i.category))]
+```
+
+Создай app/(dashboard)/idioms/page.tsx:
+
+```tsx
+'use client'
+import { useState } from 'react'
+import { IDIOMS, IDIOM_CATEGORIES } from '@/lib/idioms-data'
+
+export default function IdiomsPage() {
+  const [search, setSearch] = useState('')
+  const [category, setCategory] = useState('Все')
+  const [flipped, setFlipped] = useState<Set<string>>(new Set())
+  const [learned, setLearned] = useState<Set<string>>(new Set())
+
+  const filtered = IDIOMS.filter(i => {
+    const matchSearch = i.idiom.toLowerCase().includes(search.toLowerCase()) ||
+      i.meaning.toLowerCase().includes(search.toLowerCase())
+    const matchCat = category === 'Все' || i.category === category
+    return matchSearch && matchCat
+  })
+
+  function toggleFlip(id: string) {
+    setFlipped(f => { const n = new Set(f); n.has(id) ? n.delete(id) : n.add(id); return n })
+  }
+
+  function toggleLearn(id: string) {
+    setLearned(l => {
+      const n = new Set(l); n.has(id) ? n.delete(id) : n.add(id)
+      // Добавляем в SR
+      const idiom = IDIOMS.find(i => i.id === id)
+      if (idiom && !n.has(id) === false) {
+        const cards = JSON.parse(localStorage.getItem('fluenta_sr_cards') ?? '[]')
+        if (!cards.some((c: {wordId: string}) => c.wordId === `idiom_${id}`)) {
+          cards.push({
+            wordId: `idiom_${id}`,
+            word: idiom.idiom,
+            translation: idiom.meaning,
+            example: idiom.example,
+            easeFactor: 2.5, interval: 1, repetitions: 0,
+            dueDate: new Date().toISOString().slice(0, 10),
+          })
+          localStorage.setItem('fluenta_sr_cards', JSON.stringify(cards))
+        }
+      }
+      return n
+    })
+  }
+
+  function speak(text: string) {
+    const u = new SpeechSynthesisUtterance(text)
+    u.lang = 'en-US'; u.rate = 0.85
+    window.speechSynthesis.speak(u)
+  }
+
+  return (
+    <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Идиомы</h1>
+          <p className="text-[#64748b] text-sm mt-1">{IDIOMS.length} идиом · {learned.size} изучено</p>
+        </div>
+      </div>
+
+      {/* Поиск */}
+      <input type="text" value={search} onChange={e => setSearch(e.target.value)}
+        placeholder="Поиск идиомы..."
+        className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-white
+          placeholder:text-[#334155] outline-none focus:border-[#6366f1]/50 transition-colors mb-4" />
+
+      {/* Категории */}
+      <div className="flex gap-2 flex-wrap mb-6">
+        {['Все', ...IDIOM_CATEGORIES].map(cat => (
+          <button key={cat} onClick={() => setCategory(cat)}
+            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all border ${
+              category === cat ? 'bg-[#6366f1] border-[#6366f1] text-white' : 'bg-white/[0.04] border-white/10 text-[#94a3b8] hover:text-white'
+            }`}>
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Карточки идиом */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filtered.map(idiom => (
+          <div key={idiom.id}
+            className={`rounded-2xl border p-5 transition-all cursor-pointer ${
+              learned.has(idiom.id)
+                ? 'bg-green-500/5 border-green-500/15'
+                : 'bg-white/[0.04] border-white/10 hover:border-white/20'
+            }`}
+            onClick={() => toggleFlip(idiom.id)}>
+
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex-1">
+                <span className="text-xs text-[#475569]">{idiom.category} · {idiom.level}</span>
+              </div>
+              <button onClick={e => { e.stopPropagation(); toggleLearn(idiom.id) }}
+                className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs transition-all ${
+                  learned.has(idiom.id) ? 'bg-green-500/20 text-green-400' : 'bg-white/[0.06] text-[#64748b] hover:text-white'
+                }`}>
+                {learned.has(idiom.id) ? '✓' : '+'}
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2 mb-2">
+              <p className="text-white font-bold text-base">{idiom.idiom}</p>
+              <button onClick={e => { e.stopPropagation(); speak(idiom.idiom) }}
+                className="text-[#475569] hover:text-[#94a3b8] transition-colors text-sm">🔊</button>
+            </div>
+
+            {flipped.has(idiom.id) ? (
+              <div>
+                <p className="text-[#6366f1] font-medium text-sm mb-2">{idiom.meaning}</p>
+                <p className="text-[#64748b] text-sm italic">"{idiom.example}"</p>
+              </div>
+            ) : (
+              <p className="text-[#475569] text-xs">Нажми чтобы увидеть значение</p>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+```
+
+Добавь в навигацию (Sidebar.tsx и MobileNav.tsx):
+```ts
+{ href: '/idioms', icon: MessageSquare, label: 'Идиомы' }
+```
+
+---
+## ЗАДАЧА 7: ЕЖЕНЕДЕЛЬНЫЙ ОТЧЁТ
+
+Создай app/(dashboard)/weekly-summary/page.tsx:
+
+```tsx
+'use client'
+import { useEffect, useState } from 'react'
+
+interface WeekData {
+  days: { date: string; label: string; minutes: number; lessons: number; words: number }[]
+  totalMinutes: number
+  totalLessons: number
+  totalWords: number
+  streakDays: number
+  bestDay: string
+}
+
+function getWeekData(): WeekData {
+  const days = []
+  const dayLabels = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+  let totalMinutes = 0, totalLessons = 0, totalWords = 0, streakDays = 0, bestDay = ''
+  let maxMinutes = 0
+
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i)
+    const iso = d.toISOString().slice(0, 10)
+    // Читаем из localStorage (activity log)
+    const activity = JSON.parse(localStorage.getItem(`fluenta_activity_${iso}`) ?? '{}')
+    const minutes = activity.minutes ?? 0
+    const lessons = activity.lessons ?? 0
+    const words = activity.words ?? 0
+
+    totalMinutes += minutes; totalLessons += lessons; totalWords += words
+    if (minutes > 0) streakDays++
+    if (minutes > maxMinutes) { maxMinutes = minutes; bestDay = dayLabels[d.getDay()] }
+
+    days.push({ date: iso, label: dayLabels[d.getDay()], minutes, lessons, words })
+  }
+
+  return { days, totalMinutes, totalLessons, totalWords, streakDays, bestDay: bestDay || 'Нет данных' }
+}
+
+export default function WeeklySummaryPage() {
+  const [data, setData] = useState<WeekData | null>(null)
+
+  useEffect(() => { setData(getWeekData()) }, [])
+
+  if (!data) return null
+
+  const maxMin = Math.max(...data.days.map(d => d.minutes), 1)
+
+  return (
+    <div className="p-4 sm:p-8 max-w-3xl mx-auto">
+      <h1 className="text-2xl font-bold text-white mb-2">Итоги недели</h1>
+      <p className="text-[#64748b] mb-8">
+        {new Date(data.days[0].date).toLocaleDateString('ru', {day:'numeric',month:'long'})} —{' '}
+        {new Date(data.days[6].date).toLocaleDateString('ru', {day:'numeric',month:'long',year:'numeric'})}
+      </p>
+
+      {/* Статистика */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+        {[
+          { label: 'Минут', value: data.totalMinutes, icon: '⏱️', color: '#6366f1' },
+          { label: 'Уроков', value: data.totalLessons, icon: '📚', color: '#8b5cf6' },
+          { label: 'Слов', value: data.totalWords, icon: '💬', color: '#06b6d4' },
+          { label: 'Дней подряд', value: data.streakDays, icon: '🔥', color: '#f59e0b' },
+        ].map(s => (
+          <div key={s.label} className="bg-white/[0.04] border border-white/10 rounded-2xl p-4 text-center">
+            <p className="text-2xl mb-1">{s.icon}</p>
+            <p className="text-2xl font-bold text-white">{s.value}</p>
+            <p className="text-[#64748b] text-xs mt-1">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* График по дням */}
+      <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 mb-6">
+        <p className="text-white font-semibold mb-5">Активность по дням</p>
+        <div className="flex items-end gap-3 h-32">
+          {data.days.map(day => (
+            <div key={day.date} className="flex-1 flex flex-col items-center gap-2">
+              <div className="w-full flex items-end justify-center" style={{ height: '96px' }}>
+                <div
+                  className="w-full rounded-t-lg transition-all duration-700"
+                  style={{
+                    height: `${Math.max(4, (day.minutes / maxMin) * 96)}px`,
+                    background: day.minutes > 0 ? '#6366f1' : 'rgba(255,255,255,0.06)',
+                  }}
+                  title={`${day.minutes} мин`}
+                />
+              </div>
+              <span className="text-[#64748b] text-xs">{day.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Лучший день и итог */}
+      <div className="bg-gradient-to-r from-[#6366f1]/10 to-[#8b5cf6]/10 border border-[#6366f1]/20 rounded-2xl p-5">
+        <p className="text-white font-semibold mb-2">
+          {data.totalMinutes > 0
+            ? `🎯 Лучший день недели: ${data.bestDay}`
+            : '📚 Начни заниматься!'}
+        </p>
+        <p className="text-[#94a3b8] text-sm">
+          {data.totalMinutes >= 140
+            ? 'Отличная неделя! Ты превысил цель в 20 мин/день.'
+            : data.totalMinutes >= 60
+            ? `Хорошее начало! Ещё ${140 - data.totalMinutes} мин для выполнения цели недели.`
+            : 'Попробуй заниматься хотя бы 20 минут каждый день.'}
+        </p>
+      </div>
+    </div>
+  )
+}
+```
+
+Добавь в навигацию:
+```ts
+{ href: '/weekly-summary', icon: BarChart2, label: 'Итоги недели' }
+```
+
+---
+## ФИНАЛ
+1. npx tsc --noEmit — исправь все TypeScript ошибки
+2. git add -A && git commit -m "feat: settings page (fix 404 + theme toggle), word of day widget, roleplay scenarios (8 scenes), reading speed trainer, pronunciation scoring, idioms section (30 idioms), weekly summary page" && git push

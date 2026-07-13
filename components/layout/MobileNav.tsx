@@ -94,7 +94,6 @@ export function MobileNav() {
                 )}>
                   {item.label}
                 </span>
-                {/* Active dot */}
                 {isActive && (
                   <motion.div
                     layoutId="mobile-nav-dot"

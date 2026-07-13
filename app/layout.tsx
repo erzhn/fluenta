@@ -20,21 +20,12 @@ export const metadata: Metadata = {
     default: "Fluenta — AI English Academy",
     template: "%s | Fluenta",
   },
-  description:
-    "Учи английский с AI-репетитором 24/7. Уроки A1-C2, произношение, словарь, геймификация. Бесплатно.",
-  keywords: [
-    "английский онлайн",
-    "учить английский",
-    "AI репетитор английского",
-    "IELTS подготовка",
-    "английский для начинающих",
-    "English online",
-    "fluenta",
-  ],
+  description: "Учи английский с AI-репетитором 24/7. Уроки A1-C2, произношение, словарь, геймификация. Бесплатно.",
+  keywords: ["английский онлайн", "учить английский", "AI репетитор английского", "IELTS подготовка", "fluenta"],
   manifest: "/manifest.json",
   icons: {
-    icon: '/logo-icon.svg',
-    apple: '/logo-icon.svg',
+    icon: "/logo-icon.svg",
+    apple: "/logo-icon.svg",
   },
   appleWebApp: {
     capable: true,
@@ -68,6 +59,16 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
+const THEME_SCRIPT = [
+  "(function(){",
+  "try{",
+  "var t=localStorage.getItem('fluenta_theme');",
+  "if(t==='light'){document.documentElement.classList.remove('dark');document.documentElement.classList.add('light');}",
+  "else{document.documentElement.classList.add('dark');}",
+  "}catch(e){}",
+  "})();"
+].join("");
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -76,35 +77,23 @@ export default function RootLayout({
   return (
     <html lang="ru" className={`${inter.variable} ${spaceGrotesk.variable} h-full antialiased dark`}>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: `
-          (function() {
-            try {
-              var t = localStorage.getItem('fluenta_theme');
-              if (t === 'light') {
-                document.documentElement.classList.remove('dark');
-                document.documentElement.classList.add('light');
-              } else {
-                document.documentElement.classList.add('dark');
-              }
-            } catch(e) {}
-          })();
-        ` }} />
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <ThemeProvider>
-        {children}
+          {children}
         </ThemeProvider>
         <Script
           id="register-sw"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                  navigator.serviceWorker.register('/sw.js').catch(() => {});
-                });
-              }
-            `,
+            __html: [
+              "if('serviceWorker' in navigator){",
+              "window.addEventListener('load',function(){",
+              "navigator.serviceWorker.register('/sw.js').catch(function(){});",
+              "});",
+              "}"
+            ].join("")
           }}
         />
       </body>
