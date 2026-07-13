@@ -81,6 +81,8 @@ export interface Message {
   content: string;
   timestamp: string;
   audio_url?: string;
+  audioUrl?: string;
+  isVoice?: boolean;
   corrections?: GrammarCorrection[];
 }
 

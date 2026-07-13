@@ -35,11 +35,15 @@ export default function AITutorPage() {
   const [mode, setMode] = useState<ChatMode>('tutor')
   const [activeScenario, setActiveScenario] = useState<Scenario | null>(null)
   const [listening, setListening] = useState(false)
+  const [voiceMode, setVoiceMode] = useState(false)
   const [sessionId] = useState(() => newSessionId())
   const [userId, setUserId] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const srRef = useRef<ReturnType<typeof createRecognition>>(null)
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const audioChunksRef = useRef<Blob[]>([])
+  const pendingAudioUrlRef = useRef<string | null>(null)
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -58,8 +62,62 @@ export default function AITutorPage() {
     el.style.height = `${Math.min(el.scrollHeight, 120)}px`
   }
 
+  const speakText = useCallback((text: string) => {
+    if (typeof window === 'undefined') return
+    const clean = text
+      .replace(/[*_`#]/g, '')
+      .replace(/🇷🇺:.*$/gm, '')
+      .replace(/💡|🎤|✓|👋|🙏|😊/g, '')
+      .trim()
+    if (!clean) return
+    window.speechSynthesis.cancel()
+    const utterance = new SpeechSynthesisUtterance(clean)
+    utterance.lang = 'en-US'
+    utterance.rate = 0.9
+    utterance.pitch = 1.0
+    const loadVoice = () => {
+      const voices = window.speechSynthesis.getVoices()
+      const preferred = voices.find(v =>
+        v.lang === 'en-US' && (v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('Daniel'))
+      ) || voices.find(v => v.lang.startsWith('en'))
+      if (preferred) utterance.voice = preferred
+      window.speechSynthesis.speak(utterance)
+    }
+    if (window.speechSynthesis.getVoices().length > 0) {
+      loadVoice()
+    } else {
+      window.speechSynthesis.addEventListener('voiceschanged', loadVoice, { once: true })
+    }
+  }, [])
+
+  const startVoiceRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const recorder = new MediaRecorder(stream)
+      audioChunksRef.current = []
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data)
+      }
+      recorder.onstop = () => {
+        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
+        pendingAudioUrlRef.current = URL.createObjectURL(blob)
+        stream.getTracks().forEach(t => t.stop())
+      }
+      mediaRecorderRef.current = recorder
+      recorder.start()
+    } catch {
+      // Mic permission denied — voice mode still works via speech recognition text
+    }
+  }
+
+  const stopVoiceRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop()
+    }
+  }
+
   const sendMessage = useCallback(
-    async (content: string) => {
+    async (content: string, capturedAudioUrl?: string) => {
       if (!content.trim() || loading) return
 
       const trimmed = content.trim()
@@ -71,13 +129,13 @@ export default function AITutorPage() {
         role: 'user',
         content: trimmed,
         timestamp: new Date().toISOString(),
+        ...(capturedAudioUrl ? { isVoice: true, audioUrl: capturedAudioUrl } : {}),
       }
 
       const newHistory = [...messages, userMsg]
       setMessages(newHistory)
       setLoading(true)
 
-      // Persist user message
       if (userId) saveChatMessage(userId, sessionId, 'user', trimmed).catch(() => {})
 
       try {
@@ -103,9 +161,8 @@ export default function AITutorPage() {
         }
 
         const data = await res.json()
-
         const reply = data.reply
-        // Persist assistant message
+
         if (userId) saveChatMessage(userId, sessionId, 'assistant', reply).catch(() => {})
         setMessages((prev) => [
           ...prev,
@@ -116,6 +173,8 @@ export default function AITutorPage() {
             timestamp: new Date().toISOString(),
           },
         ])
+
+        if (voiceMode) speakText(reply)
       } catch {
         setMessages((prev) => [
           ...prev,
@@ -130,7 +189,7 @@ export default function AITutorPage() {
         setLoading(false)
       }
     },
-    [messages, loading, mode, activeScenario]
+    [messages, loading, mode, activeScenario, voiceMode, speakText, userId, sessionId]
   )
 
   const toggleMode = (next: ChatMode) => {
@@ -149,15 +208,28 @@ export default function AITutorPage() {
     if (!isSpeechRecognitionSupported()) return
     srRef.current?.stop()
     setListening(true)
+    if (voiceMode) startVoiceRecording()
     srRef.current = createRecognition(
       (transcript, isFinal) => {
         if (isFinal) {
           setListening(false)
           srRef.current?.stop()
-          sendMessage(transcript)
+          if (voiceMode) {
+            stopVoiceRecording()
+            setTimeout(() => {
+              const audioUrl = pendingAudioUrlRef.current
+              pendingAudioUrlRef.current = null
+              sendMessage(transcript, audioUrl ?? undefined)
+            }, 200)
+          } else {
+            sendMessage(transcript)
+          }
         }
       },
-      () => setListening(false)
+      () => {
+        setListening(false)
+        if (voiceMode) stopVoiceRecording()
+      }
     )
     srRef.current?.start()
   }
@@ -165,6 +237,7 @@ export default function AITutorPage() {
   const stopListening = () => {
     srRef.current?.stop()
     setListening(false)
+    if (voiceMode) stopVoiceRecording()
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -177,6 +250,7 @@ export default function AITutorPage() {
   const handleReset = () => {
     setMessages([{ ...WELCOME, timestamp: new Date().toISOString() }])
     setInput('')
+    if (typeof window !== 'undefined') window.speechSynthesis.cancel()
   }
 
   const isFirstMessage = messages.length === 1
@@ -246,6 +320,23 @@ export default function AITutorPage() {
             </div>
           )}
 
+          {/* Voice mode toggle */}
+          <button
+            onClick={() => {
+              setVoiceMode(v => {
+                if (v && typeof window !== 'undefined') window.speechSynthesis.cancel()
+                return !v
+              })
+            }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              voiceMode
+                ? 'bg-[#6366F1] text-white shadow-lg shadow-indigo-500/30'
+                : 'bg-[#1E293B] text-[#94A3B8] hover:text-white'
+            }`}
+          >
+            {voiceMode ? '🔊 Voice ON' : '🔇 Voice OFF'}
+          </button>
+
           <button
             onClick={handleReset}
             title="Start new conversation"
@@ -296,7 +387,7 @@ export default function AITutorPage() {
       {(mode !== 'roleplay' || activeScenario) && (
       <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-5 space-y-5 min-h-0">
 
-        {/* Quick-start chips — only before first user message */}
+        {/* Quick-start chips */}
         <AnimatePresence>
           {isFirstMessage && (
             <motion.div
@@ -324,7 +415,7 @@ export default function AITutorPage() {
 
         <AnimatePresence initial={false}>
           {messages.map((msg) => (
-            <ChatMessage key={msg.id} message={msg} />
+            <ChatMessage key={msg.id} message={msg} userId={userId ?? undefined} />
           ))}
         </AnimatePresence>
 

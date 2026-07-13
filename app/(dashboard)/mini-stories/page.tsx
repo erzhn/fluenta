@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { MINI_STORIES, MiniStory } from '@/lib/mini-stories-data'
+import { AIGenerateButton } from '@/components/ui/AIGenerateButton'
 
 function addWordsToSR(words: MiniStory['vocabWords']) {
   const cards = JSON.parse(localStorage.getItem('fluenta_sr_cards') ?? '[]')
@@ -28,6 +29,7 @@ export default function MiniStoriesPage() {
   const [answers, setAnswers] = useState<string[]>([])
   const [checked, setChecked] = useState(false)
   const [addedCount, setAddedCount] = useState(0)
+  const [aiStory, setAiStory] = useState<{ title: string; content: string; vocabulary?: { word: string; meaning: string }[] } | null>(null)
 
   const filtered = MINI_STORIES.filter(s => s.level === level)
 
@@ -148,14 +150,47 @@ export default function MiniStoriesPage() {
       <h1 className="text-2xl font-bold text-white mb-2">Мини-истории</h1>
       <p className="text-muted-foreground text-sm mb-6">Читай историю · учи слова · отвечай на вопросы</p>
 
-      <div className="flex gap-2 mb-6">
+      <div className="flex items-center gap-2 mb-4 flex-wrap">
         {['A1','A2','B1','B2','C1'].map(l => (
-          <button key={l} onClick={() => setLevel(l)}
+          <button key={l} onClick={() => { setLevel(l); setAiStory(null) }}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-all border ${
               level === l ? 'bg-primary border-primary text-white' : 'bg-white/[0.04] border-white/10 text-muted-foreground hover:text-white'
             }`}>{l}</button>
         ))}
+        <div className="ml-auto">
+          <AIGenerateButton
+            type="mini_story"
+            context={`${level} level topic`}
+            level={level}
+            onResult={(data) => setAiStory(data as { title: string; content: string; vocabulary?: { word: string; meaning: string }[] })}
+            label="Сгенерировать историю"
+            variant="button"
+          />
+        </div>
       </div>
+
+      {aiStory && (
+        <div className="bg-white/[0.04] border border-primary/20 rounded-2xl p-5 mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">AI Story · {level}</span>
+            <button onClick={() => setAiStory(null)} className="text-muted-foreground text-xs hover:text-white">✕</button>
+          </div>
+          <h3 className="text-white font-bold mb-3">{aiStory.title}</h3>
+          <p className="text-[#e2e8f0] leading-7 text-sm">{aiStory.content}</p>
+          {aiStory.vocabulary && aiStory.vocabulary.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-white/10">
+              <p className="text-xs text-muted-foreground mb-2">Ключевые слова:</p>
+              <div className="flex flex-wrap gap-2">
+                {aiStory.vocabulary.map((v, i) => (
+                  <span key={i} className="text-xs px-2.5 py-1 bg-primary/10 text-[#a5b4fc] rounded-full border border-primary/20">
+                    {v.word} — {v.meaning}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="grid gap-4">
         {filtered.map(story => (

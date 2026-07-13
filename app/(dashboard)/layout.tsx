@@ -9,12 +9,15 @@ import { TopBar } from "@/components/layout/TopBar";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { ToastContainer } from "@/components/ui/Toast";
 import { supabase } from "@/lib/supabase";
+import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     async function checkAuth() {
@@ -22,6 +25,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       if (!user && !pathname.startsWith('/lessons')) {
         router.replace("/auth/login");
         return;
+      }
+      if (user) {
+        setUserId(user.id);
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('onboarding_completed')
+          .eq('id', user.id)
+          .single();
+        if (profile && 'onboarding_completed' in profile && profile.onboarding_completed === false) {
+          setShowOnboarding(true);
+        }
       }
       setAuthChecked(true);
     }
@@ -53,6 +67,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
+      {showOnboarding && userId && (
+        <OnboardingWizard
+          userId={userId}
+          onComplete={() => setShowOnboarding(false)}
+        />
+      )}
+
       <Sidebar
         mobileOpen={mobileDrawerOpen}
         onMobileClose={() => setMobileDrawerOpen(false)}

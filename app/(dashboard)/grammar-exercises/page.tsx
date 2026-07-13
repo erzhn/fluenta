@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { GrammarExercise } from '@/components/GrammarExercise'
+import { AIGenerateButton } from '@/components/ui/AIGenerateButton'
 
 const GRAMMAR_TOPICS = [
   { id: 'present-simple',     label: 'Present Simple',     level: 'A1' },
@@ -36,6 +37,7 @@ export default function GrammarExercisesPage() {
   const [exercise, setExercise] = useState<ExerciseData | null>(null)
   const [loading, setLoading] = useState(false)
   const [score, setScore] = useState({ correct: 0, total: 0 })
+  const [aiQuickEx, setAiQuickEx] = useState<{ question?: string; answer?: string; explanation?: string; options?: string[] } | null>(null)
 
   const loadExercise = useCallback(async () => {
     setLoading(true)
@@ -70,11 +72,44 @@ export default function GrammarExercisesPage() {
           </h1>
           <p className="text-muted-foreground text-sm mt-1">AI проверяет твои ответы</p>
         </div>
-        <div className="text-right">
-          <p className="text-white font-semibold">{score.correct}/{score.total}</p>
-          <p className="text-muted-foreground text-xs">правильно</p>
+        <div className="flex items-center gap-3">
+          <AIGenerateButton
+            type="grammar_exercise"
+            context={selectedTopic.label}
+            level={selectedTopic.level}
+            onResult={(data) => setAiQuickEx(data as { question?: string; answer?: string; explanation?: string; options?: string[] })}
+            label="Быстрое упражнение"
+            variant="inline"
+          />
+          <div className="text-right">
+            <p className="text-white font-semibold">{score.correct}/{score.total}</p>
+            <p className="text-muted-foreground text-xs">правильно</p>
+          </div>
         </div>
       </div>
+
+      {aiQuickEx && aiQuickEx.question && (
+        <div className="bg-primary/5 border border-primary/20 rounded-2xl p-5 mb-5">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold text-primary">✨ AI упражнение</span>
+            <button onClick={() => setAiQuickEx(null)} className="text-muted-foreground text-xs hover:text-white">✕</button>
+          </div>
+          <p className="text-white font-medium mb-3">{aiQuickEx.question}</p>
+          {aiQuickEx.options && (
+            <div className="flex flex-wrap gap-2 mb-3">
+              {aiQuickEx.options.map((opt, i) => (
+                <span key={i} className="px-3 py-1 bg-white/[0.06] border border-white/10 text-muted-foreground rounded-xl text-sm">{opt}</span>
+              ))}
+            </div>
+          )}
+          {aiQuickEx.answer && (
+            <p className="text-[#10b981] text-sm font-medium">Ответ: {aiQuickEx.answer}</p>
+          )}
+          {aiQuickEx.explanation && (
+            <p className="text-muted-foreground text-xs mt-1">{aiQuickEx.explanation}</p>
+          )}
+        </div>
+      )}
 
       <div className="flex gap-2 flex-wrap mb-4">
         {GRAMMAR_TOPICS.map(topic => (
