@@ -1,12 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
 import Link from 'next/link'
 import {
   Flame, Zap, BookOpen, Clock, MessageSquare,
   ArrowRight, BookMarked, BarChart3, Target,
-  Sparkles, ChevronRight,
+  ChevronRight, Brain, Mic, PenLine,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { StreakWidget, loadStreak, type StreakData } from '@/components/StreakWidget'
@@ -15,8 +14,8 @@ import { getLessonCompletions } from '@/lib/progress'
 import { DailyReview } from '@/components/DailyReview'
 import { WordOfDay } from '@/components/WordOfDay'
 import { LevelUpModal } from '@/components/LevelUpModal'
+import { getLevelFromXP } from '@/lib/gamification'
 
-// ── Types ──────────────────────────────────────────────────────────────────────
 interface Profile {
   name: string | null
   streak: number
@@ -31,48 +30,35 @@ interface RecentConv {
   updated_at: string
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
 function greeting() {
   const h = new Date().getHours()
-  if (h < 12) return 'Good morning'
-  if (h < 18) return 'Good afternoon'
-  return 'Good evening'
-}
-
-function todayLabel() {
-  return new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+  if (h < 12) return 'Доброе утро'
+  if (h < 18) return 'Добрый день'
+  return 'Добрый вечер'
 }
 
 function displayName(profile: Profile | null, email: string | null, fullName?: string | null) {
-  // 1. Profile name from DB
   if (profile?.name) return profile.name
-  // 2. full_name from auth metadata
   if (fullName) return fullName.split(' ')[0]
-  // 3. Email prefix — take first segment before dot/number, cap at 12 chars, capitalize
   if (email) {
     const prefix = email.split('@')[0].split(/[._\-0-9]/)[0]
     const capped = prefix.slice(0, 12)
     return capped.charAt(0).toUpperCase() + capped.slice(1)
   }
-  return 'there'
+  return 'друг'
 }
 
-// ── Animation helpers ──────────────────────────────────────────────────────────
-const glass = 'bg-white/[0.04] backdrop-blur-xl border border-white/10'
+const QUICK_ACTIONS = [
+  { href: '/ai-tutor',   icon: Brain,    label: 'AI Репетитор', color: '#8B5CF6' },
+  { href: '/lessons',    icon: BookOpen, label: 'Уроки',        color: '#007AFF' },
+  { href: '/vocabulary', icon: BookMarked, label: 'Словарь',    color: '#34C759' },
+  { href: '/writing',    icon: PenLine,  label: 'Письмо',       color: '#FF9500' },
+  { href: '/pronunciation', icon: Mic,   label: 'Произношение', color: '#FF3B30' },
+]
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: (i: number) => ({
-    opacity: 1, y: 0,
-    transition: { duration: 0.5, delay: i * 0.07, ease: 'easeOut' as const },
-  }),
-}
-
-// ──────────────────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const [email, setEmail] = useState<string | null>(null)
   const [fullName, setFullName] = useState<string | null>(null)
-  const [userId, setUserId] = useState<string | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [vocabCount, setVocabCount] = useState(0)
   const [recentConvs, setRecentConvs] = useState<RecentConv[]>([])
@@ -82,14 +68,12 @@ export default function DashboardPage() {
   const [vocabDue, setVocabDue] = useState(0)
   const [nextLesson, setNextLesson] = useState<Lesson | null>(null)
   const [completedCount, setCompletedCount] = useState(0)
-  const [nextLessonLoading, setNextLessonLoading] = useState(true)
   const [levelUp, setLevelUp] = useState<{from: string; to: string} | null>(null)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setLocalLevel(localStorage.getItem('fluenta_user_level'))
       setStreakData(loadStreak())
-      // Count vocab due today
       try {
         const raw = localStorage.getItem('fluenta_vocab_srs')
         if (raw) {
@@ -110,7 +94,6 @@ export default function DashboardPage() {
 
       setEmail(user.email ?? null)
       setFullName((user.user_metadata?.full_name as string | null) ?? null)
-      setUserId(user.id)
 
       const [profileRes, vocabRes, convRes, completions] = await Promise.all([
         supabase.from('profiles').select('name,streak,xp,current_level,daily_goal_minutes').eq('id', user.id).single(),
@@ -131,7 +114,6 @@ export default function DashboardPage() {
       setVocabCount(vocabRes.count ?? 0)
       if (convRes.data) setRecentConvs(convRes.data as RecentConv[])
 
-      // Find next uncompleted lesson
       const completedIds = new Set(Object.keys(completions))
       setCompletedCount(completedIds.size)
       let found: Lesson | null = null
@@ -142,8 +124,6 @@ export default function DashboardPage() {
         if (found) break
       }
       setNextLesson(found)
-      setNextLessonLoading(false)
-
       setLoading(false)
     }
     load()
@@ -152,31 +132,25 @@ export default function DashboardPage() {
   const name = displayName(profile, email, fullName)
   const streak = profile?.streak ?? 0
   const xp = profile?.xp ?? 0
-  const level = profile?.current_level ?? 'A1'
+  const level = profile?.current_level ?? localLevel ?? 'A1'
   const goalMins = profile?.daily_goal_minutes ?? 20
-  const minutesToday = 0 // no time-tracking table yet
+  const minutesToday = 0
   const goalPct = Math.min(100, Math.round((minutesToday / goalMins) * 100))
-
-  const stats = [
-    { icon: Flame,    label: 'Day Streak',    value: streak,      unit: streak === 1 ? 'day' : 'days', color: '#f97316', bg: '#f9731620' },
-    { icon: Zap,      label: 'XP Total',      value: xp,          unit: 'xp',                          color: '#a855f7', bg: '#a855f720' },
-    { icon: BookOpen, label: 'Words Learned', value: vocabCount,  unit: 'words',                       color: '#06b6d4', bg: '#06b6d420' },
-    { icon: Clock,    label: 'Minutes Today', value: minutesToday, unit: 'min',                         color: '#10b981', bg: '#10b98120' },
-  ]
+  const levelInfo = getLevelFromXP(xp)
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] flex items-center justify-center font-black text-xl animate-pulse">F</div>
-          <p className="text-[#475569] text-sm">Loading your dashboard…</p>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-12 h-12 rounded-[14px] bg-accent flex items-center justify-center text-white font-black text-xl animate-pulse">F</div>
+          <p className="text-text-muted text-sm">Загружаем...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 pb-8">
+    <div className="max-w-2xl mx-auto px-4 py-5 pb-24 md:pb-8 space-y-5 animate-slide-up">
       {levelUp && (
         <LevelUpModal
           fromLevel={levelUp.from}
@@ -185,130 +159,198 @@ export default function DashboardPage() {
         />
       )}
 
-      {/* ── 1. Welcome header ──────────────────────────────────────────────── */}
-      <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-2">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white">
-              Привет, <span className="gradient-text">{name}</span>! 👋
-            </h1>
-            <p className="text-[#64748b] text-sm mt-1">
-              {localLevel
-                ? `Твой уровень: ${localLevel} · ${streak > 0 ? `${streak}-дневный стрик 🔥` : 'Начни учиться!'}`
-                : streak > 0 ? `${streak}-дневный стрик 🔥 Продолжай!` : 'Начни учиться сегодня!'}
-            </p>
-          </div>
-          <div className={`${glass} rounded-xl px-4 py-2.5 text-sm text-[#64748b] shrink-0`}>
-            📅 {todayLabel()}
-          </div>
-        </div>
+      {/* Greeting */}
+      <div>
+        <p className="text-text-muted text-[13px] font-medium">{greeting()}</p>
+        <h1 className="text-[28px] font-bold tracking-tight text-text-primary mt-0.5">
+          {name}!
+        </h1>
         {!localLevel && (
           <Link href="/level-test">
-            <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#6366f1]/10 border border-[#6366f1]/25 hover:bg-[#6366f1]/15 transition-colors cursor-pointer">
-              <span className="text-lg">📊</span>
+            <div className="mt-3 flex items-center gap-3 p-3.5 rounded-2xl border border-accent/20"
+              style={{ background: "rgb(var(--ios-accent-light))" }}>
+              <span className="text-xl">📊</span>
               <div className="flex-1">
-                <p className="text-white text-sm font-semibold">Определи свой уровень</p>
-                <p className="text-[#64748b] text-xs">20 вопросов · ~5 минут · от A1 до C1</p>
+                <p className="text-[14px] font-semibold text-text-primary">Определи свой уровень</p>
+                <p className="text-[12px] text-text-muted">20 вопросов · ~5 минут</p>
               </div>
-              <span className="text-[#818cf8] text-sm font-medium">Пройти тест →</span>
+              <ChevronRight className="w-4 h-4 text-accent" />
             </div>
           </Link>
         )}
-      </motion.div>
+      </div>
 
-      {/* ── 1b. Continue where you left off ───────────────────────────────── */}
-      <motion.div custom={0.5} variants={fadeUp} initial="hidden" animate="visible">
-        {nextLessonLoading ? (
-          <div className={`${glass} rounded-2xl p-5 animate-pulse`}>
-            <div className="h-3.5 bg-white/[0.06] rounded w-1/3 mb-3" />
-            <div className="h-5 bg-white/[0.06] rounded w-2/3 mb-2" />
-            <div className="h-3 bg-white/[0.06] rounded w-1/2" />
+      {/* XP / Level card */}
+      <div className="card p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <p className="section-header mb-0.5">Уровень {levelInfo.level} — {levelInfo.name}</p>
+            <div className="flex items-center gap-2 mt-1">
+              <div className="flex items-center gap-1">
+                <Zap className="w-3.5 h-3.5 text-accent" />
+                <span className="text-[14px] font-bold text-text-primary">{xp.toLocaleString()} XP</span>
+              </div>
+              <span className="text-text-subtle text-[13px]">/ {levelInfo.next.toLocaleString()}</span>
+            </div>
           </div>
-        ) : nextLesson ? (
+          <div
+            className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-black text-base"
+            style={{ background: LEVEL_COLORS[level] ?? "rgb(var(--ios-accent))" }}
+          >
+            {level}
+          </div>
+        </div>
+        <div className="h-2 bg-bg-secondary rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-700"
+            style={{
+              width: `${levelInfo.progress}%`,
+              background: LEVEL_COLORS[level] ?? "rgb(var(--ios-accent))",
+            }}
+          />
+        </div>
+        <div className="flex justify-between mt-1.5">
+          <span className="text-[11px] text-text-muted">{levelInfo.current.toLocaleString()} XP</span>
+          <span className="text-[11px] text-text-muted">{(levelInfo.next - levelInfo.current).toLocaleString()} до следующего</span>
+        </div>
+      </div>
+
+      {/* Stats grid */}
+      <div className="grid grid-cols-2 gap-3">
+        {[
+          { icon: Flame,    label: 'Стрик',    value: streak,        unit: 'дней', color: '#FF9500', bg: '#FF950020' },
+          { icon: BookOpen, label: 'Слова',    value: vocabCount,    unit: 'слов', color: '#34C759', bg: '#34C75920' },
+          { icon: Target,   label: 'Цель',     value: goalPct,       unit: '%',    color: '#6366F1', bg: '#6366F120' },
+          { icon: Clock,    label: 'Сегодня',  value: minutesToday,  unit: 'мин',  color: '#007AFF', bg: '#007AFF20' },
+        ].map((s) => (
+          <div key={s.label} className="card p-4">
+            <div className="flex items-start justify-between mb-2">
+              <div className="ios-icon" style={{ background: s.bg, color: s.color }}>
+                <s.icon className="w-4 h-4" />
+              </div>
+              <span className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">{s.unit}</span>
+            </div>
+            <div className="text-[28px] font-black text-text-primary leading-none">{s.value.toLocaleString()}</div>
+            <div className="text-[12px] text-text-muted mt-0.5">{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Quick actions */}
+      <div>
+        <p className="section-header mb-2">Быстрый доступ</p>
+        <div className="grid grid-cols-5 gap-2">
+          {QUICK_ACTIONS.map((a) => (
+            <Link key={a.href} href={a.href}>
+              <div className="card flex flex-col items-center gap-1.5 py-3 px-1">
+                <div className="ios-icon w-9 h-9" style={{ background: a.color + "20", color: a.color }}>
+                  <a.icon className="w-4 h-4" />
+                </div>
+                <span className="text-[10px] text-text-muted font-medium text-center leading-tight">{a.label}</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Continue learning */}
+      <div>
+        <p className="section-header mb-2">Продолжить обучение</p>
+        {nextLesson ? (
           <Link href={`/lessons?open=${nextLesson.id}`}>
-            <div className={`${glass} rounded-2xl p-5 hover:border-[#6366f1]/40 hover:bg-white/[0.06] transition-all cursor-pointer group`}>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-medium text-[#64748b] uppercase tracking-wider">
-                  Продолжить обучение
-                </span>
-                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full"
-                  style={{ background: `${LEVEL_COLORS[nextLesson.level]}20`, color: LEVEL_COLORS[nextLesson.level] }}>
-                  {nextLesson.level}
-                </span>
+            <div className="card p-4 hover:shadow-lg transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <span className="badge badge-accent text-[11px]">{nextLesson.level}</span>
+                <span className="text-[12px] text-text-muted">Блок {nextLesson.block} · {nextLesson.duration}</span>
               </div>
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-white font-semibold text-base truncate group-hover:text-[#a5b4fc] transition-colors">
-                    {nextLesson.title}
-                  </p>
-                  <p className="text-[#64748b] text-sm mt-0.5">
-                    Блок {nextLesson.block} · {nextLesson.blockName} · {nextLesson.duration}
-                  </p>
-                </div>
-                <div className="shrink-0 w-10 h-10 rounded-xl bg-[#6366f1]/20 flex items-center justify-center group-hover:bg-[#6366f1]/30 transition-colors">
-                  <ArrowRight className="w-5 h-5 text-[#6366f1] group-hover:translate-x-0.5 transition-transform" />
-                </div>
-              </div>
-              <div className="mt-4">
-                <div className="flex justify-between text-xs text-[#475569] mb-1.5">
+              <p className="text-[15px] font-semibold text-text-primary mb-1">{nextLesson.title}</p>
+              <p className="text-[13px] text-text-muted mb-3">{nextLesson.blockName}</p>
+              <div>
+                <div className="flex justify-between text-[11px] text-text-muted mb-1">
                   <span>{completedCount} из {LESSONS.length} уроков</span>
                   <span>{Math.round(completedCount / LESSONS.length * 100)}%</span>
                 </div>
-                <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${Math.round(completedCount / LESSONS.length * 100)}%`, background: 'linear-gradient(90deg, #6366f1, #8b5cf6)' }} />
+                <div className="h-1.5 bg-bg-secondary rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-accent transition-all duration-700"
+                    style={{ width: `${Math.round(completedCount / LESSONS.length * 100)}%` }}
+                  />
                 </div>
               </div>
             </div>
           </Link>
         ) : (
-          <div className={`${glass} rounded-2xl p-5 border-green-500/20`}>
-            <div className="flex items-center gap-3">
-              <span className="text-3xl">🎉</span>
-              <div>
-                <p className="text-white font-semibold">Все уроки завершены!</p>
-                <p className="text-[#64748b] text-sm">Уровень C1 достигнут</p>
-              </div>
+          <div className="card p-4 flex items-center gap-3">
+            <span className="text-3xl">🎉</span>
+            <div>
+              <p className="text-[14px] font-semibold text-text-primary">Все уроки завершены!</p>
+              <p className="text-[12px] text-text-muted">Уровень C1 достигнут</p>
             </div>
           </div>
         )}
-      </motion.div>
-
-      {/* ── 1c. Word of the day ──────────────────────────────────────────── */}
-      <motion.div custom={0.7} variants={fadeUp} initial="hidden" animate="visible">
-        <WordOfDay />
-      </motion.div>
-
-      {/* ── 1d. Daily SR review ───────────────────────────────────────────── */}
-      <motion.div custom={0.8} variants={fadeUp} initial="hidden" animate="visible">
-        <DailyReview />
-      </motion.div>
-
-      {/* ── 2. Stats row ───────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {stats.map((s, i) => (
-          <motion.div key={s.label} custom={i + 1} variants={fadeUp} initial="hidden" animate="visible">
-            <div className="bg-white/[0.04] backdrop-blur-xl neon-border rounded-2xl p-4 sm:p-5 transition-all">
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: s.bg }}>
-                  <s.icon className="w-4.5 h-4.5" style={{ color: s.color, width: 18, height: 18 }} />
-                </div>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#475569]">{s.unit}</span>
-              </div>
-              <div className="text-3xl font-black text-white leading-none mb-1">{s.value.toLocaleString()}</div>
-              <div className="text-xs text-[#64748b]">{s.label}</div>
-            </div>
-          </motion.div>
-        ))}
       </div>
 
-      {/* ── 2b. XP Chart ───────────────────────────────────────────────────── */}
+      {/* Word of day */}
+      <WordOfDay />
+
+      {/* Daily review */}
+      <DailyReview />
+
+      {/* Today recommendations */}
+      <div>
+        <p className="section-header mb-2">Сегодня</p>
+        <div className="ios-list">
+          {[
+            { emoji: '📖', text: nextLesson ? nextLesson.title : 'Продолжи урок', sub: nextLesson ? `${nextLesson.level} · Блок ${nextLesson.block}` : 'Следующий урок', href: nextLesson ? `/lessons?open=${nextLesson.id}` : '/lessons', color: '#6366F1' },
+            { emoji: '🔤', text: `Словарь${vocabDue > 0 ? ` · ${vocabDue} к повторению` : ''}`, sub: vocabDue > 0 ? 'Пора повторить!' : 'Все изучены', href: '/vocabulary', color: '#34C759' },
+            { emoji: '✍️', text: 'Письмо', sub: 'Напиши текст — AI проверит', href: '/writing', color: '#FF9500' },
+            { emoji: '🎧', text: 'Аудирование', sub: 'Слушай и отвечай на вопросы', href: '/listening', color: '#FF3B30' },
+          ].map(item => (
+            <Link key={item.href} href={item.href}>
+              <div className="ios-list-item">
+                <div
+                  className="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0"
+                  style={{ background: item.color + "15" }}
+                >
+                  {item.emoji}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[14px] font-medium text-text-primary">{item.text}</p>
+                  <p className="text-[12px] text-text-muted">{item.sub}</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-text-subtle opacity-60 shrink-0" />
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* AI Tutor CTA */}
+      <Link href="/ai-tutor">
+        <div className="rounded-2xl p-5 text-white overflow-hidden relative"
+          style={{ background: "linear-gradient(135deg, rgb(var(--ios-accent)), #8B5CF6)" }}>
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-white/15 flex items-center justify-center text-3xl shrink-0">
+              👨‍🏫
+            </div>
+            <div className="flex-1">
+              <p className="text-white/70 text-[11px] font-semibold uppercase tracking-wider mb-0.5">AI Tutor</p>
+              <p className="text-[17px] font-bold">Chat with Zhan</p>
+              <p className="text-white/70 text-[13px]">Практикуй разговорный английский</p>
+            </div>
+            <ArrowRight className="w-5 h-5 text-white/70 shrink-0" />
+          </div>
+        </div>
+      </Link>
+
+      {/* Activity chart */}
       {streakData && (
-        <motion.div custom={5} variants={fadeUp} initial="hidden" animate="visible">
-          <div className={`${glass} rounded-2xl p-5`}>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-white font-bold text-sm">Активность за 7 дней</h2>
-              <span className="text-[#64748b] text-xs">{streakData.currentStreak} 🔥 день подряд</span>
+        <div>
+          <p className="section-header mb-2">Активность</p>
+          <div className="card p-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[13px] font-semibold text-text-primary">7 дней</span>
+              <span className="text-[12px] text-text-muted">{streakData.currentStreak} 🔥 подряд</span>
             </div>
             {(() => {
               const days = Array.from({ length: 7 }, (_, i) => {
@@ -330,249 +372,67 @@ export default function DashboardPage() {
                           style={{
                             height: d.mins > 0 ? `${Math.max(8, Math.round((d.mins / maxMins) * 56))}px` : '4px',
                             background: d.mins > 0
-                              ? 'linear-gradient(180deg, #8b5cf6, #6366f1)'
-                              : 'rgba(255,255,255,0.06)',
+                              ? 'rgb(var(--ios-accent))'
+                              : 'rgb(var(--ios-bg-secondary))',
                           }}
                         />
                       </div>
-                      <span className="text-[10px] text-[#475569]">{d.dayName}</span>
+                      <span className="text-[10px] text-text-muted">{d.dayName}</span>
                     </div>
                   ))}
                 </div>
               )
             })()}
           </div>
-        </motion.div>
+        </div>
       )}
 
-      {/* ── 2c. Today's recommendations ────────────────────────────────────── */}
-      <motion.div custom={5.5} variants={fadeUp} initial="hidden" animate="visible">
-        <div className={`${glass} rounded-2xl p-5`}>
-          <h2 className="text-white font-bold text-sm mb-3">Сегодня</h2>
-          <div className="space-y-2">
-            {[
-              { emoji: '📖', text: nextLesson ? nextLesson.title : 'Продолжи урок', sub: nextLesson ? `${nextLesson.level} · Блок ${nextLesson.block}` : 'Следующий незавершённый урок', href: nextLesson ? `/lessons?open=${nextLesson.id}` : '/lessons', color: '#6366f1' },
-              { emoji: '🔤', text: `Словарный запас${vocabDue > 0 ? `: ${vocabDue} слов к повторению` : ''}`, sub: vocabDue > 0 ? 'Пора повторить!' : 'Все слова изучены', href: '/vocabulary', color: '#8b5cf6' },
-              { emoji: '✍️', text: 'Практика письма', sub: 'Напиши текст — ИИ проверит', href: '/writing', color: '#10b981' },
-              { emoji: '🎧', text: 'Аудирование', sub: 'Слушай и отвечай на вопросы', href: '/listening', color: '#3b82f6' },
-            ].map(item => (
-              <Link key={item.href} href={item.href}>
-                <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.04] transition-colors cursor-pointer group">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0"
-                    style={{ backgroundColor: `${item.color}15` }}>
-                    {item.emoji}
+      {/* Streak Widget */}
+      <StreakWidget />
+
+      {/* Recent conversations */}
+      {recentConvs.length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <p className="section-header">Недавние чаты</p>
+            <Link href="/ai-tutor" className="text-[13px] text-accent font-medium">Все →</Link>
+          </div>
+          <div className="ios-list">
+            {recentConvs.map((conv) => (
+              <Link key={conv.id} href="/ai-tutor">
+                <div className="ios-list-item">
+                  <div className="ios-icon" style={{ background: "rgb(var(--ios-accent-light))", color: "rgb(var(--ios-accent))" }}>
+                    <MessageSquare className="w-4 h-4" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm font-medium">{item.text}</p>
-                    <p className="text-[#64748b] text-xs">{item.sub}</p>
+                    <p className="text-[14px] font-medium text-text-primary truncate">{conv.title || 'Разговор с Zhan'}</p>
+                    <p className="text-[12px] text-text-muted">
+                      {new Date(conv.updated_at).toLocaleDateString('ru-RU', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </p>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-[#334155] group-hover:text-white transition-colors shrink-0" />
+                  <ChevronRight className="w-4 h-4 text-text-subtle opacity-60" />
                 </div>
               </Link>
             ))}
           </div>
         </div>
-      </motion.div>
+      )}
 
-      {/* ── 3 + 5. Main two-column area ────────────────────────────────────── */}
-      <div className="grid lg:grid-cols-3 gap-4">
-
-        {/* Chat with Zhan — spans 2 cols */}
-        <motion.div custom={5} variants={fadeUp} initial="hidden" animate="visible" className="lg:col-span-2">
-          <div className="relative rounded-2xl overflow-hidden h-full min-h-[180px]">
-            {/* Gradient bg */}
-            <div className="absolute inset-0 bg-gradient-to-br from-[#6366f1] via-[#7c3aed] to-[#4338ca]" />
-            <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.06) 1px, transparent 0)', backgroundSize: '24px 24px' }} />
-            <div className="absolute -top-12 -right-12 w-52 h-52 rounded-full opacity-20" style={{ background: 'radial-gradient(circle, #a78bfa, transparent 70%)' }} />
-
-            <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-6 p-7">
-              {/* Animated icon */}
-              <div className="relative shrink-0">
-                <div className="w-16 h-16 rounded-2xl bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center text-3xl shadow-xl">
-                  👨‍🏫
-                </div>
-                {/* Pulse ring */}
-                <motion.div
-                  animate={{ scale: [1, 1.4, 1], opacity: [0.6, 0, 0.6] }}
-                  transition={{ duration: 2.4, repeat: Infinity, ease: 'easeOut' }}
-                  className="absolute inset-0 rounded-2xl border-2 border-white/40"
-                />
-                {/* Online dot */}
-                <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#10b981] border-2 border-[#4338ca] rounded-full" />
-              </div>
-
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <Sparkles className="w-4 h-4 text-indigo-200" />
-                  <span className="text-indigo-200 text-xs font-semibold uppercase tracking-wider">AI Tutor</span>
-                </div>
-                <h2 className="text-2xl font-black text-white mb-1.5">Chat with Zhan</h2>
-                <p className="text-indigo-200 text-sm mb-5">Practice conversation with your personal AI English tutor — available 24/7.</p>
-                <Link href="/ai-tutor">
-                  <button className="group flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-[#6366f1] font-bold text-sm hover:bg-white/95 transition-all hover:scale-[1.03] shadow-lg shadow-black/20">
-                    Start chatting
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                  </button>
-                </Link>
-              </div>
+      {/* Progress link */}
+      <Link href="/progress">
+        <div className="ios-list">
+          <div className="ios-list-item">
+            <div className="ios-icon" style={{ background: "#34C75920", color: "#34C759" }}>
+              <BarChart3 className="w-4 h-4" />
             </div>
+            <div className="flex-1">
+              <p className="text-[14px] font-medium text-text-primary">Полный прогресс</p>
+              <p className="text-[12px] text-text-muted">Уровень {level} · {xp.toLocaleString()} XP</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-text-subtle opacity-60" />
           </div>
-        </motion.div>
-
-        {/* Daily goal */}
-        <motion.div custom={6} variants={fadeUp} initial="hidden" animate="visible">
-          <div className={`${glass} rounded-2xl p-5 h-full flex flex-col`}>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-[#10b98120] flex items-center justify-center">
-                <Target className="w-4 h-4 text-[#10b981]" />
-              </div>
-              <span className="text-white font-bold text-sm">Daily Goal</span>
-            </div>
-
-            <div className="flex-1 flex flex-col justify-center">
-              <div className="text-center mb-5">
-                <div className="text-4xl font-black text-white leading-none">{minutesToday}</div>
-                <div className="text-[#64748b] text-sm mt-1">/ {goalMins} minutes today</div>
-              </div>
-
-              {/* Progress arc / bar */}
-              <div className="relative">
-                <div className="h-2.5 rounded-full bg-white/8 overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${goalPct}%` }}
-                    transition={{ duration: 1, delay: 0.6, ease: 'easeOut' }}
-                    className="h-full rounded-full bg-gradient-to-r from-[#10b981] to-[#06b6d4]"
-                  />
-                </div>
-                <div className="flex justify-between text-[10px] text-[#475569] mt-1.5">
-                  <span>0 min</span>
-                  <span className="text-[#10b981] font-semibold">{goalPct}%</span>
-                  <span>{goalMins} min</span>
-                </div>
-              </div>
-            </div>
-
-            <p className="text-[#475569] text-xs text-center mt-4 leading-relaxed">
-              Complete {goalMins} minutes of English today to keep your streak alive.
-            </p>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* ── 4. Full nav grid (3×3) ─────────────────────────────────────────── */}
-      <motion.div custom={7} variants={fadeUp} initial="hidden" animate="visible">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-[#475569]">Все разделы</h2>
-          {localLevel && (
-            <span className="text-xs px-2 py-0.5 rounded-lg font-semibold"
-              style={{ backgroundColor: '#6366f120', color: '#818cf8' }}>
-              Твой уровень: {localLevel}
-            </span>
-          )}
         </div>
-        <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          {[
-            { emoji: '📖', label: 'Уроки', href: '/lessons', color: '#6366f1' },
-            { emoji: '🃏', label: 'Словарь', href: '/vocabulary', color: '#8b5cf6' },
-            { emoji: '🎧', label: 'Аудирование', href: '/listening', color: '#3b82f6' },
-            { emoji: '📄', label: 'Чтение', href: '/reading', color: '#06b6d4' },
-            { emoji: '✍️', label: 'Письмо', href: '/writing', color: '#10b981' },
-            { emoji: '🎤', label: 'Произношение', href: '/pronunciation', color: '#f59e0b' },
-            { emoji: '📋', label: 'Грамматика', href: '/grammar', color: '#ef4444' },
-            { emoji: '🤖', label: 'AI Репетитор', href: '/ai-tutor', color: '#a855f7' },
-            { emoji: '📊', label: 'Тест уровня', href: '/level-test', color: '#f97316' },
-          ].map((item) => (
-            <Link key={item.href} href={item.href}>
-              <motion.div whileHover={{ y: -3, scale: 1.04 }} transition={{ type: 'spring', stiffness: 300, damping: 18 }}
-                className={`group ${glass} rounded-2xl p-4 cursor-pointer flex flex-col items-center gap-2 text-center relative overflow-hidden`}>
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none rounded-2xl"
-                  style={{ background: `radial-gradient(circle at 50% 50%, ${item.color}18 0%, transparent 70%)` }} />
-                <div className="text-2xl">{item.emoji}</div>
-                <div className="text-white text-xs font-semibold leading-tight">{item.label}</div>
-              </motion.div>
-            </Link>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* ── 5b. Streak Widget ──────────────────────────────────────────────── */}
-      <motion.div custom={8} variants={fadeUp} initial="hidden" animate="visible">
-        <StreakWidget />
-      </motion.div>
-
-      {/* ── 6. Recent Activity ─────────────────────────────────────────────── */}
-      <motion.div custom={9} variants={fadeUp} initial="hidden" animate="visible">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-[#475569]">Recent Activity</h2>
-          {recentConvs.length > 0 && (
-            <Link href="/ai-tutor" className="text-xs text-[#6366f1] hover:text-[#818cf8] transition-colors font-medium">
-              View all →
-            </Link>
-          )}
-        </div>
-
-        <div className={`${glass} rounded-2xl overflow-hidden`}>
-          {recentConvs.length === 0 ? (
-            <div className="py-14 px-6 flex flex-col items-center gap-4 text-center">
-              <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center text-2xl">
-                💬
-              </div>
-              <div>
-                <p className="text-white font-semibold text-sm mb-1">No activity yet</p>
-                <p className="text-[#475569] text-xs">Start your first lesson or chat with Zhan to see your activity here.</p>
-              </div>
-              <Link href="/ai-tutor">
-                <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white text-sm font-semibold hover:scale-[1.03] transition-transform shadow-lg shadow-indigo-500/25">
-                  <MessageSquare className="w-4 h-4" />
-                  Start first lesson
-                </button>
-              </Link>
-            </div>
-          ) : (
-            <div className="divide-y divide-white/[0.06]">
-              {recentConvs.map((conv) => (
-                <Link key={conv.id} href="/ai-tutor">
-                  <div className="flex items-center gap-4 px-5 py-4 hover:bg-white/[0.03] transition-colors group">
-                    <div className="w-9 h-9 rounded-xl bg-[#6366f120] flex items-center justify-center shrink-0">
-                      <MessageSquare className="w-4 h-4 text-[#6366f1]" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white text-sm font-medium truncate">{conv.title || 'Conversation with Zhan'}</p>
-                      <p className="text-[#475569] text-xs mt-0.5">
-                        {new Date(conv.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-[#334155] group-hover:text-white transition-colors shrink-0" />
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-      </motion.div>
-
-      {/* ── Level badge ────────────────────────────────────────────────────── */}
-      <motion.div custom={10} variants={fadeUp} initial="hidden" animate="visible">
-        <div className={`${glass} rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4`}>
-          <div className="flex items-center gap-3 flex-1">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] flex items-center justify-center">
-              <BookMarked className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="text-white font-bold text-sm">Current Level: <span className="text-[#818cf8]">{level}</span></p>
-              <p className="text-[#475569] text-xs">Keep practicing to advance to the next level</p>
-            </div>
-          </div>
-          <Link href="/progress">
-            <button className="flex items-center gap-1.5 text-xs font-semibold text-[#6366f1] hover:text-[#818cf8] transition-colors">
-              <BarChart3 className="w-3.5 h-3.5" />
-              View full progress
-            </button>
-          </Link>
-        </div>
-      </motion.div>
-
+      </Link>
     </div>
   )
 }

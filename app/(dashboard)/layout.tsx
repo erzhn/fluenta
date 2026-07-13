@@ -40,35 +40,28 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (!authChecked) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#0F172A]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center text-white font-bold text-xl animate-pulse">
+      <div className="flex h-screen items-center justify-center bg-bg-secondary">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-12 h-12 rounded-[14px] bg-accent flex items-center justify-center text-white font-bold text-xl animate-pulse">
             F
           </div>
-          <p className="text-[#475569] text-sm">Загрузка...</p>
+          <p className="text-text-muted text-sm">Загрузка...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-[#0F172A] overflow-hidden">
+    <div className="flex h-screen bg-bg-secondary overflow-hidden">
       <Sidebar
         mobileOpen={mobileDrawerOpen}
         onMobileClose={() => setMobileDrawerOpen(false)}
       />
 
-      <div className="flex-1 flex flex-col overflow-hidden min-w-0 relative">
-        {/* Ambient background orbs */}
-        <div aria-hidden="true">
-          <div className="orb orb-1" />
-          <div className="orb orb-2" />
-          <div className="orb orb-3" />
-        </div>
-
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         <TopBar onMenuClick={() => setMobileDrawerOpen(true)} />
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 relative z-10">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           <AnimatePresence mode="wait">
             <motion.div
               key={pathname}

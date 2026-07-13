@@ -75,11 +75,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru" className={`${inter.variable} ${spaceGrotesk.variable} h-full antialiased dark`}>
+    <html lang="ru" className={`${inter.variable} ${spaceGrotesk.variable} h-full antialiased`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+      <body className="min-h-full flex flex-col bg-bg-secondary text-text-primary">
         <ThemeProvider>
           {children}
         </ThemeProvider>
