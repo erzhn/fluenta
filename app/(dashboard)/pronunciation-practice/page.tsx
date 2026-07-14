@@ -1,5 +1,7 @@
 'use client'
 import { useState, useRef } from 'react'
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
 
 const PHRASES: Record<string, string[]> = {
   A1: [
@@ -57,9 +59,13 @@ export default function PronunciationPracticePage() {
   const [attempts, setAttempts] = useState<Attempt[]>([])
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null)
+  const { generate, loading: aiLoading } = useAIGenerate()
+  const [aiPhrases, setAiPhrases] = useState<string[]>([])
+  const [usingAI, setUsingAI] = useState(false)
 
   const phrases = PHRASES[level]
-  const phrase = phrases[phraseIdx % phrases.length]
+  const currentPhrases = usingAI && aiPhrases.length > 0 ? aiPhrases : phrases
+  const phrase = currentPhrases[phraseIdx % currentPhrases.length]
 
   function speak() {
     window.speechSynthesis.cancel()
@@ -140,15 +146,32 @@ export default function PronunciationPracticePage() {
         )}
       </div>
 
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-2 mb-4 flex-wrap">
         {(['A1','A2','B1','B2','C1'] as Level[]).map(l => (
-          <button key={l} onClick={() => { setLevel(l); setPhraseIdx(0); setHeard(''); setScore(null) }}
+          <button key={l} onClick={() => { setLevel(l); setPhraseIdx(0); setHeard(''); setScore(null); setUsingAI(false); setAiPhrases([]) }}
             className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-all border ${
               level === l ? 'bg-primary border-primary text-white' : 'bg-white/[0.04] border-white/10 text-muted-foreground hover:text-white'
             }`}>
             {l}
           </button>
         ))}
+        <button
+          onClick={async () => {
+            const result = await generate<{ phrases: string[] }>('pronunciation_phrases', '', level)
+            if (result?.phrases?.length) {
+              setAiPhrases(result.phrases)
+              setUsingAI(true)
+              setPhraseIdx(0)
+              setHeard('')
+              setScore(null)
+            }
+          }}
+          disabled={aiLoading}
+          className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 border border-primary/20 text-primary rounded-xl text-sm font-medium hover:bg-primary/20 transition-all ml-auto"
+        >
+          {aiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+          {usingAI ? 'AI режим ✓' : 'AI фразы'}
+        </button>
       </div>
 
       <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 sm:p-8 mb-6 text-center">

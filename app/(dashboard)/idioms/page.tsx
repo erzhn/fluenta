@@ -1,12 +1,16 @@
 'use client'
 import { useState } from 'react'
+import { Sparkles, Loader2 } from 'lucide-react'
 import { IDIOMS, IDIOM_CATEGORIES } from '@/lib/idioms-data'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
 
 export default function IdiomsPage() {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('Все')
   const [flipped, setFlipped] = useState<Set<string>>(new Set())
   const [learned, setLearned] = useState<Set<string>>(new Set())
+  const { generate, loading: aiLoading } = useAIGenerate()
+  const [aiIdioms, setAiIdioms] = useState<{ idiom: string; meaning: string; example: string }[]>([])
 
   const filtered = IDIOMS.filter(i => {
     const matchSearch = i.idiom.toLowerCase().includes(search.toLowerCase()) ||
@@ -75,6 +79,31 @@ export default function IdiomsPage() {
             {cat}
           </button>
         ))}
+      </div>
+
+      <div className="mb-5">
+        <button
+          onClick={async () => {
+            const result = await generate<{ idioms: { idiom: string; meaning: string; example: string }[] }>('idioms', category === 'Все' ? 'everyday life' : category)
+            if (result?.idioms) setAiIdioms(result.idioms)
+          }}
+          disabled={aiLoading}
+          className="flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 text-primary rounded-xl text-sm font-medium hover:bg-primary/20 transition-all"
+        >
+          {aiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+          {aiLoading ? 'Генерирую...' : 'AI: новые идиомы'}
+        </button>
+        {aiIdioms.length > 0 && (
+          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {aiIdioms.map((idm, i) => (
+              <div key={i} className="bg-primary/5 border border-primary/15 rounded-2xl p-4">
+                <p className="text-white font-bold mb-1">{idm.idiom}</p>
+                <p className="text-primary text-sm font-medium mb-2">{idm.meaning}</p>
+                <p className="text-muted-foreground text-sm italic">&ldquo;{idm.example}&rdquo;</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

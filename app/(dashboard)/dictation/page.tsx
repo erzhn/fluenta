@@ -1,5 +1,7 @@
 'use client'
 import { useState, useRef } from 'react'
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
 
 const DICTATION_WORDS: Record<string, { word: string; hint?: string }[]> = {
   A1: [
@@ -52,10 +54,13 @@ export default function DictationPage() {
   const [finished, setFinished] = useState(false)
   const [playCount, setPlayCount] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
+  const { generate, loading: aiLoading } = useAIGenerate()
+  const [aiWords, setAiWords] = useState<{ word: string }[]>([])
+  const [usingAI, setUsingAI] = useState(false)
 
   const words = DICTATION_WORDS[level]
   const ROUND_SIZE = 10
-  const sessionWords = words.slice(0, ROUND_SIZE)
+  const sessionWords = usingAI && aiWords.length > 0 ? aiWords : words.slice(0, ROUND_SIZE)
   const current = sessionWords[currentIndex]
 
   function speak(text: string, slow = false) {
@@ -210,9 +215,32 @@ export default function DictationPage() {
           </div>
         </div>
 
+        <div className="mb-4">
+          <button
+            onClick={async () => {
+              const result = await generate<{ words: string[] }>('dictation_words', '', level)
+              if (result?.words?.length) {
+                setAiWords(result.words.map(w => ({ word: w })))
+                setUsingAI(true)
+              }
+            }}
+            disabled={aiLoading}
+            className="flex items-center gap-2 px-4 py-2.5 bg-primary/10 border border-primary/20 text-primary rounded-xl text-sm font-medium hover:bg-primary/20 transition-all w-full justify-center"
+          >
+            {aiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+            {usingAI ? `AI слова выбраны (${aiWords.length}) ✓` : 'AI: сгенерировать новые слова'}
+          </button>
+          {usingAI && (
+            <button onClick={() => { setUsingAI(false); setAiWords([]) }}
+              className="mt-2 text-xs text-muted-foreground hover:text-white transition-colors w-full text-center">
+              Вернуться к стандартным словам
+            </button>
+          )}
+        </div>
+
         <button onClick={handleStart}
           className="btn-glow w-full py-4 bg-primary hover:bg-[#5558e8] text-white font-semibold rounded-2xl text-lg transition-colors">
-          Начать диктант ({ROUND_SIZE} слов)
+          Начать диктант ({sessionWords.length} слов)
         </button>
       </div>
     )

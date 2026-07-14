@@ -1,5 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
 
 interface DayData {
   date: string
@@ -47,6 +49,8 @@ function getWeekData(): WeekData {
 
 export default function WeeklySummaryPage() {
   const [data, setData] = useState<WeekData | null>(null)
+  const { generate, loading: aiLoading } = useAIGenerate()
+  const [aiAnalysis, setAiAnalysis] = useState<{ analysis: string; tip: string; emoji: string } | null>(null)
 
   useEffect(() => { setData(getWeekData()) }, [])
 
@@ -111,6 +115,31 @@ export default function WeeklySummaryPage() {
             ? `Хорошее начало! Ещё ${140 - data.totalMinutes} мин для выполнения цели недели.`
             : 'Попробуй заниматься хотя бы 20 минут каждый день.'}
         </p>
+      </div>
+
+      <div className="mt-5">
+        <button
+          onClick={async () => {
+            const context = `${data.totalMinutes} минут, ${data.totalLessons} уроков, ${data.totalWords} слов, ${data.streakDays} дней подряд, лучший день: ${data.bestDay}`
+            const result = await generate<{ analysis: string; tip: string; emoji: string }>('weekly_analysis', context)
+            if (result) setAiAnalysis(result)
+          }}
+          disabled={aiLoading}
+          className="flex items-center gap-2 px-5 py-3 bg-primary/10 border border-primary/20 text-primary rounded-xl text-sm font-medium hover:bg-primary/20 transition-all w-full justify-center"
+        >
+          {aiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+          {aiLoading ? 'Анализирую...' : 'AI: анализ недели'}
+        </button>
+        {aiAnalysis && (
+          <div className="mt-4 bg-white/[0.04] border border-white/10 rounded-2xl p-5">
+            <p className="text-white font-semibold mb-3">{aiAnalysis.emoji} AI Анализ</p>
+            <p className="text-muted-foreground text-sm leading-relaxed mb-3">{aiAnalysis.analysis}</p>
+            <div className="bg-primary/5 border border-primary/15 rounded-xl px-4 py-3">
+              <p className="text-primary text-xs font-semibold mb-1">Совет на следующую неделю:</p>
+              <p className="text-muted-foreground text-sm">{aiAnalysis.tip}</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

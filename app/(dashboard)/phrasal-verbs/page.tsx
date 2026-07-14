@@ -1,7 +1,9 @@
 'use client'
 import { useState, useMemo } from 'react'
+import { Sparkles, Loader2 } from 'lucide-react'
 import { PHRASAL_VERBS_DATA, searchPhrasalVerbs, getAllPhrasalVerbs } from '@/lib/phrasal-verbs-data'
 import { addCardToSR } from '@/lib/spaced-repetition'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
 
 const CATEGORY_ICONS: Record<string, string> = {
   daily: '🏠',
@@ -17,6 +19,8 @@ export default function PhrasalVerbsPage() {
   const [flipped, setFlipped] = useState<Set<string>>(new Set())
   const [learned, setLearned] = useState<Set<string>>(new Set())
   const [expandedVerb, setExpandedVerb] = useState<string | null>(null)
+  const { generate, loading: aiLoading } = useAIGenerate()
+  const [aiVerbs, setAiVerbs] = useState<{ verb: string; meaning: string; example: string }[]>([])
 
   const displayedVerbs = useMemo(() => {
     if (search.trim()) return searchPhrasalVerbs(search)
@@ -107,6 +111,33 @@ export default function PhrasalVerbsPage() {
             className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white transition-colors">
             ✕
           </button>
+        )}
+      </div>
+
+      {/* AI phrasal verbs */}
+      <div className="mb-5">
+        <button
+          onClick={async () => {
+            const topic = activeCategory === 'all' ? 'everyday life' : PHRASAL_VERBS_DATA.find(c => c.id === activeCategory)?.title ?? 'everyday'
+            const result = await generate<{ verbs: { verb: string; meaning: string; example: string }[] }>('phrasal_verbs', topic)
+            if (result?.verbs) setAiVerbs(result.verbs)
+          }}
+          disabled={aiLoading}
+          className="flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 text-primary rounded-xl text-sm font-medium hover:bg-primary/20 transition-all"
+        >
+          {aiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+          {aiLoading ? 'Генерирую...' : 'AI: новые фразовые глаголы'}
+        </button>
+        {aiVerbs.length > 0 && (
+          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {aiVerbs.map((v, i) => (
+              <div key={i} className="bg-primary/5 border border-primary/15 rounded-2xl p-4">
+                <p className="text-white font-bold mb-1">{v.verb}</p>
+                <p className="text-primary text-sm font-medium mb-2">{v.meaning}</p>
+                <p className="text-muted-foreground text-sm italic">&quot;{v.example}&quot;</p>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 

@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   Flame, Zap, BookOpen, MessageSquare,
-  Lock, Trophy, Calendar, ArrowRight, TrendingUp,
+  Lock, Trophy, Calendar, ArrowRight, TrendingUp, Sparkles, Loader2,
 } from 'lucide-react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
 import { StreakCalendar } from '@/components/StreakCalendar'
 import { SkillsRadar } from '@/components/SkillsRadar'
 import { ProgressPrediction } from '@/components/ProgressPrediction'
@@ -92,6 +93,10 @@ export default function ProgressPage() {
   // chart + activity
   const [weekData, setWeekData]       = useState<DayActivity[]>([])
   const [recentConvs, setRecentConvs] = useState<RecentConv[]>([])
+
+  // AI insight
+  const { generate, loading: aiLoading } = useAIGenerate()
+  const [progressInsight, setProgressInsight] = useState<{ insight: string; focus: string } | null>(null)
 
   useEffect(() => {
     ;(async () => {
@@ -486,6 +491,42 @@ export default function ProgressPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+        </div>
+      </motion.div>
+
+      {/* ── 7. AI Progress Insight ─────────────────────────────────────────── */}
+      <motion.div custom={9} variants={fadeUp} initial="hidden" animate="visible">
+        <div className={`${glass} rounded-2xl p-5`}>
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="w-4 h-4 text-primary" />
+            <h2 className="text-white font-bold text-sm">AI Анализ прогресса</h2>
+          </div>
+          {!progressInsight ? (
+            <button
+              onClick={async () => {
+                const context = `XP: ${xp}, streak: ${streak} дней, уровень: ${cefrLevel}, слов изучено: ${vocabCount}, разговоров: ${convCount}, уроков: ${lessonsCount}`
+                const result = await generate<{ insight: string; focus: string }>('progress_insight', context)
+                if (result) setProgressInsight(result)
+              }}
+              disabled={aiLoading}
+              className="flex items-center gap-2 px-4 py-2.5 bg-primary/10 border border-primary/20 text-primary rounded-xl text-sm font-medium hover:bg-primary/20 transition-all w-full justify-center"
+            >
+              {aiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+              {aiLoading ? 'Анализирую...' : 'Получить персональный анализ'}
+            </button>
+          ) : (
+            <div>
+              <p className="text-muted-foreground text-sm leading-relaxed mb-4">{progressInsight.insight}</p>
+              <div className="bg-primary/10 border border-primary/20 rounded-xl px-4 py-3">
+                <p className="text-primary text-xs font-semibold mb-1">Фокус на следующей неделе:</p>
+                <p className="text-muted-foreground text-sm">{progressInsight.focus}</p>
+              </div>
+              <button onClick={() => setProgressInsight(null)}
+                className="mt-3 text-xs text-muted-foreground hover:text-white transition-colors">
+                ↺ Новый анализ
+              </button>
             </div>
           )}
         </div>

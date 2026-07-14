@@ -1,5 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
 
 interface Sentence {
   words: string[]
@@ -46,9 +48,13 @@ export default function SentenceBuilderPage() {
   const [selected, setSelected] = useState<{word: string; id: number}[]>([])
   const [checked, setChecked] = useState<boolean | null>(null)
   const [score, setScore] = useState({ correct: 0, total: 0 })
+  const { generate, loading: aiLoading } = useAIGenerate()
+  const [aiSentences, setAiSentences] = useState<Sentence[]>([])
+  const [usingAI, setUsingAI] = useState(false)
 
   const levelSentences = shuffledSentences.filter(s => s.level === level)
-  const current = levelSentences[currentIdx % Math.max(levelSentences.length, 1)]
+  const activeSentences = usingAI && aiSentences.length > 0 ? aiSentences : levelSentences
+  const current = activeSentences[currentIdx % Math.max(activeSentences.length, 1)]
 
   useEffect(() => {
     if (current) resetSentence()
@@ -111,15 +117,30 @@ export default function SentenceBuilderPage() {
         </div>
       </div>
 
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-2 mb-4 flex-wrap">
         {(['A1','A2','B1','B2','C1'] as Level[]).map(l => (
-          <button key={l} onClick={() => { setLevel(l); setCurrentIdx(0) }}
+          <button key={l} onClick={() => { setLevel(l); setCurrentIdx(0); setUsingAI(false); setAiSentences([]) }}
             className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-all border ${
               level === l ? 'bg-primary border-primary text-white' : 'bg-white/[0.04] border-white/10 text-muted-foreground hover:text-white'
             }`}>
             {l}
           </button>
         ))}
+        <button
+          onClick={async () => {
+            const result = await generate<{ sentences: Sentence[] }>('sentences', 'everyday life', level)
+            if (result?.sentences?.length) {
+              setAiSentences(result.sentences.map((s, i) => ({ ...s, level: s.level ?? level })))
+              setUsingAI(true)
+              setCurrentIdx(0)
+            }
+          }}
+          disabled={aiLoading}
+          className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 border border-primary/20 text-primary rounded-xl text-sm font-medium hover:bg-primary/20 transition-all ml-auto"
+        >
+          {aiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+          {usingAI ? 'AI режим ✓' : 'AI предложения'}
+        </button>
       </div>
 
       <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5 mb-6">

@@ -1,12 +1,16 @@
 'use client'
 import { useState } from 'react'
+import { Sparkles, Loader2 } from 'lucide-react'
 import { COLLOCATIONS, COLLOCATION_CATEGORIES } from '@/lib/collocations-data'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
 
 export default function CollocationsPage() {
   const [category, setCategory] = useState('Все')
   const [search, setSearch] = useState('')
   const [learned, setLearned] = useState<Set<string>>(new Set())
   const [showWrong, setShowWrong] = useState<Set<string>>(new Set())
+  const { generate, loading: aiLoading } = useAIGenerate()
+  const [aiCollocations, setAiCollocations] = useState<{ collocation: string; translation: string; example: string }[]>([])
 
   const filtered = COLLOCATIONS.filter(c => {
     const matchSearch = c.collocation.toLowerCase().includes(search.toLowerCase()) ||
@@ -46,6 +50,31 @@ export default function CollocationsPage() {
             {cat}
           </button>
         ))}
+      </div>
+
+      <div className="mb-5">
+        <button
+          onClick={async () => {
+            const result = await generate<{ collocations: { collocation: string; translation: string; example: string }[] }>('collocations', category === 'Все' ? 'general' : category)
+            if (result?.collocations) setAiCollocations(result.collocations)
+          }}
+          disabled={aiLoading}
+          className="flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 text-primary rounded-xl text-sm font-medium hover:bg-primary/20 transition-all"
+        >
+          {aiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+          {aiLoading ? 'Генерирую...' : 'AI: новые коллокации'}
+        </button>
+        {aiCollocations.length > 0 && (
+          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {aiCollocations.map((c, i) => (
+              <div key={i} className="bg-primary/5 border border-primary/15 rounded-2xl p-4">
+                <p className="text-white font-bold mb-1">{c.collocation}</p>
+                <p className="text-primary text-sm font-medium mb-1">{c.translation}</p>
+                <p className="text-muted-foreground text-sm italic">&quot;{c.example}&quot;</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
