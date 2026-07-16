@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
-import { Sparkles, Loader2 } from 'lucide-react'
 import { COLLOCATIONS, COLLOCATION_CATEGORIES } from '@/lib/collocations-data'
+import { Sparkles, Loader2 } from 'lucide-react'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 
 export default function CollocationsPage() {
@@ -10,7 +10,13 @@ export default function CollocationsPage() {
   const [learned, setLearned] = useState<Set<string>>(new Set())
   const [showWrong, setShowWrong] = useState<Set<string>>(new Set())
   const { generate, loading: aiLoading } = useAIGenerate()
-  const [aiCollocations, setAiCollocations] = useState<{ collocation: string; translation: string; example: string }[]>([])
+  const [aiTopic, setAiTopic] = useState('')
+  const [aiResults, setAiResults] = useState<Array<{id:string,collocation:string,translation:string,example:string,category:string}>>([])
+
+  async function generateCollocations() {
+    const data = await generate<{collocations: typeof aiResults}>('collocations', aiTopic || (category !== 'Все' ? category : 'business'))
+    if (data?.collocations) setAiResults(data.collocations.map((c,i) => ({...c, id:`ai-${i}`})))
+  }
 
   const filtered = COLLOCATIONS.filter(c => {
     const matchSearch = c.collocation.toLowerCase().includes(search.toLowerCase()) ||
@@ -52,29 +58,27 @@ export default function CollocationsPage() {
         ))}
       </div>
 
-      <div className="mb-5">
-        <button
-          onClick={async () => {
-            const result = await generate<{ collocations: { collocation: string; translation: string; example: string }[] }>('collocations', category === 'Все' ? 'general' : category)
-            if (result?.collocations) setAiCollocations(result.collocations)
-          }}
-          disabled={aiLoading}
-          className="flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 text-primary rounded-xl text-sm font-medium hover:bg-primary/20 transition-all"
-        >
-          {aiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-          {aiLoading ? 'Генерирую...' : 'AI: новые коллокации'}
-        </button>
-        {aiCollocations.length > 0 && (
-          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {aiCollocations.map((c, i) => (
-              <div key={i} className="bg-primary/5 border border-primary/15 rounded-2xl p-4">
-                <p className="text-white font-bold mb-1">{c.collocation}</p>
-                <p className="text-primary text-sm font-medium mb-1">{c.translation}</p>
-                <p className="text-muted-foreground text-sm italic">&quot;{c.example}&quot;</p>
-              </div>
-            ))}
-          </div>
-        )}
+      {/* AI блок */}
+      <div className="mb-5 p-4 bg-[#6366f1]/5 border border-[#6366f1]/20 rounded-2xl">
+        <p className="text-xs font-semibold text-[#818cf8] mb-2 flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5"/>AI коллокации по теме</p>
+        <div className="flex gap-2">
+          <input value={aiTopic} onChange={e=>setAiTopic(e.target.value)} placeholder="business, travel, health..."
+            className="flex-1 bg-white/[0.06] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-[#475569] outline-none min-h-[44px]"/>
+          <button onClick={generateCollocations} disabled={aiLoading}
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-50 text-white rounded-xl text-sm font-medium min-h-[44px]">
+            {aiLoading?<Loader2 className="w-4 h-4 animate-spin"/>:<Sparkles className="w-4 h-4"/>}
+            {aiLoading?'...':'AI'}
+          </button>
+        </div>
+        {aiResults.length>0&&<div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {aiResults.map(c=>(
+            <div key={c.id} className="p-3 rounded-xl border border-[#6366f1]/20 bg-[#6366f1]/5">
+              <p className="text-white font-semibold text-sm">{c.collocation}</p>
+              <p className="text-[#818cf8] text-xs">{c.translation}</p>
+              <p className="text-[#64748b] text-xs italic mt-1">&quot;{c.example}&quot;</p>
+            </div>
+          ))}
+        </div>}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

@@ -1,9 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Menu, Sun, Moon } from "lucide-react";
-import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { Menu } from "lucide-react";
 
 const PAGE_TITLES: Record<string, string> = {
   "/dashboard":             "Fluenta",
@@ -41,9 +39,6 @@ interface TopBarProps { onMenuClick: () => void; }
 
 export function TopBar({ onMenuClick }: TopBarProps) {
   const pathname = usePathname();
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
 
   const title = PAGE_TITLES[pathname] ??
     PAGE_TITLES[Object.keys(PAGE_TITLES).find(k => k !== "/" && pathname.startsWith(k)) ?? ""] ??
@@ -65,16 +60,6 @@ export function TopBar({ onMenuClick }: TopBarProps) {
         {title}
       </h1>
 
-      {mounted && (
-        <button
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className="w-8 h-8 flex items-center justify-center rounded-lg
-            hover:bg-secondary transition-colors text-muted-foreground">
-          {theme === "dark"
-            ? <Sun className="w-[18px] h-[18px]" />
-            : <Moon className="w-[18px] h-[18px]" />}
-        </button>
-      )}
     </header>
   );
 }

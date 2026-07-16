@@ -121,21 +121,18 @@ const TEMPLATES: Template[] = [
 export default function WritingTemplatesPage() {
   const [selected, setSelected] = useState<Template | null>(null)
   const [userText, setUserText] = useState<Record<string, string>>({})
+  const { generate } = useAIGenerate()
+  const [fillLoading, setFillLoading] = useState<string|null>(null)
+  async function fillSection(label: string, key: string) {
+    setFillLoading(label)
+    const ctx = `${selected?.title||'English letter'} - ${label}`
+    const data = await generate<{text:string}>('writing_template_section', ctx, selected?.level?.split('-')[0]||'B1')
+    if (data?.text) setUserText(p=>({...p,[key]:data.text}))
+    setFillLoading(null)
+  }
   const [filter, setFilter] = useState('Все')
   const [generating, setGenerating] = useState(false)
   const [aiSuggestion, setAiSuggestion] = useState('')
-
-  const { generate, loading: aiLoading } = useAIGenerate()
-  const [fillLoadingIdx, setFillLoadingIdx] = useState<number | null>(null)
-
-  async function fillWithAI(part: { label: string; placeholder: string }, sectionKey: string) {
-    setFillLoadingIdx(parseInt(sectionKey.split('_').pop() ?? '0'))
-    const result = await generate<{ text: string }>('writing_template_section', `${part.label}: ${part.placeholder}`, selected?.level ?? 'B1')
-    if (result?.text) {
-      setUserText(prev => ({ ...prev, [sectionKey]: result.text }))
-    }
-    setFillLoadingIdx(null)
-  }
 
   const types = ['Все', 'IELTS', 'Business', 'Personal']
   const filtered = TEMPLATES.filter(t => filter === 'Все' || t.type === filter)
@@ -207,13 +204,9 @@ export default function WritingTemplatesPage() {
               className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-white
                 placeholder:text-[#334155] outline-none focus:border-primary/50 transition-colors text-sm resize-none"
             />
-            <button
-              onClick={() => fillWithAI(part, `${selected.id}_${i}`)}
-              disabled={aiLoading || fillLoadingIdx === i}
-              className="mt-2 flex items-center gap-1.5 text-xs text-primary hover:text-[#818cf8] transition-colors disabled:opacity-50"
-            >
-              {fillLoadingIdx === i ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-              AI: заполнить секцию
+            <button onClick={()=>fillSection(part.label, `${selected.id}_${i}`)} disabled={fillLoading===part.label}
+              className="mt-1 flex items-center gap-1 text-xs text-[#818cf8] hover:text-white disabled:opacity-50 min-h-[36px]">
+              {fillLoading===part.label?<><Loader2 className="w-3 h-3 animate-spin"/>Генерирую...</>:<><Sparkles className="w-3 h-3"/>AI заполнить</>}
             </button>
           </div>
         ))}

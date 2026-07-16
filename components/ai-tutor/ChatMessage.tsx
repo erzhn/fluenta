@@ -136,16 +136,7 @@ export function ChatMessage({ message, userId, streaming }: ChatMessageProps) {
           }`}
         >
           {isUser ? (
-            message.isVoice && message.audioUrl ? (
-              <div className="space-y-2">
-                <audio src={message.audioUrl} controls className="h-8 w-full max-w-[200px] opacity-80" />
-                {message.content && (
-                  <p className="text-xs italic opacity-75 whitespace-pre-wrap leading-relaxed">{message.content}</p>
-                )}
-              </div>
-            ) : (
-              <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
-            )
+            <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
           ) : (
             <MessageText text={message.content} />
           )}

@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
-import { Sparkles, Loader2 } from 'lucide-react'
 import { IDIOMS, IDIOM_CATEGORIES } from '@/lib/idioms-data'
+import { Sparkles, Loader2 } from 'lucide-react'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 
 export default function IdiomsPage() {
@@ -10,7 +10,12 @@ export default function IdiomsPage() {
   const [flipped, setFlipped] = useState<Set<string>>(new Set())
   const [learned, setLearned] = useState<Set<string>>(new Set())
   const { generate, loading: aiLoading } = useAIGenerate()
-  const [aiIdioms, setAiIdioms] = useState<{ idiom: string; meaning: string; example: string }[]>([])
+  const [aiTopic, setAiTopic] = useState('')
+  const [aiIdioms, setAiIdioms] = useState<Array<{idiom:string,meaning:string,example:string,level:string}>>([])
+  async function generateIdioms() {
+    const data = await generate<{idioms: typeof aiIdioms}>('idioms', aiTopic || 'emotions and feelings')
+    if (data?.idioms) setAiIdioms(data.idioms)
+  }
 
   const filtered = IDIOMS.filter(i => {
     const matchSearch = i.idiom.toLowerCase().includes(search.toLowerCase()) ||
@@ -81,29 +86,28 @@ export default function IdiomsPage() {
         ))}
       </div>
 
-      <div className="mb-5">
-        <button
-          onClick={async () => {
-            const result = await generate<{ idioms: { idiom: string; meaning: string; example: string }[] }>('idioms', category === 'Все' ? 'everyday life' : category)
-            if (result?.idioms) setAiIdioms(result.idioms)
-          }}
-          disabled={aiLoading}
-          className="flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 text-primary rounded-xl text-sm font-medium hover:bg-primary/20 transition-all"
-        >
-          {aiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-          {aiLoading ? 'Генерирую...' : 'AI: новые идиомы'}
-        </button>
-        {aiIdioms.length > 0 && (
-          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {aiIdioms.map((idm, i) => (
-              <div key={i} className="bg-primary/5 border border-primary/15 rounded-2xl p-4">
-                <p className="text-white font-bold mb-1">{idm.idiom}</p>
-                <p className="text-primary text-sm font-medium mb-2">{idm.meaning}</p>
-                <p className="text-muted-foreground text-sm italic">&ldquo;{idm.example}&rdquo;</p>
+      <div className="mb-5 p-4 bg-[#6366f1]/5 border border-[#6366f1]/20 rounded-2xl">
+        <p className="text-xs font-semibold text-[#818cf8] mb-2 flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5"/>AI идиомы по теме</p>
+        <div className="flex gap-2">
+          <input value={aiTopic} onChange={e=>setAiTopic(e.target.value)} placeholder="time, money, success..."
+            className="flex-1 bg-white/[0.06] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-[#475569] outline-none min-h-[44px]"/>
+          <button onClick={generateIdioms} disabled={aiLoading}
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-50 text-white rounded-xl text-sm font-medium min-h-[44px]">
+            {aiLoading?<Loader2 className="w-4 h-4 animate-spin"/>:<Sparkles className="w-4 h-4"/>}AI
+          </button>
+        </div>
+        {aiIdioms.length>0&&<div className="mt-3 space-y-2">
+          {aiIdioms.map((item,i)=>(
+            <div key={i} className="p-3 rounded-xl border border-[#6366f1]/20 bg-[#6366f1]/5">
+              <div className="flex justify-between items-center">
+                <p className="text-white font-semibold text-sm">&quot;{item.idiom}&quot;</p>
+                <span className="text-xs text-[#818cf8] bg-[#6366f1]/10 px-2 py-0.5 rounded-full">{item.level}</span>
               </div>
-            ))}
-          </div>
-        )}
+              <p className="text-[#818cf8] text-xs mt-0.5">{item.meaning}</p>
+              <p className="text-[#64748b] text-xs italic mt-1">{item.example}</p>
+            </div>
+          ))}
+        </div>}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

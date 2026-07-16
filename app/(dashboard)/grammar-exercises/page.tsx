@@ -1,7 +1,8 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { GrammarExercise } from '@/components/GrammarExercise'
-import { AIGenerateButton } from '@/components/ui/AIGenerateButton'
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
 
 const GRAMMAR_TOPICS = [
   { id: 'present-simple',     label: 'Present Simple',     level: 'A1' },
@@ -37,7 +38,13 @@ export default function GrammarExercisesPage() {
   const [exercise, setExercise] = useState<ExerciseData | null>(null)
   const [loading, setLoading] = useState(false)
   const [score, setScore] = useState({ correct: 0, total: 0 })
-  const [aiQuickEx, setAiQuickEx] = useState<{ question?: string; answer?: string; explanation?: string; options?: string[] } | null>(null)
+  const { generate, loading: aiLoading } = useAIGenerate()
+  const [aiEx, setAiEx] = useState<{question:string,answer:string,options:string[],explanation:string}|null>(null)
+  const [aiAnswer, setAiAnswer] = useState<string|null>(null)
+  async function generateExercise() {
+    const data = await generate<typeof aiEx>('grammar_exercise', selectedTopic?.label||'mixed grammar', selectedTopic?.level||'B1')
+    setAiEx(data); setAiAnswer(null)
+  }
 
   const loadExercise = useCallback(async () => {
     setLoading(true)
@@ -72,44 +79,39 @@ export default function GrammarExercisesPage() {
           </h1>
           <p className="text-muted-foreground text-sm mt-1">AI проверяет твои ответы</p>
         </div>
-        <div className="flex items-center gap-3">
-          <AIGenerateButton
-            type="grammar_exercise"
-            context={selectedTopic.label}
-            level={selectedTopic.level}
-            onResult={(data) => setAiQuickEx(data as { question?: string; answer?: string; explanation?: string; options?: string[] })}
-            label="Быстрое упражнение"
-            variant="inline"
-          />
-          <div className="text-right">
-            <p className="text-white font-semibold">{score.correct}/{score.total}</p>
-            <p className="text-muted-foreground text-xs">правильно</p>
-          </div>
+        <div className="text-right">
+          <p className="text-white font-semibold">{score.correct}/{score.total}</p>
+          <p className="text-muted-foreground text-xs">правильно</p>
         </div>
       </div>
 
-      {aiQuickEx && aiQuickEx.question && (
-        <div className="bg-primary/5 border border-primary/20 rounded-2xl p-5 mb-5">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-primary">✨ AI упражнение</span>
-            <button onClick={() => setAiQuickEx(null)} className="text-muted-foreground text-xs hover:text-white">✕</button>
-          </div>
-          <p className="text-white font-medium mb-3">{aiQuickEx.question}</p>
-          {aiQuickEx.options && (
-            <div className="flex flex-wrap gap-2 mb-3">
-              {aiQuickEx.options.map((opt, i) => (
-                <span key={i} className="px-3 py-1 bg-white/[0.06] border border-white/10 text-muted-foreground rounded-xl text-sm">{opt}</span>
+      <div className="mb-5 p-4 bg-[#6366f1]/5 border border-[#6366f1]/20 rounded-2xl">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-sm font-semibold text-white flex items-center gap-2"><Sparkles className="w-4 h-4 text-[#818cf8]"/>AI упражнение</p>
+          <button onClick={generateExercise} disabled={aiLoading}
+            className="flex items-center gap-1.5 px-3 py-2 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-50 text-white rounded-xl text-xs font-medium min-h-[36px]">
+            {aiLoading?<Loader2 className="w-3.5 h-3.5 animate-spin"/>:<Sparkles className="w-3.5 h-3.5"/>}
+            {aiLoading?'Генерирую...':'Создать'}
+          </button>
+        </div>
+        {aiEx&&(
+          <div>
+            <p className="text-white text-sm font-medium mb-3">{aiEx.question}</p>
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              {aiEx.options?.map((opt,i)=>(
+                <button key={i} onClick={()=>setAiAnswer(opt)}
+                  className={`px-3 py-2.5 rounded-xl border text-sm text-left transition-all min-h-[44px] ${
+                    aiAnswer===null?'border-white/10 text-white hover:border-[#6366f1]/50':
+                    opt===aiEx.answer?'border-green-500 bg-green-500/10 text-green-400':
+                    aiAnswer===opt?'border-red-500 bg-red-500/10 text-red-400':'border-white/10 text-[#64748b]'
+                  }`}>{opt}
+                </button>
               ))}
             </div>
-          )}
-          {aiQuickEx.answer && (
-            <p className="text-[#10b981] text-sm font-medium">Ответ: {aiQuickEx.answer}</p>
-          )}
-          {aiQuickEx.explanation && (
-            <p className="text-muted-foreground text-xs mt-1">{aiQuickEx.explanation}</p>
-          )}
-        </div>
-      )}
+            {aiAnswer&&<p className="text-xs text-[#64748b] italic">{aiEx.explanation}</p>}
+          </div>
+        )}
+      </div>
 
       <div className="flex gap-2 flex-wrap mb-4">
         {GRAMMAR_TOPICS.map(topic => (

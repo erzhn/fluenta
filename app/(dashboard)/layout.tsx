@@ -33,7 +33,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           .select('onboarding_completed')
           .eq('id', user.id)
           .single();
-        if (profile && 'onboarding_completed' in profile && profile.onboarding_completed === false) {
+        if (profile && 'onboarding_completed' in profile && !profile.onboarding_completed) {
           setShowOnboarding(true);
         }
       }
@@ -68,12 +68,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       {showOnboarding && userId && (
-        <OnboardingWizard
-          userId={userId}
-          onComplete={() => setShowOnboarding(false)}
-        />
+        <OnboardingWizard userId={userId} onComplete={() => setShowOnboarding(false)} />
       )}
-
       <Sidebar
         mobileOpen={mobileDrawerOpen}
         onMobileClose={() => setMobileDrawerOpen(false)}
@@ -82,7 +78,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         <TopBar onMenuClick={() => setMobileDrawerOpen(true)} />
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+        <main className="flex-1 overflow-y-auto pb-20 md:pb-0 p-4 sm:p-6">
           <AnimatePresence mode="wait">
             <motion.div
               key={pathname}

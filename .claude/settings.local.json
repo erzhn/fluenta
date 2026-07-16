@@ -42,4 +42,12 @@
       "PowerShell(python \"C:\\\\Users\\\\D3B8~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\D--Projects-with---fluenta\\\\681d2635-7ae1-4d63-95eb-d7db9f31cc31\\\\scratchpad\\\\fix_grammar2.py\")",
       "Bash(npm install *)",
       "PowerShell(cd \"D:\\\\Projects with @\\\\fluenta\"; git add app/\\(dashboard\\)/dictation/page.tsx app/\\(dashboard\\)/sentence-builder/page.tsx app/\\(dashboard\\)/grammar-exercises/page.tsx app/api/ai/check-grammar-exercise/route.ts app/api/ai/generate-grammar-exercise/route.ts components/GrammarExercise.tsx components/layout/Sidebar.tsx components/layout/MobileNav.tsx app/\\(dashboard\\)/grammar/page.tsx; git status)",
-      "Bash
+      "Bash(git revert *)",
+      "Bash(xargs sed -i -e 's/bg-\\\\[#0F172A\\\\]/bg-background/g' -e 's/bg-\\\\[#1E293B\\\\]/bg-card/g' -e 's/bg-\\\\[#1C1C1E\\\\]/bg-card/g' -e 's/bg-\\\\[#334155\\\\]/bg-secondary/g' -e 's/border-\\\\[#334155\\\\]/border-border/g' -e 's/text-\\\\[#94[aA]3[bB]8\\\\]/text-muted-foreground/g' -e 's/text-\\\\[#64748[bB]\\\\]/text-muted-foreground/g' -e 's/text-\\\\[#475569\\\\]/text-muted-foreground/g' -e 's/bg-\\\\[#6366[fF]1\\\\]/bg-primary/g' -e 's/text-\\\\[#6366[fF]1\\\\]/text-primary/g' -e 's/border-\\\\[#6366[fF]1\\\\]/border-primary/g')",
+      "PowerShell(cd \"D:\\\\Projects with @\\\\fluenta\"; git add app/\\(dashboard\\)/ai-tutor/page.tsx app/\\(dashboard\\)/grammar-exercises/page.tsx app/\\(dashboard\\)/layout.tsx app/\\(dashboard\\)/lessons/page.tsx app/\\(dashboard\\)/mini-stories/page.tsx app/\\(dashboard\\)/vocabulary/page.tsx app/\\(dashboard\\)/word-formation/page.tsx app/api/ai/generate/ components/ai-tutor/ChatMessage.tsx components/onboarding/ components/ui/AIGenerateButton.tsx supabase/migrations/onboarding.sql types/index.ts)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('exports',{}\\), indent=2\\)\\)\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('exports',{}\\).get\\('./tailwind.css',{}\\), indent=2\\)\\)\")",
+      "Bash(git checkout *)"
+    ]
+  }
+}

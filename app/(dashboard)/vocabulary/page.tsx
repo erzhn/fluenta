@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence, useMotionValue, useTransform, useAnimation } from 'framer-motion'
-import { RotateCcw, Volume2, Check, X, Layers, BookOpen } from 'lucide-react'
+import { RotateCcw, Volume2, Check, X, Layers, BookOpen, Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
 import { VOCABULARY, getWordsForLesson, type VocabWord } from '@/lib/vocabulary-data'
 import { speak, stopSpeaking } from '@/lib/speech'
 import { addCardToSR } from '@/lib/spaced-repetition'
-import { AIGenerateButton } from '@/components/ui/AIGenerateButton'
 
 const STORAGE_KEY = 'fluenta_vocab_srs'
 
@@ -158,7 +158,13 @@ export default function VocabularyPage() {
   const [lessonFlipped, setLessonFlipped] = useState(false)
 
   const [speaking, setSpeaking] = useState(false)
+  const { generate, loading: aiLoading } = useAIGenerate()
   const [aiExamples, setAiExamples] = useState<string[]>([])
+  async function getExamples(word: string) {
+    setAiExamples([])
+    const data = await generate<{sentences:string[]}>('vocabulary_example', word, 'B1')
+    if (data?.sentences) setAiExamples(data.sentences)
+  }
 
   useEffect(() => {
     const loaded = loadSRS()
@@ -196,7 +202,6 @@ export default function VocabularyPage() {
     setSRS(updated)
     saveSRS(updated)
     setFlipped(false)
-    setAiExamples([])
     setTimeout(() => setQIdx(i => i + 1), 150)
   }
 
@@ -510,6 +515,15 @@ export default function VocabularyPage() {
                       <p className="text-white text-2xl font-bold mb-4">{card.translation}</p>
                       <p className="text-muted-foreground text-sm text-center italic">"{card.example}"</p>
                       <p className="text-muted-foreground text-xs text-center mt-1">{card.exampleTranslation}</p>
+                      <button onClick={e=>{e.stopPropagation();getExamples(card.word)}} disabled={aiLoading}
+                        className="flex items-center gap-1 text-xs text-[#818cf8] hover:text-white disabled:opacity-50 mt-2 min-h-[36px]">
+                        {aiLoading?<><Loader2 className="w-3 h-3 animate-spin"/>AI примеры...</>:<><Sparkles className="w-3 h-3"/>AI примеры</>}
+                      </button>
+                      {aiExamples.length>0&&(
+                        <div className="mt-2 space-y-1 text-left w-full">
+                          {aiExamples.map((ex,i)=><p key={i} className="text-xs text-[#64748b] italic">&quot;{ex}&quot;</p>)}
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 </div>
@@ -540,25 +554,6 @@ export default function VocabularyPage() {
                     </motion.div>
                   )}
                 </AnimatePresence>
-
-                {flipped && (
-                  <div className="mt-3 px-1">
-                    <AIGenerateButton
-                      type="vocabulary_example"
-                      context={card.word}
-                      onResult={(data) => setAiExamples((data as { sentences?: string[] }).sentences ?? [])}
-                      label="AI примеры использования"
-                      variant="inline"
-                    />
-                    {aiExamples.length > 0 && (
-                      <div className="mt-2 space-y-1.5">
-                        {aiExamples.map((s, i) => (
-                          <p key={i} className="text-xs text-muted-foreground italic pl-3 border-l-2 border-primary/40">{s}</p>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
               </motion.div>
             )}
           </AnimatePresence>

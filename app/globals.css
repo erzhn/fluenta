@@ -254,3 +254,18 @@
 .delay-2  { animation-delay: .16s; }
 .delay-3  { animation-delay: .24s; }
 .delay-4  { animation-delay: .32s; }
+
+/* ── Мобильные улучшения ── */
+@media (max-width: 768px) {
+  button, a[role="button"], [role="tab"] {
+    min-height: 44px;
+  }
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}
+
+/* Safe area для iPhone */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}

@@ -1,0 +1,833 @@
+# FLUENTA — AI ВЕЗДЕ (добавить AI на все оставшиеся страницы)
+# НЕ ЗАПРАШИВАЙ РАЗРЕШЕНИЯ. Делай сразу.
+# Запуск: $env:CLAUDE_CODE_MAX_OUTPUT_TOKENS=100000; claude --dangerously-skip-permissions < ai-everywhere-prompt.txt
+#
+# Стек: Next.js 14, TypeScript, Tailwind v4, Groq llama-3.1-8b-instant
+# Паттерн AI-запросов (используй везде):
+#   const { data: { session } } = await supabase.auth.getSession()
+#   fetch('/api/ai/generate', { method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${session?.access_token}` }, body: JSON.stringify({type, context, level}) })
+# Groq: process.env.GROQ_API_KEY, model: 'llama-3.1-8b-instant'
+# UI: bg-white/[0.04] border border-white/10 rounded-2xl | primary: #6366f1 | loading: animate-spin
+
+## ════════════════════════════════════════════════════
+## ШАГ 0: СОЗДАТЬ/ОБНОВИТЬ ЕДИНЫЙ AI ENDPOINT
+## ════════════════════════════════════════════════════
+
+Создай файл `app/api/ai/generate/route.ts`:
+
+```typescript
+import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+
+export async function POST(request: Request) {
+  const token = request.headers.get('Authorization')?.replace('Bearer ', '')
+  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { global: { headers: { Authorization: `Bearer ${token}` } } }
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { type, context = '', level = 'B1' } = await request.json()
+
+  const PROMPTS: Record<string, string> = {
+    collocations: `Generate 6 useful English collocations related to "${context}". Return JSON: {"collocations":[{"collocation":"make a decision","translation":"принять решение","example":"She made a difficult decision.","category":"${context}"}]}`,
+    idioms: `Generate 4 English idioms related to topic "${context}". Return JSON: {"idioms":[{"idiom":"bite the bullet","meaning":"терпеть неприятное","example":"Just bite the bullet and do it.","level":"${level}"}]}`,
+    phrasal_verbs: `Generate 5 English phrasal verbs related to "${context}". Return JSON: {"verbs":[{"verb":"give up","meaning":"сдаться","example":"Don't give up on your dreams.","category":"${context}"}]}`,
+    sentences: `Generate 5 English sentences at CEFR level ${level} about "${context || 'everyday life'}". Return JSON: {"sentences":[{"words":["I","like","coffee"],"translation":"Я люблю кофе","level":"${level}"}]}`,
+    pronunciation_phrases: `Generate 6 English pronunciation practice phrases at level ${level} about "${context || 'everyday topics'}". Focus on sounds that are hard for Russian speakers. Return JSON: {"phrases":["Hello, how are you?","The weather is beautiful today."]}`,
+    dictation_words: `Generate 10 English words appropriate for level ${level} dictation practice. Related to "${context || 'common vocabulary'}". Return JSON: {"words":["beautiful","necessary","environment"]}`,
+    writing_template_section: `Help write this section of an English text. Section: "${context}". Level: ${level}. Return a 2-3 sentence example in fluent English. Return JSON: {"text":"example text here"}`,
+    note_summary: `Summarize and improve these English learning notes. Make it clearer and add 2 key takeaways. Notes: "${context}". Return JSON: {"summary":"...", "takeaways":["...","..."]}`,
+    progress_insight: `Based on these English learning stats: ${context}. Give a brief motivational insight in Russian (2-3 sentences) with specific advice on what to focus on next. Return JSON: {"insight":"...", "focus":"..."}`,
+    weekly_analysis: `Analyze these weekly English learning stats: ${context}. Write a brief analysis in Russian (3-4 sentences) with specific praise and one improvement tip. Return JSON: {"analysis":"...", "tip":"...", "emoji":"🎯"}`,
+    daily_tip: `Generate a practical English learning tip for a level ${level} student. Make it actionable and specific. Return JSON: {"tip":"...", "example":"...", "emoji":"💡"}`,
+    vocabulary_example: `Generate 2 natural example sentences for the English word "${context}" at CEFR level ${level}. Return JSON: {"sentences":["She made a good decision.","The decision was made quickly."]}`,
+    grammar_exercise: `Create a fill-in-the-blank grammar exercise about "${context}" at level ${level}. Return JSON: {"question":"She ___ (go) to school every day.","answer":"goes","options":["go","goes","going","went"],"explanation":"Present Simple: he/she/it + verb+s"}`,
+    mini_story: `Write a short engaging story (120-150 words) at level ${level} about "${context}". Return JSON: {"title":"...","content":"...","vocabulary":[{"word":"...","meaning":"..."}]}`,
+    word_formation: `Show word formation from root "${context}": noun, verb, adjective, adverb with examples. Return JSON: {"root":"${context}","forms":[{"type":"noun","word":"decision","example":"Make a decision."}]}`,
+    conversation_starter: `Generate 5 conversation starters for English practice at level ${level} about "${context || 'general topics'}". Return JSON: {"starters":["What do you think about...?","Have you ever...?"]}`,
+  }
+
+  const prompt = PROMPTS[type]
+  if (!prompt) return NextResponse.json({ error: `Unknown type: ${type}` }, { status: 400 })
+
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
+      body: JSON.stringify({
+        model: 'llama-3.1-8b-instant',
+        messages: [
+          { role: 'system', content: 'You are an English teacher. Respond with valid JSON only. No markdown, no explanation, just JSON.' },
+          { role: 'user', content: prompt },
+        ],
+        max_tokens: 800,
+        temperature: 0.8,
+      }),
+    })
+
+    if (!res.ok) throw new Error(`Groq ${res.status}`)
+    const data = await res.json()
+    const raw = data.choices?.[0]?.message?.content ?? '{}'
+    const match = raw.match(/\{[\s\S]*\}|\[[\s\S]*\]/)
+    const parsed = match ? JSON.parse(match[0]) : JSON.parse(raw)
+    return NextResponse.json(parsed)
+  } catch (e) {
+    console.error('AI generate error:', e)
+    return NextResponse.json({ error: 'AI error' }, { status: 500 })
+  }
+}
+```
+
+## ════════════════════════════════════════════════════
+## ШАГ 1: ХЕЛПЕР — useAIGenerate hook
+## ════════════════════════════════════════════════════
+
+Создай файл `hooks/useAIGenerate.ts`:
+
+```typescript
+import { useState } from 'react'
+import { supabase } from '@/lib/supabase'
+
+export function useAIGenerate() {
+  const [loading, setLoading] = useState(false)
+
+  async function generate<T = Record<string, unknown>>(
+    type: string,
+    context: string,
+    level = 'B1'
+  ): Promise<T | null> {
+    setLoading(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/ai/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token ?? ''}`,
+        },
+        body: JSON.stringify({ type, context, level }),
+      })
+      if (!res.ok) return null
+      return await res.json()
+    } catch {
+      return null
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return { generate, loading }
+}
+```
+
+## ════════════════════════════════════════════════════
+## ШАГ 2: app/(dashboard)/collocations/page.tsx
+## ════════════════════════════════════════════════════
+
+В файле `app/(dashboard)/collocations/page.tsx` (93 строки):
+
+**Добавить импорты:**
+```tsx
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
+import { supabase } from '@/lib/supabase'
+```
+
+**Добавить в компонент (после существующих useState):**
+```tsx
+const { generate, loading: aiLoading } = useAIGenerate()
+const [aiTopic, setAiTopic] = useState('')
+const [aiResults, setAiResults] = useState<typeof COLLOCATIONS>([])
+
+async function generateAI() {
+  const topic = aiTopic.trim() || category !== 'Все' ? category : 'business'
+  const data = await generate<{ collocations: typeof COLLOCATIONS }>('collocations', topic)
+  if (data?.collocations) {
+    setAiResults(data.collocations.map((c, i) => ({ ...c, id: `ai-${Date.now()}-${i}` })))
+  }
+}
+```
+
+**Добавить UI блок ПЕРЕД списком карточек (`<div className="grid...">`):**
+```tsx
+{/* AI Генератор коллокаций */}
+<div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-2xl">
+  <div className="flex items-center gap-2 mb-3">
+    <Sparkles className="w-4 h-4 text-primary" />
+    <span className="text-sm font-semibold text-white">AI генератор коллокаций</span>
+  </div>
+  <div className="flex gap-2">
+    <input
+      value={aiTopic}
+      onChange={e => setAiTopic(e.target.value)}
+      placeholder="Тема: business, travel, health..."
+      className="flex-1 bg-white/[0.06] border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-[#334155] outline-none focus:border-primary/50"
+    />
+    <button
+      onClick={generateAI}
+      disabled={aiLoading}
+      className="flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-[#5558e8] disabled:opacity-50 text-white rounded-xl text-sm font-medium transition-colors"
+    >
+      {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+      {aiLoading ? '...' : 'Создать'}
+    </button>
+  </div>
+  {aiResults.length > 0 && (
+    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+      {aiResults.map(col => (
+        <div key={col.id} className="rounded-xl border border-primary/20 bg-primary/5 p-3">
+          <p className="text-white font-semibold text-sm">{col.collocation}</p>
+          <p className="text-primary text-xs mt-0.5">{col.translation}</p>
+          <p className="text-muted-foreground text-xs italic mt-1">"{col.example}"</p>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+```
+
+## ════════════════════════════════════════════════════
+## ШАГ 3: app/(dashboard)/idioms/page.tsx
+## ════════════════════════════════════════════════════
+
+В файле `app/(dashboard)/idioms/page.tsx` (127 строк):
+
+**Добавить импорты:**
+```tsx
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
+```
+
+**Добавить в компонент:**
+```tsx
+const { generate, loading: aiLoading } = useAIGenerate()
+const [aiTopic, setAiTopic] = useState('')
+const [aiIdioms, setAiIdioms] = useState<{ idiom: string; meaning: string; example: string; level: string }[]>([])
+
+async function generateAI() {
+  const topic = aiTopic.trim() || 'emotions'
+  const data = await generate<{ idioms: typeof aiIdioms }>('idioms', topic)
+  if (data?.idioms) setAiIdioms(data.idioms)
+}
+```
+
+**Добавить блок ДО списка идиом:**
+```tsx
+{/* AI блок */}
+<div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-2xl">
+  <div className="flex items-center gap-2 mb-3">
+    <Sparkles className="w-4 h-4 text-primary" />
+    <span className="text-sm font-semibold text-white">AI идиомы по теме</span>
+  </div>
+  <div className="flex gap-2">
+    <input value={aiTopic} onChange={e => setAiTopic(e.target.value)}
+      placeholder="Тема: time, money, success..."
+      className="flex-1 bg-white/[0.06] border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-[#334155] outline-none focus:border-primary/50" />
+    <button onClick={generateAI} disabled={aiLoading}
+      className="flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-[#5558e8] disabled:opacity-50 text-white rounded-xl text-sm font-medium transition-colors">
+      {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+      {aiLoading ? '...' : 'Создать'}
+    </button>
+  </div>
+  {aiIdioms.length > 0 && (
+    <div className="mt-3 space-y-2">
+      {aiIdioms.map((item, i) => (
+        <div key={i} className="rounded-xl border border-primary/20 bg-primary/5 p-3">
+          <div className="flex items-center justify-between">
+            <p className="text-white font-semibold text-sm">"{item.idiom}"</p>
+            <span className="text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full">{item.level}</span>
+          </div>
+          <p className="text-primary text-xs mt-0.5">{item.meaning}</p>
+          <p className="text-muted-foreground text-xs italic mt-1">{item.example}</p>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+```
+
+## ════════════════════════════════════════════════════
+## ШАГ 4: app/(dashboard)/phrasal-verbs/page.tsx
+## ════════════════════════════════════════════════════
+
+В файле `app/(dashboard)/phrasal-verbs/page.tsx` (233 строки):
+
+**Добавить импорты:**
+```tsx
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
+```
+
+**Добавить в компонент:**
+```tsx
+const { generate, loading: aiLoading } = useAIGenerate()
+const [aiTopic, setAiTopic] = useState('')
+const [aiVerbs, setAiVerbs] = useState<{ verb: string; meaning: string; example: string; category: string }[]>([])
+
+async function generateAI() {
+  const data = await generate<{ verbs: typeof aiVerbs }>('phrasal_verbs', aiTopic.trim() || 'daily life')
+  if (data?.verbs) setAiVerbs(data.verbs)
+}
+```
+
+**Добавить блок после поискового инпута (перед категориями):**
+```tsx
+{/* AI блок */}
+<div className="mb-4 p-4 bg-primary/5 border border-primary/20 rounded-2xl">
+  <div className="flex items-center gap-2 mb-3">
+    <Sparkles className="w-4 h-4 text-primary" />
+    <span className="text-sm font-semibold text-white">AI фразовые глаголы</span>
+  </div>
+  <div className="flex gap-2">
+    <input value={aiTopic} onChange={e => setAiTopic(e.target.value)}
+      placeholder="Тема: work, travel, relationships..."
+      className="flex-1 bg-white/[0.06] border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-[#334155] outline-none focus:border-primary/50" />
+    <button onClick={generateAI} disabled={aiLoading}
+      className="flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-[#5558e8] disabled:opacity-50 text-white rounded-xl text-sm font-medium transition-colors">
+      {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+      {aiLoading ? '...' : 'Создать'}
+    </button>
+  </div>
+  {aiVerbs.length > 0 && (
+    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+      {aiVerbs.map((v, i) => (
+        <div key={i} className="rounded-xl border border-primary/20 bg-primary/5 p-3">
+          <p className="text-white font-bold text-sm">{v.verb}</p>
+          <p className="text-primary text-xs">{v.meaning}</p>
+          <p className="text-muted-foreground text-xs italic mt-1">"{v.example}"</p>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+```
+
+## ════════════════════════════════════════════════════
+## ШАГ 5: app/(dashboard)/sentence-builder/page.tsx
+## ════════════════════════════════════════════════════
+
+В файле `app/(dashboard)/sentence-builder/page.tsx` (199 строк):
+
+**Добавить импорты:**
+```tsx
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
+```
+
+**Добавить в компонент (после type Level declaration):**
+```tsx
+const { generate, loading: aiLoading } = useAIGenerate()
+const [aiSentences, setAiSentences] = useState<Sentence[]>([])
+const [aiTopic, setAiTopic] = useState('')
+
+async function generateAISentences() {
+  const data = await generate<{ sentences: Sentence[] }>('sentences', aiTopic.trim() || 'everyday life', level)
+  if (data?.sentences) {
+    setAiSentences(data.sentences.map(s => ({ ...s, level })))
+  }
+}
+
+function useAISentence() {
+  if (aiSentences.length === 0) return
+  const randomSentence = aiSentences[Math.floor(Math.random() * aiSentences.length)]
+  // inject into current sentence state — rebuild available/selected
+  setAvailable(shuffle(randomSentence.words.map((w, id) => ({ word: w, id }))))
+  setSelected([])
+  setChecked(null)
+}
+```
+
+**Добавить кнопку AI в футер (рядом с кнопкой "Следующее предложение"):**
+
+Найди основной `return` компонента. После заголовка страницы (h1/title) добавь блок:
+```tsx
+{/* AI генератор предложений */}
+<div className="mb-4 p-4 bg-primary/5 border border-primary/20 rounded-2xl">
+  <div className="flex items-center gap-1.5 mb-2">
+    <Sparkles className="w-3.5 h-3.5 text-primary" />
+    <span className="text-xs font-semibold text-white">AI предложения</span>
+  </div>
+  <div className="flex gap-2">
+    <input value={aiTopic} onChange={e => setAiTopic(e.target.value)}
+      placeholder="Тема для предложений..."
+      className="flex-1 bg-white/[0.06] border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-[#334155] outline-none" />
+    <button onClick={generateAISentences} disabled={aiLoading}
+      className="flex items-center gap-1 px-3 py-1.5 bg-primary hover:bg-[#5558e8] disabled:opacity-50 text-white rounded-lg text-xs font-medium transition-colors">
+      {aiLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+      {aiLoading ? '...' : 'Создать'}
+    </button>
+    {aiSentences.length > 0 && (
+      <button onClick={useAISentence}
+        className="px-3 py-1.5 bg-white/[0.06] hover:bg-white/10 text-white rounded-lg text-xs border border-white/10 transition-colors">
+        Попробовать
+      </button>
+    )}
+  </div>
+  {aiSentences.length > 0 && (
+    <p className="text-xs text-muted-foreground mt-1.5">✓ Сгенерировано {aiSentences.length} предложений</p>
+  )}
+</div>
+```
+
+## ════════════════════════════════════════════════════
+## ШАГ 6: app/(dashboard)/writing-templates/page.tsx
+## ════════════════════════════════════════════════════
+
+В файле `app/(dashboard)/writing-templates/page.tsx` (244 строки):
+
+**Добавить импорты:**
+```tsx
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
+```
+
+**Добавить в компонент:**
+```tsx
+const { generate, loading: aiLoading } = useAIGenerate()
+const [aiLoadingSection, setAiLoadingSection] = useState<string | null>(null)
+
+async function fillWithAI(sectionLabel: string, sectionIndex: number) {
+  setAiLoadingSection(sectionLabel)
+  const templateContext = `${selected?.title ?? 'formal letter'} - section: ${sectionLabel}`
+  const data = await generate<{ text: string }>('writing_template_section', templateContext, selected?.level?.split('-')[0] ?? 'B1')
+  if (data?.text) {
+    setUserText(prev => ({ ...prev, [sectionLabel]: data.text }))
+  }
+  setAiLoadingSection(null)
+}
+```
+
+**Найди место где рендерятся секции шаблона (structure.map) и добавь кнопку AI рядом с каждым textarea:**
+
+Найди код типа `{selected.structure.map((section, idx) => (` и внутри каждой секции добавь после textarea:
+```tsx
+<button
+  onClick={() => fillWithAI(section.label, idx)}
+  disabled={aiLoadingSection === section.label}
+  className="mt-1.5 flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors disabled:opacity-50"
+>
+  {aiLoadingSection === section.label
+    ? <><Loader2 className="w-3 h-3 animate-spin" /> Генерирую...</>
+    : <><Sparkles className="w-3 h-3" /> AI заполнить</>
+  }
+</button>
+```
+
+## ════════════════════════════════════════════════════
+## ШАГ 7: app/(dashboard)/pronunciation-practice/page.tsx
+## ════════════════════════════════════════════════════
+
+В файле `app/(dashboard)/pronunciation-practice/page.tsx` (235 строк):
+
+**Добавить импорты:**
+```tsx
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
+```
+
+**Добавить в компонент:**
+```tsx
+const { generate, loading: aiLoading } = useAIGenerate()
+const [aiPhrases, setAiPhrases] = useState<string[]>([])
+const [aiTopic, setAiTopic] = useState('')
+const [usingAI, setUsingAI] = useState(false)
+
+async function generateAIPhrases() {
+  const data = await generate<{ phrases: string[] }>('pronunciation_phrases', aiTopic.trim() || 'everyday situations', level)
+  if (data?.phrases && data.phrases.length > 0) {
+    setAiPhrases(data.phrases)
+    setUsingAI(true)
+    setPhraseIdx(0)
+  }
+}
+```
+
+**Найди кнопки управления (секция с кнопками "Предыдущая"/"Следующая") и добавь рядом AI блок:**
+```tsx
+{/* AI фразы */}
+<div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl">
+  <div className="flex items-center gap-1.5 mb-2">
+    <Sparkles className="w-3.5 h-3.5 text-primary" />
+    <span className="text-xs font-semibold text-white">AI фразы для практики</span>
+    {usingAI && <span className="text-xs text-primary ml-auto">✓ AI режим</span>}
+  </div>
+  <div className="flex gap-2">
+    <input value={aiTopic} onChange={e => setAiTopic(e.target.value)}
+      placeholder="Тема: hotel, airport, shopping..."
+      className="flex-1 bg-white/[0.06] border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-[#334155] outline-none" />
+    <button onClick={generateAIPhrases} disabled={aiLoading}
+      className="flex items-center gap-1 px-3 py-1.5 bg-primary hover:bg-[#5558e8] disabled:opacity-50 text-white rounded-lg text-xs font-medium transition-colors">
+      {aiLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+      {aiLoading ? '...' : 'Создать'}
+    </button>
+    {usingAI && (
+      <button onClick={() => { setUsingAI(false); setAiPhrases([]) }}
+        className="px-3 py-1.5 bg-white/[0.06] border border-white/10 text-muted-foreground rounded-lg text-xs hover:text-white transition-colors">
+        Сброс
+      </button>
+    )}
+  </div>
+</div>
+```
+
+**ВАЖНО:** Измени логику получения текущей фразы. Найди место где используется `PHRASES[level][phraseIdx]` и замени на:
+```tsx
+const currentPhrases = usingAI && aiPhrases.length > 0 ? aiPhrases : (PHRASES[level] ?? [])
+const currentPhrase = currentPhrases[phraseIdx % currentPhrases.length] ?? ''
+```
+Везде где используется `PHRASES[level][phraseIdx]` замени на `currentPhrase`.
+
+## ════════════════════════════════════════════════════
+## ШАГ 8: app/(dashboard)/dictation/page.tsx
+## ════════════════════════════════════════════════════
+
+В файле `app/(dashboard)/dictation/page.tsx` (311 строк):
+
+**Добавить импорты:**
+```tsx
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
+```
+
+**Добавить в компонент:**
+```tsx
+const { generate, loading: aiLoading } = useAIGenerate()
+const [aiWords, setAiWords] = useState<string[]>([])
+const [aiTopic, setAiTopic] = useState('')
+const [usingAI, setUsingAI] = useState(false)
+
+async function generateAIWords() {
+  const data = await generate<{ words: string[] }>('dictation_words', aiTopic.trim() || 'common vocabulary', level)
+  if (data?.words && data.words.length > 0) {
+    setAiWords(data.words)
+    setUsingAI(true)
+    setCurrentIndex(0)
+    setStarted(false)
+    setUserInput('')
+    setResults([])
+  }
+}
+```
+
+**Найди где показывается кнопка "Начать" или панель управления и добавь AI блок ДО неё:**
+```tsx
+{/* AI генератор слов для диктанта */}
+{!started && (
+  <div className="mb-4 p-4 bg-primary/5 border border-primary/20 rounded-2xl">
+    <div className="flex items-center gap-1.5 mb-2">
+      <Sparkles className="w-3.5 h-3.5 text-primary" />
+      <span className="text-xs font-semibold text-white">AI слова для диктанта</span>
+      {usingAI && <span className="text-xs text-primary ml-auto">✓ {aiWords.length} AI слов</span>}
+    </div>
+    <div className="flex gap-2">
+      <input value={aiTopic} onChange={e => setAiTopic(e.target.value)}
+        placeholder="Тема: science, travel, business..."
+        className="flex-1 bg-white/[0.06] border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-[#334155] outline-none" />
+      <button onClick={generateAIWords} disabled={aiLoading}
+        className="flex items-center gap-1 px-3 py-1.5 bg-primary hover:bg-[#5558e8] disabled:opacity-50 text-white rounded-lg text-xs font-medium transition-colors">
+        {aiLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+        {aiLoading ? '...' : 'Создать'}
+      </button>
+      {usingAI && (
+        <button onClick={() => { setUsingAI(false); setAiWords([]) }}
+          className="px-2 py-1.5 text-muted-foreground hover:text-white text-xs transition-colors">
+          ✕
+        </button>
+      )}
+    </div>
+  </div>
+)}
+```
+
+**ВАЖНО:** Измени логику слов диктанта. Найди где используется `DICTATION_WORDS[level]` и замени:
+```tsx
+const currentWordList = usingAI && aiWords.length > 0
+  ? aiWords.map(w => ({ word: w }))
+  : (DICTATION_WORDS[level] ?? [])
+```
+Все `DICTATION_WORDS[level]` замени на `currentWordList`.
+
+## ════════════════════════════════════════════════════
+## ШАГ 9: app/(dashboard)/notes/page.tsx
+## ════════════════════════════════════════════════════
+
+В файле `app/(dashboard)/notes/page.tsx` (70 строк):
+
+**Добавить импорты:**
+```tsx
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
+```
+
+**Добавить в компонент:**
+```tsx
+const { generate, loading: aiLoading } = useAIGenerate()
+const [aiSummaries, setAiSummaries] = useState<Record<string, { summary: string; takeaways: string[] }>>({})
+const [loadingNote, setLoadingNote] = useState<string | null>(null)
+
+async function summarizeNote(lessonId: string, content: string) {
+  setLoadingNote(lessonId)
+  const data = await generate<{ summary: string; takeaways: string[] }>('note_summary', content.slice(0, 500))
+  if (data) setAiSummaries(prev => ({ ...prev, [lessonId]: data }))
+  setLoadingNote(null)
+}
+```
+
+**Найди карточку заметки (div с note.content) и добавь кнопку AI + результат:**
+```tsx
+{/* AI кнопка */}
+<div className="mt-3 pt-3 border-t border-border">
+  {aiSummaries[note.lessonId] ? (
+    <div className="space-y-1">
+      <p className="text-xs text-white/70">{aiSummaries[note.lessonId].summary}</p>
+      <div className="flex flex-wrap gap-1 mt-1">
+        {aiSummaries[note.lessonId].takeaways.map((t, i) => (
+          <span key={i} className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">💡 {t}</span>
+        ))}
+      </div>
+    </div>
+  ) : (
+    <button
+      onClick={() => summarizeNote(note.lessonId, note.content)}
+      disabled={loadingNote === note.lessonId}
+      className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 disabled:opacity-50 transition-colors"
+    >
+      {loadingNote === note.lessonId
+        ? <><Loader2 className="w-3 h-3 animate-spin" /> Анализирую...</>
+        : <><Sparkles className="w-3 h-3" /> AI резюме</>
+      }
+    </button>
+  )}
+</div>
+```
+
+## ════════════════════════════════════════════════════
+## ШАГ 10: app/(dashboard)/weekly-summary/page.tsx
+## ════════════════════════════════════════════════════
+
+В файле `app/(dashboard)/weekly-summary/page.tsx`:
+
+**Добавить импорты:**
+```tsx
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
+```
+
+**Добавить в компонент (после `const [data, setData] = useState`):**
+```tsx
+const { generate, loading: aiLoading } = useAIGenerate()
+const [aiAnalysis, setAiAnalysis] = useState<{ analysis: string; tip: string; emoji: string } | null>(null)
+
+async function getAIAnalysis() {
+  if (!data) return
+  const statsContext = `minutes: ${data.totalMinutes}, lessons: ${data.totalLessons}, words: ${data.totalWords}, streak: ${data.streakDays} days, best day: ${data.bestDay}`
+  const result = await generate<typeof aiAnalysis>('weekly_analysis', statsContext)
+  setAiAnalysis(result)
+}
+```
+
+**Найди секцию со статистикой (totalMinutes, totalLessons итд) и добавь ПОСЛЕ неё:**
+```tsx
+{/* AI анализ недели */}
+{data && (
+  <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
+    <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center gap-2">
+        <Sparkles className="w-4 h-4 text-primary" />
+        <span className="text-sm font-semibold text-white">AI анализ недели</span>
+      </div>
+      {!aiAnalysis && (
+        <button onClick={getAIAnalysis} disabled={aiLoading}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 border border-primary/20 text-primary rounded-xl text-xs font-medium transition-colors disabled:opacity-50">
+          {aiLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+          {aiLoading ? 'Анализирую...' : 'Получить анализ'}
+        </button>
+      )}
+    </div>
+    {aiAnalysis ? (
+      <div className="space-y-2">
+        <p className="text-sm text-white/80 leading-relaxed">{aiAnalysis.emoji} {aiAnalysis.analysis}</p>
+        <div className="flex items-start gap-2 p-3 bg-primary/5 rounded-xl border border-primary/10">
+          <span>💡</span>
+          <p className="text-xs text-white/70">{aiAnalysis.tip}</p>
+        </div>
+        <button onClick={() => setAiAnalysis(null)} className="text-xs text-muted-foreground hover:text-white transition-colors">
+          Обновить анализ
+        </button>
+      </div>
+    ) : (
+      <p className="text-sm text-muted-foreground">Нажми кнопку выше, чтобы получить персональный анализ твоей недели</p>
+    )}
+  </div>
+)}
+```
+
+## ════════════════════════════════════════════════════
+## ШАГ 11: app/(dashboard)/page.tsx (Dashboard)
+## ════════════════════════════════════════════════════
+
+В файле `app/(dashboard)/page.tsx` (dashboard главная):
+
+**Добавить импорты:**
+```tsx
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
+```
+
+**Добавить в компонент (после существующих useState):**
+```tsx
+const { generate, loading: tipLoading } = useAIGenerate()
+const [dailyTip, setDailyTip] = useState<{ tip: string; example: string; emoji: string } | null>(null)
+
+async function getDailyTip() {
+  const levelStr = profile ? getLevelFromXP(profile.xp ?? 0) : 'B1'
+  const data = await generate<typeof dailyTip>('daily_tip', 'learning English', levelStr)
+  setDailyTip(data)
+}
+```
+
+**Добавить карточку "AI совет дня" в JSX — найди секцию с QUICK links (быстрые действия) и добавь ПОСЛЕ неё:**
+```tsx
+{/* AI совет дня */}
+<div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
+  <div className="flex items-center justify-between mb-3">
+    <div className="flex items-center gap-2">
+      <span className="text-lg">🤖</span>
+      <span className="text-sm font-semibold text-white">AI совет дня</span>
+    </div>
+    <button
+      onClick={getDailyTip}
+      disabled={tipLoading}
+      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-primary/10 hover:bg-primary/20 border border-primary/20 text-primary rounded-xl transition-colors disabled:opacity-50"
+    >
+      {tipLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+      {tipLoading ? '...' : dailyTip ? 'Новый совет' : 'Получить совет'}
+    </button>
+  </div>
+  {dailyTip ? (
+    <div className="space-y-2">
+      <p className="text-sm text-white/80 leading-relaxed">{dailyTip.emoji} {dailyTip.tip}</p>
+      {dailyTip.example && (
+        <p className="text-xs text-muted-foreground italic border-l-2 border-primary/30 pl-3">{dailyTip.example}</p>
+      )}
+    </div>
+  ) : (
+    <p className="text-sm text-muted-foreground">Получи персональный совет по изучению английского</p>
+  )}
+</div>
+```
+
+## ════════════════════════════════════════════════════
+## ШАГ 12: app/(dashboard)/progress/page.tsx
+## ════════════════════════════════════════════════════
+
+В файле `app/(dashboard)/progress/page.tsx`:
+
+**Добавить импорты:**
+```tsx
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
+```
+
+**Добавить в компонент:**
+```tsx
+const { generate, loading: aiLoading } = useAIGenerate()
+const [progressInsight, setProgressInsight] = useState<{ insight: string; focus: string } | null>(null)
+
+async function getProgressInsight() {
+  // Собери статистику из profile
+  const stats = profile
+    ? `xp: ${profile.xp}, streak: ${profile.streak}, level: ${profile.current_level || 'B1'}`
+    : 'learning English'
+  const data = await generate<typeof progressInsight>('progress_insight', stats, profile?.current_level || 'B1')
+  setProgressInsight(data)
+}
+```
+
+**Найди конец страницы progress (после основных блоков статистики) и добавь:**
+```tsx
+{/* AI инсайт прогресса */}
+<div className={`${glass} rounded-2xl p-5`}>
+  <div className="flex items-center justify-between mb-3">
+    <div className="flex items-center gap-2">
+      <Sparkles className="w-4 h-4 text-primary" />
+      <span className="font-semibold text-white">AI анализ прогресса</span>
+    </div>
+    {!progressInsight && (
+      <button onClick={getProgressInsight} disabled={aiLoading}
+        className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 border border-primary/20 text-primary rounded-xl text-xs font-medium transition-colors disabled:opacity-50">
+        {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+        {aiLoading ? 'Анализирую...' : 'Анализировать'}
+      </button>
+    )}
+  </div>
+  {progressInsight ? (
+    <div className="space-y-3">
+      <p className="text-sm text-white/80 leading-relaxed">{progressInsight.insight}</p>
+      <div className="p-3 bg-primary/5 rounded-xl border border-primary/10">
+        <p className="text-xs font-medium text-primary mb-1">🎯 Следующий фокус:</p>
+        <p className="text-xs text-white/70">{progressInsight.focus}</p>
+      </div>
+      <button onClick={() => setProgressInsight(null)} className="text-xs text-muted-foreground hover:text-white">
+        Обновить анализ
+      </button>
+    </div>
+  ) : (
+    <p className="text-sm text-muted-foreground">Получи персональный анализ своего прогресса в изучении английского</p>
+  )}
+</div>
+```
+
+## ════════════════════════════════════════════════════
+## ШАГ 13: ПРОВЕРКА И ФИНАЛ
+## ════════════════════════════════════════════════════
+
+### 13.1 Проверить TypeScript:
+```bash
+npx tsc --noEmit 2>&1 | head -40
+```
+Если есть ошибки — исправь. Типичные: не хватает типа у `generate<T>`, неверный import.
+
+### 13.2 Проверить что endpoint работает (структура файла):
+```bash
+cat app/api/ai/generate/route.ts | head -5
+```
+
+### 13.3 Проверить все импорты useAIGenerate:
+```bash
+grep -r "useAIGenerate" app/ --include="*.tsx" | head -20
+```
+
+### 13.4 Git commit:
+```bash
+git add -A
+git commit -m "feat: add AI generation to all pages (collocations, idioms, phrasal-verbs, sentence-builder, writing-templates, pronunciation-practice, dictation, notes, weekly-summary, dashboard, progress)"
+```
+
+---
+
+## ИТОГО: AI добавлен на страницы:
+- ✅ collocations — генерация по теме
+- ✅ idioms — генерация по теме
+- ✅ phrasal-verbs — генерация по теме
+- ✅ sentence-builder — генерация предложений для сборки
+- ✅ writing-templates — AI заполнение секций
+- ✅ pronunciation-practice — AI фразы для практики
+- ✅ dictation — AI слова для диктанта
+- ✅ notes — AI резюме заметок
+- ✅ weekly-summary — AI анализ недели
+- ✅ dashboard — AI совет дня
+- ✅ progress — AI анализ прогресса
+
+## УЖЕ БЫЛО (не трогай):
+- reading — AI текст ✓
+- listening — AI текст ✓
+- writing — AI проверка ✓
+- grammar — AI объяснения ✓
+- ai-tutor — весь AI ✓
+- my-plan — AI план ✓

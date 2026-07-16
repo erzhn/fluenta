@@ -1,7 +1,6 @@
 'use client'
 import { useState } from 'react'
 import { AFFIXES } from '@/lib/word-formation-data'
-import { AIGenerateButton } from '@/components/ui/AIGenerateButton'
 
 export default function WordFormationPage() {
   const [selected, setSelected] = useState(AFFIXES[0])
@@ -10,7 +9,6 @@ export default function WordFormationPage() {
   const [answer, setAnswer] = useState('')
   const [result, setResult] = useState<boolean | null>(null)
   const [score, setScore] = useState({ correct: 0, total: 0 })
-  const [aiForms, setAiForms] = useState<Array<{ type: string; word: string; example: string }> | null>(null)
 
   const prefixes = AFFIXES.filter(a => a.type === 'prefix')
   const suffixes = AFFIXES.filter(a => a.type === 'suffix')
@@ -84,30 +82,6 @@ export default function WordFormationPage() {
                   <span className="text-muted-foreground text-sm">{ex.translation}</span>
                 </div>
               ))}
-            </div>
-
-            <div className="mt-4 pt-4 border-t border-white/10">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-muted-foreground">AI словообразование</span>
-                <AIGenerateButton
-                  type="word_formation"
-                  context={selected.examples[0]?.base ?? selected.affix}
-                  onResult={(data) => setAiForms((data as { forms?: Array<{ type: string; word: string; example: string }> }).forms ?? null)}
-                  label="Сгенерировать"
-                  variant="inline"
-                />
-              </div>
-              {aiForms && (
-                <div className="space-y-1.5">
-                  {aiForms.map((f, i) => (
-                    <div key={i} className="flex items-center gap-2 text-xs py-1">
-                      <span className="text-primary w-16">{f.type}</span>
-                      <span className="text-white font-semibold">{f.word}</span>
-                      <span className="text-muted-foreground italic truncate">— {f.example}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
 

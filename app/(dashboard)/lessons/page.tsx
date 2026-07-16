@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, CheckCircle, Lock, Zap, RotateCcw, BookOpen, FlipHorizontal } from 'lucide-react'
-import { AIGenerateButton } from '@/components/ui/AIGenerateButton'
 import { LESSONS } from '@/lib/lessons-data'
 import type { Lesson } from '@/lib/lessons-data'
 import { MODULES } from '@/lib/modules-data'
@@ -550,7 +549,6 @@ export default function LessonsPage() {
   const [progress, setProgress] = useState<Progress>({ completedLessons: {}, totalXP: 0 })
   const [isGuest, setIsGuest] = useState(false)
   const [showDemoModal, setShowDemoModal] = useState(false)
-  const [aiStarters, setAiStarters] = useState<string[]>([])
 
   useEffect(() => { setProgress(loadProgress()) }, [])
 
@@ -627,38 +625,11 @@ export default function LessonsPage() {
                     : `${totalCompleted}/${totalInLevel} на уровне ${activeLevel}`}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
-                <AIGenerateButton
-                  type="conversation_starter"
-                  context={`English level ${activeLevel}`}
-                  level={activeLevel}
-                  onResult={(data) => setAiStarters((data as { starters?: string[] }).starters ?? [])}
-                  label="Темы для беседы"
-                  variant="inline"
-                />
-                <div className="flex items-center gap-2 bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2">
-                  <Zap className="w-4 h-4 text-[#f59e0b]" />
-                  <span className="text-white font-bold text-sm">{progress.totalXP} XP</span>
-                </div>
+              <div className="flex items-center gap-2 bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2">
+                <Zap className="w-4 h-4 text-[#f59e0b]" />
+                <span className="text-white font-bold text-sm">{progress.totalXP} XP</span>
               </div>
             </div>
-
-            {aiStarters.length > 0 && (
-              <div className="bg-white/[0.04] border border-primary/20 rounded-2xl p-4 mb-4">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-semibold text-primary">💬 Темы для беседы · {activeLevel}</span>
-                  <button onClick={() => setAiStarters([])} className="text-muted-foreground text-xs hover:text-white">✕</button>
-                </div>
-                <ul className="space-y-1.5">
-                  {aiStarters.map((s, i) => (
-                    <li key={i} className="text-sm text-[#e2e8f0] flex gap-2">
-                      <span className="text-primary font-bold shrink-0">{i + 1}.</span>
-                      <span>{s}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
 
             {/* Module tabs */}
             <div className="flex gap-2 flex-wrap mb-5 overflow-x-auto pb-1">

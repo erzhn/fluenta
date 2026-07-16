@@ -1,0 +1,859 @@
+# FLUENTA — МАСТЕР-ИСПРАВЛЕНИЕ (ВСЁ СРАЗУ)
+# НЕ ЗАПРАШИВАЙ РАЗРЕШЕНИЯ. Делай сразу.
+# Запуск: $env:CLAUDE_CODE_MAX_OUTPUT_TOKENS=100000; claude --dangerously-skip-permissions < master-fix-prompt.txt
+#
+# ПРОБЛЕМЫ:
+# 1. 20 файлов обрезаны предыдущими запусками Claude Code → 96 TS ошибок
+# 2. Белый фон (ThemeProvider defaultTheme="light", но весь UI задизайнен под dark)
+# 3. Мобильная версия не оптимизирована
+# 4. AI не везде добавлен правильно (обрезанные файлы)
+#
+# СТРАТЕГИЯ: git checkout восстанавливает обрезанные файлы, потом точечные Edit
+
+## ═══════════════════════════════════════════════════
+## ШАГ 1: ВОССТАНОВИТЬ ВСЕ ОБРЕЗАННЫЕ ФАЙЛЫ ЧЕРЕЗ GIT
+## ═══════════════════════════════════════════════════
+
+```bash
+# Восстановить все обрезанные файлы из последнего рабочего коммита
+git checkout f6c4798 -- \
+  "app/(dashboard)/layout.tsx" \
+  "app/(dashboard)/ai-tutor/page.tsx" \
+  "app/(dashboard)/collocations/page.tsx" \
+  "app/(dashboard)/dashboard/page.tsx" \
+  "app/(dashboard)/dictation/page.tsx" \
+  "app/(dashboard)/grammar-exercises/page.tsx" \
+  "app/(dashboard)/idioms/page.tsx" \
+  "app/(dashboard)/lessons/page.tsx" \
+  "app/(dashboard)/mini-stories/page.tsx" \
+  "app/(dashboard)/notes/page.tsx" \
+  "app/(dashboard)/phrasal-verbs/page.tsx" \
+  "app/(dashboard)/progress/page.tsx" \
+  "app/(dashboard)/pronunciation-practice/page.tsx" \
+  "app/(dashboard)/sentence-builder/page.tsx" \
+  "app/(dashboard)/vocabulary/page.tsx" \
+  "app/(dashboard)/weekly-summary/page.tsx" \
+  "app/(dashboard)/word-formation/page.tsx" \
+  "app/(dashboard)/writing-templates/page.tsx" \
+  "components/ai-tutor/ChatMessage.tsx" \
+  "types/index.ts"
+```
+
+```bash
+# Восстановить полный globals.css из коммита где он был исправлен
+git checkout 026088d -- app/globals.css
+```
+
+```bash
+# Проверить что файлы восстановились
+npx tsc --noEmit 2>&1 | grep "error TS" | wc -l
+```
+Должно быть 0 или близко к 0.
+
+## ═══════════════════════════════════════════════════
+## ШАГ 2: ИСПРАВИТЬ ТЁМНУЮ ТЕМУ (главная причина белого фона)
+## ═══════════════════════════════════════════════════
+
+**2.1. Изменить ThemeProvider на dark по умолчанию**
+
+Файл `components/ThemeProvider.tsx` — изменить `defaultTheme="light"` на `defaultTheme="dark"`:
+
+```tsx
+"use client";
+import { ThemeProvider as NextThemesProvider } from "next-themes";
+import type { ThemeProviderProps } from "next-themes";
+
+export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
+  return (
+    <NextThemesProvider
+      attribute="class"
+      defaultTheme="dark"
+      enableSystem={false}
+      disableTransitionOnChange
+      {...props}
+    >
+      {children}
+    </NextThemesProvider>
+  );
+}
+```
+
+**2.2. Убрать кнопку смены темы из TopBar (только тёмная тема)**
+
+Файл `components/layout/TopBar.tsx`:
+Найди кнопку с `Sun` / `Moon` иконками и удали её целиком. Вместо неё ничего не ставь.
+Также удали импорт `{ Sun, Moon }` из lucide-react и `useTheme` из next-themes, `mounted` state и `useEffect` для mounted.
+
+**2.3. Добавить `html` класс dark сразу при загрузке**
+
+В файл `app/layout.tsx` найди тег `<html` и добавь `className="dark"`:
+```tsx
+<html lang="ru" className="dark" suppressHydrationWarning>
+```
+
+## ═══════════════════════════════════════════════════
+## ШАГ 3: МОБИЛЬНАЯ АДАПТАЦИЯ
+## ═══════════════════════════════════════════════════
+
+**3.1. Исправить layout для мобильных**
+
+Файл `app/(dashboard)/layout.tsx`:
+
+После восстановления через git — найди в JSX main/content секцию. Убедись что:
+- Основной контент имеет `pb-20 md:pb-0` (отступ снизу для мобильной навигации)
+- Scroll работает: main должен иметь `overflow-y-auto`
+
+Найди тег `<main` или основной контейнер контента и проверь что он содержит:
+```tsx
+className="flex-1 overflow-y-auto pb-20 md:pb-0"
+```
+
+**3.2. Улучшить MobileNav**
+
+Файл `components/layout/MobileNav.tsx` — увеличить tap targets:
+
+Заменить весь файл:
+```tsx
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { LayoutDashboard, Brain, BookOpen, Layers, TrendingUp } from "lucide-react";
+
+const TABS = [
+  { href: "/dashboard",  icon: LayoutDashboard, label: "Главная"  },
+  { href: "/ai-tutor",   icon: Brain,           label: "AI"       },
+  { href: "/lessons",    icon: BookOpen,        label: "Уроки"    },
+  { href: "/vocabulary", icon: Layers,          label: "Словарь"  },
+  { href: "/progress",   icon: TrendingUp,      label: "Прогресс" },
+];
+
+export function MobileNav() {
+  const pathname = usePathname();
+  return (
+    <nav
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0F0F1A]/95 backdrop-blur-xl border-t border-white/[0.08]"
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+    >
+      <div className="flex h-16">
+        {TABS.map((tab) => {
+          const isActive = pathname === tab.href || pathname.startsWith(tab.href + "/");
+          return (
+            <Link key={tab.href} href={tab.href} className="flex-1 flex flex-col items-center justify-center gap-1 relative min-h-[64px]">
+              {isActive && (
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-0.5 rounded-full bg-[#818CF8]" />
+              )}
+              <tab.icon
+                className="w-6 h-6 transition-colors"
+                strokeWidth={isActive ? 2.5 : 1.5}
+                style={{ color: isActive ? "#818CF8" : "#64748B" }}
+              />
+              <span className="text-[10px] font-medium" style={{ color: isActive ? "#818CF8" : "#64748B" }}>
+                {tab.label}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+```
+
+**3.3. Добавить глобальные мобильные стили в globals.css**
+
+В конец файла `app/globals.css` добавь:
+```css
+/* ── Мобильные улучшения ── */
+@media (max-width: 768px) {
+  /* Минимальный размер кнопок для touch */
+  button, a[role="button"], [role="tab"] {
+    min-height: 44px;
+  }
+  /* Увеличить шрифт инпутов (iOS не зумит при 16px+) */
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}
+
+/* Safe area для iPhone */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+```
+
+## ═══════════════════════════════════════════════════
+## ШАГ 4: AI ВЕЗДЕ — АККУРАТНЫЕ ТОЧЕЧНЫЕ ПРАВКИ
+## ═══════════════════════════════════════════════════
+
+ВАЖНО: Используй только Edit tool (не Write). Вставляй код точечно.
+Все новые файлы из предыдущего запуска уже существуют и рабочие:
+- `app/api/ai/generate/route.ts` ✓
+- `hooks/useAIGenerate.ts` ✓
+- `components/ui/AIGenerateButton.tsx` ✓
+- `components/onboarding/OnboardingWizard.tsx` ✓
+
+### 4.1. layout.tsx — добавить OnboardingWizard обратно
+
+После git restore layout.tsx потерял код онбординга. Добавь его снова через Edit:
+
+В `app/(dashboard)/layout.tsx`:
+1. Добавить импорт: `import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";`
+2. Добавить state: `const [showOnboarding, setShowOnboarding] = useState(false);` и `const [userId, setUserId] = useState<string | null>(null);`
+3. В useEffect после `if (user)` добавить:
+```tsx
+setUserId(user.id);
+const { data: profile } = await supabase
+  .from('profiles')
+  .select('onboarding_completed')
+  .eq('id', user.id)
+  .single();
+if (profile && 'onboarding_completed' in profile && !profile.onboarding_completed) {
+  setShowOnboarding(true);
+}
+```
+4. В JSX (после открывающего `<div className="flex h-screen...">`) добавить:
+```tsx
+{showOnboarding && userId && (
+  <OnboardingWizard userId={userId} onComplete={() => setShowOnboarding(false)} />
+)}
+```
+
+### 4.2. collocations/page.tsx — AI генератор
+
+После git restore добавить через Edit в `app/(dashboard)/collocations/page.tsx`:
+
+**Добавить импорты после существующих:**
+```tsx
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
+```
+
+**Добавить в компонент после `const [showWrong, setShowWrong] = useState`:**
+```tsx
+const { generate, loading: aiLoading } = useAIGenerate()
+const [aiTopic, setAiTopic] = useState('')
+const [aiResults, setAiResults] = useState<Array<{id:string,collocation:string,translation:string,example:string,category:string}>>([])
+
+async function generateCollocations() {
+  const data = await generate<{collocations: typeof aiResults}>('collocations', aiTopic || (category !== 'Все' ? category : 'business'))
+  if (data?.collocations) setAiResults(data.collocations.map((c,i) => ({...c, id:`ai-${i}`})))
+}
+```
+
+**Добавить блок UI перед `<div className="grid` (перед списком карточек):**
+```tsx
+{/* AI блок */}
+<div className="mb-5 p-4 bg-[#6366f1]/5 border border-[#6366f1]/20 rounded-2xl">
+  <p className="text-xs font-semibold text-[#818cf8] mb-2 flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5"/>AI коллокации по теме</p>
+  <div className="flex gap-2">
+    <input value={aiTopic} onChange={e=>setAiTopic(e.target.value)} placeholder="business, travel, health..."
+      className="flex-1 bg-white/[0.06] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-[#475569] outline-none min-h-[44px]"/>
+    <button onClick={generateCollocations} disabled={aiLoading}
+      className="flex items-center gap-1.5 px-4 py-2.5 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-50 text-white rounded-xl text-sm font-medium min-h-[44px]">
+      {aiLoading?<Loader2 className="w-4 h-4 animate-spin"/>:<Sparkles className="w-4 h-4"/>}
+      {aiLoading?'...':'AI'}
+    </button>
+  </div>
+  {aiResults.length>0&&<div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+    {aiResults.map(c=>(
+      <div key={c.id} className="p-3 rounded-xl border border-[#6366f1]/20 bg-[#6366f1]/5">
+        <p className="text-white font-semibold text-sm">{c.collocation}</p>
+        <p className="text-[#818cf8] text-xs">{c.translation}</p>
+        <p className="text-[#64748b] text-xs italic mt-1">"{c.example}"</p>
+      </div>
+    ))}
+  </div>}
+</div>
+```
+
+### 4.3. idioms/page.tsx — AI генератор
+
+После git restore добавить через Edit в `app/(dashboard)/idioms/page.tsx`:
+
+**Добавить импорты:**
+```tsx
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
+```
+
+**После `const [learned, setLearned]` добавить:**
+```tsx
+const { generate, loading: aiLoading } = useAIGenerate()
+const [aiTopic, setAiTopic] = useState('')
+const [aiIdioms, setAiIdioms] = useState<Array<{idiom:string,meaning:string,example:string,level:string}>>([])
+async function generateIdioms() {
+  const data = await generate<{idioms: typeof aiIdioms}>('idioms', aiTopic || 'emotions and feelings')
+  if (data?.idioms) setAiIdioms(data.idioms)
+}
+```
+
+**Перед `<div className="grid` добавить AI блок:**
+```tsx
+<div className="mb-5 p-4 bg-[#6366f1]/5 border border-[#6366f1]/20 rounded-2xl">
+  <p className="text-xs font-semibold text-[#818cf8] mb-2 flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5"/>AI идиомы по теме</p>
+  <div className="flex gap-2">
+    <input value={aiTopic} onChange={e=>setAiTopic(e.target.value)} placeholder="time, money, success..."
+      className="flex-1 bg-white/[0.06] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-[#475569] outline-none min-h-[44px]"/>
+    <button onClick={generateIdioms} disabled={aiLoading}
+      className="flex items-center gap-1.5 px-4 py-2.5 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-50 text-white rounded-xl text-sm font-medium min-h-[44px]">
+      {aiLoading?<Loader2 className="w-4 h-4 animate-spin"/>:<Sparkles className="w-4 h-4"/>}AI
+    </button>
+  </div>
+  {aiIdioms.length>0&&<div className="mt-3 space-y-2">
+    {aiIdioms.map((item,i)=>(
+      <div key={i} className="p-3 rounded-xl border border-[#6366f1]/20 bg-[#6366f1]/5">
+        <div className="flex justify-between items-center">
+          <p className="text-white font-semibold text-sm">"{item.idiom}"</p>
+          <span className="text-xs text-[#818cf8] bg-[#6366f1]/10 px-2 py-0.5 rounded-full">{item.level}</span>
+        </div>
+        <p className="text-[#818cf8] text-xs mt-0.5">{item.meaning}</p>
+        <p className="text-[#64748b] text-xs italic mt-1">{item.example}</p>
+      </div>
+    ))}
+  </div>}
+</div>
+```
+
+### 4.4. phrasal-verbs/page.tsx — AI генератор
+
+После git restore добавить через Edit в `app/(dashboard)/phrasal-verbs/page.tsx`:
+
+**Добавить импорты:**
+```tsx
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
+```
+
+**После существующих useState добавить:**
+```tsx
+const { generate, loading: aiLoading } = useAIGenerate()
+const [aiTopic, setAiTopic] = useState('')
+const [aiVerbs, setAiVerbs] = useState<Array<{verb:string,meaning:string,example:string}>>([])
+async function generateVerbs() {
+  const data = await generate<{verbs: typeof aiVerbs}>('phrasal_verbs', aiTopic || 'daily life')
+  if (data?.verbs) setAiVerbs(data.verbs)
+}
+```
+
+**Перед категориями/списком добавить:**
+```tsx
+<div className="mb-4 p-4 bg-[#6366f1]/5 border border-[#6366f1]/20 rounded-2xl">
+  <p className="text-xs font-semibold text-[#818cf8] mb-2 flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5"/>AI фразовые глаголы</p>
+  <div className="flex gap-2">
+    <input value={aiTopic} onChange={e=>setAiTopic(e.target.value)} placeholder="work, travel, relationships..."
+      className="flex-1 bg-white/[0.06] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-[#475569] outline-none min-h-[44px]"/>
+    <button onClick={generateVerbs} disabled={aiLoading}
+      className="flex items-center gap-1.5 px-4 py-2.5 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-50 text-white rounded-xl text-sm font-medium min-h-[44px]">
+      {aiLoading?<Loader2 className="w-4 h-4 animate-spin"/>:<Sparkles className="w-4 h-4"/>}AI
+    </button>
+  </div>
+  {aiVerbs.length>0&&<div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+    {aiVerbs.map((v,i)=>(
+      <div key={i} className="p-3 rounded-xl border border-[#6366f1]/20 bg-[#6366f1]/5">
+        <p className="text-white font-bold text-sm">{v.verb}</p>
+        <p className="text-[#818cf8] text-xs">{v.meaning}</p>
+        <p className="text-[#64748b] text-xs italic mt-1">"{v.example}"</p>
+      </div>
+    ))}
+  </div>}
+</div>
+```
+
+### 4.5. notes/page.tsx — AI резюме заметок
+
+После git restore добавить через Edit в `app/(dashboard)/notes/page.tsx`:
+
+**Добавить импорты:**
+```tsx
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
+```
+
+**После `const [notes, setNotes]` добавить:**
+```tsx
+const { generate } = useAIGenerate()
+const [aiSummaries, setAiSummaries] = useState<Record<string,{summary:string,takeaways:string[]}>>({})
+const [loadingId, setLoadingId] = useState<string|null>(null)
+async function summarize(id: string, content: string) {
+  setLoadingId(id)
+  const data = await generate<{summary:string,takeaways:string[]}>('note_summary', content.slice(0,600))
+  if (data) setAiSummaries(p => ({...p, [id]: data}))
+  setLoadingId(null)
+}
+```
+
+**Внутри карточки заметки (после `<p className="text-muted-foreground...">`) добавить:**
+```tsx
+<div className="mt-3 pt-3 border-t border-white/[0.06]">
+  {aiSummaries[note.lessonId] ? (
+    <div>
+      <p className="text-xs text-white/70 mb-1">{aiSummaries[note.lessonId].summary}</p>
+      <div className="flex flex-wrap gap-1">
+        {aiSummaries[note.lessonId].takeaways.map((t,i)=>(
+          <span key={i} className="text-xs bg-[#6366f1]/10 text-[#818cf8] px-2 py-0.5 rounded-full">💡 {t}</span>
+        ))}
+      </div>
+    </div>
+  ) : (
+    <button onClick={()=>summarize(note.lessonId, note.content)} disabled={loadingId===note.lessonId}
+      className="flex items-center gap-1.5 text-xs text-[#818cf8] hover:text-white disabled:opacity-50 transition-colors min-h-[36px]">
+      {loadingId===note.lessonId?<><Loader2 className="w-3 h-3 animate-spin"/>Анализирую...</>:<><Sparkles className="w-3 h-3"/>AI резюме</>}
+    </button>
+  )}
+</div>
+```
+
+### 4.6. weekly-summary/page.tsx — AI анализ недели
+
+После git restore добавить через Edit в `app/(dashboard)/weekly-summary/page.tsx`:
+
+**Добавить импорты:**
+```tsx
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
+```
+
+**После `const [data, setData]` добавить:**
+```tsx
+const { generate, loading: aiLoading } = useAIGenerate()
+const [aiInsight, setAiInsight] = useState<{analysis:string,tip:string,emoji:string}|null>(null)
+async function getInsight() {
+  if (!data) return
+  const ctx = `minutes:${data.totalMinutes},lessons:${data.totalLessons},words:${data.totalWords},streak:${data.streakDays},bestDay:${data.bestDay}`
+  const result = await generate<typeof aiInsight>('weekly_analysis', ctx)
+  setAiInsight(result)
+}
+```
+
+**В конце JSX (перед закрывающим `</div>`) добавить:**
+```tsx
+{data && (
+  <div className="mt-4 bg-white/[0.04] border border-white/10 rounded-2xl p-5">
+    <div className="flex items-center justify-between mb-3">
+      <p className="text-sm font-semibold text-white flex items-center gap-2"><Sparkles className="w-4 h-4 text-[#818cf8]"/>AI анализ недели</p>
+      {!aiInsight&&<button onClick={getInsight} disabled={aiLoading}
+        className="flex items-center gap-1.5 px-3 py-2 bg-[#6366f1]/10 border border-[#6366f1]/20 text-[#818cf8] rounded-xl text-xs font-medium min-h-[36px] disabled:opacity-50">
+        {aiLoading?<Loader2 className="w-3 h-3 animate-spin"/>:<Sparkles className="w-3 h-3"/>}{aiLoading?'Анализирую...':'Получить анализ'}
+      </button>}
+    </div>
+    {aiInsight?(
+      <div className="space-y-2">
+        <p className="text-sm text-white/80">{aiInsight.emoji} {aiInsight.analysis}</p>
+        <div className="p-3 bg-[#6366f1]/5 rounded-xl border border-[#6366f1]/10">
+          <p className="text-xs text-white/70">💡 {aiInsight.tip}</p>
+        </div>
+        <button onClick={()=>setAiInsight(null)} className="text-xs text-[#64748b] hover:text-white">Обновить</button>
+      </div>
+    ):<p className="text-sm text-[#64748b]">Получи персональный анализ своей недели от AI</p>}
+  </div>
+)}
+```
+
+### 4.7. dashboard/page.tsx — AI совет дня
+
+После git restore добавить через Edit в `app/(dashboard)/page.tsx` (или `app/(dashboard)/dashboard/page.tsx`):
+
+**Добавить импорты:**
+```tsx
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
+```
+
+**После существующих useState добавить:**
+```tsx
+const { generate, loading: tipLoading } = useAIGenerate()
+const [dailyTip, setDailyTip] = useState<{tip:string,example:string,emoji:string}|null>(null)
+async function getTip() {
+  const data = await generate<typeof dailyTip>('daily_tip', 'learning English', 'B1')
+  setDailyTip(data)
+}
+```
+
+**Найти блок с QUICK links и добавить ПОСЛЕ него:**
+```tsx
+{/* AI совет дня */}
+<div className="card-clean p-5">
+  <div className="flex items-center justify-between mb-3">
+    <p className="text-sm font-semibold text-foreground flex items-center gap-2">🤖 AI совет дня</p>
+    <button onClick={getTip} disabled={tipLoading}
+      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-primary/10 hover:bg-primary/20 border border-primary/20 text-primary rounded-xl min-h-[36px] disabled:opacity-50">
+      {tipLoading?<Loader2 className="w-3 h-3 animate-spin"/>:<Sparkles className="w-3 h-3"/>}
+      {tipLoading?'...':dailyTip?'Новый':'Получить'}
+    </button>
+  </div>
+  {dailyTip?(
+    <div>
+      <p className="text-sm text-foreground/80">{dailyTip.emoji} {dailyTip.tip}</p>
+      {dailyTip.example&&<p className="text-xs text-muted-foreground italic border-l-2 border-primary/30 pl-3 mt-2">{dailyTip.example}</p>}
+    </div>
+  ):<p className="text-sm text-muted-foreground">Получи персональный совет по изучению английского</p>}
+</div>
+```
+
+### 4.8. progress/page.tsx — AI анализ прогресса
+
+После git restore добавить через Edit в `app/(dashboard)/progress/page.tsx`:
+
+**Добавить импорты:**
+```tsx
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
+```
+
+**После существующих useState добавить:**
+```tsx
+const { generate, loading: aiLoading } = useAIGenerate()
+const [insight, setInsight] = useState<{insight:string,focus:string}|null>(null)
+async function getInsight() {
+  const ctx = profile ? `xp:${profile.xp},streak:${profile.streak},level:${profile.current_level||'B1'}` : 'beginner learner'
+  const data = await generate<typeof insight>('progress_insight', ctx, (profile?.current_level as string)||'B1')
+  setInsight(data)
+}
+```
+
+**В конце основного JSX добавить:**
+```tsx
+<div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
+  <div className="flex items-center justify-between mb-3">
+    <p className="font-semibold text-white flex items-center gap-2"><Sparkles className="w-4 h-4 text-[#818cf8]"/>AI анализ прогресса</p>
+    {!insight&&<button onClick={getInsight} disabled={aiLoading}
+      className="flex items-center gap-1.5 px-3 py-2 bg-[#6366f1]/10 border border-[#6366f1]/20 text-[#818cf8] rounded-xl text-xs font-medium min-h-[36px] disabled:opacity-50">
+      {aiLoading?<Loader2 className="w-3.5 h-3.5 animate-spin"/>:<Sparkles className="w-3.5 h-3.5"/>}{aiLoading?'Анализирую...':'Анализировать'}
+    </button>}
+  </div>
+  {insight?(
+    <div className="space-y-3">
+      <p className="text-sm text-white/80">{insight.insight}</p>
+      <div className="p-3 bg-[#6366f1]/5 rounded-xl border border-[#6366f1]/10">
+        <p className="text-xs font-medium text-[#818cf8] mb-1">🎯 Следующий фокус:</p>
+        <p className="text-xs text-white/70">{insight.focus}</p>
+      </div>
+      <button onClick={()=>setInsight(null)} className="text-xs text-[#64748b] hover:text-white">Обновить</button>
+    </div>
+  ):<p className="text-sm text-[#64748b]">Получи AI-анализ своего прогресса</p>}
+</div>
+```
+
+### 4.9. sentence-builder/page.tsx — AI предложения
+
+После git restore добавить через Edit в `app/(dashboard)/sentence-builder/page.tsx`:
+
+**Добавить импорты:**
+```tsx
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
+```
+
+**После `const [level` добавить:**
+```tsx
+const { generate, loading: aiLoading } = useAIGenerate()
+const [aiTopic, setAiTopic] = useState('')
+const [aiQueue, setAiQueue] = useState<Sentence[]>([])
+async function generateSentences() {
+  const data = await generate<{sentences:Sentence[]}>('sentences', aiTopic||'everyday life', level)
+  if (data?.sentences?.length) {
+    setAiQueue(data.sentences.map(s=>({...s,level})))
+  }
+}
+```
+
+**Добавить перед кнопками проверки/следующего:**
+```tsx
+<div className="mb-4 p-3 bg-[#6366f1]/5 border border-[#6366f1]/20 rounded-xl">
+  <p className="text-xs text-[#818cf8] font-medium mb-2 flex items-center gap-1"><Sparkles className="w-3 h-3"/>AI предложения</p>
+  <div className="flex gap-2">
+    <input value={aiTopic} onChange={e=>setAiTopic(e.target.value)} placeholder="Тема..." className="flex-1 bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#475569] outline-none min-h-[44px]"/>
+    <button onClick={generateSentences} disabled={aiLoading}
+      className="px-3 py-2 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-50 text-white rounded-lg text-xs font-medium min-h-[44px]">
+      {aiLoading?<Loader2 className="w-3.5 h-3.5 animate-spin"/>:<Sparkles className="w-3.5 h-3.5"/>}
+    </button>
+    {aiQueue.length>0&&<button onClick={()=>{const s=aiQueue[0];setAiQueue(q=>q.slice(1));setAvailable(shuffle(s.words.map((w,id)=>({word:w,id}))));setSelected([]);setChecked(null)}}
+      className="px-3 py-2 bg-white/[0.06] border border-white/10 text-white rounded-lg text-xs min-h-[44px]">
+      ▶ AI ({aiQueue.length})
+    </button>}
+  </div>
+</div>
+```
+
+### 4.10. pronunciation-practice/page.tsx — AI фразы
+
+После git restore добавить через Edit в `app/(dashboard)/pronunciation-practice/page.tsx`:
+
+**Добавить импорты:**
+```tsx
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
+```
+
+**После `const [level]` добавить:**
+```tsx
+const { generate, loading: aiLoading } = useAIGenerate()
+const [aiTopic, setAiTopic] = useState('')
+const [aiPhrases, setAiPhrases] = useState<string[]>([])
+const [usingAI, setUsingAI] = useState(false)
+async function generatePhrases() {
+  const data = await generate<{phrases:string[]}>('pronunciation_phrases', aiTopic||'everyday situations', level)
+  if (data?.phrases?.length) { setAiPhrases(data.phrases); setUsingAI(true); setPhraseIdx(0) }
+}
+const currentPhrases = usingAI && aiPhrases.length > 0 ? aiPhrases : (PHRASES[level] ?? [])
+```
+
+**Везде где используется `PHRASES[level][phraseIdx]` — заменить на `currentPhrases[phraseIdx % Math.max(1, currentPhrases.length)]`**
+
+**Добавить AI блок перед кнопками навигации:**
+```tsx
+<div className="p-3 bg-[#6366f1]/5 border border-[#6366f1]/20 rounded-xl mb-3">
+  <p className="text-xs text-[#818cf8] font-medium mb-2 flex items-center gap-1"><Sparkles className="w-3 h-3"/>AI фразы {usingAI&&'· AI режим ✓'}</p>
+  <div className="flex gap-2">
+    <input value={aiTopic} onChange={e=>setAiTopic(e.target.value)} placeholder="hotel, airport, shopping..." className="flex-1 bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#475569] outline-none min-h-[44px]"/>
+    <button onClick={generatePhrases} disabled={aiLoading} className="px-3 py-2 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-50 text-white rounded-lg text-xs min-h-[44px]">
+      {aiLoading?<Loader2 className="w-3.5 h-3.5 animate-spin"/>:<Sparkles className="w-3.5 h-3.5"/>}
+    </button>
+    {usingAI&&<button onClick={()=>{setUsingAI(false);setAiPhrases([])}} className="px-3 py-2 bg-white/[0.06] border border-white/10 text-[#64748b] rounded-lg text-xs min-h-[44px]">✕</button>}
+  </div>
+</div>
+```
+
+### 4.11. dictation/page.tsx — AI слова
+
+После git restore добавить через Edit в `app/(dashboard)/dictation/page.tsx`:
+
+**Добавить импорты:**
+```tsx
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
+```
+
+**После `const [level]` добавить:**
+```tsx
+const { generate, loading: aiLoading } = useAIGenerate()
+const [aiTopic, setAiTopic] = useState('')
+const [aiWordList, setAiWordList] = useState<string[]>([])
+const [usingAI, setUsingAI] = useState(false)
+async function generateWords() {
+  const data = await generate<{words:string[]}>('dictation_words', aiTopic||'common vocabulary', level)
+  if (data?.words?.length) { setAiWordList(data.words); setUsingAI(true); setCurrentIndex(0); setStarted(false); setUserInput('') }
+}
+const currentWordList = usingAI && aiWordList.length > 0
+  ? aiWordList.map(w=>({word:w}))
+  : (DICTATION_WORDS[level] ?? [])
+```
+
+**Везде где используется `DICTATION_WORDS[level]` — заменить на `currentWordList`**
+
+**Добавить AI блок перед кнопкой "Начать":**
+```tsx
+{!started&&(
+  <div className="mb-4 p-3 bg-[#6366f1]/5 border border-[#6366f1]/20 rounded-xl">
+    <p className="text-xs text-[#818cf8] font-medium mb-2 flex items-center gap-1"><Sparkles className="w-3 h-3"/>AI слова {usingAI&&`· ${aiWordList.length} слов ✓`}</p>
+    <div className="flex gap-2">
+      <input value={aiTopic} onChange={e=>setAiTopic(e.target.value)} placeholder="science, business..." className="flex-1 bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#475569] outline-none min-h-[44px]"/>
+      <button onClick={generateWords} disabled={aiLoading} className="px-3 py-2 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-50 text-white rounded-lg text-xs min-h-[44px]">
+        {aiLoading?<Loader2 className="w-3.5 h-3.5 animate-spin"/>:<Sparkles className="w-3.5 h-3.5"/>}
+      </button>
+      {usingAI&&<button onClick={()=>{setUsingAI(false);setAiWordList([])}} className="px-2 py-2 text-[#64748b] text-xs min-h-[44px]">✕</button>}
+    </div>
+  </div>
+)}
+```
+
+### 4.12. writing-templates/page.tsx — AI заполнение секций
+
+После git restore добавить через Edit в `app/(dashboard)/writing-templates/page.tsx`:
+
+**Добавить импорты:**
+```tsx
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
+```
+
+**После `const [userText, setUserText]` добавить:**
+```tsx
+const { generate } = useAIGenerate()
+const [fillLoading, setFillLoading] = useState<string|null>(null)
+async function fillSection(label: string) {
+  setFillLoading(label)
+  const ctx = `${selected?.title||'English letter'} - ${label}`
+  const data = await generate<{text:string}>('writing_template_section', ctx, selected?.level?.split('-')[0]||'B1')
+  if (data?.text) setUserText(p=>({...p,[label]:data.text}))
+  setFillLoading(null)
+}
+```
+
+**Найди каждый `<textarea` внутри `selected.structure.map` и добавь после него:**
+```tsx
+<button onClick={()=>fillSection(section.label)} disabled={fillLoading===section.label}
+  className="mt-1 flex items-center gap-1 text-xs text-[#818cf8] hover:text-white disabled:opacity-50 min-h-[36px]">
+  {fillLoading===section.label?<><Loader2 className="w-3 h-3 animate-spin"/>Генерирую...</>:<><Sparkles className="w-3 h-3"/>AI заполнить</>}
+</button>
+```
+
+### 4.13. grammar-exercises/page.tsx — AI упражнения
+
+После git restore добавить через Edit в `app/(dashboard)/grammar-exercises/page.tsx`:
+
+**Добавить импорты (если нет):**
+```tsx
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
+```
+
+**После существующих useState добавить:**
+```tsx
+const { generate, loading: aiLoading } = useAIGenerate()
+const [aiEx, setAiEx] = useState<{question:string,answer:string,options:string[],explanation:string}|null>(null)
+const [aiAnswer, setAiAnswer] = useState<string|null>(null)
+async function generateExercise() {
+  const data = await generate<typeof aiEx>('grammar_exercise', selectedTopic||'mixed grammar', userLevel||'B1')
+  setAiEx(data); setAiAnswer(null)
+}
+```
+
+**Найди хедер страницы (h1 или кнопки фильтрации) и добавь после него AI блок:**
+```tsx
+<div className="mb-5 p-4 bg-[#6366f1]/5 border border-[#6366f1]/20 rounded-2xl">
+  <div className="flex items-center justify-between mb-3">
+    <p className="text-sm font-semibold text-white flex items-center gap-2"><Sparkles className="w-4 h-4 text-[#818cf8]"/>AI упражнение</p>
+    <button onClick={generateExercise} disabled={aiLoading}
+      className="flex items-center gap-1.5 px-3 py-2 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-50 text-white rounded-xl text-xs font-medium min-h-[36px]">
+      {aiLoading?<Loader2 className="w-3.5 h-3.5 animate-spin"/>:<Sparkles className="w-3.5 h-3.5"/>}
+      {aiLoading?'Генерирую...':'Создать'}
+    </button>
+  </div>
+  {aiEx&&(
+    <div>
+      <p className="text-white text-sm font-medium mb-3">{aiEx.question}</p>
+      <div className="grid grid-cols-2 gap-2 mb-3">
+        {aiEx.options?.map((opt,i)=>(
+          <button key={i} onClick={()=>setAiAnswer(opt)}
+            className={`px-3 py-2.5 rounded-xl border text-sm text-left transition-all min-h-[44px] ${
+              aiAnswer===null?'border-white/10 text-white hover:border-[#6366f1]/50':
+              opt===aiEx.answer?'border-green-500 bg-green-500/10 text-green-400':
+              aiAnswer===opt?'border-red-500 bg-red-500/10 text-red-400':'border-white/10 text-[#64748b]'
+            }`}>{opt}
+          </button>
+        ))}
+      </div>
+      {aiAnswer&&<p className="text-xs text-[#64748b] italic">{aiEx.explanation}</p>}
+    </div>
+  )}
+</div>
+```
+
+### 4.14. mini-stories/page.tsx — AI истории
+
+После git restore добавить через Edit в `app/(dashboard)/mini-stories/page.tsx`:
+
+**Добавить импорты:**
+```tsx
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
+```
+
+**После существующих useState добавить:**
+```tsx
+const { generate, loading: aiLoading } = useAIGenerate()
+const [aiStory, setAiStory] = useState<{title:string,content:string,vocabulary:{word:string,meaning:string}[]}|null>(null)
+async function generateStory() {
+  const data = await generate<typeof aiStory>('mini_story', `level ${level} general interest`, level)
+  setAiStory(data)
+}
+```
+
+**Найди хедер страницы/кнопки фильтров и добавь после рядом:**
+```tsx
+<button onClick={generateStory} disabled={aiLoading}
+  className="flex items-center gap-1.5 px-4 py-2 bg-[#6366f1]/10 hover:bg-[#6366f1]/20 border border-[#6366f1]/20 text-[#818cf8] rounded-xl text-sm font-medium min-h-[44px] disabled:opacity-50">
+  {aiLoading?<Loader2 className="w-4 h-4 animate-spin"/>:<Sparkles className="w-4 h-4"/>}
+  {aiLoading?'Генерирую...':'✨ AI история'}
+</button>
+```
+
+**И добавить AI историю в конце списка (перед закрывающим тегом):**
+```tsx
+{aiStory&&(
+  <div className="mt-4 p-5 rounded-2xl border border-[#6366f1]/20 bg-[#6366f1]/5">
+    <div className="flex items-center gap-2 mb-3">
+      <Sparkles className="w-4 h-4 text-[#818cf8]"/>
+      <h3 className="text-white font-semibold">{aiStory.title}</h3>
+      <span className="ml-auto text-xs text-[#6366f1] bg-[#6366f1]/10 px-2 py-0.5 rounded-full">AI</span>
+    </div>
+    <p className="text-[#94a3b8] text-sm leading-relaxed mb-3">{aiStory.content}</p>
+    {aiStory.vocabulary?.length>0&&(
+      <div className="flex flex-wrap gap-2">
+        {aiStory.vocabulary.map((v,i)=>(
+          <span key={i} className="px-2 py-1 bg-[#6366f1]/10 text-[#818cf8] rounded-lg text-xs"><b>{v.word}</b> — {v.meaning}</span>
+        ))}
+      </div>
+    )}
+    <button onClick={()=>setAiStory(null)} className="mt-3 text-xs text-[#475569] hover:text-white">Закрыть</button>
+  </div>
+)}
+```
+
+### 4.15. vocabulary/page.tsx — AI примеры для слов
+
+После git restore добавить через Edit в `app/(dashboard)/vocabulary/page.tsx`:
+
+**Добавить импорты:**
+```tsx
+import { Sparkles, Loader2 } from 'lucide-react'
+import { useAIGenerate } from '@/hooks/useAIGenerate'
+```
+
+**После существующих useState добавить:**
+```tsx
+const { generate, loading: aiLoading } = useAIGenerate()
+const [aiExamples, setAiExamples] = useState<string[]>([])
+async function getExamples(word: string) {
+  setAiExamples([])
+  const data = await generate<{sentences:string[]}>('vocabulary_example', word, userLevel||'B1')
+  if (data?.sentences) setAiExamples(data.sentences)
+}
+```
+
+**Найди место где отображается текущее слово в карточке и добавь кнопку AI:**
+```tsx
+<button onClick={()=>currentCard&&getExamples(currentCard.word)} disabled={aiLoading}
+  className="flex items-center gap-1 text-xs text-[#818cf8] hover:text-white disabled:opacity-50 mt-2 min-h-[36px]">
+  {aiLoading?<><Loader2 className="w-3 h-3 animate-spin"/>AI примеры...</>:<><Sparkles className="w-3 h-3"/>AI примеры</>}
+</button>
+{aiExamples.length>0&&(
+  <div className="mt-2 space-y-1">
+    {aiExamples.map((ex,i)=><p key={i} className="text-xs text-[#64748b] italic">"{ex}"</p>)}
+  </div>
+)}
+```
+
+## ═══════════════════════════════════════════════════
+## ШАГ 5: ПРОВЕРКА И ФИНАЛ
+## ═══════════════════════════════════════════════════
+
+```bash
+# Проверить TypeScript
+npx tsc --noEmit 2>&1 | grep "error TS" | head -20
+```
+
+Если есть ошибки — исправь каждую минимальным Edit.
+
+Типичные ошибки после этих правок:
+- `useState` не импортирован → добавь в import
+- Тип `typeof aiResults` не совпадает → укажи явный тип
+- `userLevel` не определён на странице → замени на строку `'B1'`
+- `currentCard` может быть null → добавь `?.`
+
+```bash
+# Финальный коммит
+git add -A
+git commit -m "fix: restore all files, dark theme, mobile optimizations, AI everywhere"
+```
+
+## ═══════════════════════════════════════════════════
+## ИТОГО ЧТО ДЕЛАЕТ ЭТОТ ПРОМПТ:
+## ═══════════════════════════════════════════════════
+# 1. Восстанавливает 20 обрезанных файлов через git checkout
+# 2. Переключает тему на dark (ThemeProvider + html.dark)
+# 3. Увеличивает tap targets до 44px на мобильных
+# 4. Добавляет AI на ВСЕ страницы через точечные Edit
+# 5. Сохраняет новые компоненты (OnboardingWizard, AIGenerateButton, useAIGenerate, generate API)

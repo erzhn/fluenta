@@ -4,12 +4,13 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Brain, BookOpen, Layers, Mic, PenLine,
-  ChevronRight, Flame, Zap, ArrowRight, Sparkles, Loader2,
+  ChevronRight, Flame, Zap, ArrowRight,
+  Sparkles, Loader2,
 } from "lucide-react";
+import { useAIGenerate } from '@/hooks/useAIGenerate';
 import { supabase } from "@/lib/supabase";
 import { getLevelFromXP } from "@/lib/gamification";
 import { WordOfDay } from "@/components/WordOfDay";
-import { useAIGenerate } from "@/hooks/useAIGenerate";
 import type { Profile } from "@/types";
 
 const QUICK = [
@@ -24,8 +25,12 @@ export default function DashboardPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [completedToday, setCompletedToday] = useState(0);
   const [vocabDue, setVocabDue] = useState(0);
-  const { generate, loading: aiLoading } = useAIGenerate();
-  const [dailyTip, setDailyTip] = useState<{ tip: string; example: string; emoji: string } | null>(null);
+  const { generate, loading: tipLoading } = useAIGenerate()
+  const [dailyTip, setDailyTip] = useState<{tip:string,example:string,emoji:string}|null>(null)
+  async function getTip() {
+    const data = await generate<typeof dailyTip>('daily_tip', 'learning English', 'B1')
+    setDailyTip(data)
+  }
 
   useEffect(() => {
     async function load() {
@@ -145,36 +150,22 @@ export default function DashboardPage() {
         <WordOfDay />
       </div>
 
-      {/* AI Daily Tip */}
-      <div className="anim-up delay-4">
-        {!dailyTip ? (
-          <button
-            onClick={async () => {
-              const result = await generate<{ tip: string; example: string; emoji: string }>('daily_tip', '', profile?.cefr_level ?? 'B1')
-              if (result) setDailyTip(result)
-            }}
-            disabled={aiLoading}
-            className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-primary/8 border border-primary/15 text-primary rounded-2xl text-sm font-medium hover:bg-primary/15 transition-all"
-          >
-            {aiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-            {aiLoading ? 'Генерирую совет...' : 'AI совет на сегодня'}
+      {/* AI совет дня */}
+      <div className="card-clean p-5">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-sm font-semibold text-foreground flex items-center gap-2">🤖 AI совет дня</p>
+          <button onClick={getTip} disabled={tipLoading}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-primary/10 hover:bg-primary/20 border border-primary/20 text-primary rounded-xl min-h-[36px] disabled:opacity-50">
+            {tipLoading?<Loader2 className="w-3 h-3 animate-spin"/>:<Sparkles className="w-3 h-3"/>}
+            {tipLoading?'...':dailyTip?'Новый':'Получить'}
           </button>
-        ) : (
-          <div className="card-clean p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-xl">{dailyTip.emoji}</span>
-              <p className="text-[12px] font-semibold uppercase tracking-widest text-muted-foreground">AI Совет дня</p>
-            </div>
-            <p className="text-[14px] text-foreground font-medium leading-relaxed mb-3">{dailyTip.tip}</p>
-            {dailyTip.example && (
-              <p className="text-[13px] text-muted-foreground italic">&ldquo;{dailyTip.example}&rdquo;</p>
-            )}
-            <button onClick={() => setDailyTip(null)}
-              className="mt-3 text-xs text-muted-foreground hover:text-foreground transition-colors">
-              ↺ Другой совет
-            </button>
+        </div>
+        {dailyTip?(
+          <div>
+            <p className="text-sm text-foreground/80">{dailyTip.emoji} {dailyTip.tip}</p>
+            {dailyTip.example&&<p className="text-xs text-muted-foreground italic border-l-2 border-primary/30 pl-3 mt-2">{dailyTip.example}</p>}
           </div>
-        )}
+        ):<p className="text-sm text-muted-foreground">Получи персональный совет по изучению английского</p>}
       </div>
 
     </div>

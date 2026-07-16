@@ -14,34 +14,27 @@ const TABS = [
 
 export function MobileNav() {
   const pathname = usePathname();
-
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40
-        bg-background/90 backdrop-blur-md border-t border-border"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0F0F1A]/95 backdrop-blur-xl border-t border-white/[0.08]"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <div className="flex">
+      <div className="flex h-16">
         {TABS.map((tab) => {
           const isActive = pathname === tab.href || pathname.startsWith(tab.href + "/");
           return (
-            <Link key={tab.href} href={tab.href} className="flex-1">
-              <div className="flex flex-col items-center gap-0.5 pt-2.5 pb-2 relative">
-                {isActive && (
-                  <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-primary" />
-                )}
-                <tab.icon
-                  className="w-6 h-6 transition-colors"
-                  strokeWidth={isActive ? 2.5 : 1.5}
-                  style={{ color: isActive ? "var(--primary)" : "var(--muted-foreground)" }}
-                />
-                <span
-                  className="text-[10px] font-medium transition-colors"
-                  style={{ color: isActive ? "var(--primary)" : "var(--muted-foreground)" }}
-                >
-                  {tab.label}
-                </span>
-              </div>
+            <Link key={tab.href} href={tab.href} className="flex-1 flex flex-col items-center justify-center gap-1 relative min-h-[64px]">
+              {isActive && (
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-0.5 rounded-full bg-[#818CF8]" />
+              )}
+              <tab.icon
+                className="w-6 h-6 transition-colors"
+                strokeWidth={isActive ? 2.5 : 1.5}
+                style={{ color: isActive ? "#818CF8" : "#64748B" }}
+              />
+              <span className="text-[10px] font-medium" style={{ color: isActive ? "#818CF8" : "#64748B" }}>
+                {tab.label}
+              </span>
             </Link>
           );
         })}

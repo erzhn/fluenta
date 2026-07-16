@@ -50,7 +50,13 @@ function getWeekData(): WeekData {
 export default function WeeklySummaryPage() {
   const [data, setData] = useState<WeekData | null>(null)
   const { generate, loading: aiLoading } = useAIGenerate()
-  const [aiAnalysis, setAiAnalysis] = useState<{ analysis: string; tip: string; emoji: string } | null>(null)
+  const [aiInsight, setAiInsight] = useState<{analysis:string,tip:string,emoji:string}|null>(null)
+  async function getInsight() {
+    if (!data) return
+    const ctx = `minutes:${data.totalMinutes},lessons:${data.totalLessons},words:${data.totalWords},streak:${data.streakDays},bestDay:${data.bestDay}`
+    const result = await generate<typeof aiInsight>('weekly_analysis', ctx)
+    setAiInsight(result)
+  }
 
   useEffect(() => { setData(getWeekData()) }, [])
 
@@ -117,29 +123,23 @@ export default function WeeklySummaryPage() {
         </p>
       </div>
 
-      <div className="mt-5">
-        <button
-          onClick={async () => {
-            const context = `${data.totalMinutes} минут, ${data.totalLessons} уроков, ${data.totalWords} слов, ${data.streakDays} дней подряд, лучший день: ${data.bestDay}`
-            const result = await generate<{ analysis: string; tip: string; emoji: string }>('weekly_analysis', context)
-            if (result) setAiAnalysis(result)
-          }}
-          disabled={aiLoading}
-          className="flex items-center gap-2 px-5 py-3 bg-primary/10 border border-primary/20 text-primary rounded-xl text-sm font-medium hover:bg-primary/20 transition-all w-full justify-center"
-        >
-          {aiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-          {aiLoading ? 'Анализирую...' : 'AI: анализ недели'}
-        </button>
-        {aiAnalysis && (
-          <div className="mt-4 bg-white/[0.04] border border-white/10 rounded-2xl p-5">
-            <p className="text-white font-semibold mb-3">{aiAnalysis.emoji} AI Анализ</p>
-            <p className="text-muted-foreground text-sm leading-relaxed mb-3">{aiAnalysis.analysis}</p>
-            <div className="bg-primary/5 border border-primary/15 rounded-xl px-4 py-3">
-              <p className="text-primary text-xs font-semibold mb-1">Совет на следующую неделю:</p>
-              <p className="text-muted-foreground text-sm">{aiAnalysis.tip}</p>
+      <div className="mt-4 bg-white/[0.04] border border-white/10 rounded-2xl p-5">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-sm font-semibold text-white flex items-center gap-2"><Sparkles className="w-4 h-4 text-[#818cf8]"/>AI анализ недели</p>
+          {!aiInsight&&<button onClick={getInsight} disabled={aiLoading}
+            className="flex items-center gap-1.5 px-3 py-2 bg-[#6366f1]/10 border border-[#6366f1]/20 text-[#818cf8] rounded-xl text-xs font-medium min-h-[36px] disabled:opacity-50">
+            {aiLoading?<Loader2 className="w-3 h-3 animate-spin"/>:<Sparkles className="w-3 h-3"/>}{aiLoading?'Анализирую...':'Получить анализ'}
+          </button>}
+        </div>
+        {aiInsight?(
+          <div className="space-y-2">
+            <p className="text-sm text-white/80">{aiInsight.emoji} {aiInsight.analysis}</p>
+            <div className="p-3 bg-[#6366f1]/5 rounded-xl border border-[#6366f1]/10">
+              <p className="text-xs text-white/70">💡 {aiInsight.tip}</p>
             </div>
+            <button onClick={()=>setAiInsight(null)} className="text-xs text-[#64748b] hover:text-white">Обновить</button>
           </div>
-        )}
+        ):<p className="text-sm text-[#64748b]">Получи персональный анализ своей недели от AI</p>}
       </div>
     </div>
   );

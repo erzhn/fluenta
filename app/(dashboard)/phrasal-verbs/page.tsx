@@ -1,8 +1,8 @@
 'use client'
 import { useState, useMemo } from 'react'
-import { Sparkles, Loader2 } from 'lucide-react'
 import { PHRASAL_VERBS_DATA, searchPhrasalVerbs, getAllPhrasalVerbs } from '@/lib/phrasal-verbs-data'
 import { addCardToSR } from '@/lib/spaced-repetition'
+import { Sparkles, Loader2 } from 'lucide-react'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -20,7 +20,12 @@ export default function PhrasalVerbsPage() {
   const [learned, setLearned] = useState<Set<string>>(new Set())
   const [expandedVerb, setExpandedVerb] = useState<string | null>(null)
   const { generate, loading: aiLoading } = useAIGenerate()
-  const [aiVerbs, setAiVerbs] = useState<{ verb: string; meaning: string; example: string }[]>([])
+  const [aiTopic, setAiTopic] = useState('')
+  const [aiVerbs, setAiVerbs] = useState<Array<{verb:string,meaning:string,example:string}>>([])
+  async function generateVerbs() {
+    const data = await generate<{verbs: typeof aiVerbs}>('phrasal_verbs', aiTopic || 'daily life')
+    if (data?.verbs) setAiVerbs(data.verbs)
+  }
 
   const displayedVerbs = useMemo(() => {
     if (search.trim()) return searchPhrasalVerbs(search)
@@ -114,33 +119,6 @@ export default function PhrasalVerbsPage() {
         )}
       </div>
 
-      {/* AI phrasal verbs */}
-      <div className="mb-5">
-        <button
-          onClick={async () => {
-            const topic = activeCategory === 'all' ? 'everyday life' : PHRASAL_VERBS_DATA.find(c => c.id === activeCategory)?.title ?? 'everyday'
-            const result = await generate<{ verbs: { verb: string; meaning: string; example: string }[] }>('phrasal_verbs', topic)
-            if (result?.verbs) setAiVerbs(result.verbs)
-          }}
-          disabled={aiLoading}
-          className="flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 text-primary rounded-xl text-sm font-medium hover:bg-primary/20 transition-all"
-        >
-          {aiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-          {aiLoading ? 'Генерирую...' : 'AI: новые фразовые глаголы'}
-        </button>
-        {aiVerbs.length > 0 && (
-          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {aiVerbs.map((v, i) => (
-              <div key={i} className="bg-primary/5 border border-primary/15 rounded-2xl p-4">
-                <p className="text-white font-bold mb-1">{v.verb}</p>
-                <p className="text-primary text-sm font-medium mb-2">{v.meaning}</p>
-                <p className="text-muted-foreground text-sm italic">&quot;{v.example}&quot;</p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
       {/* Category tabs */}
       {!search && (
         <div className="flex flex-wrap gap-2 mb-6">
@@ -189,6 +167,27 @@ export default function PhrasalVerbsPage() {
           {displayedVerbs.length === 1 ? 'глагол' : displayedVerbs.length < 5 ? 'глагола' : 'глаголов'}
         </p>
       )}
+
+      <div className="mb-4 p-4 bg-[#6366f1]/5 border border-[#6366f1]/20 rounded-2xl">
+        <p className="text-xs font-semibold text-[#818cf8] mb-2 flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5"/>AI фразовые глаголы</p>
+        <div className="flex gap-2">
+          <input value={aiTopic} onChange={e=>setAiTopic(e.target.value)} placeholder="work, travel, relationships..."
+            className="flex-1 bg-white/[0.06] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-[#475569] outline-none min-h-[44px]"/>
+          <button onClick={generateVerbs} disabled={aiLoading}
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-50 text-white rounded-xl text-sm font-medium min-h-[44px]">
+            {aiLoading?<Loader2 className="w-4 h-4 animate-spin"/>:<Sparkles className="w-4 h-4"/>}AI
+          </button>
+        </div>
+        {aiVerbs.length>0&&<div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {aiVerbs.map((v,i)=>(
+            <div key={i} className="p-3 rounded-xl border border-[#6366f1]/20 bg-[#6366f1]/5">
+              <p className="text-white font-bold text-sm">{v.verb}</p>
+              <p className="text-[#818cf8] text-xs">{v.meaning}</p>
+              <p className="text-[#64748b] text-xs italic mt-1">&quot;{v.example}&quot;</p>
+            </div>
+          ))}
+        </div>}
+      </div>
 
       {/* Verb cards grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
