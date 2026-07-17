@@ -21,7 +21,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     async function checkAuth() {
-      const { data: { user } } = await supabase.auth.getUser();
+      // getSession() reads from localStorage and auto-refreshes the token —
+      // unlike getUser() which makes a network call and doesn't refresh.
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user ?? null;
       if (!user && !pathname.startsWith('/lessons')) {
         router.replace("/auth/login");
         return;

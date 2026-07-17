@@ -1,31 +1,30 @@
 'use client'
-import { useState } from 'react'
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-const supabase = supabaseUrl && supabaseKey
-  ? createClient(supabaseUrl, supabaseKey)
-  : null
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
 
 export default function LoginPage() {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
   const [step, setStep] = useState<'email' | 'code'>('email')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  // If user already has a session, skip login immediately
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) router.replace('/dashboard')
+    })
+  }, [router])
+
   const sendCode = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!supabase) { setError('Ошибка конфигурации'); return }
     setLoading(true)
     setError('')
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
-      options: {
-        shouldCreateUser: true,
-        emailRedirectTo: 'https://fluentacademy-englishapp.vercel.app/auth/confirm',
-      },
+      options: { shouldCreateUser: true },
     })
     if (error) {
       setError('Не удалось отправить код. Попробуй снова.')
@@ -37,7 +36,6 @@ export default function LoginPage() {
 
   const verifyCode = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!supabase) { setError('Ошибка конфигурации'); return }
     setLoading(true)
     setError('')
     const { error } = await supabase.auth.verifyOtp({
