@@ -216,12 +216,15 @@ export default function VocabularyPage() {
   }
 
   useEffect(() => {
-    const loaded = loadSRS()
-    setSRS(loaded)
-    const due = shuffle(getDueCards(VOCABULARY, loaded))
-    setQueue(due.slice(0, 20))
-    setSwipeQueue(shuffle(VOCABULARY).slice(0, 20))
-    setHydrated(true)
+    // Load SRS from Supabase (with localStorage fallback) for cross-device sync
+    loadSRSFromSupabase().then(loaded => {
+      setSRS(loaded)
+      saveSRS(loaded) // keep local cache in sync
+      const due = shuffle(getDueCards(VOCABULARY, loaded))
+      setQueue(due.slice(0, 20))
+      setSwipeQueue(shuffle(VOCABULARY).slice(0, 20))
+      setHydrated(true)
+    })
     loadUserWords()
   }, [])
 
@@ -243,28 +246,82 @@ export default function VocabularyPage() {
     await speak(word, { rate: 0.9, onEnd: () => setSpeaking(false) })
   }
 
+  // Sync a built-in word's SRS state to Supabase for cross-device persistence
+  async function syncCardToSupabase(word: VocabWord, box: number, reviewDate: string) {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.user) return
+    const intervals = [0, 1, 3, 7, 14, 30]
+    const interval = intervals[Math.min(box, intervals.length - 1)]
+    // Upsert: if word exists update SRS fields, else insert new row
+    const { data: existing } = await supabase.from('vocabulary')
+      .select('id').eq('user_id', session.user.id).eq('word', word.word).single()
+    if (existing) {
+      await supabase.from('vocabulary').update({
+        interval, ease_factor: box >= 3 ? 2.5 : 2.0, repetitions: box,
+        next_review: new Date(reviewDate).toISOString(),
+      }).eq('id', existing.id)
+    } else {
+      await supabase.from('vocabulary').insert({
+        user_id: session.user.id, word: word.word, translation: word.translation,
+        context: word.example || null, interval,
+        ease_factor: box >= 3 ? 2.5 : 2.0, repetitions: box,
+        next_review: new Date(reviewDate).toISOString(),
+      })
+    }
+  }
+
+  // Load SRS from Supabase and merge with localStorage (Supabase wins)
+  async function loadSRSFromSupabase(): Promise<SRSState> {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.user) return loadSRS()
+    const { data } = await supabase.from('vocabulary')
+      .select('word, repetitions, interval, next_review').eq('user_id', session.user.id)
+    if (!data?.length) return loadSRS()
+    const local = loadSRS()
+    const merged: SRSState = { ...local }
+    const intervals = [0, 1, 3, 7, 14, 30]
+    data.forEach(row => {
+      // Find matching word in VOCABULARY by text
+      const vocabWord = VOCABULARY.find(v => v.word === row.word)
+      if (vocabWord) {
+        const box = intervals.indexOf(row.interval)
+        merged[vocabWord.id] = {
+          id: vocabWord.id,
+          box: box >= 0 ? box : row.repetitions ?? 0,
+          nextReview: row.next_review ? new Date(row.next_review).toISOString().slice(0, 10) : todayISO(),
+        }
+      }
+    })
+    return merged
+  }
+
   function handleAnswer(correct: boolean) {
     if (!card) return
     const existing = srs[card.id]
     const currentBox = existing?.box ?? 0
     const newBox = correct ? Math.min(currentBox + 1, 5) : 0
+    const reviewDate = nextReviewDate(newBox)
     const updated = {
       ...srs,
       [card.id]: {
         id: card.id,
         box: newBox,
-        nextReview: nextReviewDate(newBox),
+        nextReview: reviewDate,
         lastResult: correct ? 'correct' : 'incorrect',
       } as CardState,
     }
     setSRS(updated)
     saveSRS(updated)
+    // Async sync to Supabase (fire-and-forget, no await to keep UI fast)
+    syncCardToSupabase(card, newBox, reviewDate).catch(() => {})
     setFlipped(false)
     setTimeout(() => setQIdx(i => i + 1), 150)
   }
 
-  function restart() {
-    const loaded = loadSRS()
+  async function restart() {
+    const loaded = await loadSRSFromSupabase()
+    setSRS(loaded)
+    saveSRS(loaded)
     const due = shuffle(getDueCards(VOCABULARY, loaded))
     setQueue(due.slice(0, 20))
     setQIdx(0)

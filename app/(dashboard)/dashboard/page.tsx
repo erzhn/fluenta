@@ -49,6 +49,8 @@ export default function DashboardPage() {
       setVocabDue(due ?? 0);
     }
     load();
+    getTip(); // auto-load daily tip on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const levelInfo = profile ? getLevelFromXP(profile.xp ?? 0) : null;
@@ -158,7 +160,7 @@ export default function DashboardPage() {
           <button onClick={getTip} disabled={tipLoading}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-primary/10 hover:bg-primary/20 border border-primary/20 text-primary rounded-xl min-h-[36px] disabled:opacity-50">
             {tipLoading?<Loader2 className="w-3 h-3 animate-spin"/>:<Sparkles className="w-3 h-3"/>}
-            {tipLoading?'...':dailyTip?'Новый':'Получить'}
+            {tipLoading?'...':'Обновить'}
           </button>
         </div>
         {dailyTip?(
