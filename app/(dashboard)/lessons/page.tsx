@@ -1,9 +1,9 @@
 ﻿'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, CheckCircle, Lock, Zap, RotateCcw, BookOpen, FlipHorizontal } from 'lucide-react'
+import { ChevronLeft, CheckCircle, Lock, Zap, RotateCcw, BookOpen, FlipHorizontal, Volume2, VolumeX } from 'lucide-react'
 import { LESSONS } from '@/lib/lessons-data'
 import type { Lesson } from '@/lib/lessons-data'
 import { MODULES } from '@/lib/modules-data'
@@ -11,8 +11,9 @@ import type { ModuleLesson, ModuleId } from '@/lib/modules-data'
 import SpeakingExercise from '@/components/lessons/SpeakingExercise'
 import { supabase } from '@/lib/supabase'
 import { triggerConfetti } from '@/components/ui/Confetti'
+import { speak, stopSpeaking } from '@/lib/speech'
 
-// в”Ђв”Ђв”Ђ Progress в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+// в"Ђв"Ђв"Ђ Progress в"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђ
 interface LessonResult { score: number; completedAt: string }
 interface Progress {
   completedLessons: Record<string, LessonResult>
@@ -30,7 +31,7 @@ function saveProgress(p: Progress) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(p))
 }
 
-// в”Ђв”Ђв”Ђ Helpers в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+// в"Ђв"Ђв"Ђ Helpers в"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђ
 const LEVEL_COLORS: Record<string, string> = {
   A1: '#10b981', A2: '#3b82f6', B1: '#8b5cf6', B2: '#f59e0b', C1: '#ef4444',
 }
@@ -62,7 +63,7 @@ function xpForLesson(lesson: Lesson): number {
   return { A1: 50, A2: 75, B1: 100, B2: 150, C1: 200 }[lesson.level] ?? 50
 }
 
-// в”Ђв”Ђв”Ђ Step 1: Theory в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+// в"Ђв"Ђв"Ђ Step 1: Theory в"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђ
 function TheoryStep({ lesson, onNext }: { lesson: Lesson; onNext: () => void }) {
   const c = LEVEL_COLORS[lesson.level]
   return (
@@ -85,14 +86,47 @@ function TheoryStep({ lesson, onNext }: { lesson: Lesson; onNext: () => void }) 
   )
 }
 
-// в”Ђв”Ђв”Ђ Step 2: Examples (flip cards) в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+// в"Ђв"Ђв"Ђ Step 2: Examples (flip cards) в"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђ
 function ExamplesStep({ lesson, onNext }: { lesson: Lesson; onNext: () => void }) {
   const [cur, setCur] = useState(0)
   const [flipped, setFlipped] = useState(false)
   const [seen, setSeen] = useState<Set<number>>(new Set())
+  const [speakingId, setSpeakingId] = useState<string | null>(null)
+  const shouldStopRef = useRef(false)
   const c = LEVEL_COLORS[lesson.level]
   const ex = lesson.theory.examples[cur]
   const allSeen = seen.size === lesson.theory.examples.length
+
+  function speakExample(id: string, text: string) {
+    if (speakingId === id) {
+      stopSpeaking()
+      setSpeakingId(null)
+      return
+    }
+    speak(text, {
+      rate: 0.9,
+      onStart: () => setSpeakingId(id),
+      onEnd: () => setSpeakingId(null),
+    })
+  }
+
+  async function playAll() {
+    if (speakingId === 'all') {
+      stopSpeaking()
+      shouldStopRef.current = true
+      setSpeakingId(null)
+      return
+    }
+    shouldStopRef.current = false
+    setSpeakingId('all')
+    for (let i = 0; i < lesson.theory.examples.length; i++) {
+      if (shouldStopRef.current) break
+      await speak(lesson.theory.examples[i].english, { rate: 0.9 })
+      if (shouldStopRef.current) break
+      await new Promise(r => setTimeout(r, 500))
+    }
+    setSpeakingId(null)
+  }
 
   function markSeen() {
     setSeen(s => new Set([...s, cur]))
@@ -104,12 +138,17 @@ function ExamplesStep({ lesson, onNext }: { lesson: Lesson; onNext: () => void }
 
   return (
     <div className="flex flex-col h-full">
-      {/* Progress dots */}
-      <div className="flex gap-1.5 mb-5">
-        {lesson.theory.examples.map((_, i) => (
-          <div key={i} className="h-1.5 flex-1 rounded-full transition-all"
-            style={{ backgroundColor: seen.has(i) ? c : i === cur ? `${c}60` : 'rgba(255,255,255,0.08)' }} />
-        ))}
+      {/* Progress dots + Play all */}
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex gap-1.5 flex-1 mr-3">
+          {lesson.theory.examples.map((_, i) => (
+            <div key={i} className="h-1.5 flex-1 rounded-full transition-all"
+              style={{ backgroundColor: seen.has(i) ? c : i === cur ? `${c}60` : 'rgba(255,255,255,0.08)' }} />
+          ))}
+        </div>
+        <button onClick={playAll} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors whitespace-nowrap">
+          {speakingId === 'all' ? <><VolumeX className="w-3.5 h-3.5" /> Стоп</> : <><Volume2 className="w-3.5 h-3.5" /> Озвучить всё</>}
+        </button>
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center gap-6">
@@ -117,9 +156,15 @@ function ExamplesStep({ lesson, onNext }: { lesson: Lesson; onNext: () => void }
         <div className="w-full max-w-sm cursor-pointer select-none" style={{ perspective: 1000 }} onClick={() => setFlipped(f => !f)}>
           <motion.div animate={{ rotateY: flipped ? 180 : 0 }} transition={{ duration: 0.4 }}
             style={{ transformStyle: 'preserve-3d', position: 'relative', height: 160 }}>
-            {/* Front вЂ” English */}
-            <div className="absolute inset-0 bg-white/[0.06] border border-white/10 rounded-2xl flex flex-col items-center justify-center p-6 text-center"
+            {/* Front — English */}
+            <div className="absolute inset-0 bg-white/[0.06] border border-white/10 rounded-2xl flex flex-col items-center justify-center p-6 text-center relative"
               style={{ backfaceVisibility: 'hidden' }}>
+              <button
+                onClick={(e) => { e.stopPropagation(); speakExample(`ex-${cur}`, ex.english) }}
+                className="absolute top-2 right-2 w-7 h-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
+              >
+                {speakingId === `ex-${cur}` ? <VolumeX className="w-4 h-4 text-primary animate-pulse" /> : <Volume2 className="w-4 h-4" />}
+              </button>
               <div className="text-muted-foreground text-[10px] uppercase tracking-widest mb-3 flex items-center gap-1.5">
                 <FlipHorizontal className="w-3 h-3" />English
               </div>
@@ -159,7 +204,7 @@ function ExamplesStep({ lesson, onNext }: { lesson: Lesson; onNext: () => void }
   )
 }
 
-// в”Ђв”Ђв”Ђ Step 3: Exercises в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+// в"Ђв"Ђв"Ђ Step 3: Exercises в"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђ
 function ExercisesStep({ lesson, onNext, module: mod }: { lesson: Lesson; onNext: () => void; module?: string }) {
   const [speakingDone, setSpeakingDone] = useState(false)
   const [cur, setCur] = useState(0)
@@ -324,7 +369,7 @@ function ExercisesStep({ lesson, onNext, module: mod }: { lesson: Lesson; onNext
   )
 }
 
-// в”Ђв”Ђв”Ђ Step 4: Quiz в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+// в"Ђв"Ђв"Ђ Step 4: Quiz в"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђ
 function QuizStep({ lesson, onFinish }: { lesson: Lesson; onFinish: (score: number) => void }) {
   const [cur, setCur] = useState(0)
   const [chosen, setChosen] = useState<string[]>([])
@@ -404,7 +449,7 @@ function QuizStep({ lesson, onFinish }: { lesson: Lesson; onFinish: (score: numb
   )
 }
 
-// в”Ђв”Ђв”Ђ Lesson Player (VIEW 2) в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+// в"Ђв"Ђв"Ђ Lesson Player (VIEW 2) в"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђ
 const STEPS = ['Теория', 'Примеры', 'Упражнения', 'Тест'] as const
 type Step = typeof STEPS[number]
 
@@ -467,7 +512,7 @@ function LessonPlayer({ lesson, onBack, onComplete }: {
   )
 }
 
-// в”Ђв”Ђв”Ђ Curriculum Card в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+// в"Ђв"Ђв"Ђ Curriculum Card в"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђ
 function LessonCard({ lesson, unlocked, completed, current, onClick }: {
   lesson: Lesson
   unlocked: boolean
@@ -509,7 +554,7 @@ function LessonCard({ lesson, unlocked, completed, current, onClick }: {
   )
 }
 
-// в”Ђв”Ђв”Ђ Module helpers в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+// в"Ђв"Ђв"Ђ Module helpers в"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђ
 function moduleLessonsByBlock(lessons: ModuleLesson[]) {
   const map = new Map<number, { name: string; lessons: ModuleLesson[] }>()
   for (const l of lessons) {
@@ -537,7 +582,7 @@ const MODULE_TABS = [
   { id: 'grammar',   label: '📖 Грамматика' },
 ] as const
 
-// в”Ђв”Ђв”Ђ Main Page в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+// в"Ђв"Ђв"Ђ Main Page в"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђ
 export default function LessonsPage() {
   const searchParams = useSearchParams()
   const initModule = (searchParams.get('module') as ModuleId | null) ?? null
@@ -599,7 +644,7 @@ export default function LessonsPage() {
     <div className="max-w-3xl mx-auto pb-10">
       <AnimatePresence mode="wait">
         {activeLesson ? (
-          /* в”Ђв”Ђ VIEW 2: LESSON PLAYER в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ */
+          /* в"Ђв"Ђ VIEW 2: LESSON PLAYER в"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђ */
           <motion.div key="player"
             initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.3 }}>
@@ -610,7 +655,7 @@ export default function LessonsPage() {
             />
           </motion.div>
         ) : (
-          /* в”Ђв”Ђ VIEW 1: CURRICULUM в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ */
+          /* в"Ђв"Ђ VIEW 1: CURRICULUM в"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђ */
           <motion.div key="curriculum"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
@@ -652,7 +697,7 @@ export default function LessonsPage() {
             </div>
 
             {activeModule ? (
-              /* в”Ђв”Ђ MODULE CURRICULUM в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ */
+              /* в"Ђв"Ђ MODULE CURRICULUM в"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђ */
               <div className="space-y-8">
                 {moduleLessonsByBlock(moduleLessons).map(([blockNum, { name, lessons }]) => {
                   const doneInBlock = lessons.filter(l => progress.completedLessons[l.id]).length
@@ -686,7 +731,7 @@ export default function LessonsPage() {
                 })}
               </div>
             ) : (
-              /* в”Ђв”Ђ MAIN COURSE CURRICULUM в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ */
+              /* в"Ђв"Ђ MAIN COURSE CURRICULUM в"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђ */
               <>
                 {/* Level tabs */}
                 <div className="flex gap-2 flex-wrap mb-8">

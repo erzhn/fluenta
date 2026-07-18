@@ -1,0 +1,250 @@
+You are working on Fluenta — a Next.js 15 App Router English learning app with TypeScript (strict), Tailwind CSS v4, Supabase, Framer Motion v12, and Groq API (llama-3.1-8b-instant).
+
+RULES:
+- NO tailwind.config.js — CSS variables only (var(--primary), etc.)
+- 'use client' on every interactive component
+- Do NOT ask permission. Make all changes directly.
+- After all tasks: run `npx tsc --noEmit` and fix ALL errors before finishing.
+- git commit at the end: `git add -A && git commit -m "feat: AI generates unique content, dashboard fixes, notes visibility"`
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 1 — DASHBOARD: SHOW REAL USER NAME + DATA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/(dashboard)/dashboard/page.tsx
+
+The dashboard loads profile from Supabase but shows "Добро пожаловать в Fluenta" when name is empty.
+Profile.name might be null for users who skipped onboarding or signed up via OTP.
+
+Fix:
+1. When profile.name is null/empty, try to extract name from supabase user email:
+   ```ts
+   const { data: { session } } = await supabase.auth.getSession()
+   const user = session?.user
+   const emailName = user?.email?.split('@')[0] ?? ''
+   // Use profile.name if set, else capitalize email prefix
+   const displayName = profile?.name || emailName.charAt(0).toUpperCase() + emailName.slice(1)
+   ```
+
+2. The greeting should show the name even if it comes from email.
+
+3. In the stats block, "уроков сегодня" query:
+   ```ts
+   supabase.from("lessons_progress").select("*", { count: "exact", head: true })
+     .eq("user_id", user.id)
+     .gte("completed_at", new Date().toISOString().slice(0, 10))
+   ```
+   Make sure this query checks `completed: true` too:
+   `.eq("user_id", user.id).eq("completed", true).gte("completed_at", new Date().toISOString().slice(0, 10))`
+
+4. For vocab due count query — change to also check next_review is past today (not just lte now):
+   `.eq("user_id", user.id).lte("next_review", new Date().toISOString().slice(0,10))`
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 2 — NOTES BUTTON: MAKE IT OBVIOUS IN LESSONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: components/LessonNotes.tsx
+
+The floating 📝 button at bottom-right is too subtle. Make it clearly visible:
+
+1. Change the toggle button to be larger and have a label on desktop:
+```tsx
+<button
+  onClick={() => setOpen(!open)}
+  className={`flex items-center gap-2 px-3 py-3 sm:px-4 rounded-2xl shadow-xl transition-all ${
+    open
+      ? 'bg-primary text-white shadow-primary/30'
+      : 'bg-[#1e1e2e] border-2 border-primary/40 text-primary hover:border-primary/70 shadow-black/40'
+  } ${note ? 'ring-2 ring-primary/50' : ''}`}
+  title="Заметки к уроку">
+  <span className="text-base">📝</span>
+  <span className="hidden sm:inline text-sm font-semibold">Заметки</span>
+  {note && <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />}
+</button>
+```
+
+2. Position: keep `fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40`
+
+3. When note has content, show a green dot indicator on the button (as above with animate-pulse).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 3 — DICTATION: AI GENERATES NEW WORDS AUTOMATICALLY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/(dashboard)/dictation/page.tsx
+
+Currently: static DICTATION_WORDS list, user must manually enter a topic and click a button.
+
+Make AI the DEFAULT for dictation — generate fresh words on every new session:
+
+1. On component mount (useEffect with [level]), call `generateWords()` automatically with a random topic.
+2. Random topics to pick from for each call:
+   ```ts
+   const TOPICS_BY_LEVEL = {
+     A1: ['daily life', 'food', 'colors', 'numbers', 'family', 'weather', 'animals', 'body'],
+     A2: ['travel', 'shopping', 'work', 'hobbies', 'sports', 'health', 'city', 'school'],
+     B1: ['environment', 'technology', 'culture', 'emotions', 'business', 'media', 'politics', 'science'],
+     B2: ['economy', 'philosophy', 'literature', 'psychology', 'engineering', 'law', 'medicine', 'art'],
+     C1: ['linguistics', 'geopolitics', 'epistemology', 'rhetoric', 'neuroscience', 'ethics', 'sociology'],
+   }
+   ```
+   Pick a random topic: `TOPICS_BY_LEVEL[level][Math.floor(Math.random() * TOPICS_BY_LEVEL[level].length)]`
+
+3. Show a loading skeleton (animated pulse divs) while words are being generated.
+
+4. The static DICTATION_WORDS can remain as a FALLBACK (if AI fails, use static words for the level).
+
+5. Keep the manual topic input + "Сгенерировать" button so user can request specific topic.
+
+6. Show the current topic tag: `Тема: ${currentTopic}` under the level tabs.
+
+7. When user changes level, auto-generate new words for that level too.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 4 — READING: AI GENERATES UNIQUE TEXTS PER SESSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/(dashboard)/reading/page.tsx
+
+Currently: calls `/api/ai/generate-reading` only when user clicks "AI текст" button.
+
+Changes:
+1. On page load, generate an AI reading text automatically (call generateAI() in useEffect once).
+2. Add topic selector at top — let user pick from topics:
+   ```ts
+   const READING_TOPICS = ['Технологии', 'Природа', 'Наука', 'История', 'Культура', 'Спорт', 'Путешествия', 'Здоровье', 'Бизнес', 'Искусство']
+   ```
+   Display as horizontal scrollable chips. When user taps a topic chip AND when level changes → auto-generate new text.
+
+3. Add "🔄 Новый текст" button next to topic chips (instead of or alongside existing button).
+
+4. Show skeleton while generating (use existing SkeletonCard or a custom skeleton).
+
+5. Vocabulary section: when reading an AI-generated text, auto-highlight vocabulary words and show translations. The API returns vocabulary — make them clickable (existing renderText function).
+
+File: app/api/ai/generate-reading/route.ts
+Check this file exists and accepts `{ level, topic }`. If it doesn't include topic in the prompt, add it:
+```
+Generate a reading text about "${topic}" for a ${level} level English learner...
+```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 5 — GRAMMAR EXERCISES: ALWAYS UNIQUE + TOPIC VARIETY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/(dashboard)/grammar-exercises/page.tsx
+
+1. Add a "Случайная тема" button that picks a random topic from GRAMMAR_TOPICS and generates an exercise.
+
+2. The AI exercise section (top card) — make it auto-generate on load:
+   ```ts
+   useEffect(() => { generateExercise() }, [selectedTopic])
+   ```
+   So every time user switches topic, a new AI exercise is immediately generated.
+
+3. Add exercise count/streak: "Правильно подряд: N 🔥" shown near the score.
+
+4. When user answers correctly: automatically load the next exercise after 1.5 seconds.
+   When wrong: show explanation and a "Попробовать ещё раз" button.
+
+File: app/api/ai/generate-grammar-exercise/route.ts (already exists and fixed)
+Make sure it returns varied exercises — add `temperature: 0.9` to ensure variety.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 6 — LISTENING: AUTO-LOAD NEW TEXT ON LEVEL CHANGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/(dashboard)/listening/page.tsx
+
+1. On level change (when user clicks level tab), automatically call `generateAI()` instead of loading from static pool.
+   This ensures each session has fresh AI-generated content.
+
+2. Add topic display: "Тема: {entry.title}" prominently shown.
+
+3. After user finishes questions and checks answers, show a "Новый текст 🎲" button that generates another AI text for the same level.
+
+4. The static `getListeningTexts()` fallback remains for initial load and offline.
+
+File: app/api/ai/generate-listening/route.ts (already exists)
+Add `topic` variety — modify to pick random topics:
+```ts
+const TOPICS = ['daily routine', 'travel story', 'workplace conversation', 'news report', 'nature documentary', 'historical event', 'technology news', 'food and cooking', 'science discovery', 'city life']
+const topic = TOPICS[Math.floor(Math.random() * TOPICS.length)]
+```
+Include topic in the AI prompt.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 7 — SENTENCE BUILDER: AI GENERATES NEW SENTENCES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/(dashboard)/sentence-builder/page.tsx
+
+Read this file first. If it has static sentences, add AI generation:
+- Button "Новое предложение (AI)" that calls `/api/ai/generate` with type `sentences`, context = random topic, level = current level
+- Generated sentences replace the current set
+- Auto-load on mount if no sentences or when level changes
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 8 — AI TUTOR: VARIED CONVERSATION STARTERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/(dashboard)/ai-tutor/page.tsx
+
+Read this file. The AI tutor should start conversations with varied opening messages, not the same greeting every time.
+
+On page load, pick a random conversation starter from these (based on mode):
+```ts
+const STARTERS = {
+  conversation: [
+    "Hi! What's been happening in your life lately?",
+    "Hello! Have you watched any good films recently?",
+    "Hey! What are your plans for the weekend?",
+    "Hi there! What's your favourite way to relax?",
+    "Hello! Tell me something interesting that happened to you this week.",
+  ],
+  grammar: [
+    "Let's practice grammar! I'll give you sentences to correct. Ready?",
+    "Grammar time! Tell me something about your day using Past Simple.",
+    "Let's work on your grammar. Describe your home using there is/are.",
+  ],
+  vocabulary: [
+    "Vocab session! Can you describe your job or studies using at least 5 advanced words?",
+    "Let's expand your vocabulary. What topic interests you most?",
+    "Word power! Tell me about your city using as many descriptive words as possible.",
+  ],
+  writing: [
+    "Writing practice! Let's write a short email together. Who should we write to?",
+    "Let's practice writing. Give me a topic and I'll help you craft a paragraph.",
+  ],
+  business: [
+    "Business English! Let's practice a job interview. I'll be the interviewer.",
+    "Corporate English time! Tell me about a project you've worked on.",
+  ],
+  exams: [
+    "IELTS prep! Let's start with a Part 1 question: Tell me about where you live.",
+    "Exam practice! Describe a person who has influenced you — you have 2 minutes.",
+  ],
+}
+```
+
+When a mode is selected, pick a random starter from that mode's array and set it as the first assistant message.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 9 — MINI STORIES: AI GENERATES NEW STORIES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/(dashboard)/mini-stories/page.tsx
+
+Read this file. If stories are static, add:
+- On level change or "Новая история" button click: call `/api/ai/generate` with type `mini_story`, context = random topic, level = current level
+- Display AI-generated story title, content, and vocabulary section
+- Auto-load first story on mount
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+VERIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. `npx tsc --noEmit` — must output 0 errors
+2. Check reading/listening/dictation pages render without crashes (no undefined access)
+3. Commit: `git add -A && git commit -m "feat: AI generates unique content per session, fixes dashboard name, improves notes button"`

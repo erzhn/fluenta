@@ -20,31 +20,13 @@ export default function MyPlanPage() {
   async function generatePlan() {
     setLoading(true)
     try {
-      const res = await fetch('/api/ai/grammar-examples', {
+      const res = await fetch('/api/ai/generate-plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          word: 'study plan',
-          type: 'plan',
-          customPrompt: `Create a 4-week English study plan for a student at level ${level} with goal: ${goal}.
-Available time: ${hoursPerWeek} hours per week.
-
-Return JSON array of 4 weeks:
-[{
-  "week": 1,
-  "focus": "Main grammar/topic focus for the week",
-  "lessons": ["Lesson 1 title", "Lesson 2 title", "Lesson 3 title"],
-  "vocabulary": "10-15 specific vocabulary words to learn this week (comma-separated)",
-  "practice": "Specific practice activity for this week",
-  "goal": "What student should achieve by end of week"
-}]
-
-Make it specific to the goal (${goal}) and level (${level}). All lesson titles and descriptions should be in Russian. Be very specific and practical.`
-        }),
+        body: JSON.stringify({ level, goal, hoursPerWeek }),
       })
       const data = await res.json()
-      const parsed = JSON.parse(data.explanation ?? data.examples ?? '[]')
-      setPlan(Array.isArray(parsed) ? parsed : null)
+      setPlan(Array.isArray(data.plan) && data.plan.length > 0 ? data.plan : null)
     } catch {
       setPlan(null)
     } finally {

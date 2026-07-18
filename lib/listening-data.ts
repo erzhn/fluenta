@@ -241,6 +241,106 @@ export const LISTENING_POOL: ListeningText[] = [
       { question: 'Why do critics call carbon pricing regressive?', options: ['It harms large corporations', 'It costs too much to administer', 'It falls disproportionately on lower-income households', 'It does not reduce emissions'], answer: 'It falls disproportionately on lower-income households' },
     ],
   },
+
+  // ── A1 new (2) ──
+  {
+    id: 'l-a1-6', level: 'A1', title: 'A Trip to the Zoo',
+    text: 'On Saturday, Sam and his family go to the zoo. They see lions, elephants, and giraffes. The children love feeding the goats. The goats are very friendly. They eat from the children\'s hands. At lunchtime the family sits on the grass and eats sandwiches. The sandwiches have cheese and tomatoes. After lunch they go to the gift shop. Sam buys a small toy elephant. It is grey and soft. Sam is very happy. He wants to come back to the zoo next month.',
+    questions: [
+      { question: 'What day do they visit the zoo?', options: ['Friday', 'Sunday', 'Saturday', 'Monday'], answer: 'Saturday' },
+      { question: 'What do the children enjoy doing?', options: ['Watching lions', 'Feeding the goats', 'Buying toys', 'Eating lunch'], answer: 'Feeding the goats' },
+      { question: 'What does Sam buy at the gift shop?', options: ['A toy giraffe', 'A book', 'A toy elephant', 'A poster'], answer: 'A toy elephant' },
+    ],
+  },
+  {
+    id: 'l-a1-7', level: 'A1', title: 'My Favourite Food',
+    text: 'Hi, my name is Lucy. My favourite food is pizza. I love pizza because it is delicious. My favourite pizza has cheese, tomatoes, and olives on top. Every Friday, I make pizza with my mum at home. We put the pizza in the oven for twenty minutes. It smells very good! My grandma does not like pizza. She prefers pasta. She makes pasta with tomato sauce every Sunday. I like pasta too, but pizza is the best. What is your favourite food?',
+    questions: [
+      { question: 'What is Lucy\'s favourite food?', options: ['Pasta', 'Pizza', 'Sandwiches', 'Soup'], answer: 'Pizza' },
+      { question: 'When does Lucy make pizza with her mum?', options: ['Saturday', 'Sunday', 'Friday', 'Thursday'], answer: 'Friday' },
+      { question: 'What does Lucy\'s grandma prefer?', options: ['Pizza', 'Soup', 'Pasta', 'Sandwiches'], answer: 'Pasta' },
+    ],
+  },
+
+  // ── A2 new (2) ──
+  {
+    id: 'l-a2-6', level: 'A2', title: 'Starting a New Hobby',
+    text: 'Laura has always wanted to try photography. Last month, she borrowed her brother\'s camera and went to the park to take some photos. She loved it immediately. She took pictures of flowers, ducks, and people walking their dogs. When she got home, she uploaded her photos to her computer and was surprised at how good some of them looked. She decided to join an online photography course to learn more about lighting and composition. Now she goes to the park every weekend with the camera. Next month, she is going to enter a local photography competition. She is nervous but excited.',
+    questions: [
+      { question: 'Whose camera does Laura use?', options: ['Her friend\'s', 'Her own', 'Her brother\'s', 'Her mother\'s'], answer: 'Her brother\'s' },
+      { question: 'What did Laura join to improve her skills?', options: ['A photography club', 'An online course', 'An evening class', 'A community group'], answer: 'An online course' },
+      { question: 'What is Laura planning to do next month?', options: ['Buy her own camera', 'Travel abroad', 'Enter a competition', 'Start a photography blog'], answer: 'Enter a competition' },
+    ],
+  },
+  {
+    id: 'l-a2-7', level: 'A2', title: 'A Lost Wallet',
+    text: 'Ben lost his wallet on the bus yesterday. It contained his credit card, his driving licence, and forty pounds in cash. He was very worried. He called the bus company as soon as he got home. The person on the phone told him to go to the lost property office at the bus station. Ben went there the next morning. The office worker found a wallet matching his description. Ben opened it and was very relieved — his credit card, driving licence, and all the cash were still inside. He thanked the office worker and went home feeling much better.',
+    questions: [
+      { question: 'Where did Ben lose his wallet?', options: ['On the train', 'In a shop', 'On the bus', 'At the office'], answer: 'On the bus' },
+      { question: 'What did the bus company tell him to do?', options: ['Call the police', 'Go to the lost property office', 'Fill in an online form', 'Wait at home'], answer: 'Go to the lost property office' },
+      { question: 'What was inside the wallet when Ben got it back?', options: ['Only the driving licence', 'Only the cash', 'Nothing', 'Everything was still there'], answer: 'Everything was still there' },
+    ],
+  },
+
+  // ── B1 new (2) ──
+  {
+    id: 'l-b1-6', level: 'B1', title: 'The Benefits of Exercise',
+    text: 'Most health experts agree that regular physical activity is one of the best things you can do for your body and mind. Even thirty minutes of moderate exercise a day — such as a brisk walk or a bike ride — can have significant benefits. Exercise reduces stress by releasing chemicals called endorphins, which improve your mood. It also improves sleep quality and helps prevent serious diseases such as type 2 diabetes and heart disease. A recent study found that people who exercised at least five times a week had a thirty-five percent lower risk of developing depression compared to those who were inactive. Experts advise starting small: choose an activity you enjoy, set realistic goals, and gradually increase the intensity. The most important thing is to make exercise a regular habit.',
+    questions: [
+      { question: 'What do endorphins do?', options: ['Prevent disease', 'Improve your mood', 'Help you sleep', 'Reduce blood pressure'], answer: 'Improve your mood' },
+      { question: 'According to the study, how much lower was the risk of depression for active people?', options: ['25%', '30%', '35%', '40%'], answer: '35%' },
+      { question: 'What do experts say is the most important thing about exercise?', options: ['Exercising intensely', 'Making it a regular habit', 'Joining a gym', 'Exercising in the morning'], answer: 'Making it a regular habit' },
+    ],
+  },
+  {
+    id: 'l-b1-7', level: 'B1', title: 'A Cultural Exchange',
+    text: 'Hana is a twenty-two-year-old student from Japan who spent three months studying English in the UK. At first, she found it difficult to understand different British accents, especially when people spoke quickly in informal situations. However, she made friends at her language school and they helped her a lot. She was surprised by some aspects of British culture: the weather was much colder and wetter than she expected, and she was impressed by how politely people queue for everything — buses, shops, and even in the street. After returning home, Hana felt more confident and independent. She says that living alone in a foreign country taught her to solve problems and manage her daily life in a way that studying at home never could.',
+    questions: [
+      { question: 'What did Hana find difficult at first?', options: ['Making friends', 'Finding accommodation', 'Understanding British accents', 'Learning grammar'], answer: 'Understanding British accents' },
+      { question: 'What aspect of British culture surprised her?', options: ['The food', 'How people queue', 'Public transport', 'The cost of living'], answer: 'How people queue' },
+      { question: 'What did living abroad teach Hana?', options: ['How to cook', 'How to speak formally', 'Independence and problem-solving', 'Time management'], answer: 'Independence and problem-solving' },
+    ],
+  },
+
+  // ── B2 new (2) ──
+  {
+    id: 'l-b2-6', level: 'B2', title: 'Artificial Intelligence in Healthcare',
+    text: 'Artificial intelligence is increasingly being integrated into healthcare systems around the world. Machine learning algorithms can now analyse medical images — such as X-rays and MRI scans — with a speed and, in some cases, an accuracy that surpasses human specialists. For instance, certain AI models have demonstrated a higher detection rate for early-stage breast cancer than experienced radiologists. However, the widespread adoption of AI in medicine raises significant ethical concerns. Questions about data privacy — who owns and controls patient data — remain unresolved. There are also accountability issues: if an AI system makes a diagnostic error that leads to patient harm, who is legally responsible? Most medical professionals argue that AI should be used as a tool to assist doctors rather than replace them, combining computational power with human empathy and clinical judgement.',
+    questions: [
+      { question: 'In what area has AI demonstrated higher accuracy than some human specialists?', options: ['Surgical procedures', 'Drug prescriptions', 'Early cancer detection', 'Patient communication'], answer: 'Early cancer detection' },
+      { question: 'Which ethical concern is mentioned regarding AI in healthcare?', options: ['High implementation costs', 'Data privacy and accountability', 'Lack of patient interest', 'Resistance from governments'], answer: 'Data privacy and accountability' },
+      { question: 'What do most medical professionals believe about AI\'s role?', options: ['It should fully replace doctors', 'It is too unreliable to use', 'It should assist rather than replace doctors', 'It should only be used for administration'], answer: 'It should assist rather than replace doctors' },
+    ],
+  },
+  {
+    id: 'l-b2-7', level: 'B2', title: 'The Gig Economy',
+    text: 'The gig economy — characterised by short-term contracts and freelance work rather than permanent employment — has expanded rapidly in recent years, driven largely by digital platforms such as Uber, Deliveroo, and Upwork. Proponents argue that gig work offers workers flexibility, the freedom to set their own hours, and the ability to pursue multiple income streams. Critics, however, point out that gig workers are typically classified as self-employed, which means they are excluded from employment rights such as sick pay, holiday pay, and pension contributions. Several studies have found that gig workers earn significantly less on average than comparable employees in traditional roles, once costs such as equipment and insurance are accounted for. In response, a growing number of countries are introducing legislation to grant gig workers greater protections, though the debate over how to balance flexibility with security continues.',
+    questions: [
+      { question: 'What do critics say is a key disadvantage of gig work?', options: ['Too much flexibility', 'Lack of employment benefits', 'Too many clients', 'Complicated tax rules'], answer: 'Lack of employment benefits' },
+      { question: 'How are gig workers typically classified?', options: ['Part-time employees', 'Contractors with benefits', 'Self-employed', 'Agency workers'], answer: 'Self-employed' },
+      { question: 'What are some countries doing in response to gig economy issues?', options: ['Banning platform companies', 'Introducing legislation for greater protections', 'Taxing platforms more heavily', 'Requiring gig workers to register'], answer: 'Introducing legislation for greater protections' },
+    ],
+  },
+
+  // ── C1 new (2) ──
+  {
+    id: 'l-c1-6', level: 'C1', title: 'The Psychology of Procrastination',
+    text: 'Procrastination — the act of delaying or postponing tasks despite being aware of the negative consequences — is a phenomenon that affects a substantial proportion of the population. Contrary to the popular perception that procrastinators are simply lazy or poorly organised, psychological research suggests that chronic procrastination is more closely associated with emotional regulation difficulties than with poor time management per se. Individuals prone to procrastination frequently experience heightened anxiety or perfectionism: the fear of producing substandard work can paradoxically result in no work being produced at all. One influential theory, known as structured procrastination, posits that procrastinators can be productive if they organise their tasks so that minor but genuine obligations serve as displacement activities for more challenging ones. Cognitive behavioural therapy has shown considerable efficacy in treating chronic procrastination by helping individuals identify and restructure the maladaptive thought patterns that underlie avoidance behaviour.',
+    questions: [
+      { question: 'What does psychological research associate chronic procrastination with?', options: ['Poor time management', 'Lack of motivation', 'Emotional regulation difficulties', 'Low intelligence'], answer: 'Emotional regulation difficulties' },
+      { question: 'What is the principle behind structured procrastination?', options: ['Working on the hardest task first', 'Using minor tasks as displacement for harder ones', 'Taking regular breaks', 'Setting strict deadlines'], answer: 'Using minor tasks as displacement for harder ones' },
+      { question: 'What does CBT help procrastinators do?', options: ['Manage their time better', 'Set realistic goals', 'Identify and restructure maladaptive thought patterns', 'Build self-confidence'], answer: 'Identify and restructure maladaptive thought patterns' },
+    ],
+  },
+  {
+    id: 'l-c1-7', level: 'C1', title: 'Language Extinction and Cultural Loss',
+    text: 'Linguists estimate that of the approximately seven thousand languages spoken worldwide today, nearly half are endangered and could disappear entirely within the next century. Language loss rarely occurs in isolation; it invariably entails the erosion of the cultural frameworks, oral traditions, and unique epistemologies encoded within it. Indigenous languages frequently contain highly specific vocabulary for ecological phenomena — types of snow, soil conditions, or plant behaviour — that has no equivalent in dominant languages and represents irreplaceable environmental knowledge. Revitalisation efforts have met with mixed success: Welsh and Hawaiian serve as notable examples of languages brought back from the brink through sustained governmental and community investment. A persistent debate among linguists concerns whether limited resources are best directed towards active revitalisation — encouraging intergenerational transmission — or towards comprehensive digital documentation of languages before their last speakers die, thereby preserving the knowledge even if the living community cannot be rebuilt.',
+    questions: [
+      { question: 'What inevitably accompanies language loss according to the text?', options: ['Economic decline', 'Erosion of cultural frameworks and knowledge', 'Reduced biodiversity', 'Political instability'], answer: 'Erosion of cultural frameworks and knowledge' },
+      { question: 'Which languages are cited as successful revitalisation examples?', options: ['Gaelic and Māori', 'Welsh and Hawaiian', 'Basque and Catalan', 'Latin and Sanskrit'], answer: 'Welsh and Hawaiian' },
+      { question: 'What is the central debate among linguists regarding endangered languages?', options: ['Whether to fund new grammars', 'Revitalisation vs digital documentation', 'Which languages to prioritise', 'How to train new speakers quickly'], answer: 'Revitalisation vs digital documentation' },
+    ],
+  },
 ]
 
 export function getListeningTexts(level: string, count: number = 3): ListeningText[] {

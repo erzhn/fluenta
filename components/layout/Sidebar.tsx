@@ -37,6 +37,7 @@ const NAV_GROUPS = [
   {
     label: "Навыки",
     items: [
+      { href: "/ielts-speaking",        icon: GraduationCap, label: "IELTS Speaking"    },
       { href: "/grammar",               icon: GraduationCap, label: "Грамматика"        },
       { href: "/grammar-exercises",     icon: BookOpen,      label: "Упражнения"        },
       { href: "/writing",               icon: PenLine,       label: "Письмо"            },

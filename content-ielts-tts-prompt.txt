@@ -1,0 +1,243 @@
+You are working on Fluenta — an English learning app built with Next.js 15 App Router, TypeScript (strict), Tailwind CSS v4, Supabase, Framer Motion v12, and Groq API (llama-3.1-8b-instant).
+
+Tech rules:
+- NO tailwind.config.js — use CSS variables only (var(--primary), var(--muted-foreground), etc.)
+- 'use client' on every interactive component
+- supabase auth: always getSession(), never getUser()
+- profiles table uses `id` (= auth.uid()), NOT user_id
+- All new UI: dark glass style (bg-white/[0.04] border border-white/10 rounded-2xl)
+- Do NOT ask permission. Make all changes directly.
+- Run `npx tsc --noEmit` after all changes and fix any errors before finishing.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 1 — EXPAND LESSONS TO 200+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: lib/lessons-data.ts
+Current: ~158 lessons (A1–C1)
+Goal: Add ≥50 new lessons to reach 200+
+
+The Lesson interface is:
+  id: string           // e.g. 'a2-5-1' = level-block-order
+  level: 'A1'|'A2'|'B1'|'B2'|'C1'
+  block: number
+  blockName: string
+  order: number
+  title: string
+  duration: string     // e.g. '15 мин'
+  theory: {
+    explanation: string   // Russian explanation, detailed
+    examples: Array<{ english: string; russian: string }>  // 4-6 examples
+  }
+  exercises: ExerciseItem[]   // 4-6 exercises (fill_blank, multiple_choice, build_sentence)
+  quiz: Array<{ question: string; options: string[]; answer: string }>  // 5-8 questions
+
+Add these new lessons (append to LESSONS array before the closing `]`):
+
+A2 — New Block 5: "В путешествии" (travel vocabulary, at the hotel, directions, transport)
+  a2-5-1: Booking a hotel room — vocabulary (reservation, check-in, single/double room)
+  a2-5-2: Asking for directions — left, right, straight on, turn, corner, traffic lights
+  a2-5-3: At the airport — boarding pass, gate, departure, arrival, customs, passport control
+  a2-5-4: Transport vocabulary — bus, train, taxi, underground/subway, platform, fare
+  a2-5-5: Describing a city — there is/are, near, opposite, between, next to
+
+A2 — New Block 6: "Работа и учёба" (jobs, studying)
+  a2-6-1: Jobs and occupations — 20 common jobs, what do you do?
+  a2-6-2: Talking about work — I work at/for/as, my job involves, I'm responsible for
+  a2-6-3: School vocabulary — subject, lesson, homework, exam, grade, teacher, classmate
+  a2-6-4: Daily work routine — start work, have a meeting, take a break, finish work
+  a2-6-5: Applying for a job — CV, interview, apply for, experience, qualifications
+
+B1 — New Block 5: "Навыки общения" (social English)
+  b1-5-1: Agreeing and disagreeing — I agree, I'm not sure about that, that's a good point
+  b1-5-2: Making suggestions and offers — Why don't we, How about, Shall I, Would you like
+  b1-5-3: Apologising and making excuses — I'm sorry, I apologise, It won't happen again
+  b1-5-4: Talking about feelings — I feel, I'm worried/excited/disappointed, it makes me feel
+  b1-5-5: Discussing plans — I'm going to, I'm planning to, I'm thinking of, I intend to
+
+B1 — New Block 6: "Медиа и технологии"
+  b1-6-1: Social media vocabulary — post, share, like, comment, follow, hashtag, feed
+  b1-6-2: Technology in everyday life — app, device, download, update, password, account
+  b1-6-3: Talking about news — According to, It is reported that, The article says
+  b1-6-4: Describing graphs and trends — rise, fall, peak, remain stable, increase by
+  b1-6-5: Online safety — privacy, data, scam, phishing, secure, two-factor authentication
+
+B2 — New Block 4: "Академический английский"
+  b2-4-1: Academic vocabulary — analyse, evaluate, assess, demonstrate, indicate, suggest
+  b2-4-2: Essay structure — introduction, thesis statement, body paragraph, conclusion, topic sentence
+  b2-4-3: Linking words advanced — Furthermore, Nevertheless, In contrast, As a result, Consequently
+  b2-4-4: Hedging language — It could be argued, There is evidence to suggest, It appears that
+  b2-4-5: Describing research — The study found that, Data indicates, Results suggest
+
+B2 — New Block 5: "Деловой английский"
+  b2-5-1: Formal emails — Dear Sir/Madam, I am writing to, I would be grateful if, Yours faithfully
+  b2-5-2: Meetings language — I'd like to open the meeting, Moving on, To summarise, Any questions?
+  b2-5-3: Negotiation phrases — We'd be willing to, That's not quite what we had in mind, Let's meet halfway
+  b2-5-4: Presentations — I'd like to begin by, As you can see from the graph, To conclude
+  b2-5-5: Business idioms — touch base, think outside the box, bottom line, move the goalposts
+
+C1 — New Block 2: "Риторика и стиль"
+  c1-2-1: Formal vs informal register — lexical differences, avoid contractions, complex syntax
+  c1-2-2: Rhetorical devices — metaphor, simile, alliteration, anaphora, hyperbole
+  c1-2-3: Persuasive language — appeal to emotion/logic/authority, modal verbs for persuasion
+  c1-2-4: Discourse markers — admittedly, granted, all things considered, on balance, by the same token
+  c1-2-5: Sophisticated connectors — notwithstanding, hitherto, in so far as, inasmuch as
+
+For each lesson write FULL content: complete explanation (150+ words in Russian), 4-6 English examples with Russian translations, 4-6 exercises (mix of fill_blank and multiple_choice), 5+ quiz questions. All exercises must have correct answers that match the lesson content.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 2 — IELTS SPEAKING PRACTICE PAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create: app/(dashboard)/ielts-speaking/page.tsx
+
+This is a full IELTS Speaking mock exam with 3 parts. Use:
+- `speak()` and `stopSpeaking()` from '@/lib/speech' — examiner reads questions aloud
+- `createRecognition()` from '@/lib/speech' — records user answers via microphone
+- Groq API via '/api/ai' or a new '/api/ai/ielts-feedback' route for AI scoring
+
+UI: dark glass style, max-w-2xl mx-auto, mobile-friendly
+
+──── PART 1: Introduction (4–5 min) ────
+Show topic + question. Examiner reads it aloud automatically via speak().
+User presses mic button → createRecognition() records their answer → auto-stops after silence (8 seconds of no speech via onEnd).
+After each answer show a brief skeleton/spinner then display simple tips.
+Questions bank (use these hardcoded, randomly pick 3–4 per session):
+
+Topic: "Home"
+- Describe your home. What is it like?
+- Do you live in a house or a flat?
+- What do you like most about your home?
+
+Topic: "Work/Study"
+- Do you work or are you a student?
+- What do you enjoy most about your job or studies?
+- Do you think your work or studies will change in the future?
+
+Topic: "Free Time"
+- What do you like to do in your free time?
+- Has your idea of free time changed since you were younger?
+- Do you prefer spending your free time alone or with others?
+
+Topic: "Travel"
+- Do you like travelling?
+- What is your favourite place you have visited?
+- Would you like to live in another country?
+
+──── PART 2: Long Turn (3–4 min) ────
+Show a "cue card" with a topic + 4 bullet points.
+User gets 60 seconds to prepare (countdown timer displayed).
+Then speaks for up to 2 minutes (countdown timer).
+After speaking, show AI feedback button.
+
+Cue cards bank (pick 1 randomly per session):
+1. "Describe a skill you would like to learn"
+   • What it is
+   • Why you want to learn it
+   • How you would learn it
+   • How it would benefit you
+
+2. "Describe a memorable journey or trip"
+   • Where you went
+   • Who you went with
+   • What you did there
+   • Why it was memorable
+
+3. "Describe a person who has influenced you"
+   • Who this person is
+   • How you know them
+   • In what way they influenced you
+   • Why they are important to you
+
+4. "Describe a book, film or TV show you enjoyed"
+   • What it is called
+   • What it is about
+   • Why you chose it
+   • What you learned or felt
+
+──── PART 3: Discussion (4–5 min) ────
+2–3 follow-up discussion questions related to the Part 2 cue card topic.
+Each question auto-spoken by TTS. User answers via mic (max 90 seconds each).
+
+Sample Part 3 questions (linked to the 4 cue cards above):
+For skill: "Do you think it is ever too late to learn a new skill?" / "How has technology changed the way people learn?" / "Which skills do you think will be most valuable in the future?"
+For journey: "Why do people enjoy travelling?" / "Do you think tourism has a negative impact on local cultures?" / "How might travel change in the next 20 years?"
+For person: "What qualities make a good role model?" / "Do celebrities have a responsibility to be role models?" / "Who do you think influences young people the most today?"
+For book/film: "Do you think reading is becoming less popular?" / "How has streaming changed the entertainment industry?" / "Should art and literature be taught in schools? Why?"
+
+──── FEEDBACK ────
+After all 3 parts, user can press "Получить оценку" button.
+Call Groq API with prompt: evaluate IELTS Speaking with scores in 4 criteria (Fluency & Coherence, Lexical Resource, Grammatical Range & Accuracy, Pronunciation) each 1-9, plus overall band score (average), and 3 concrete tips for improvement.
+The user's transcript for each answer is accumulated in state and sent to AI.
+
+Display result card with:
+- Overall band score (large, colored: <5 red, 5-6.5 amber, 7+ green)
+- 4 criteria scores as progress bars (0-9 scale)
+- 3 improvement tips as bullet list
+- Button "Попробовать снова"
+
+──── SIDEBAR ────
+Add to components/layout/Sidebar.tsx in the "Навыки" group:
+{ href: "/ielts-speaking", icon: GraduationCap, label: "IELTS Speaking" }
+(GraduationCap is already imported)
+
+──── API ROUTE ────
+Create app/api/ai/ielts-feedback/route.ts:
+- POST, requires Authorization: Bearer token (verify with supabase.auth.getUser())
+- Body: { transcript: string, level: string }
+- Use Groq (llama-3.1-8b-instant) with system prompt as IELTS examiner
+- Return JSON: { fluency: number, lexical: number, grammar: number, pronunciation: number, band: number, tips: string[] }
+- Rate limit: check last request timestamp in request headers or just trust auth
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 3 — TTS AUDIO BUTTONS IN LESSON PLAYER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: components/lessons/LessonPlayer.tsx
+
+1. Import `speak`, `stopSpeaking` from '@/lib/speech'
+2. Add state: `const [speaking, setSpeaking] = useState<string | null>(null)` — stores the ID of what's being spoken
+
+3. In the Theory section where examples are rendered (each `{ english, russian }` pair):
+   Add a small speaker button (Volume2 icon, 16px) after the English text.
+   On click: if speaking === example id, call stopSpeaking() and setSpeaking(null);
+   else call speak(example.english, { onStart: () => setSpeaking(id), onEnd: () => setSpeaking(null) })
+   Button style: w-6 h-6 rounded-md text-muted-foreground hover:text-primary transition-colors
+   If speaking === id: text-primary, use VolumeX icon or pulsing animation
+
+4. In the Exercises section, for fill_blank and multiple_choice exercises:
+   Add the same speaker button next to the question text.
+   Speak the question.replace('___', 'blank').
+
+5. In the Quiz section, same — speaker button on each quiz question.
+
+Also: at the top of the theory section add an "Озвучить всё" (Play All) button:
+- Reads all examples one by one with 0.5s pause between them
+- Shows a Stop button while playing
+- Use async loop: for (const ex of theory.examples) { await speak(ex.english, { rate: 0.9 }) }
+- Implement as async function that checks a `shouldStop` ref (useRef<boolean>) to cancel mid-sequence
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 4 — EXPAND LISTENING DATA POOL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: lib/listening-data.ts
+
+Currently: ~20 texts (5 per level: A1, A2, B1, B2, C1)
+Goal: 5 more per level = 10 new texts total (minimum)
+
+Add 2 new texts for A1, A2, B1, B2, C1 each (10 total). Each text needs:
+- Unique id (e.g. 'l-a1-6', 'l-a1-7', 'l-b2-6', etc.)
+- 100-200 words (appropriate for the level)
+- 3 comprehension questions with 4 options each, one correct answer
+- Natural English topics: nature, technology, culture, sport, food, science, travel
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+VERIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After all tasks:
+1. Run `npx tsc --noEmit` — must show 0 errors
+2. Check that LESSONS.length ≥ 200 by adding `console.log('Lessons:', LESSONS.length)` temporarily in lessons page, then remove it
+3. Verify IELTS route exists and compiles
+4. Run `git add -A && git commit -m "feat: 200+ lessons, IELTS speaking practice, TTS in lesson player, expanded listening pool"`
