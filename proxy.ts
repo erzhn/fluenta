@@ -15,8 +15,19 @@ function rateLimit(ip: string, limit: number, windowMs: number): boolean {
   return true
 }
 
+const PUBLIC_PATHS = ['/', '/auth', '/landing', '/api', '/_next', '/favicon', '/sw.js', '/manifest', '/offline', '/icons']
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  // Auth gate — redirect unauthenticated users away from protected routes
+  const isPublic = PUBLIC_PATHS.some(p => pathname.startsWith(p))
+  if (!isPublic) {
+    const hasCookie = [...request.cookies.getAll()].some(c => c.name.includes('-auth-token') && c.value)
+    if (!hasCookie) {
+      return NextResponse.redirect(new URL('/auth/login', request.url))
+    }
+  }
 
   const response = NextResponse.next()
   response.headers.set('X-Frame-Options', 'DENY')
@@ -42,5 +53,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/api/:path*', '/(dashboard)/:path*'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|sw.js|manifest|icons|offline).*)'],
 }
