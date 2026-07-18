@@ -1,12 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence, useMotionValue, useTransform, useAnimation } from 'framer-motion'
 import { RotateCcw, Volume2, Check, X, Layers, BookOpen, Sparkles, Loader2 } from 'lucide-react'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 import { VOCABULARY, getWordsForLesson, type VocabWord } from '@/lib/vocabulary-data'
 import { speak, stopSpeaking } from '@/lib/speech'
 import { addCardToSR } from '@/lib/spaced-repetition'
+import { supabase } from '@/lib/supabase'
+import { awardXP, XP_REWARDS } from '@/lib/xp'
 
 const STORAGE_KEY = 'fluenta_vocab_srs'
 
@@ -148,7 +150,7 @@ export default function VocabularyPage() {
   const [queue, setQueue] = useState<VocabWord[]>([])
   const [qIdx, setQIdx] = useState(0)
   const [flipped, setFlipped] = useState(false)
-  const [mode, setMode] = useState<'study' | 'stats' | 'lessons' | 'swipe'>('study')
+  const [mode, setMode] = useState<'study' | 'stats' | 'lessons' | 'swipe' | 'mywords'>('study')
   const [swipeIdx, setSwipeIdx] = useState(0)
   const [swipeQueue, setSwipeQueue] = useState<VocabWord[]>([])
   const [hydrated, setHydrated] = useState(false)
@@ -156,6 +158,16 @@ export default function VocabularyPage() {
   const [lessonWords, setLessonWords] = useState<VocabWord[]>([])
   const [lessonIdx, setLessonIdx] = useState(0)
   const [lessonFlipped, setLessonFlipped] = useState(false)
+
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [newWord, setNewWord] = useState('')
+  const [newTranslation, setNewTranslation] = useState('')
+  const [newContext, setNewContext] = useState('')
+  const [addingWord, setAddingWord] = useState(false)
+  const [userWords, setUserWords] = useState<Array<{id:string,word:string,translation:string,context?:string}>>([])
+  const [collocMap, setCollocMap] = useState<Map<string, string[]>>(new Map())
+  const [loadingColloc, setLoadingColloc] = useState<string | null>(null)
+  const xpAwardedRef = useRef(false)
 
   const [speaking, setSpeaking] = useState(false)
   const { generate, loading: aiLoading } = useAIGenerate()
@@ -166,6 +178,43 @@ export default function VocabularyPage() {
     if (data?.sentences) setAiExamples(data.sentences)
   }
 
+  async function loadUserWords() {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.user) return
+    const { data } = await supabase.from('vocabulary').select('*').eq('user_id', session.user.id).order('created_at', { ascending: false })
+    if (data) setUserWords(data as Array<{id:string,word:string,translation:string,context?:string}>)
+  }
+
+  async function handleAddWord() {
+    if (!newWord.trim() || !newTranslation.trim()) return
+    setAddingWord(true)
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.user) { setAddingWord(false); return }
+    await supabase.from('vocabulary').insert({
+      user_id: session.user.id,
+      word: newWord.trim(),
+      translation: newTranslation.trim(),
+      context: newContext.trim() || null,
+      next_review: new Date().toISOString(),
+      interval: 1,
+      ease_factor: 2.5,
+      repetitions: 0,
+    })
+    setNewWord(''); setNewTranslation(''); setNewContext('')
+    setShowAddModal(false); setAddingWord(false)
+    loadUserWords()
+  }
+
+  async function fetchCollocations(word: string) {
+    if (collocMap.has(word)) return
+    setLoadingColloc(word)
+    const data = await generate<{collocations?: string[]}>('collocations', word, 'B1')
+    if (data?.collocations) {
+      setCollocMap(prev => new Map(prev).set(word, data.collocations!))
+    }
+    setLoadingColloc(null)
+  }
+
   useEffect(() => {
     const loaded = loadSRS()
     setSRS(loaded)
@@ -173,11 +222,20 @@ export default function VocabularyPage() {
     setQueue(due.slice(0, 20))
     setSwipeQueue(shuffle(VOCABULARY).slice(0, 20))
     setHydrated(true)
+    loadUserWords()
   }, [])
 
   const card = queue[qIdx]
   const done = qIdx >= queue.length
   const totalDue = queue.length
+
+  useEffect(() => {
+    if (done && totalDue > 0 && !xpAwardedRef.current) {
+      xpAwardedRef.current = true
+      awardXP(XP_REWARDS.FLASHCARD_SESSION).catch(() => {})
+    }
+    if (!done) xpAwardedRef.current = false
+  }, [done, totalDue])
 
   async function handleListen(word: string) {
     if (speaking) { stopSpeaking(); setSpeaking(false); return }
@@ -240,12 +298,12 @@ export default function VocabularyPage() {
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-2">
         <div>
           <h1 className="text-2xl font-bold text-white"><span className="gradient-text">Словарь</span></h1>
           <p className="text-muted-foreground text-sm">{VOCABULARY.length} слов • Метод Leitner</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 justify-end">
           <button onClick={() => setMode('study')}
             className={`px-3 py-1.5 rounded-xl text-sm border transition-all ${mode === 'study' ? 'border-primary bg-primary/20 text-white' : 'border-white/10 text-muted-foreground'}`}>
             Учить
@@ -261,6 +319,14 @@ export default function VocabularyPage() {
           <button onClick={() => setMode('stats')}
             className={`px-3 py-1.5 rounded-xl text-sm border transition-all ${mode === 'stats' ? 'border-primary bg-primary/20 text-white' : 'border-white/10 text-muted-foreground'}`}>
             Прогресс
+          </button>
+          <button onClick={() => setMode('mywords')}
+            className={`px-3 py-1.5 rounded-xl text-sm border transition-all ${mode === 'mywords' ? 'border-primary bg-primary/20 text-white' : 'border-white/10 text-muted-foreground'}`}>
+            Мои слова{userWords.length > 0 && <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded-full bg-primary/30">{userWords.length}</span>}
+          </button>
+          <button onClick={() => setShowAddModal(true)}
+            className="px-3 py-1.5 rounded-xl text-sm border border-primary/40 bg-primary/10 text-primary hover:bg-primary/20 transition-all">
+            + Слово
           </button>
         </div>
       </div>
@@ -331,6 +397,33 @@ export default function VocabularyPage() {
                 Ещё раз
               </button>
             </div>
+          )}
+        </div>
+      )}
+
+      {/* ── MY WORDS ── */}
+      {mode === 'mywords' && (
+        <div className="space-y-3">
+          {userWords.length === 0 ? (
+            <div className="text-center py-12 bg-white/[0.04] border border-white/10 rounded-2xl">
+              <Layers className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
+              <h2 className="text-white font-bold mb-2">Нет сохранённых слов</h2>
+              <p className="text-muted-foreground text-sm mb-4">Нажми «+ Слово», чтобы добавить своё слово</p>
+              <button onClick={() => setShowAddModal(true)}
+                className="px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-medium hover:bg-[#5558e8] transition-colors">
+                + Добавить слово
+              </button>
+            </div>
+          ) : (
+            userWords.map(w => (
+              <div key={w.id} className="flex items-start justify-between px-4 py-3.5 rounded-2xl bg-white/[0.04] border border-white/10">
+                <div>
+                  <p className="text-white font-medium">{w.word}</p>
+                  <p className="text-muted-foreground text-sm">{w.translation}</p>
+                  {w.context && <p className="text-muted-foreground text-xs italic mt-0.5">&quot;{w.context}&quot;</p>}
+                </div>
+              </div>
+            ))
           )}
         </div>
       )}
@@ -427,6 +520,23 @@ export default function VocabularyPage() {
                       <p className="text-white text-2xl font-bold mb-4">{lessonCard.translation}</p>
                       <p className="text-muted-foreground text-sm text-center italic">"{lessonCard.example}"</p>
                       <p className="text-muted-foreground text-xs text-center mt-1">{lessonCard.exampleTranslation}</p>
+                      <div className="mt-3 pt-3 border-t border-white/10 w-full text-center">
+                        {collocMap.has(lessonCard.word) ? (
+                          <div>
+                            <p className="text-[10px] uppercase tracking-wider text-white/40 mb-1">Коллокации</p>
+                            <div className="flex flex-wrap gap-1.5 justify-center">
+                              {collocMap.get(lessonCard.word)!.map((c, ci) => (
+                                <span key={ci} className="text-[11px] bg-white/10 rounded-lg px-2 py-0.5 text-white/70">{c}</span>
+                              ))}
+                            </div>
+                          </div>
+                        ) : (
+                          <button onClick={(e) => { e.stopPropagation(); fetchCollocations(lessonCard.word) }}
+                            className="text-[11px] text-primary/70 hover:text-primary flex items-center gap-1 mx-auto">
+                            {loadingColloc === lessonCard.word ? <span className="animate-spin inline-block">⟳</span> : '🔗'} Коллокации
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </motion.div>
                 </div>
@@ -524,6 +634,24 @@ export default function VocabularyPage() {
                           {aiExamples.map((ex,i)=><p key={i} className="text-xs text-[#64748b] italic">&quot;{ex}&quot;</p>)}
                         </div>
                       )}
+                      {/* Collocations */}
+                      <div className="mt-3 pt-3 border-t border-white/10 w-full text-left">
+                        {collocMap.has(card.word) ? (
+                          <div>
+                            <p className="text-[10px] uppercase tracking-wider text-white/40 mb-1">Коллокации</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {collocMap.get(card.word)!.map((c, ci) => (
+                                <span key={ci} className="text-[11px] bg-white/10 rounded-lg px-2 py-0.5 text-white/70">{c}</span>
+                              ))}
+                            </div>
+                          </div>
+                        ) : (
+                          <button onClick={(e) => { e.stopPropagation(); fetchCollocations(card.word) }}
+                            className="text-[11px] text-primary/70 hover:text-primary flex items-center gap-1">
+                            {loadingColloc === card.word ? <span className="animate-spin inline-block">⟳</span> : '🔗'} Коллокации
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </motion.div>
                 </div>
@@ -558,6 +686,42 @@ export default function VocabularyPage() {
             )}
           </AnimatePresence>
         </>
+      )}
+      {/* ── ADD WORD MODAL ── */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-sm space-y-4">
+            <h3 className="text-lg font-bold text-foreground">Добавить слово</h3>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Слово (English)</label>
+              <input value={newWord} onChange={e => setNewWord(e.target.value)}
+                placeholder="e.g. perseverance"
+                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-foreground text-base focus:outline-none focus:border-primary" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Перевод</label>
+              <input value={newTranslation} onChange={e => setNewTranslation(e.target.value)}
+                placeholder="настойчивость"
+                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-foreground text-base focus:outline-none focus:border-primary" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Пример (необязательно)</label>
+              <input value={newContext} onChange={e => setNewContext(e.target.value)}
+                placeholder="Her perseverance paid off."
+                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-foreground text-base focus:outline-none focus:border-primary" />
+            </div>
+            <div className="flex gap-3 pt-1">
+              <button onClick={() => setShowAddModal(false)}
+                className="flex-1 py-3 rounded-xl border border-border text-muted-foreground hover:text-foreground transition-colors">
+                Отмена
+              </button>
+              <button onClick={handleAddWord} disabled={addingWord || !newWord || !newTranslation}
+                className="flex-1 py-3 rounded-xl bg-primary text-white font-semibold disabled:opacity-50">
+                {addingWord ? 'Сохраняем...' : 'Добавить'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

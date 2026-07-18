@@ -8,6 +8,7 @@ import type { Message } from '@/types'
 import { createRecognition, isSpeechRecognitionSupported } from '@/lib/speech'
 import { supabase } from '@/lib/supabase'
 import { toast } from '@/components/ui/Toast'
+import { awardXP, XP_REWARDS } from '@/lib/xp'
 import { saveChatMessage, newSessionId } from '@/lib/chat-history'
 import { SCENARIOS, type Scenario } from '@/lib/roleplay-scenarios'
 
@@ -40,6 +41,7 @@ export default function AITutorPage() {
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const srRef = useRef<ReturnType<typeof createRecognition>>(null)
+  const xpAwardedRef = useRef(false)
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -105,6 +107,10 @@ export default function AITutorPage() {
         const data = await res.json()
 
         const reply = data.reply
+        if (!xpAwardedRef.current) {
+          xpAwardedRef.current = true
+          awardXP(XP_REWARDS.AI_CONVERSATION).catch(() => {})
+        }
         // Persist assistant message
         if (userId) saveChatMessage(userId, sessionId, 'assistant', reply).catch(() => {})
         setMessages((prev) => [

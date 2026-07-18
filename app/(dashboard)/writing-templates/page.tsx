@@ -97,6 +97,78 @@ const TEMPLATES: Template[] = [
     ],
   },
   {
+    id: 'business-email-request',
+    title: 'Business Request Email',
+    type: 'Business Email',
+    level: 'B1',
+    description: 'Formal email requesting information, meeting, or action',
+    wordCount: '150–250',
+    tips: ['Use formal salutation (Dear Mr/Ms)', 'State purpose in first sentence', 'Be specific about what you need', 'Include deadline if applicable', 'End with clear call to action'],
+    structure: [
+      { label: 'Subject Line', placeholder: 'Request for...', example: 'Request for Project Proposal Meeting' },
+      { label: 'Salutation', placeholder: 'Dear...', example: 'Dear Ms Johnson,' },
+      { label: 'Opening — State purpose', placeholder: 'I am writing to...', example: 'I am writing to request a brief meeting to discuss the Q4 marketing proposal.' },
+      { label: 'Details — Provide context', placeholder: 'As you may know...', example: 'As you may know, our team has been working on the campaign for the past month and we would value your input.' },
+      { label: 'Request — Be specific', placeholder: 'I would appreciate if...', example: 'I would appreciate if you could spare 30 minutes this week, preferably on Thursday or Friday.' },
+      { label: 'Closing', placeholder: 'I look forward to...', example: 'I look forward to your response. Please do not hesitate to contact me if you need any further information.' },
+      { label: 'Sign-off', placeholder: 'Yours sincerely / Best regards,', example: 'Yours sincerely,\n[Your Name]' },
+    ],
+  },
+  {
+    id: 'business-email-complaint',
+    title: 'Complaint Email',
+    type: 'Business Email',
+    level: 'B2',
+    description: 'Professional complaint about a product, service, or situation',
+    wordCount: '200–300',
+    tips: ['Remain professional and factual', 'State the problem clearly', 'Provide order/reference numbers', 'Say what resolution you expect', 'Set a reasonable deadline'],
+    structure: [
+      { label: 'Subject Line', placeholder: 'Complaint regarding...', example: 'Complaint Regarding Order #12345 — Damaged Goods' },
+      { label: 'Salutation', placeholder: 'Dear...', example: 'Dear Customer Service Team,' },
+      { label: 'Opening — State the issue', placeholder: 'I am writing to express my dissatisfaction...', example: 'I am writing to express my dissatisfaction with my recent order (Reference: #12345) placed on 10 July 2026.' },
+      { label: 'Description — What happened', placeholder: 'When I received...', example: 'When I received the package, I discovered that two of the items were damaged beyond use. The packaging showed no signs of mishandling.' },
+      { label: 'Impact — Why it matters', placeholder: 'As a result...', example: 'As a result, I was unable to complete my project on time, which caused significant inconvenience.' },
+      { label: 'Resolution — What you want', placeholder: 'I would like to request...', example: 'I would like to request either a full replacement or a refund for the damaged items within 7 business days.' },
+      { label: 'Closing', placeholder: 'I trust this matter...', example: 'I trust this matter will be resolved promptly. I look forward to your response.' },
+      { label: 'Sign-off', placeholder: 'Yours faithfully,', example: 'Yours faithfully,\n[Your Name]' },
+    ],
+  },
+  {
+    id: 'business-email-follow-up',
+    title: 'Follow-up Email',
+    type: 'Business Email',
+    level: 'B1',
+    description: 'Professional follow-up after a meeting, interview, or unanswered email',
+    wordCount: '100–180',
+    tips: ['Reference previous contact clearly', 'Be brief and direct', 'Remind without being pushy', 'Offer easy next step', 'Include your contact details'],
+    structure: [
+      { label: 'Subject Line', placeholder: 'Following up on...', example: 'Following Up on Our Meeting — 15 July' },
+      { label: 'Opening — Reference previous contact', placeholder: 'Thank you for...', example: 'Thank you for taking the time to meet with me last Tuesday to discuss the marketing position.' },
+      { label: 'Purpose — Why you\'re writing', placeholder: 'I wanted to follow up...', example: 'I wanted to follow up on our conversation and reiterate my strong interest in joining your team.' },
+      { label: 'Value add / Reminder', placeholder: 'As discussed...', example: 'As discussed, I have attached my portfolio with the updated campaign examples you requested.' },
+      { label: 'Call to action', placeholder: 'Please let me know...', example: 'Please let me know if you need any additional information or if there is anything I can do to support your decision.' },
+      { label: 'Closing', placeholder: 'I look forward to...', example: 'I look forward to hearing from you at your earliest convenience.' },
+      { label: 'Sign-off', placeholder: 'Best regards,', example: 'Best regards,\n[Your Name]' },
+    ],
+  },
+  {
+    id: 'cover-letter',
+    title: 'Cover Letter',
+    type: 'Business Email',
+    level: 'B2',
+    description: 'Job application cover letter for any position',
+    wordCount: '250–350',
+    tips: ['Tailor to specific job/company', 'Show enthusiasm, not desperation', 'Match skills to job requirements', 'Avoid repeating your CV', 'End with confident call to action'],
+    structure: [
+      { label: 'Opening — Position and source', placeholder: 'I am writing to apply for...', example: 'I am writing to apply for the Senior Marketing Manager position advertised on LinkedIn on 10 July 2026.' },
+      { label: 'Why this company', placeholder: 'I am particularly drawn to...', example: 'I am particularly drawn to your company\'s innovative approach to sustainable product development, which aligns with my professional values.' },
+      { label: 'Key experience — Match to role', placeholder: 'In my current role at...', example: 'In my current role at TechCorp, I led a team of 8 and increased brand awareness by 40% through targeted digital campaigns.' },
+      { label: 'Additional strength', placeholder: 'Furthermore...', example: 'Furthermore, my fluency in English and Russian allows me to manage campaigns across multiple markets effectively.' },
+      { label: 'Closing — Confident and actionable', placeholder: 'I would welcome the opportunity...', example: 'I would welcome the opportunity to discuss how my experience can contribute to your team. I am available for an interview at your convenience.' },
+      { label: 'Sign-off', placeholder: 'Yours sincerely,', example: 'Yours sincerely,\n[Your Name]' },
+    ],
+  },
+  {
     id: 'informal-email',
     title: 'Неформальное письмо',
     type: 'Personal',
@@ -134,7 +206,7 @@ export default function WritingTemplatesPage() {
   const [generating, setGenerating] = useState(false)
   const [aiSuggestion, setAiSuggestion] = useState('')
 
-  const types = ['Все', 'IELTS', 'Business', 'Personal']
+  const types = ['Все', 'IELTS', 'Business', 'Business Email', 'Personal']
   const filtered = TEMPLATES.filter(t => filter === 'Все' || t.type === filter)
 
   async function generateWithAI() {

@@ -1,5 +1,7 @@
 'use client'
 
+import { useState } from 'react'
+
 interface WritingError {
   original: string
   corrected: string
@@ -18,7 +20,46 @@ interface FeedbackData {
   recommendation: string
 }
 
-export function WritingFeedback({ data }: { data: FeedbackData }) {
+function renderHighlightedText(
+  text: string,
+  errors: { original: string; corrected: string; explanation: string; severity: 'minor' | 'major' }[]
+) {
+  if (!errors.length) return <p className="text-foreground/80 leading-relaxed">{text}</p>
+
+  let result = text
+  const parts: Array<{ text: string; error?: { corrected: string; explanation: string; severity: string } }> = []
+
+  errors.forEach(err => {
+    const idx = result.indexOf(err.original)
+    if (idx === -1) return
+    if (idx > 0) parts.push({ text: result.slice(0, idx) })
+    parts.push({ text: err.original, error: { corrected: err.corrected, explanation: err.explanation, severity: err.severity } })
+    result = result.slice(idx + err.original.length)
+  })
+  if (result) parts.push({ text: result })
+
+  return (
+    <p className="text-foreground/80 leading-relaxed">
+      {parts.map((part, i) => part.error ? (
+        <span key={i} className="group relative inline">
+          <span className={`border-b-2 cursor-help ${part.error.severity === 'major' ? 'border-red-400 text-red-300' : 'border-yellow-400 text-yellow-300'}`}>
+            {part.text}
+          </span>
+          <span className="absolute bottom-full left-0 mb-1 hidden group-hover:block z-10 w-64 bg-card border border-border rounded-xl p-3 text-xs shadow-xl">
+            <span className="block font-semibold text-primary mb-1">✓ {part.error.corrected}</span>
+            <span className="text-muted-foreground">{part.error.explanation}</span>
+          </span>
+        </span>
+      ) : (
+        <span key={i}>{part.text}</span>
+      ))}
+    </p>
+  )
+}
+
+export function WritingFeedback({ data, originalText }: { data: FeedbackData; originalText?: string }) {
+  const [showHighlight, setShowHighlight] = useState(true)
+
   return (
     <div className="space-y-4">
       {/* Оценка */}
@@ -32,6 +73,28 @@ export function WritingFeedback({ data }: { data: FeedbackData }) {
           <p className="text-muted-foreground text-sm">{data.summary}</p>
         </div>
       </div>
+
+      {/* Ошибки в тексте — inline highlighting */}
+      {originalText && data.errors?.length > 0 && (
+        <div className="bg-white/[0.04] border border-white/10 rounded-2xl overflow-hidden">
+          <button
+            onClick={() => setShowHighlight(v => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-white hover:bg-white/[0.04] transition-colors"
+          >
+            <span>🖊 Разбор ошибок в тексте</span>
+            <span className="text-muted-foreground text-xs">{showHighlight ? '▲ Свернуть' : '▼ Развернуть'}</span>
+          </button>
+          {showHighlight && (
+            <div className="px-4 pb-4 text-sm leading-loose">
+              {renderHighlightedText(originalText, data.errors)}
+              <p className="text-muted-foreground text-xs mt-2">
+                <span className="border-b-2 border-red-400 text-red-300">красное</span> — серьёзная ошибка &nbsp;
+                <span className="border-b-2 border-yellow-400 text-yellow-300">жёлтое</span> — незначительная · наведи мышь для пояснения
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Паттерны ошибок */}
       {data.patterns?.length > 0 && (

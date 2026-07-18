@@ -6,6 +6,7 @@ import { Send, RefreshCw } from 'lucide-react'
 import { WritingFeedback } from '@/components/WritingFeedback'
 import { supabase } from '@/lib/supabase'
 import { toast } from '@/components/ui/Toast'
+import { awardXP, XP_REWARDS } from '@/lib/xp'
 
 const TOPICS: Record<string, string[]> = {
   A1: ['My family', 'My home', 'My daily routine', 'My favourite food', 'My weekend'],
@@ -80,6 +81,7 @@ export default function WritingPage() {
       const data = await res.json()
       setResult(data)
       toast('Текст проверен!', 'success')
+      await awardXP(XP_REWARDS.WRITING_CHECK)
     } catch {
       setError('Не удалось получить ответ. Проверь соединение.')
     } finally {
@@ -182,7 +184,7 @@ export default function WritingPage() {
                 <RefreshCw className="w-3.5 h-3.5" /> Написать снова
               </button>
             </div>
-            <WritingFeedback data={result} />
+            <WritingFeedback data={result} originalText={text} />
           </motion.div>
         )}
       </AnimatePresence>

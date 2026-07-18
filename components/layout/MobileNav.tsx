@@ -16,14 +16,13 @@ export function MobileNav() {
   const pathname = usePathname();
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0F0F1A]/95 backdrop-blur-xl border-t border-white/[0.08]"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      className="mobile-nav pb-safe md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0F0F1A]/95 backdrop-blur-xl border-t border-white/[0.08]"
     >
       <div className="flex h-16">
         {TABS.map((tab) => {
           const isActive = pathname === tab.href || pathname.startsWith(tab.href + "/");
           return (
-            <Link key={tab.href} href={tab.href} className="flex-1 flex flex-col items-center justify-center gap-1 relative min-h-[64px]">
+            <Link key={tab.href} href={tab.href} className="flex-1 flex flex-col items-center justify-center gap-1 relative min-h-[56px]">
               {isActive && (
                 <span className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-0.5 rounded-full bg-[#818CF8]" />
               )}

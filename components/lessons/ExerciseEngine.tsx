@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle, XCircle, ChevronRight } from "lucide-react";
 import type { ExerciseItem } from "@/lib/lessons-data";
+import { useAIGenerate } from "@/hooks/useAIGenerate";
 
 interface ExerciseEngineProps {
   exercise: ExerciseItem;
@@ -19,7 +20,7 @@ type Status = "unanswered" | "correct" | "wrong";
 // ─── Fill Blank ───────────────────────────────────────────────────────────────
 function FillBlank({ exercise, onResult }: {
   exercise: Extract<ExerciseItem, { type: "fill_blank" }>;
-  onResult: (correct: boolean) => void;
+  onResult: (correct: boolean, userAnswer?: string) => void;
 }) {
   const [value, setValue] = useState("");
   const [checked, setChecked] = useState(false);
@@ -29,7 +30,7 @@ function FillBlank({ exercise, onResult }: {
   const handleCheck = () => {
     if (!value.trim() || checked) return;
     setChecked(true);
-    onResult(value.trim().toLowerCase() === exercise.answer.toLowerCase());
+    onResult(value.trim().toLowerCase() === exercise.answer.toLowerCase(), value.trim());
   };
 
   return (
@@ -79,14 +80,14 @@ function FillBlank({ exercise, onResult }: {
 // ─── Multiple Choice ──────────────────────────────────────────────────────────
 function MultipleChoice({ exercise, onResult }: {
   exercise: Extract<ExerciseItem, { type: "multiple_choice" }>;
-  onResult: (correct: boolean) => void;
+  onResult: (correct: boolean, userAnswer?: string) => void;
 }) {
   const [selected, setSelected] = useState<string | null>(null);
 
   const handleSelect = (opt: string) => {
     if (selected !== null) return;
     setSelected(opt);
-    onResult(opt === exercise.answer);
+    onResult(opt === exercise.answer, opt);
   };
 
   const getBtnClass = (opt: string) => {
@@ -115,7 +116,7 @@ function MultipleChoice({ exercise, onResult }: {
 // ─── Build Sentence ───────────────────────────────────────────────────────────
 function BuildSentence({ exercise, onResult }: {
   exercise: Extract<ExerciseItem, { type: "build_sentence" }>;
-  onResult: (correct: boolean) => void;
+  onResult: (correct: boolean, userAnswer?: string) => void;
 }) {
   const [available, setAvailable] = useState<string[]>([...(exercise.words ?? [])].sort(() => Math.random() - 0.5));
   const [arranged, setArranged] = useState<string[]>([]);
@@ -125,7 +126,7 @@ function BuildSentence({ exercise, onResult }: {
     if (checked) return;
     const correct = arranged.join(" ") === exercise.answer;
     setChecked(true);
-    onResult(correct);
+    onResult(correct, arranged.join(" "));
   };
 
   const isCorrect = checked && arranged.join(" ") === exercise.answer;
@@ -178,13 +179,31 @@ function BuildSentence({ exercise, onResult }: {
 // ─── Main ExerciseEngine ──────────────────────────────────────────────────────
 export function ExerciseEngine({ exercise, exerciseNumber, total, onCorrect, onWrong, onNext }: ExerciseEngineProps) {
   const [status, setStatus] = useState<Status>("unanswered");
+  const [lastUserAnswer, setLastUserAnswer] = useState("");
+  const [aiExplanation, setAiExplanation] = useState("");
+  const [showExplanation, setShowExplanation] = useState(false);
+  const { generate, loading: aiLoading } = useAIGenerate();
 
-  useEffect(() => { setStatus("unanswered"); }, [exerciseNumber]);
+  useEffect(() => {
+    setStatus("unanswered");
+    setAiExplanation("");
+    setShowExplanation(false);
+    setLastUserAnswer("");
+  }, [exerciseNumber]);
 
-  const handleResult = (correct: boolean) => {
+  const handleResult = (correct: boolean, userAnswer?: string) => {
     setStatus(correct ? "correct" : "wrong");
+    if (userAnswer) setLastUserAnswer(userAnswer);
     if (correct) onCorrect(); else onWrong();
   };
+
+  async function getAIExplanation() {
+    setShowExplanation(true);
+    const question = exercise.question ?? exercise.answer;
+    const context = `Question: "${question}". Correct answer: "${exercise.answer}". User answered: "${lastUserAnswer}". Explain briefly in Russian why the correct answer is right and common mistake to avoid. Max 2 sentences.`;
+    const data = await generate<{ explanation: string }>('grammar_exercise', context, 'B1');
+    setAiExplanation(data?.explanation ?? 'Не удалось получить объяснение.');
+  }
 
   const typeLabels: Record<string, string> = {
     "multiple_choice": "Выбери правильный ответ",
@@ -209,9 +228,9 @@ export function ExerciseEngine({ exercise, exerciseNumber, total, onCorrect, onW
         <AnimatePresence mode="wait">
           <motion.div key={exerciseNumber} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
-            {exercise.type === "fill_blank" && <FillBlank exercise={exercise as Extract<ExerciseItem, { type: "fill_blank" }>} onResult={handleResult} />}
-            {exercise.type === "multiple_choice" && <MultipleChoice exercise={exercise as Extract<ExerciseItem, { type: "multiple_choice" }>} onResult={handleResult} />}
-            {exercise.type === "build_sentence" && <BuildSentence exercise={exercise as Extract<ExerciseItem, { type: "build_sentence" }>} onResult={handleResult} />}
+            {exercise.type === "fill_blank" && <FillBlank exercise={exercise as Extract<ExerciseItem, { type: "fill_blank" }>} onResult={(c, ua) => handleResult(c, ua)} />}
+            {exercise.type === "multiple_choice" && <MultipleChoice exercise={exercise as Extract<ExerciseItem, { type: "multiple_choice" }>} onResult={(c, ua) => handleResult(c, ua)} />}
+            {exercise.type === "build_sentence" && <BuildSentence exercise={exercise as Extract<ExerciseItem, { type: "build_sentence" }>} onResult={(c, ua) => handleResult(c, ua)} />}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -219,20 +238,41 @@ export function ExerciseEngine({ exercise, exerciseNumber, total, onCorrect, onW
       <AnimatePresence>
         {status !== "unanswered" && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 12 }}
-            className="mt-5 pt-4 border-t border-[#1E293B] flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {status === "correct"
-                ? <CheckCircle className="w-5 h-5 text-[#10B981]" />
-                : <XCircle className="w-5 h-5 text-[#EF4444]" />}
-              <span className={`font-semibold text-sm ${status === "correct" ? "text-[#10B981]" : "text-[#EF4444]"}`}>
-                {status === "correct" ? "Правильно! +10 XP" : "Неправильно"}
-              </span>
+            className="mt-5 pt-4 border-t border-[#1E293B] space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {status === "correct"
+                  ? <CheckCircle className="w-5 h-5 text-[#10B981]" />
+                  : <XCircle className="w-5 h-5 text-[#EF4444]" />}
+                <span className={`font-semibold text-sm ${status === "correct" ? "text-[#10B981]" : "text-[#EF4444]"}`}>
+                  {status === "correct" ? "Правильно! +10 XP" : "Неправильно"}
+                </span>
+              </div>
+              <button onClick={onNext}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-[#5558E3] text-white text-sm font-semibold transition-all hover:scale-[1.03]">
+                {exerciseNumber < total ? "Следующее упражнение" : "Завершить урок"}
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
-            <button onClick={onNext}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-[#5558E3] text-white text-sm font-semibold transition-all hover:scale-[1.03]">
-              {exerciseNumber < total ? "Следующее упражнение" : "Завершить урок"}
-              <ChevronRight className="w-4 h-4" />
-            </button>
+            {status === "wrong" && (
+              <div>
+                {showExplanation && aiExplanation && (
+                  <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 text-sm text-foreground/80">
+                    <span className="font-semibold text-primary">🤖 AI объясняет: </span>
+                    {aiExplanation}
+                  </div>
+                )}
+                {showExplanation && !aiExplanation && aiLoading && (
+                  <p className="text-xs text-muted-foreground animate-pulse">Загружаю объяснение...</p>
+                )}
+                {!showExplanation && (
+                  <button onClick={getAIExplanation} disabled={aiLoading}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 text-primary text-xs font-medium hover:bg-primary/20 transition-colors disabled:opacity-50">
+                    🤖 AI объясняет
+                  </button>
+                )}
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

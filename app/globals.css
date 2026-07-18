@@ -255,17 +255,37 @@
 .delay-3  { animation-delay: .24s; }
 .delay-4  { animation-delay: .32s; }
 
-/* ── Мобильные улучшения ── */
+/* ── Mobile UX ───────────────────────────────────────── */
+/* Prevent iOS auto-zoom on inputs (font must be ≥16px) */
 @media (max-width: 768px) {
-  button, a[role="button"], [role="tab"] {
-    min-height: 44px;
-  }
   input, textarea, select {
     font-size: 16px !important;
   }
 }
 
-/* Safe area для iPhone */
+/* Minimum touch target size (Apple/Google HIG: 44px) */
+button, a, [role="button"] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Exception: icon-only decorative elements */
+.icon-only {
+  min-height: unset;
+  min-width: unset;
+}
+
+/* Safe area bottom padding for notch devices */
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom), 16px);
+}
+
+/* MobileNav safe area */
+nav.mobile-nav {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Safe area для iPhone (legacy) */
 .safe-bottom {
   padding-bottom: env(safe-area-inset-bottom);
 }
