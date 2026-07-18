@@ -25,6 +25,7 @@ export default function DashboardPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [completedToday, setCompletedToday] = useState(0);
   const [vocabDue, setVocabDue] = useState(0);
+  const [emailName, setEmailName] = useState('');
   const { generate, loading: tipLoading } = useAIGenerate()
   const [dailyTip, setDailyTip] = useState<{tip:string,example:string,emoji:string}|null>(null)
   async function getTip() {
@@ -37,12 +38,13 @@ export default function DashboardPage() {
       const { data: { session } } = await supabase.auth.getSession();
       const user = session?.user;
       if (!user) return;
+      setEmailName(user.email?.split('@')[0] ?? '');
       const [{ data: p }, { count: today }, { count: due }] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", user.id).single(),
         supabase.from("lessons_progress").select("*", { count: "exact", head: true })
-          .eq("user_id", user.id).gte("completed_at", new Date().toISOString().slice(0, 10)),
+          .eq("user_id", user.id).eq("completed", true).gte("completed_at", new Date().toISOString().slice(0, 10)),
         supabase.from("vocabulary").select("*", { count: "exact", head: true })
-          .eq("user_id", user.id).lte("next_review", new Date().toISOString()),
+          .eq("user_id", user.id).lte("next_review", new Date().toISOString().slice(0, 10)),
       ]);
       if (p) setProfile(p);
       setCompletedToday(today ?? 0);
@@ -56,7 +58,8 @@ export default function DashboardPage() {
   const levelInfo = profile ? getLevelFromXP(profile.xp ?? 0) : null;
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Доброе утро" : hour < 17 ? "Добрый день" : "Добрый вечер";
-  const firstName = profile?.name?.split(" ")[0] ?? "";
+  const rawEmail = emailName ? emailName.charAt(0).toUpperCase() + emailName.slice(1) : '';
+  const firstName = profile?.name?.split(" ")[0] || rawEmail;
 
   return (
     <div className="max-w-2xl mx-auto px-4 pt-8 pb-24 md:pb-10 space-y-8">

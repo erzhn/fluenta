@@ -26,7 +26,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid level' }, { status: 400 })
   }
 
-  const prompt = `Generate an English listening exercise for level ${level}.
+  const TOPICS = ['daily routine', 'travel story', 'workplace conversation', 'news report', 'nature documentary', 'historical event', 'technology news', 'food and cooking', 'science discovery', 'city life']
+  const topic = TOPICS[Math.floor(Math.random() * TOPICS.length)]
+
+  const prompt = `Generate an English listening exercise for level ${level} about: ${topic}.
 Return ONLY valid JSON:
 {
   "title": "short title",

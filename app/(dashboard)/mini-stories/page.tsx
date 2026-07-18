@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { MINI_STORIES, MiniStory } from '@/lib/mini-stories-data'
 import { Sparkles, Loader2 } from 'lucide-react'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
@@ -32,10 +32,14 @@ export default function MiniStoriesPage() {
   const [addedCount, setAddedCount] = useState(0)
   const { generate, loading: aiLoading } = useAIGenerate()
   const [aiStory, setAiStory] = useState<{title:string,content:string,vocabulary:{word:string,meaning:string}[]}|null>(null)
+  const STORY_TOPICS = ['a surprise birthday', 'a missed train', 'a new neighbour', 'lost in the city', 'a job interview', 'a rainy day', 'cooking disaster', 'a chance encounter']
   async function generateStory() {
-    const data = await generate<typeof aiStory>('mini_story', `level ${level} general interest`, level)
+    const topic = STORY_TOPICS[Math.floor(Math.random() * STORY_TOPICS.length)]
+    const data = await generate<typeof aiStory>('mini_story', `${topic}, level ${level}`, level)
     setAiStory(data)
   }
+
+  useEffect(() => { generateStory() }, [level])
 
   const filtered = MINI_STORIES.filter(s => s.level === level)
 

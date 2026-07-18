@@ -47,11 +47,15 @@ export function LessonNotes({ lessonId }: { lessonId: string }) {
       )}
       <button
         onClick={() => setOpen(!open)}
-        className={`w-12 h-12 rounded-2xl flex items-center justify-center text-lg shadow-lg transition-all
-          ${open ? 'bg-primary shadow-[#6366f1]/30' : 'bg-white/[0.08] border border-white/15 hover:bg-white/15'}
-          ${note ? 'ring-2 ring-[#6366f1]/40' : ''}`}
-        title="Заметки">
-        📝
+        className={`flex items-center gap-2 px-3 py-3 sm:px-4 rounded-2xl shadow-xl transition-all ${
+          open
+            ? 'bg-primary text-white shadow-primary/30'
+            : 'bg-[#1e1e2e] border-2 border-primary/40 text-primary hover:border-primary/70 shadow-black/40'
+        } ${note ? 'ring-2 ring-primary/50' : ''}`}
+        title="Заметки к уроку">
+        <span className="text-base">📝</span>
+        <span className="hidden sm:inline text-sm font-semibold">Заметки</span>
+        {note && <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />}
       </button>
     </div>
   );

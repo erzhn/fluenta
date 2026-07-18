@@ -38,12 +38,20 @@ export default function GrammarExercisesPage() {
   const [exercise, setExercise] = useState<ExerciseData | null>(null)
   const [loading, setLoading] = useState(false)
   const [score, setScore] = useState({ correct: 0, total: 0 })
+  const [streak, setStreak] = useState(0)
   const { generate, loading: aiLoading } = useAIGenerate()
   const [aiEx, setAiEx] = useState<{question:string,answer:string,options:string[],explanation:string}|null>(null)
   const [aiAnswer, setAiAnswer] = useState<string|null>(null)
   async function generateExercise() {
     const data = await generate<typeof aiEx>('grammar_exercise', selectedTopic?.label||'mixed grammar', selectedTopic?.level||'B1')
     setAiEx(data); setAiAnswer(null)
+  }
+
+  useEffect(() => { generateExercise() }, [selectedTopic])
+
+  function pickRandomTopic() {
+    const t = GRAMMAR_TOPICS[Math.floor(Math.random() * GRAMMAR_TOPICS.length)]
+    setSelectedTopic(t)
   }
 
   const loadExercise = useCallback(async () => {
@@ -87,19 +95,36 @@ export default function GrammarExercisesPage() {
 
       <div className="mb-5 p-4 bg-[#6366f1]/5 border border-[#6366f1]/20 rounded-2xl">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-sm font-semibold text-white flex items-center gap-2"><Sparkles className="w-4 h-4 text-[#818cf8]"/>AI упражнение</p>
-          <button onClick={generateExercise} disabled={aiLoading}
-            className="flex items-center gap-1.5 px-3 py-2 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-50 text-white rounded-xl text-xs font-medium min-h-[36px]">
-            {aiLoading?<Loader2 className="w-3.5 h-3.5 animate-spin"/>:<Sparkles className="w-3.5 h-3.5"/>}
-            {aiLoading?'Генерирую...':'Создать'}
-          </button>
+          <p className="text-sm font-semibold text-white flex items-center gap-2"><Sparkles className="w-4 h-4 text-[#818cf8]"/>AI упражнение
+            {streak > 1 && <span className="text-xs text-orange-400 font-bold">🔥 {streak} подряд</span>}
+          </p>
+          <div className="flex gap-2">
+            <button onClick={pickRandomTopic} className="px-3 py-2 bg-white/[0.06] hover:bg-white/10 text-muted-foreground rounded-xl text-xs font-medium min-h-[36px] border border-white/10">
+              🎲 Случайная
+            </button>
+            <button onClick={generateExercise} disabled={aiLoading}
+              className="flex items-center gap-1.5 px-3 py-2 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-50 text-white rounded-xl text-xs font-medium min-h-[36px]">
+              {aiLoading?<Loader2 className="w-3.5 h-3.5 animate-spin"/>:<Sparkles className="w-3.5 h-3.5"/>}
+              {aiLoading?'Генерирую...':'Создать'}
+            </button>
+          </div>
         </div>
         {aiEx&&(
           <div>
             <p className="text-white text-sm font-medium mb-3">{aiEx.question}</p>
             <div className="grid grid-cols-2 gap-2 mb-3">
               {aiEx.options?.map((opt,i)=>(
-                <button key={i} onClick={()=>setAiAnswer(opt)}
+                <button key={i} onClick={()=>{
+                  if (aiAnswer !== null) return
+                  setAiAnswer(opt)
+                  const correct = opt === aiEx.answer
+                  if (correct) {
+                    setStreak(s => s + 1)
+                    setTimeout(() => generateExercise(), 1500)
+                  } else {
+                    setStreak(0)
+                  }
+                }}
                   className={`px-3 py-2.5 rounded-xl border text-sm text-left transition-all min-h-[44px] ${
                     aiAnswer===null?'border-white/10 text-white hover:border-[#6366f1]/50':
                     opt===aiEx.answer?'border-green-500 bg-green-500/10 text-green-400':
@@ -108,7 +133,12 @@ export default function GrammarExercisesPage() {
                 </button>
               ))}
             </div>
-            {aiAnswer&&<p className="text-xs text-[#64748b] italic">{aiEx.explanation}</p>}
+            {aiAnswer&&<p className="text-xs text-[#64748b] italic mb-2">{aiEx.explanation}</p>}
+            {aiAnswer && aiAnswer !== aiEx.answer && (
+              <button onClick={generateExercise} className="text-xs text-primary hover:text-primary/80 transition-colors">
+                Попробовать ещё раз →
+              </button>
+            )}
           </div>
         )}
       </div>

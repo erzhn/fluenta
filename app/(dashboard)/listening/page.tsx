@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Play, Square, Eye, EyeOff, Volume2, RefreshCw, Sparkles } from 'lucide-react'
 import { speak, stopSpeaking } from '@/lib/speech'
@@ -109,6 +109,11 @@ export default function ListeningPage() {
       setGeneratingAI(false)
     }
   }
+
+  useEffect(() => {
+    generateAI()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeLevel])
 
   const allAnswered = entry.questions.every((_, i) => answers[i] !== undefined)
   const correctCount = entry.questions.filter((q, i) => answers[i] === q.answer).length
@@ -251,8 +256,14 @@ export default function ListeningPage() {
                     Проверить
                   </button>
                 ) : (
-                  <div className={`px-4 py-3 rounded-xl text-sm font-semibold text-center ${correctCount === 3 ? 'bg-[#10b981]/10 text-[#10b981] border border-[#10b981]/20' : correctCount >= 2 ? 'bg-[#f59e0b]/10 text-[#f59e0b] border border-[#f59e0b]/20' : 'bg-[#ef4444]/10 text-[#f87171] border border-[#ef4444]/20'}`}>
-                    {correctCount === 3 ? `🎉 Отлично! ${correctCount}/3 правильно` : correctCount >= 2 ? `👍 Молодец! ${correctCount}/3 правильно` : `${correctCount}/3 — Попробуй ещё раз`}
+                  <div className="space-y-3">
+                    <div className={`px-4 py-3 rounded-xl text-sm font-semibold text-center ${correctCount === 3 ? 'bg-[#10b981]/10 text-[#10b981] border border-[#10b981]/20' : correctCount >= 2 ? 'bg-[#f59e0b]/10 text-[#f59e0b] border border-[#f59e0b]/20' : 'bg-[#ef4444]/10 text-[#f87171] border border-[#ef4444]/20'}`}>
+                      {correctCount === 3 ? `🎉 Отлично! ${correctCount}/3 правильно` : correctCount >= 2 ? `👍 Молодец! ${correctCount}/3 правильно` : `${correctCount}/3 — Попробуй ещё раз`}
+                    </div>
+                    <button onClick={generateAI} disabled={generatingAI}
+                      className="w-full py-2.5 rounded-xl border border-primary/30 text-primary text-sm font-medium hover:bg-primary/10 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+                      <Sparkles className="w-3.5 h-3.5" /> Новый текст 🎲
+                    </button>
                   </div>
                 )}
               </motion.div>

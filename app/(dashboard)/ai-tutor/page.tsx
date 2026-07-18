@@ -14,13 +14,31 @@ import { SCENARIOS, type Scenario } from '@/lib/roleplay-scenarios'
 
 type ChatMode = 'tutor' | 'conversation' | 'roleplay'
 
-const WELCOME: Message = {
-  id: 'welcome',
-  role: 'assistant',
-  content:
+const STARTERS: Record<string, string[]> = {
+  tutor: [
     "Hey! I'm Zhan, your personal English tutor 👋 What would you like to practice today? We can work on conversation, grammar, vocabulary, pronunciation tips, or anything else!",
-  timestamp: new Date().toISOString(),
+    "Hi there! I'm Zhan 😊 Ready to improve your English? Tell me what you'd like to focus on today!",
+    "Hello! I'm Zhan, your AI English coach. What shall we work on — speaking, grammar, or vocabulary?",
+  ],
+  conversation: [
+    "Hey! I'm Zhan 😊 Let's just chat — what's been happening in your life lately?",
+    "Hello! Have you watched any good films or series recently?",
+    "Hey! What are your plans for the weekend?",
+    "Hi there! What's your favourite way to relax after a busy day?",
+    "Hello! Tell me something interesting that happened to you this week.",
+  ],
+  roleplay: [
+    "Great choice! Let's do a roleplay. Which scenario would you like to practice?",
+  ],
 }
+
+function randomStarter(mode: string): Message {
+  const arr = STARTERS[mode] ?? STARTERS.tutor
+  const content = arr[Math.floor(Math.random() * arr.length)]
+  return { id: 'welcome', role: 'assistant', content, timestamp: new Date().toISOString() }
+}
+
+const WELCOME: Message = randomStarter('tutor')
 
 const QUICK_STARTS = [
   { emoji: '💬', text: "Let's have a conversation" },
@@ -143,10 +161,7 @@ export default function AITutorPage() {
     setMode(next)
     setActiveScenario(null)
     if (next !== 'roleplay') {
-      const welcome: Message = next === 'conversation'
-        ? { id: 'welcome', role: 'assistant', content: "Hey! I'm Zhan 😊 Let's just chat — what's on your mind?", timestamp: new Date().toISOString() }
-        : { ...WELCOME, timestamp: new Date().toISOString() }
-      setMessages([welcome])
+      setMessages([randomStarter(next)])
       setInput('')
     }
   }

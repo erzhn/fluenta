@@ -1,7 +1,15 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Sparkles, Loader2 } from 'lucide-react'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
+
+const TOPICS_BY_LEVEL: Record<string, string[]> = {
+  A1: ['daily life', 'food', 'colors', 'numbers', 'family', 'weather', 'animals', 'body'],
+  A2: ['travel', 'shopping', 'work', 'hobbies', 'sports', 'health', 'city', 'school'],
+  B1: ['environment', 'technology', 'culture', 'emotions', 'business', 'media', 'politics', 'science'],
+  B2: ['economy', 'philosophy', 'literature', 'psychology', 'engineering', 'law', 'medicine', 'art'],
+  C1: ['linguistics', 'geopolitics', 'epistemology', 'rhetoric', 'neuroscience', 'ethics', 'sociology'],
+}
 
 const DICTATION_WORDS: Record<string, { word: string; hint?: string }[]> = {
   A1: [
@@ -50,12 +58,22 @@ export default function DictationPage() {
   const [userInput, setUserInput] = useState('')
   const { generate, loading: aiLoading } = useAIGenerate()
   const [aiTopic, setAiTopic] = useState('')
+  const [currentTopic, setCurrentTopic] = useState('')
   const [aiWordList, setAiWordList] = useState<string[]>([])
   const [usingAI, setUsingAI] = useState(false)
-  async function generateWords() {
-    const data = await generate<{words:string[]}>('dictation_words', aiTopic||'common vocabulary', level)
+  async function generateWords(topic?: string) {
+    const t = topic || aiTopic || 'common vocabulary'
+    const data = await generate<{words:string[]}>('dictation_words', t, level)
     if (data?.words?.length) { setAiWordList(data.words); setUsingAI(true); setCurrentIndex(0); setStarted(false); setUserInput('') }
   }
+
+  useEffect(() => {
+    const topics = TOPICS_BY_LEVEL[level] || TOPICS_BY_LEVEL['B1']
+    const randomTopic = topics[Math.floor(Math.random() * topics.length)]
+    setCurrentTopic(randomTopic)
+    generateWords(randomTopic)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [level])
   const [results, setResults] = useState<Result[]>([])
   const [showAnswer, setShowAnswer] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -222,14 +240,28 @@ export default function DictationPage() {
           </div>
         </div>
 
+        {currentTopic && (
+          <p className="text-muted-foreground text-xs mb-3">
+            Тема: <span className="text-primary">{currentTopic}</span>
+          </p>
+        )}
+
         <div className="mb-4 p-3 bg-[#6366f1]/5 border border-[#6366f1]/20 rounded-xl">
-          <p className="text-xs text-[#818cf8] font-medium mb-2 flex items-center gap-1"><Sparkles className="w-3 h-3"/>AI слова {usingAI&&`· ${aiWordList.length} слов ✓`}</p>
+          <p className="text-xs text-[#818cf8] font-medium mb-2 flex items-center gap-1">
+            <Sparkles className="w-3 h-3"/>AI слова {usingAI && `· ${aiWordList.length} слов ✓`}
+            {aiLoading && <Loader2 className="w-3 h-3 animate-spin ml-1" />}
+          </p>
+          {aiLoading && (
+            <div className="space-y-2 mb-2">
+              {[1,2,3].map(i => <div key={i} className="h-12 rounded-xl bg-white/[0.04] animate-pulse" />)}
+            </div>
+          )}
           <div className="flex gap-2">
-            <input value={aiTopic} onChange={e=>setAiTopic(e.target.value)} placeholder="science, business..." className="flex-1 bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#475569] outline-none min-h-[44px]"/>
-            <button onClick={generateWords} disabled={aiLoading} className="px-3 py-2 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-50 text-white rounded-lg text-xs min-h-[44px]">
-              {aiLoading?<Loader2 className="w-3.5 h-3.5 animate-spin"/>:<Sparkles className="w-3.5 h-3.5"/>}
+            <input value={aiTopic} onChange={e => setAiTopic(e.target.value)} placeholder="science, business..." className="flex-1 bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#475569] outline-none min-h-[44px]"/>
+            <button onClick={() => { setCurrentTopic(aiTopic || currentTopic); generateWords() }} disabled={aiLoading} className="px-3 py-2 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-50 text-white rounded-lg text-xs min-h-[44px]">
+              {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin"/> : <Sparkles className="w-3.5 h-3.5"/>}
             </button>
-            {usingAI&&<button onClick={()=>{setUsingAI(false);setAiWordList([])}} className="px-2 py-2 text-[#64748b] text-xs min-h-[44px]">✕</button>}
+            {usingAI && <button onClick={() => {setUsingAI(false); setAiWordList([])}} className="px-2 py-2 text-[#64748b] text-xs min-h-[44px]">✕</button>}
           </div>
         </div>
 

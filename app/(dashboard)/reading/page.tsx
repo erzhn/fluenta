@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Volume2, Plus, X, Check, RefreshCw, Sparkles } from 'lucide-react'
 import { speak, stopSpeaking } from '@/lib/speech'
@@ -20,6 +20,7 @@ const LEVEL_COLORS: Record<string, string> = {
 
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1']
 const SRS_KEY = 'fluenta_vocab_srs'
+const READING_TOPICS = ['Технологии', 'Природа', 'Наука', 'История', 'Культура', 'Спорт', 'Путешествия', 'Здоровье', 'Бизнес', 'Искусство']
 
 function addWordToSRS(word: string) {
   if (typeof window === 'undefined') return
@@ -86,6 +87,8 @@ export default function ReadingPage() {
   const [checked, setChecked] = useState(false)
   const [speaking, setSpeaking] = useState(false)
   const [generatingAI, setGeneratingAI] = useState(false)
+  const [selectedTopic, setSelectedTopic] = useState(READING_TOPICS[0])
+  const didAutoGenerate = useRef(false)
 
   const color = LEVEL_COLORS[activeLevel]
 
@@ -136,7 +139,7 @@ export default function ReadingPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session?.access_token ?? ''}`,
         },
-        body: JSON.stringify({ level: activeLevel }),
+        body: JSON.stringify({ level: activeLevel, topic: selectedTopic }),
       })
       if (!res.ok) {
         if (res.status === 429) toast('Слишком много запросов. Подожди минуту.', 'error')
@@ -170,6 +173,19 @@ export default function ReadingPage() {
     }
   }
 
+  useEffect(() => {
+    if (!didAutoGenerate.current) {
+      didAutoGenerate.current = true
+      generateAI()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (didAutoGenerate.current) generateAI()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTopic, activeLevel])
+
   const allAnswered = entry.questions.every((_, i) => answers[i] !== undefined)
   const correctCount = entry.questions.filter((q, i) => answers[i] === q.answer).length
 
@@ -178,6 +194,16 @@ export default function ReadingPage() {
       <div>
         <h1 className="text-2xl font-bold text-white"><span className="gradient-text">Чтение</span></h1>
         <p className="text-muted-foreground text-sm">Читай, учи слова, отвечай на вопросы</p>
+      </div>
+
+      {/* Topic chips */}
+      <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+        {READING_TOPICS.map(t => (
+          <button key={t} onClick={() => setSelectedTopic(t)}
+            className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+              selectedTopic === t ? 'bg-primary text-white border-primary' : 'border-white/10 text-muted-foreground hover:border-white/20'
+            }`}>{t}</button>
+        ))}
       </div>
 
       {generatingAI && <SkeletonCard />}

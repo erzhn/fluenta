@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         model: 'llama-3.1-8b-instant',
-        temperature: 0.8,
+        temperature: 0.9,
         messages: [{
           role: 'system',
           content: 'You are an English grammar teacher. Return only valid JSON, no markdown.',

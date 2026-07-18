@@ -21,12 +21,14 @@ export async function POST(req: Request) {
 
   const body = await req.json()
   const level = typeof body.level === 'string' ? body.level.trim() : ''
+  const topic = typeof body.topic === 'string' ? body.topic.trim() : ''
 
   if (!level || !VALID_LEVELS.includes(level)) {
     return NextResponse.json({ error: 'Invalid level' }, { status: 400 })
   }
 
-  const prompt = `Generate an English reading text for level ${level} language learners.
+  const topicLine = topic ? `Topic: "${topic}". ` : ''
+  const prompt = `Generate an English reading text for level ${level} language learners. ${topicLine}
 Return ONLY valid JSON:
 {
   "title": "text title",
