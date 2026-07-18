@@ -15,21 +15,19 @@ export interface User {
 
 export interface Profile {
   id: string;
-  user_id: string;
-  full_name: string;
-  username: string;
+  name: string;
+  email: string;
   avatar_url?: string;
-  native_language: string;
-  target_language: string;
-  cefr_level: CEFRLevel;
+  current_level: CEFRLevel;
+  target_level: CEFRLevel;
+  daily_goal_minutes: number;
+  goal_type: string;
   xp: number;
-  level: number;
   streak: number;
-  longest_streak: number;
-  total_lessons: number;
-  total_vocab: number;
+  last_active?: string;
+  onboarding_completed?: boolean;
+  learning_goal?: string;
   created_at: string;
-  updated_at: string;
 }
 
 export interface Exercise {

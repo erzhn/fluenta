@@ -95,9 +95,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </motion.div>
           </AnimatePresence>
         </main>
+        <MobileNav />
       </div>
-
-      <MobileNav />
       <ToastContainer />
     </div>
   );

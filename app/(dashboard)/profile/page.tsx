@@ -67,16 +67,14 @@ export default function ProfilePage() {
       const { data } = await supabase
         .from("profiles")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("id", user.id)
         .single();
       if (data) {
         setProfile(data);
-        setFullName(data.full_name ?? "");
-        setCefrLevel(data.cefr_level ?? "B1");
+        setFullName(data.name ?? "");
+        setCefrLevel(data.current_level ?? "B1");
         setDailyGoal(data.daily_goal_minutes ?? 20);
         setLearningGoal(data.learning_goal ?? "Разговорный английский");
-        setNotificationsOn(data.notifications_enabled ?? true);
-        setNativeLang(data.native_language ?? "Русский");
       }
       setLoading(false);
     }
@@ -87,14 +85,11 @@ export default function ProfilePage() {
     if (!profile) return;
     setSaving(true);
     await supabase.from("profiles").update({
-      full_name: fullName,
-      cefr_level: cefrLevel,
+      name: fullName,
+      current_level: cefrLevel,
       daily_goal_minutes: dailyGoal,
       learning_goal: learningGoal,
-      notifications_enabled: notificationsOn,
-      native_language: nativeLang,
-      updated_at: new Date().toISOString(),
-    }).eq("user_id", profile.user_id);
+    }).eq("id", profile.id);
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
@@ -159,7 +154,7 @@ export default function ProfilePage() {
           {[
             { icon: Zap,      label: "Всего XP",    value: (profile?.xp ?? 0).toLocaleString(), color: "#6366F1" },
             { icon: Flame,    label: "Серия дней",  value: `${profile?.streak ?? 0} д.`,        color: "#F59E0B" },
-            { icon: BookOpen, label: "Уроков",       value: String(profile?.total_lessons ?? 0), color: "#10B981" },
+            { icon: BookOpen, label: "Уроков",       value: "—", color: "#10B981" },
           ].map((s) => (
             <div key={s.label} className="bg-background rounded-xl p-3 text-center">
               <div className="flex justify-center mb-1">
@@ -233,7 +228,7 @@ export default function ProfilePage() {
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <div className="w-full bg-background/50 border border-[#1E293B] rounded-xl pl-10 pr-4 py-2.5 text-muted-foreground text-sm select-none">
-              {profile?.user_id ? "Изменить можно в Supabase" : "—"}
+              {profile?.id ? "Изменить можно в Supabase" : "—"}
             </div>
           </div>
         </div>

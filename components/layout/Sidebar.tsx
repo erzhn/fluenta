@@ -81,8 +81,8 @@ function NavContent({
   onLogout: () => void;
 }) {
   const levelInfo = profile ? getLevelFromXP(profile.xp ?? 0) : null;
-  const initials = profile?.full_name
-    ? profile.full_name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
+  const initials = profile?.name
+    ? profile.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
     : "?";
 
   return (
@@ -108,10 +108,10 @@ function NavContent({
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[13px] font-semibold text-foreground truncate leading-tight">
-                  {profile.full_name || "Пользователь"}
+                  {profile.name || "Пользователь"}
                 </p>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-[11px] font-bold text-primary">{profile.cefr_level}</span>
+                  <span className="text-[11px] font-bold text-primary">{profile.current_level}</span>
                   <span className="text-[11px] text-muted-foreground">·</span>
                   <div className="flex items-center gap-1">
                     <Flame className="w-3 h-3 text-orange-400" />
@@ -199,7 +199,7 @@ export function Sidebar({ vocabDueCount = 0, mobileOpen = false, onMobileClose }
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data } = await supabase.from("profiles").select("*").eq("user_id", user.id).single();
+      const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
       if (data) setProfile(data);
     }
     load();

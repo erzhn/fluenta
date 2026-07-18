@@ -1,0 +1,454 @@
+You are working on Fluenta — an AI English learning platform built with Next.js 16 App Router, React 19, TypeScript 5 (strict), Tailwind CSS v4, Supabase, Groq API (llama-3.1-8b-instant), and Framer Motion v12.
+
+CRITICAL RULES:
+- NEVER use Write tool on existing files longer than 80 lines — always use Edit with targeted changes
+- NEVER ask for permission — implement everything directly
+- After ALL changes, run: npx tsc --noEmit — fix any errors before finishing
+- Do NOT truncate files — if a file is large, use multiple Edit calls
+- Commit at the end: git add -A && git commit -m "feat: middleware auth, mobile UX, user vocab, XP to Supabase, inline writing errors, AI explanations, business email templates, collocations"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 1: middleware.ts — Auth without flash
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create file: middleware.ts (root of project)
+
+```ts
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+
+const PUBLIC_PATHS = ['/', '/auth', '/landing', '/api', '/_next', '/favicon', '/sw.js', '/manifest', '/offline', '/icons']
+
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+  const isPublic = PUBLIC_PATHS.some(p => pathname.startsWith(p))
+  if (isPublic) return NextResponse.next()
+
+  // Check Supabase session cookie (sb-*-auth-token)
+  const hasCookie = [...request.cookies.getAll()].some(c => c.name.includes('-auth-token') && c.value)
+  if (!hasCookie) {
+    return NextResponse.redirect(new URL('/auth/login', request.url))
+  }
+  return NextResponse.next()
+}
+
+export const config = {
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|sw.js|manifest|icons|offline).*)'],
+}
+```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 2: Mobile UX — 44px tap targets & 16px inputs
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Edit app/globals.css — add these rules inside the existing CSS (after the last @layer or at end of file, before closing):
+
+```css
+/* ── Mobile UX ───────────────────────────────────────── */
+/* Prevent iOS auto-zoom on inputs (font must be ≥16px) */
+@media (max-width: 768px) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}
+
+/* Minimum touch target size (Apple/Google HIG: 44px) */
+button, a, [role="button"] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Exception: icon-only decorative elements */
+.icon-only {
+  min-height: unset;
+  min-width: unset;
+}
+
+/* Safe area bottom padding for notch devices */
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom), 16px);
+}
+
+/* MobileNav safe area */
+nav.mobile-nav {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+```
+
+Edit components/layout/MobileNav.tsx:
+- Add `mobile-nav` class to the nav element
+- Ensure each tab button has `min-h-[56px]` and `flex-1` classes
+- Add `pb-safe` to the nav container
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 3: User adds own words to vocabulary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The Supabase vocabulary table already exists:
+  vocabulary(id, user_id, word, translation, context, next_review, interval, ease_factor, repetitions)
+
+Edit app/(dashboard)/vocabulary/page.tsx:
+
+ADD a floating "+ Add Word" button in the top-right area of the page (near the page heading).
+
+ADD an AddWordModal component inline in the same file:
+```tsx
+// Modal state
+const [showAddModal, setShowAddModal] = useState(false)
+const [newWord, setNewWord] = useState('')
+const [newTranslation, setNewTranslation] = useState('')
+const [newContext, setNewContext] = useState('')
+const [addingWord, setAddingWord] = useState(false)
+
+async function handleAddWord() {
+  if (!newWord.trim() || !newTranslation.trim()) return
+  setAddingWord(true)
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session?.user) { setAddingWord(false); return }
+
+  await supabase.from('vocabulary').insert({
+    user_id: session.user.id,
+    word: newWord.trim(),
+    translation: newTranslation.trim(),
+    context: newContext.trim() || null,
+    next_review: new Date().toISOString(),
+    interval: 1,
+    ease_factor: 2.5,
+    repetitions: 0,
+  })
+  setNewWord(''); setNewTranslation(''); setNewContext('')
+  setShowAddModal(false); setAddingWord(false)
+  // Reload user words
+  loadUserWords()
+}
+```
+
+ADD a loadUserWords function that fetches from Supabase and stores in state:
+```tsx
+const [userWords, setUserWords] = useState<Array<{id:string,word:string,translation:string,context?:string}>>([])
+
+async function loadUserWords() {
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session?.user) return
+  const { data } = await supabase.from('vocabulary').select('*').eq('user_id', session.user.id).order('created_at', { ascending: false })
+  if (data) setUserWords(data)
+}
+```
+
+Call loadUserWords() inside the existing useEffect.
+
+ADD a "Мои слова" tab/section that shows userWords as cards with word + translation. Show count badge on the tab.
+
+ADD the modal JSX at the bottom of the return statement:
+```tsx
+{showAddModal && (
+  <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+    <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-sm space-y-4">
+      <h3 className="text-lg font-bold text-foreground">Добавить слово</h3>
+      <div>
+        <label className="block text-xs font-medium text-muted-foreground mb-1">Слово (English)</label>
+        <input value={newWord} onChange={e => setNewWord(e.target.value)}
+          placeholder="e.g. perseverance"
+          className="w-full bg-background border border-border rounded-xl px-4 py-3 text-foreground text-base focus:outline-none focus:border-primary" />
+      </div>
+      <div>
+        <label className="block text-xs font-medium text-muted-foreground mb-1">Перевод</label>
+        <input value={newTranslation} onChange={e => setNewTranslation(e.target.value)}
+          placeholder="настойчивость"
+          className="w-full bg-background border border-border rounded-xl px-4 py-3 text-foreground text-base focus:outline-none focus:border-primary" />
+      </div>
+      <div>
+        <label className="block text-xs font-medium text-muted-foreground mb-1">Пример (необязательно)</label>
+        <input value={newContext} onChange={e => setNewContext(e.target.value)}
+          placeholder="Her perseverance paid off."
+          className="w-full bg-background border border-border rounded-xl px-4 py-3 text-foreground text-base focus:outline-none focus:border-primary" />
+      </div>
+      <div className="flex gap-3 pt-1">
+        <button onClick={() => setShowAddModal(false)}
+          className="flex-1 py-3 rounded-xl border border-border text-muted-foreground hover:text-foreground transition-colors">
+          Отмена
+        </button>
+        <button onClick={handleAddWord} disabled={addingWord || !newWord || !newTranslation}
+          className="flex-1 py-3 rounded-xl bg-primary text-white font-semibold disabled:opacity-50">
+          {addingWord ? 'Сохраняем...' : 'Добавить'}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 4: Save XP to Supabase after activities
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create lib/xp.ts:
+```ts
+import { supabase } from './supabase'
+
+export const XP_REWARDS = {
+  LESSON_COMPLETE: 50,
+  PERFECT_SCORE: 25,
+  DAILY_STREAK: 10,
+  AI_CONVERSATION: 20,
+  FLASHCARD_SESSION: 15,
+  PRONUNCIATION: 20,
+  DAILY_GOAL: 30,
+  WRITING_CHECK: 15,
+} as const
+
+export async function awardXP(amount: number): Promise<number> {
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session?.user) return 0
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('xp, streak, last_active')
+    .eq('id', session.user.id)
+    .single()
+
+  if (!profile) return 0
+
+  const today = new Date().toISOString().slice(0, 10)
+  const lastActive = profile.last_active
+  const isNewDay = lastActive !== today
+  const streakBonus = isNewDay ? XP_REWARDS.DAILY_STREAK : 0
+  const totalXP = (profile.xp ?? 0) + amount + streakBonus
+
+  const newStreak = isNewDay
+    ? (lastActive === new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+        ? (profile.streak ?? 0) + 1
+        : 1)
+    : (profile.streak ?? 0)
+
+  await supabase.from('profiles').update({
+    xp: totalXP,
+    streak: newStreak,
+    last_active: today,
+  }).eq('id', session.user.id)
+
+  return totalXP
+}
+```
+
+Edit app/(dashboard)/writing/page.tsx:
+- Import: `import { awardXP, XP_REWARDS } from '@/lib/xp'`
+- After a successful writing check (when setResult is called with data), add: `await awardXP(XP_REWARDS.WRITING_CHECK)`
+
+Edit app/(dashboard)/ai-tutor/page.tsx:
+- Import awardXP
+- After each AI response received, add: `await awardXP(XP_REWARDS.AI_CONVERSATION)`
+- Do this max once per session (use a ref: `const xpAwarded = useRef(false)`)
+
+Edit app/(dashboard)/vocabulary/page.tsx:
+- Import awardXP
+- After a flashcard session completes (when the user finishes reviewing all due cards), add: `await awardXP(XP_REWARDS.FLASHCARD_SESSION)`
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 5: Inline error highlighting in Writing
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The writing page already has CheckResult with:
+  errors: { original, corrected, category, explanation, severity }[]
+  correctedText: string
+
+Edit components/WritingFeedback.tsx (or the inline feedback section in writing/page.tsx):
+
+ADD a new "Ошибки в тексте" tab/section that shows the original text with errors highlighted inline.
+
+Create a function `renderHighlightedText(originalText: string, errors: CheckResult['errors'])`:
+```tsx
+function renderHighlightedText(text: string, errors: {original:string, corrected:string, explanation:string, severity:'minor'|'major'}[]) {
+  if (!errors.length) return <p className="text-foreground/80 leading-relaxed">{text}</p>
+
+  let result = text
+  const parts: Array<{text:string, error?:{corrected:string,explanation:string,severity:string}}> = []
+
+  // Build highlighted segments
+  errors.forEach(err => {
+    const idx = result.indexOf(err.original)
+    if (idx === -1) return
+    if (idx > 0) parts.push({text: result.slice(0, idx)})
+    parts.push({text: err.original, error: {corrected: err.corrected, explanation: err.explanation, severity: err.severity}})
+    result = result.slice(idx + err.original.length)
+  })
+  if (result) parts.push({text: result})
+
+  return (
+    <p className="text-foreground/80 leading-relaxed">
+      {parts.map((part, i) => part.error ? (
+        <span key={i} className="group relative inline">
+          <span className={`border-b-2 cursor-help ${part.error.severity === 'major' ? 'border-red-400 text-red-300' : 'border-yellow-400 text-yellow-300'}`}>
+            {part.text}
+          </span>
+          {/* Tooltip */}
+          <span className="absolute bottom-full left-0 mb-1 hidden group-hover:block z-10 w-64 bg-card border border-border rounded-xl p-3 text-xs shadow-xl">
+            <span className="block font-semibold text-primary mb-1">✓ {part.error.corrected}</span>
+            <span className="text-muted-foreground">{part.error.explanation}</span>
+          </span>
+        </span>
+      ) : (
+        <span key={i}>{part.text}</span>
+      ))}
+    </p>
+  )
+}
+```
+
+In the WritingFeedback component or writing page result section, add a collapsible "Разбор ошибок" section that shows renderHighlightedText(originalText, result.errors).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 6: AI explanation for wrong answers in lessons
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Find the lesson exercise component — it's in components/lessons/ (LessonPlayer.tsx or ExerciseEngine.tsx, or inline in app/(dashboard)/lessons/[id]/page.tsx).
+
+When user selects a WRONG answer, show an "AI объясняет" button.
+
+When clicked, call /api/ai/generate with:
+  type: 'grammar_exercise'
+  context: `Question: "${question}". Correct answer: "${correctAnswer}". User answered: "${userAnswer}". Explain briefly in Russian why the correct answer is right and common mistake to avoid. Max 2 sentences.`
+  level: current lesson level
+
+Show the AI explanation below the wrong answer feedback in a highlighted box:
+```tsx
+{showExplanation && aiExplanation && (
+  <div className="mt-3 p-3 rounded-xl bg-primary/10 border border-primary/20 text-sm text-foreground/80">
+    <span className="font-semibold text-primary">🤖 AI объясняет: </span>
+    {aiExplanation}
+  </div>
+)}
+```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 7: Business Email templates
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Edit app/(dashboard)/writing-templates/page.tsx:
+
+ADD these templates to the TEMPLATES array (append to existing array):
+
+```ts
+{
+  id: 'business-email-request',
+  title: 'Business Request Email',
+  type: 'Business Email',
+  level: 'B1',
+  description: 'Formal email requesting information, meeting, or action',
+  wordCount: '150–250',
+  tips: ['Use formal salutation (Dear Mr/Ms)', 'State purpose in first sentence', 'Be specific about what you need', 'Include deadline if applicable', 'End with clear call to action'],
+  structure: [
+    { label: 'Subject Line', placeholder: 'Request for...', example: 'Request for Project Proposal Meeting' },
+    { label: 'Salutation', placeholder: 'Dear...', example: 'Dear Ms Johnson,' },
+    { label: 'Opening — State purpose', placeholder: 'I am writing to...', example: 'I am writing to request a brief meeting to discuss the Q4 marketing proposal.' },
+    { label: 'Details — Provide context', placeholder: 'As you may know...', example: 'As you may know, our team has been working on the campaign for the past month and we would value your input.' },
+    { label: 'Request — Be specific', placeholder: 'I would appreciate if...', example: 'I would appreciate if you could spare 30 minutes this week, preferably on Thursday or Friday.' },
+    { label: 'Closing', placeholder: 'I look forward to...', example: 'I look forward to your response. Please do not hesitate to contact me if you need any further information.' },
+    { label: 'Sign-off', placeholder: 'Yours sincerely / Best regards,', example: 'Yours sincerely,\n[Your Name]' },
+  ],
+},
+{
+  id: 'business-email-complaint',
+  title: 'Complaint Email',
+  type: 'Business Email',
+  level: 'B2',
+  description: 'Professional complaint about a product, service, or situation',
+  wordCount: '200–300',
+  tips: ['Remain professional and factual', 'State the problem clearly', 'Provide order/reference numbers', 'Say what resolution you expect', 'Set a reasonable deadline'],
+  structure: [
+    { label: 'Subject Line', placeholder: 'Complaint regarding...', example: 'Complaint Regarding Order #12345 — Damaged Goods' },
+    { label: 'Salutation', placeholder: 'Dear...', example: 'Dear Customer Service Team,' },
+    { label: 'Opening — State the issue', placeholder: 'I am writing to express my dissatisfaction...', example: 'I am writing to express my dissatisfaction with my recent order (Reference: #12345) placed on 10 July 2026.' },
+    { label: 'Description — What happened', placeholder: 'When I received...', example: 'When I received the package, I discovered that two of the items were damaged beyond use. The packaging showed no signs of mishandling.' },
+    { label: 'Impact — Why it matters', placeholder: 'As a result...', example: 'As a result, I was unable to complete my project on time, which caused significant inconvenience.' },
+    { label: 'Resolution — What you want', placeholder: 'I would like to request...', example: 'I would like to request either a full replacement or a refund for the damaged items within 7 business days.' },
+    { label: 'Closing', placeholder: 'I trust this matter...', example: 'I trust this matter will be resolved promptly. I look forward to your response.' },
+    { label: 'Sign-off', placeholder: 'Yours faithfully,', example: 'Yours faithfully,\n[Your Name]' },
+  ],
+},
+{
+  id: 'business-email-follow-up',
+  title: 'Follow-up Email',
+  type: 'Business Email',
+  level: 'B1',
+  description: 'Professional follow-up after a meeting, interview, or unanswered email',
+  wordCount: '100–180',
+  tips: ['Reference previous contact clearly', 'Be brief and direct', 'Remind without being pushy', 'Offer easy next step', 'Include your contact details'],
+  structure: [
+    { label: 'Subject Line', placeholder: 'Following up on...', example: 'Following Up on Our Meeting — 15 July' },
+    { label: 'Opening — Reference previous contact', placeholder: 'Thank you for...', example: 'Thank you for taking the time to meet with me last Tuesday to discuss the marketing position.' },
+    { label: 'Purpose — Why you\'re writing', placeholder: 'I wanted to follow up...', example: 'I wanted to follow up on our conversation and reiterate my strong interest in joining your team.' },
+    { label: 'Value add / Reminder', placeholder: 'As discussed...', example: 'As discussed, I have attached my portfolio with the updated campaign examples you requested.' },
+    { label: 'Call to action', placeholder: 'Please let me know...', example: 'Please let me know if you need any additional information or if there is anything I can do to support your decision.' },
+    { label: 'Closing', placeholder: 'I look forward to...', example: 'I look forward to hearing from you at your earliest convenience.' },
+    { label: 'Sign-off', placeholder: 'Best regards,', example: 'Best regards,\n[Your Name]' },
+  ],
+},
+{
+  id: 'cover-letter',
+  title: 'Cover Letter',
+  type: 'Business Email',
+  level: 'B2',
+  description: 'Job application cover letter for any position',
+  wordCount: '250–350',
+  tips: ['Tailor to specific job/company', 'Show enthusiasm, not desperation', 'Match skills to job requirements', 'Avoid repeating your CV', 'End with confident call to action'],
+  structure: [
+    { label: 'Opening — Position and source', placeholder: 'I am writing to apply for...', example: 'I am writing to apply for the Senior Marketing Manager position advertised on LinkedIn on 10 July 2026.' },
+    { label: 'Why this company', placeholder: 'I am particularly drawn to...', example: 'I am particularly drawn to your company\'s innovative approach to sustainable product development, which aligns with my professional values.' },
+    { label: 'Key experience — Match to role', placeholder: 'In my current role at...', example: 'In my current role at TechCorp, I led a team of 8 and increased brand awareness by 40% through targeted digital campaigns.' },
+    { label: 'Additional strength', placeholder: 'Furthermore...', example: 'Furthermore, my fluency in English and Russian allows me to manage campaigns across multiple markets effectively.' },
+    { label: 'Closing — Confident and actionable', placeholder: 'I would welcome the opportunity...', example: 'I would welcome the opportunity to discuss how my experience can contribute to your team. I am available for an interview at your convenience.' },
+    { label: 'Sign-off', placeholder: 'Yours sincerely,', example: 'Yours sincerely,\n[Your Name]' },
+  ],
+},
+```
+
+Also update the TYPE_FILTERS at top of writing-templates page if there is one — add "Business Email" as a filter option.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 8: Word collocations in vocabulary cards
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Edit app/(dashboard)/vocabulary/page.tsx:
+
+On the BACK side of each flashcard, add a "Collocations" section below the translation.
+
+Use the existing /api/ai/generate endpoint with type: 'collocations', context: word, level: 'B1'.
+
+Add a small button "🔗 Коллокации" on the back of each card. When clicked:
+1. Show a loading spinner
+2. Call generate('collocations', word, 'B1')
+3. Display result as a compact list of 3-5 collocations
+
+Cache the result in a Map (useState<Map<string, string[]>>) so it's not refetched.
+
+Example UI on card back:
+```tsx
+{/* Collocations section */}
+<div className="mt-3 pt-3 border-t border-white/10">
+  {collocations ? (
+    <div>
+      <p className="text-[10px] uppercase tracking-wider text-white/40 mb-1">Коллокации</p>
+      <div className="flex flex-wrap gap-1.5">
+        {collocations.map((c, i) => (
+          <span key={i} className="text-[11px] bg-white/10 rounded-lg px-2 py-0.5 text-white/70">{c}</span>
+        ))}
+      </div>
+    </div>
+  ) : (
+    <button onClick={(e) => { e.stopPropagation(); fetchCollocations(word) }}
+      className="text-[11px] text-primary/70 hover:text-primary flex items-center gap-1">
+      {loadingColloc ? <span className="animate-spin">⟳</span> : '🔗'} Коллокации
+    </button>
+  )}
+</div>
+```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FINAL STEPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Run: npx tsc --noEmit
+2. Fix ALL TypeScript errors before committing
+3. Run: git add -A && git commit -m "feat: middleware auth, mobile UX, user vocab, XP to Supabase, inline writing errors, AI explanations, business email templates, collocations in vocab cards"
+4. Print summary of all changes made

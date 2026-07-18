@@ -34,10 +34,11 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) return;
       const [{ data: p }, { count: today }, { count: due }] = await Promise.all([
-        supabase.from("profiles").select("*").eq("user_id", user.id).single(),
+        supabase.from("profiles").select("*").eq("id", user.id).single(),
         supabase.from("lessons_progress").select("*", { count: "exact", head: true })
           .eq("user_id", user.id).gte("completed_at", new Date().toISOString().slice(0, 10)),
         supabase.from("vocabulary").select("*", { count: "exact", head: true })
@@ -53,7 +54,7 @@ export default function DashboardPage() {
   const levelInfo = profile ? getLevelFromXP(profile.xp ?? 0) : null;
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Доброе утро" : hour < 17 ? "Добрый день" : "Добрый вечер";
-  const firstName = profile?.full_name?.split(" ")[0] ?? "";
+  const firstName = profile?.name?.split(" ")[0] ?? "";
 
   return (
     <div className="max-w-2xl mx-auto px-4 pt-8 pb-24 md:pb-10 space-y-8">
@@ -87,7 +88,7 @@ export default function DashboardPage() {
         {levelInfo && profile && (
           <div className="mt-5 pt-5 border-t border-white/10">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-white/60">Уровень {levelInfo.level} · {profile.cefr_level}</span>
+              <span className="text-xs text-white/60">Уровень {levelInfo.level} · {profile.current_level}</span>
               <span className="text-xs font-semibold text-white/80">{levelInfo.progress}%</span>
             </div>
             <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">

@@ -47,7 +47,8 @@
       "PowerShell(cd \"D:\\\\Projects with @\\\\fluenta\"; git add app/\\(dashboard\\)/ai-tutor/page.tsx app/\\(dashboard\\)/grammar-exercises/page.tsx app/\\(dashboard\\)/layout.tsx app/\\(dashboard\\)/lessons/page.tsx app/\\(dashboard\\)/mini-stories/page.tsx app/\\(dashboard\\)/vocabulary/page.tsx app/\\(dashboard\\)/word-formation/page.tsx app/api/ai/generate/ components/ai-tutor/ChatMessage.tsx components/onboarding/ components/ui/AIGenerateButton.tsx supabase/migrations/onboarding.sql types/index.ts)",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('exports',{}\\), indent=2\\)\\)\")",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('exports',{}\\).get\\('./tailwind.css',{}\\), indent=2\\)\\)\")",
-      "Bash(git checkout *)"
+      "Bash(git checkout *)",
+      "PowerShell(git *)"
     ]
   }
 }
