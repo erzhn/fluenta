@@ -35,8 +35,8 @@ export default function SettingsPage() {
   useEffect(() => {
     setMounted(true)
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) setEmail(user.email ?? '')
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user) setEmail(session.user.email ?? '')
 
       const raw = localStorage.getItem('fluenta_settings')
       if (raw) {

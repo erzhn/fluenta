@@ -62,8 +62,8 @@ export default function AITutorPage() {
   const xpAwardedRef = useRef(false)
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setUserId(user.id)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) setUserId(session.user.id)
     })
   }, [])
 

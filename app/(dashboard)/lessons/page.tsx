@@ -598,8 +598,8 @@ export default function LessonsPage() {
   useEffect(() => { setProgress(loadProgress()) }, [])
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      const guest = !user
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const guest = !session?.user
       setIsGuest(guest)
       // Auto-open lesson from ?open= query param (e.g. from dashboard "continue" card)
       if (openLessonId && !guest) {

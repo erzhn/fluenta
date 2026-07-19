@@ -12,6 +12,7 @@ import { ExerciseEngine } from "@/components/lessons/ExerciseEngine";
 import { getLessonById, getNextLesson, LEVEL_COLORS } from "@/lib/lessons-data";
 import { supabase } from "@/lib/supabase";
 import { LessonNotes } from "@/components/LessonNotes";
+import { awardXP } from "@/lib/xp";
 
 const XP_BY_LEVEL: Record<string, number> = { A1: 50, A2: 75, B1: 100, B2: 150, C1: 200 };
 
@@ -244,7 +245,7 @@ export default function LessonPlayerPage() {
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => { if (user) setUserId(user.id); });
+    supabase.auth.getSession().then(({ data: { session } }) => { if (session?.user) setUserId(session.user.id); });
   }, []);
 
   const xpReward = XP_BY_LEVEL[lesson?.level ?? "A1"] ?? 50;
@@ -257,7 +258,7 @@ export default function LessonPlayerPage() {
         user_id: userId, lesson_id: lesson.id, completed: true, score,
         completed_at: new Date().toISOString(),
       });
-      try { await supabase.rpc("increment_xp", { user_id: userId, amount: xpEarned }); } catch { /* non-fatal */ }
+      try { await awardXP(xpEarned); } catch { /* non-fatal */ }
     } catch { /* ignore */ }
   }, [userId, lesson, xpEarned]);
 
