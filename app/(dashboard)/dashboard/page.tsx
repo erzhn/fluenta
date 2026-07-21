@@ -46,7 +46,22 @@ export default function DashboardPage() {
         supabase.from("vocabulary").select("*", { count: "exact", head: true })
           .eq("user_id", user.id).lte("next_review", new Date().toISOString().slice(0, 10)),
       ]);
-      if (p) setProfile(p);
+      if (p) {
+        setProfile(p);
+      } else {
+        // Profile row missing (trigger not set up) — create it now
+        const { data: created } = await supabase.from("profiles").upsert({
+          id: user.id,
+          email: user.email ?? '',
+          xp: 0,
+          streak: 0,
+          current_level: 'A1',
+          target_level: 'C1',
+          daily_goal_minutes: 20,
+          goal_type: 'general',
+        }, { onConflict: 'id' }).select("*").single();
+        if (created) setProfile(created);
+      }
       setCompletedToday(today ?? 0);
       setVocabDue(due ?? 0);
     }

@@ -77,11 +77,12 @@ export function OnboardingWizard({ userId, onComplete }: OnboardingWizardProps) 
   const complete = async () => {
     if (!goal || !level) return
     setSaving(true)
-    await supabase.from('profiles').update({
+    await supabase.from('profiles').upsert({
+      id: userId,
       learning_goal: goal,
       current_level: LEVEL_MAP[level],
       onboarding_completed: true,
-    }).eq('id', userId)
+    }, { onConflict: 'id' })
     setSaving(false)
     onComplete()
   }

@@ -21,24 +21,29 @@ export async function awardXP(amount: number): Promise<number> {
     .eq('id', session.user.id)
     .single()
 
-  if (!profile) return 0
+  // Use defaults if profile row doesn't exist yet
+  const currentXP: number = (profile?.xp as number) ?? 0
+  const currentStreak: number = (profile?.streak as number) ?? 0
+  const lastActive: string | null = (profile?.last_active as string) ?? null
 
   const today = new Date().toISOString().slice(0, 10)
-  const lastActive = profile.last_active as string | null
   const isNewDay = lastActive !== today
   const streakBonus = isNewDay ? XP_REWARDS.DAILY_STREAK : 0
-  const totalXP = ((profile.xp as number) ?? 0) + amount + streakBonus
+  const totalXP = currentXP + amount + streakBonus
 
   const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
   const newStreak = isNewDay
-    ? (lastActive === yesterday ? ((profile.streak as number) ?? 0) + 1 : 1)
-    : ((profile.streak as number) ?? 0)
+    ? (lastActive === yesterday ? currentStreak + 1 : 1)
+    : currentStreak
 
-  await supabase.from('profiles').update({
+  // upsert so the row is created if it doesn't exist yet
+  await supabase.from('profiles').upsert({
+    id: session.user.id,
+    email: session.user.email,
     xp: totalXP,
     streak: newStreak,
     last_active: today,
-  }).eq('id', session.user.id)
+  }, { onConflict: 'id' })
 
   return totalXP
 }

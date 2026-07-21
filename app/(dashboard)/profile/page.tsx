@@ -85,12 +85,13 @@ export default function ProfilePage() {
   const handleSave = async () => {
     if (!profile) return;
     setSaving(true);
-    await supabase.from("profiles").update({
+    await supabase.from("profiles").upsert({
+      id: profile.id,
       name: fullName,
       current_level: cefrLevel,
       daily_goal_minutes: dailyGoal,
       learning_goal: learningGoal,
-    }).eq("id", profile.id);
+    }, { onConflict: 'id' });
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
