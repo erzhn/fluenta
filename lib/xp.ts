@@ -50,21 +50,22 @@ export async function awardXP(amount: number): Promise<number> {
     return 0
   }
 
-  // Log to daily_activity for the weekly chart on the progress page
-  // Read today's row first so we can accumulate minutes/xp (fire-and-forget)
-  supabase.from('daily_activity')
-    .select('minutes,xp_earned')
-    .eq('user_id', session.user.id)
-    .eq('date', today)
-    .maybeSingle()
-    .then(({ data: existing }) => {
-      void supabase.from('daily_activity').upsert({
+  // Log to daily_activity for the weekly chart (fire-and-forget, non-critical)
+  void (async () => {
+    try {
+      const { data: existing } = await supabase.from('daily_activity')
+        .select('minutes,xp_earned')
+        .eq('user_id', session.user.id)
+        .eq('date', today)
+        .maybeSingle()
+      await supabase.from('daily_activity').upsert({
         user_id: session.user.id,
         date: today,
         xp_earned: (existing?.xp_earned ?? 0) + amount + (isNewDay ? streakBonus : 0),
         minutes: (existing?.minutes ?? 0) + 10,
       }, { onConflict: 'user_id,date' })
-    }).catch(() => {})
+    } catch { /* non-critical */ }
+  })()
 
   return totalXP
 }
