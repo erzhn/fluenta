@@ -58,12 +58,12 @@ export async function awardXP(amount: number): Promise<number> {
     .eq('date', today)
     .maybeSingle()
     .then(({ data: existing }) => {
-      supabase.from('daily_activity').upsert({
+      void supabase.from('daily_activity').upsert({
         user_id: session.user.id,
         date: today,
         xp_earned: (existing?.xp_earned ?? 0) + amount + (isNewDay ? streakBonus : 0),
         minutes: (existing?.minutes ?? 0) + 10,
-      }, { onConflict: 'user_id,date' }).then(() => {}).catch(() => {})
+      }, { onConflict: 'user_id,date' })
     }).catch(() => {})
 
   return totalXP
