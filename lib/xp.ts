@@ -37,13 +37,34 @@ export async function awardXP(amount: number): Promise<number> {
     : currentStreak
 
   // upsert so the row is created if it doesn't exist yet
-  await supabase.from('profiles').upsert({
+  const { error } = await supabase.from('profiles').upsert({
     id: session.user.id,
     email: session.user.email,
     xp: totalXP,
     streak: newStreak,
     last_active: today,
   }, { onConflict: 'id' })
+
+  if (error) {
+    console.error('[awardXP] profiles upsert failed:', error.message)
+    return 0
+  }
+
+  // Log to daily_activity for the weekly chart on the progress page
+  // Read today's row first so we can accumulate minutes/xp (fire-and-forget)
+  supabase.from('daily_activity')
+    .select('minutes,xp_earned')
+    .eq('user_id', session.user.id)
+    .eq('date', today)
+    .maybeSingle()
+    .then(({ data: existing }) => {
+      supabase.from('daily_activity').upsert({
+        user_id: session.user.id,
+        date: today,
+        xp_earned: (existing?.xp_earned ?? 0) + amount + (isNewDay ? streakBonus : 0),
+        minutes: (existing?.minutes ?? 0) + 10,
+      }, { onConflict: 'user_id,date' }).then(() => {}).catch(() => {})
+    }).catch(() => {})
 
   return totalXP
 }

@@ -10,6 +10,7 @@ import { MODULES } from '@/lib/modules-data'
 import type { ModuleLesson, ModuleId } from '@/lib/modules-data'
 import SpeakingExercise from '@/components/lessons/SpeakingExercise'
 import { supabase } from '@/lib/supabase'
+import { awardXP, XP_REWARDS } from '@/lib/xp'
 import { triggerConfetti } from '@/components/ui/Confetti'
 import { speak, stopSpeaking } from '@/lib/speech'
 
@@ -594,6 +595,7 @@ export default function LessonsPage() {
   const [progress, setProgress] = useState<Progress>({ completedLessons: {}, totalXP: 0 })
   const [isGuest, setIsGuest] = useState(false)
   const [showDemoModal, setShowDemoModal] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => { setProgress(loadProgress()) }, [])
 
@@ -601,6 +603,7 @@ export default function LessonsPage() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       const guest = !session?.user
       setIsGuest(guest)
+      if (session?.user) setUserId(session.user.id)
       // Auto-open lesson from ?open= query param (e.g. from dashboard "continue" card)
       if (openLessonId && !guest) {
         const lesson = LESSONS.find(l => l.id === openLessonId)
@@ -621,6 +624,7 @@ export default function LessonsPage() {
   }
 
   const handleComplete = useCallback((lesson: Lesson, score: number) => {
+    // Save to localStorage (keeps lesson list checkmarks working)
     setProgress(prev => {
       const next: Progress = {
         completedLessons: { ...prev.completedLessons, [lesson.id]: { score, completedAt: new Date().toISOString() } },
@@ -629,7 +633,18 @@ export default function LessonsPage() {
       saveProgress(next)
       return next
     })
-  }, [])
+    // Also persist to Supabase — this is what updates XP and streak counters
+    if (userId) {
+      const xp = xpForLesson(lesson)
+      // Award XP + update streak in profiles table
+      awardXP(xp).catch(() => {})
+      // Record lesson completion in lessons_progress table
+      supabase.from('lessons_progress').upsert(
+        { user_id: userId, lesson_id: lesson.id, completed: true, score, completed_at: new Date().toISOString() },
+        { onConflict: 'user_id,lesson_id' }
+      ).then(() => {})
+    }
+  }, [userId])
 
   const currentModuleMeta = activeModule ? MODULES.find(m => m.id === activeModule) ?? null : null
   const moduleLessons = currentModuleMeta?.lessons ?? []
