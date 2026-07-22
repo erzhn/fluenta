@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { StickyNote, Check, X } from 'lucide-react'
 
 export function LessonNotes({ lessonId }: { lessonId: string }) {
   const [open, setOpen] = useState(false)
@@ -23,8 +24,8 @@ export function LessonNotes({ lessonId }: { lessonId: string }) {
       {open && (
         <div className="mb-2 w-72 sm:w-80 bg-background border border-white/15 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
-            <p className="text-white text-sm font-semibold">📝 Заметки</p>
-            <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-white text-lg">×</button>
+            <p className="text-white text-sm font-semibold inline-flex items-center gap-1.5"><StickyNote className="w-4 h-4" strokeWidth={1.75} /> Заметки</p>
+            <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-white"><X className="w-4 h-4" /></button>
           </div>
           <textarea
             value={note}
@@ -40,7 +41,7 @@ export function LessonNotes({ lessonId }: { lessonId: string }) {
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 saved ? 'bg-green-500/20 text-green-400' : 'bg-primary/20 text-primary hover:bg-primary/30'
               }`}>
-              {saved ? '✓ Сохранено' : 'Сохранить'}
+              {saved ? <span className="inline-flex items-center gap-1"><Check className="w-3 h-3" strokeWidth={2.5} /> Сохранено</span> : 'Сохранить'}
             </button>
           </div>
         </div>
@@ -53,7 +54,7 @@ export function LessonNotes({ lessonId }: { lessonId: string }) {
             : 'bg-[#1e1e2e] border-2 border-primary/40 text-primary hover:border-primary/70 shadow-black/40'
         } ${note ? 'ring-2 ring-primary/50' : ''}`}
         title="Заметки к уроку">
-        <span className="text-base">📝</span>
+        <StickyNote className="w-4 h-4" strokeWidth={1.75} />
         <span className="hidden sm:inline text-sm font-semibold">Заметки</span>
         {note && <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />}
       </button>

@@ -2,15 +2,15 @@
 import { useState, useMemo } from 'react'
 import { PHRASAL_VERBS_DATA, searchPhrasalVerbs, getAllPhrasalVerbs } from '@/lib/phrasal-verbs-data'
 import { addCardToSR } from '@/lib/spaced-repetition'
-import { Sparkles, Loader2 } from 'lucide-react'
+import { Sparkles, Loader2, Home, Users, Briefcase, Plane, Heart, BookOpen, Zap, Check, Search, X, type LucideIcon } from 'lucide-react'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 
-const CATEGORY_ICONS: Record<string, string> = {
-  daily: '🏠',
-  social: '👥',
-  work: '💼',
-  travel: '✈️',
-  emotions: '❤️',
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  daily: Home,
+  social: Users,
+  work: Briefcase,
+  travel: Plane,
+  emotions: Heart,
 }
 
 export default function PhrasalVerbsPage() {
@@ -77,14 +77,14 @@ export default function PhrasalVerbsPage() {
       {/* Stats bar */}
       <div className="flex gap-3 mb-6 flex-wrap">
         <div className="bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 flex items-center gap-2">
-          <span className="text-green-400 text-base">✓</span>
+          <Check className="w-4 h-4 text-green-400" strokeWidth={2.5} />
           <div>
             <p className="text-white font-semibold text-sm">{learned.size}</p>
             <p className="text-muted-foreground text-xs">Изучено</p>
           </div>
         </div>
         <div className="bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 flex items-center gap-2">
-          <span className="text-primary text-base">📚</span>
+          <BookOpen className="w-4 h-4 text-primary" strokeWidth={1.75} />
           <div>
             <p className="text-white font-semibold text-sm">{total - learned.size}</p>
             <p className="text-muted-foreground text-xs">Осталось</p>
@@ -92,7 +92,7 @@ export default function PhrasalVerbsPage() {
         </div>
         {learned.size > 0 && (
           <div className="bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 flex items-center gap-2">
-            <span className="text-yellow-400 text-base">⚡</span>
+            <Zap className="w-4 h-4 text-yellow-400" strokeWidth={1.75} />
             <div>
               <p className="text-white font-semibold text-sm">{Math.round(learned.size / total * 100)}%</p>
               <p className="text-muted-foreground text-xs">Прогресс</p>
@@ -103,7 +103,7 @@ export default function PhrasalVerbsPage() {
 
       {/* Search */}
       <div className="relative mb-6">
-        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">🔍</span>
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" strokeWidth={1.75} />
         <input
           type="text"
           value={search}
@@ -114,7 +114,7 @@ export default function PhrasalVerbsPage() {
         {search && (
           <button onClick={() => setSearch('')}
             className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white transition-colors">
-            ✕
+            <X className="w-4 h-4" />
           </button>
         )}
       </div>
@@ -142,7 +142,7 @@ export default function PhrasalVerbsPage() {
                   : 'bg-white/[0.04] border-white/10 text-muted-foreground hover:border-white/20 hover:text-white'
               }`}
             >
-              <span>{CATEGORY_ICONS[cat.id]}</span>
+              {(() => { const Icon = CATEGORY_ICONS[cat.id]; return Icon ? <Icon className="w-4 h-4" strokeWidth={1.75} /> : null })()}
               <span className="hidden sm:inline">{cat.title}</span>
               <span className="text-xs opacity-70">({cat.verbs.length})</span>
             </button>
@@ -153,8 +153,8 @@ export default function PhrasalVerbsPage() {
       {/* Category description */}
       {!search && activeCategory !== 'all' && (
         <div className="mb-5 px-4 py-3 bg-primary/10 border border-primary/20 rounded-xl">
-          <p className="text-[#a5b4fc] text-sm">
-            {CATEGORY_ICONS[activeCategory]}{' '}
+          <p className="text-[#a5b4fc] text-sm inline-flex items-center gap-1.5">
+            {(() => { const Icon = CATEGORY_ICONS[activeCategory]; return Icon ? <Icon className="w-4 h-4 shrink-0" strokeWidth={1.75} /> : null })()}
             {PHRASAL_VERBS_DATA.find(c => c.id === activeCategory)?.description}
           </p>
         </div>
@@ -213,7 +213,7 @@ export default function PhrasalVerbsPage() {
                     : 'bg-white/[0.06] text-muted-foreground hover:text-white'
                 }`}
               >
-                {isLearned ? '✓' : '○'}
+                {isLearned ? <Check className="w-4 h-4" strokeWidth={2.5} /> : <span className="w-3 h-3 rounded-full border-2 border-current" />}
               </button>
 
               {/* Verb + translation */}
@@ -254,9 +254,9 @@ export default function PhrasalVerbsPage() {
 
       {displayedVerbs.length === 0 && (
         <div className="text-center py-16">
-          <p className="text-4xl mb-4">🔍</p>
+          <Search className="w-10 h-10 mx-auto mb-4 text-muted-foreground" strokeWidth={1.5} />
           <p className="text-white font-medium mb-2">Ничего не найдено</p>
-          <p className="text-muted-foreground text-sm">Попробуй дру другой запрос</p>
+          <p className="text-muted-foreground text-sm">Попробуй другой запрос</p>
         </div>
       )}
     </div>

@@ -259,11 +259,11 @@ export default function ListeningPage() {
                 ) : (
                   <div className="space-y-3">
                     <div className={`px-4 py-3 rounded-xl text-sm font-semibold text-center ${correctCount === 3 ? 'bg-[#10b981]/10 text-[#10b981] border border-[#10b981]/20' : correctCount >= 2 ? 'bg-[#f59e0b]/10 text-[#f59e0b] border border-[#f59e0b]/20' : 'bg-[#ef4444]/10 text-[#f87171] border border-[#ef4444]/20'}`}>
-                      {correctCount === 3 ? `🎉 Отлично! ${correctCount}/3 правильно` : correctCount >= 2 ? `👍 Молодец! ${correctCount}/3 правильно` : `${correctCount}/3 — Попробуй ещё раз`}
+                      {correctCount === 3 ? `Отлично! ${correctCount}/3 правильно` : correctCount >= 2 ? `Молодец! ${correctCount}/3 правильно` : `${correctCount}/3 — Попробуй ещё раз`}
                     </div>
                     <button onClick={generateAI} disabled={generatingAI}
                       className="w-full py-2.5 rounded-xl border border-primary/30 text-primary text-sm font-medium hover:bg-primary/10 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
-                      <Sparkles className="w-3.5 h-3.5" /> Новый текст 🎲
+                      <Sparkles className="w-3.5 h-3.5" /> Новый текст
                     </button>
                   </div>
                 )}

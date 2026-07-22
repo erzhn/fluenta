@@ -6,7 +6,7 @@ import Link from "next/link";
 import {
   Menu, X, ArrowRight, Bot, Mic, BookOpen, Layers,
   BarChart3, Trophy, ChevronDown, Check, Star,
-  Send, Zap, Users, Play,
+  Send, Zap, Users, Play, Target, TrendingUp, Flame, Sparkles,
   MessageCircle, Camera, PlaySquare,
 } from "lucide-react";
 
@@ -44,63 +44,57 @@ const FEATURES = [
     title: "AI-репетитор 24/7",
     description: "Общайся как с носителем языка в любое время. AI понимает контекст, исправляет ошибки и адаптируется к твоему уровню.",
     color: "#6366F1",
-    emoji: "🤖",
   },
   {
     icon: Mic,
     title: "Произношение",
     description: "AI оценивает твой акцент в реальном времени и показывает как правильно произносить каждый звук и слово.",
     color: "#8B5CF6",
-    emoji: "🎤",
   },
   {
     icon: BookOpen,
     title: "500+ уроков",
     description: "Структурированная программа от A1 до C1. Каждый урок закрепляется интерактивными упражнениями и тестами.",
     color: "#3B82F6",
-    emoji: "📚",
   },
   {
     icon: Layers,
     title: "Умные флэшкарты",
     description: "Алгоритм SRS знает когда ты начинаешь забывать слово и повторяет его в идеальный момент для закрепления.",
     color: "#10B981",
-    emoji: "🃏",
   },
   {
     icon: BarChart3,
     title: "Аналитика",
     description: "Видишь прогресс по каждому навыку: грамматика, лексика, произношение и письмо — всё в одном дашборде.",
     color: "#F59E0B",
-    emoji: "📊",
   },
   {
     icon: Trophy,
     title: "Геймификация",
     description: "XP, стрики, достижения и лидерборд делают обучение увлекательным и мотивируют заниматься каждый день.",
     color: "#EF4444",
-    emoji: "🏆",
   },
 ];
 
 const STEPS = [
   {
     num: "01",
-    emoji: "🎯",
+    icon: Target,
     title: "Пройди тест",
     description: "Определим твой точный уровень за 10 минут с помощью адаптивного AI-теста",
     color: "#6366F1",
   },
   {
     num: "02",
-    emoji: "🤖",
+    icon: Bot,
     title: "Получи план",
     description: "AI строит персональную программу на основе твоих целей, уровня и расписания",
     color: "#8B5CF6",
   },
   {
     num: "03",
-    emoji: "📈",
+    icon: TrendingUp,
     title: "Учись каждый день",
     description: "30 минут в день — и через 6 месяцев ты говоришь свободно по-английски",
     color: "#10B981",
@@ -119,7 +113,6 @@ const LEVELS = [
 const TESTIMONIALS = [
   {
     name: "Айгерим К.",
-    flag: "🇰🇿",
     city: "Алматы",
     avatar: "А",
     gradient: "from-[#6366F1] to-[#8B5CF6]",
@@ -129,7 +122,6 @@ const TESTIMONIALS = [
   },
   {
     name: "Дмитрий С.",
-    flag: "🇷🇺",
     city: "Москва",
     avatar: "Д",
     gradient: "from-[#8B5CF6] to-[#3B82F6]",
@@ -139,7 +131,6 @@ const TESTIMONIALS = [
   },
   {
     name: "Мадина Т.",
-    flag: "🇰🇿",
     city: "Нур-Султан",
     avatar: "М",
     gradient: "from-[#10B981] to-[#3B82F6]",
@@ -429,7 +420,7 @@ function HeroSection() {
         <div>
           <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible">
             <div className={`inline-flex items-center gap-2.5 ${g} rounded-full px-4 py-2 text-sm text-muted-foreground mb-8`}>
-              <span className="text-base">✨</span>
+              <Sparkles className="w-4 h-4 text-[#a5b4fc]" strokeWidth={1.75} />
               <span className="font-medium">AI-репетитор нового поколения</span>
               <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
             </div>
@@ -471,12 +462,12 @@ function HeroSection() {
 
           <motion.div custom={4} variants={fadeUp} initial="hidden" animate="visible" className="flex flex-wrap gap-5">
             {[
-              { icon: "✓", text: "Без кредитной карты" },
-              { icon: "✓", text: "10 уроков бесплатно" },
-              { icon: "✓", text: "Отмена в любой момент" },
+              { text: "Без кредитной карты" },
+              { text: "10 уроков бесплатно" },
+              { text: "Отмена в любой момент" },
             ].map((item) => (
               <div key={item.text} className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <span className="text-[#10B981] font-bold">{item.icon}</span>
+                <Check className="w-4 h-4 text-[#10B981]" strokeWidth={2.5} />
                 {item.text}
               </div>
             ))}
@@ -548,7 +539,7 @@ function HeroSection() {
                   F
                 </div>
                 <div className={`${g} rounded-2xl rounded-tl-sm px-4 py-3 text-sm max-w-[85%]`}>
-                  <p className="text-muted-foreground mb-1">Почти правильно! Небольшая ошибка 👀</p>
+                  <p className="text-muted-foreground mb-1">Почти правильно! Небольшая ошибка</p>
                   <p className="text-white">
                     Нужно:{" "}
                     <span className="text-[#A78BFA]">&ldquo;Yesterday I </span>
@@ -569,7 +560,7 @@ function HeroSection() {
                     <span className="text-xs text-muted-foreground">используем с yesterday</span>
                   </div>
                   <p className="text-muted-foreground text-xs">
-                    go → <strong className="text-white">went</strong> (неправильный глагол, нужно запомнить ✓)
+                    go → <strong className="text-white">went</strong> (неправильный глагол, нужно запомнить)
                   </p>
                 </div>
               </div>
@@ -593,7 +584,7 @@ function HeroSection() {
             className={`absolute -right-4 -bottom-4 ${g} rounded-2xl px-4 py-3 shadow-xl shadow-black/30`}
           >
             <div className="flex items-center gap-2">
-              <span className="text-2xl">🔥</span>
+              <Flame className="w-6 h-6 text-[#F59E0B]" fill="#F59E0B" strokeWidth={1.5} />
               <div>
                 <div className="text-white font-bold text-sm">7-дневный стрик</div>
                 <div className="text-muted-foreground text-xs">Так держать!</div>
@@ -608,7 +599,7 @@ function HeroSection() {
             className={`absolute -left-4 top-6 ${g} rounded-2xl px-4 py-3 shadow-xl shadow-black/30`}
           >
             <div className="flex items-center gap-2">
-              <span className="text-2xl">⚡</span>
+              <Zap className="w-6 h-6 text-[#F59E0B]" fill="#F59E0B" strokeWidth={1.5} />
               <div>
                 <div className="text-white font-bold text-sm">+120 XP</div>
                 <div className="text-muted-foreground text-xs">за урок</div>
@@ -667,10 +658,10 @@ function FeaturesSection() {
                 style={{ background: `linear-gradient(90deg, transparent, ${f.color}80, transparent)` }}
               />
               <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 text-xl"
+                className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
                 style={{ backgroundColor: `${f.color}20` }}
               >
-                {f.emoji}
+                <f.icon className="w-6 h-6" strokeWidth={1.75} style={{ color: f.color }} />
               </div>
               <h3 className="text-lg font-bold text-white mb-2 group-hover:text-white transition-colors">
                 {f.title}
@@ -746,10 +737,10 @@ function HowItWorksSection() {
               >
                 <div className="relative mb-6">
                   <div
-                    className="w-28 h-28 rounded-3xl flex items-center justify-center text-5xl shadow-2xl"
+                    className="w-28 h-28 rounded-3xl flex items-center justify-center shadow-2xl"
                     style={{ backgroundColor: `${step.color}15`, border: `1px solid ${step.color}30` }}
                   >
-                    {step.emoji}
+                    <step.icon className="w-12 h-12" strokeWidth={1.5} style={{ color: step.color }} />
                   </div>
                   <div
                     className="absolute -top-2 -right-2 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-extrabold text-white"
@@ -912,7 +903,7 @@ function TestimonialsSection() {
                 </div>
                 <div>
                   <div className="text-white font-semibold text-sm flex items-center gap-1.5">
-                    {t.name} <span>{t.flag}</span>
+                    {t.name}
                   </div>
                   <div className="text-muted-foreground text-xs">{t.city}</div>
                 </div>
@@ -969,8 +960,8 @@ function PricingSection() {
             >
               {plan.popular && (
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                  <div className="bg-gradient-to-r from-[#F59E0B] to-[#EF4444] text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg">
-                    ⭐ Популярный
+                  <div className="bg-gradient-to-r from-[#F59E0B] to-[#EF4444] text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg inline-flex items-center gap-1">
+                    <Star className="w-3.5 h-3.5" fill="currentColor" strokeWidth={0} /> Популярный
                   </div>
                 </div>
               )}
@@ -1116,7 +1107,7 @@ function CTASection() {
               transition={{ delay: 0.2 }}
               className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 text-sm text-white/90 mb-8"
             >
-              <span>🚀</span> Начни прямо сейчас — это бесплатно
+              <Sparkles className="w-4 h-4" strokeWidth={1.75} /> Начни прямо сейчас — это бесплатно
             </motion.div>
 
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight">

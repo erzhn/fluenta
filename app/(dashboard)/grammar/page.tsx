@@ -422,7 +422,7 @@ export default function GrammarPage() {
                             <div key={i} className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3">
                               <div className="space-y-0.5 mb-1">
                                 <div className="flex items-center gap-1.5">
-                                  <span className="text-[#10b981] text-xs">✓</span>
+                                  <Check className="w-3 h-3 text-[#10b981] shrink-0" strokeWidth={2.5} />
                                   <span className="text-[#10b981] text-sm">{ex.correct.split(' → ')[0]}</span>
                                   <button onClick={() => speak(ex.correct.split(' → ')[0], { rate: 0.9 })}
                                     className="text-muted-foreground hover:text-primary transition-colors flex-shrink-0">
@@ -430,7 +430,7 @@ export default function GrammarPage() {
                                   </button>
                                 </div>
                                 <div className="flex items-center gap-1.5">
-                                  <span className="text-[#ef4444] text-xs">✗</span>
+                                  <X className="w-3 h-3 text-[#ef4444] shrink-0" strokeWidth={2.5} />
                                   <span className="text-[#ef4444]/70 line-through text-sm">{ex.wrong.split(' → ')[0]}</span>
                                 </div>
                               </div>
@@ -442,7 +442,7 @@ export default function GrammarPage() {
 
                       {/* Tip */}
                       <div className="bg-[#f59e0b]/10 border border-[#f59e0b]/20 rounded-xl px-4 py-3">
-                        <span className="text-[#f59e0b] text-xs font-semibold">💡 Совет: </span>
+                        <span className="inline-flex items-center gap-1 text-[#f59e0b] text-xs font-semibold"><Lightbulb className="w-3 h-3" strokeWidth={2} /> Совет: </span>
                         <span className="text-muted-foreground text-xs">{card.tip}</span>
                       </div>
 
@@ -476,7 +476,7 @@ export default function GrammarPage() {
                           </button>
                           <Link href={`/grammar-exercises`}
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-primary/30 text-[#818cf8] hover:bg-primary/10 transition-all">
-                            📝 Упражнения →
+                            <PenLine className="w-3 h-3" /> Упражнения
                           </Link>
                         </div>
 
@@ -593,7 +593,7 @@ export default function GrammarPage() {
 
       {filtered.length === 0 && (
         <div className="text-center py-12">
-               <p className="text-4xl mb-3">🔍</p>
+          <Search className="w-9 h-9 mx-auto mb-3 text-muted-foreground" strokeWidth={1.5} />
           <p className="text-white font-semibold">Ничего не найдено</p>
           <p className="text-muted-foreground text-sm mt-1">Попробуй другой поисковый запрос</p>
         </div>

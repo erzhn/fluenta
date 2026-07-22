@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { Volume2, Check, Plus } from 'lucide-react'
 import { getWordOfDay } from '@/lib/word-of-day'
 
 export function WordOfDay() {
@@ -43,9 +44,9 @@ export function WordOfDay() {
       <div className="flex items-center gap-3 mb-2">
         <h3 className="text-white text-2xl font-bold">{word.word}</h3>
         <button onClick={speak}
-          className="w-8 h-8 rounded-lg bg-white/[0.06] hover:bg-white/10 flex items-center justify-center text-sm transition-colors"
+          className="w-8 h-8 rounded-lg bg-white/[0.06] hover:bg-white/10 flex items-center justify-center text-muted-foreground hover:text-white transition-colors"
           title="Произношение">
-          🔊
+          <Volume2 className="w-4 h-4" strokeWidth={1.75} />
         </button>
       </div>
       <p className="text-muted-foreground text-sm mb-1">{word.transcription}</p>
@@ -57,7 +58,9 @@ export function WordOfDay() {
             ? 'bg-green-500/10 border border-green-500/20 text-green-400'
             : 'bg-white/[0.06] hover:bg-white/10 border border-white/10 text-muted-foreground hover:text-white'
         }`}>
-        {added ? '✓ Добавлено в повторение' : '+ Добавить в словарь'}
+        <span className="inline-flex items-center justify-center gap-1.5">
+          {added ? <><Check className="w-4 h-4" strokeWidth={2} /> Добавлено в повторение</> : <><Plus className="w-4 h-4" strokeWidth={2} /> Добавить в словарь</>}
+        </span>
       </button>
     </div>
   );

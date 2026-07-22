@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import { ChevronRight, CheckCircle, XCircle, Trophy, RotateCcw } from 'lucide-react'
+import { ChevronRight, CheckCircle, XCircle, Trophy, RotateCcw, BarChart3, Check, X } from 'lucide-react'
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr]
@@ -201,8 +201,8 @@ export default function LevelTestPage() {
           <motion.div key="intro"
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
             className="max-w-md w-full text-center">
-            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] flex items-center justify-center mx-auto mb-6 text-3xl shadow-2xl shadow-[#6366f1]/30">
-              📊
+            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] flex items-center justify-center mx-auto mb-6 text-white shadow-2xl shadow-[#6366f1]/30">
+              <BarChart3 className="w-9 h-9" strokeWidth={1.75} />
             </div>
             <h1 className="text-3xl font-bold text-white mb-3">Определи свой уровень</h1>
             <p className="text-muted-foreground mb-2">20 вопросов из 100 • ~5 минут</p>
@@ -296,8 +296,8 @@ export default function LevelTestPage() {
             {/* Answer breakdown */}
             <div className="flex justify-center gap-1.5 mb-6 flex-wrap">
               {answers.map((correct, i) => (
-                <div key={i} className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${correct ? 'bg-[#10b981]/20 text-[#10b981]' : 'bg-[#ef4444]/20 text-[#ef4444]'}`}>
-                  {correct ? '✓' : '✗'}
+                <div key={i} className={`w-6 h-6 rounded-full flex items-center justify-center ${correct ? 'bg-[#10b981]/20 text-[#10b981]' : 'bg-[#ef4444]/20 text-[#ef4444]'}`}>
+                  {correct ? <Check className="w-3.5 h-3.5" strokeWidth={2.5} /> : <X className="w-3.5 h-3.5" strokeWidth={2.5} />}
                 </div>
               ))}
             </div>

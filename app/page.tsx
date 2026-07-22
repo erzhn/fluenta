@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowRight, Star, Check, Menu, X, ChevronDown } from 'lucide-react'
+import { ArrowRight, Star, Check, Menu, X, ChevronDown, Bot, BookOpen, TrendingUp, Mail, MessageCircle, Rocket, Flame, Zap, Lightbulb, Sparkles, type LucideIcon } from 'lucide-react'
 
 // ── Animation helpers ──────────────────────────────────────────────────────────
 const EASE = [0.22, 1, 0.36, 1] as [number, number, number, number]
@@ -35,45 +35,45 @@ function FadeUp({ children, delay = 0, className = '' }: { children: React.React
 }
 
 // ── Data ───────────────────────────────────────────────────────────────────────
-const FEATURES = [
+const FEATURES: { icon: LucideIcon; title: string; desc: string; color: string }[] = [
   {
-    emoji: '🤖',
+    icon: Bot,
     title: 'AI Tutor Zhan',
     desc: 'Natural conversations, instant feedback, personalized learning. Zhan adapts to your level and corrects mistakes gently.',
     color: '#6366f1',
   },
   {
-    emoji: '📚',
+    icon: BookOpen,
     title: 'Smart Lessons',
     desc: 'Structured curriculum from A1 to C2, at your own pace. Grammar, vocabulary, reading — all in one place.',
     color: '#8b5cf6',
   },
   {
-    emoji: '📈',
+    icon: TrendingUp,
     title: 'Track Progress',
     desc: 'See your improvement with detailed stats and streaks. Stay motivated with XP, badges, and daily goals.',
     color: '#06b6d4',
   },
 ]
 
-const STEPS = [
+const STEPS: { n: string; icon: LucideIcon; title: string; desc: string; color: string }[] = [
   {
     n: '01',
-    emoji: '✉️',
+    icon: Mail,
     title: 'Sign up instantly',
     desc: 'Create your account with just your email — no password needed, no credit card.',
     color: '#6366f1',
   },
   {
     n: '02',
-    emoji: '💬',
+    icon: MessageCircle,
     title: 'Chat with Zhan',
     desc: "Start a conversation with your AI tutor. Ask anything, practice topics you care about.",
     color: '#8b5cf6',
   },
   {
     n: '03',
-    emoji: '🚀',
+    icon: Rocket,
     title: 'Improve every day',
     desc: "Get personalized practice, track your streak, and watch your English get better fast.",
     color: '#10b981',
@@ -82,7 +82,6 @@ const STEPS = [
 
 const TESTIMONIALS = [
   {
-    flag: '🇰🇿',
     name: 'Aizat M.',
     city: 'Almaty',
     avatar: 'A',
@@ -92,7 +91,6 @@ const TESTIMONIALS = [
     badge: 'A2 → B2',
   },
   {
-    flag: '🇷🇺',
     name: 'Mikhail D.',
     city: 'Moscow',
     avatar: 'M',
@@ -102,7 +100,6 @@ const TESTIMONIALS = [
     badge: 'IELTS 7.0',
   },
   {
-    flag: '🇺🇿',
     name: 'Dilnoza K.',
     city: 'Tashkent',
     avatar: 'D',
@@ -118,12 +115,12 @@ const CHAT = [
   { role: 'user', text: 'I want to improve my English speaking' },
   {
     role: 'ai',
-    text: "Great goal! 👋 Let's start with what matters to you most — work, travel, or everyday conversation?",
+    text: "Great goal! Let's start with what matters to you most — work, travel, or everyday conversation?",
   },
   { role: 'user', text: 'My problem is I make grammar mistakes' },
   {
     role: 'ai',
-    text: '💡 Small correction: say "My problem is that I make…" — adding \'that\' sounds more natural. What kind of mistakes? Tenses?',
+    text: 'Small correction: say "My problem is that I make…" — adding \'that\' sounds more natural. What kind of mistakes? Tenses?',
     highlight: true,
   },
 ]
@@ -459,7 +456,7 @@ function HeroSection() {
                 <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] flex items-center justify-center font-black text-[10px] shrink-0">Z</div>
                 <div className="max-w-[82%]">
                   <div className={`${glass} rounded-2xl rounded-tl-sm px-4 py-3 text-sm text-[#e2e8f0]`}>
-                    <span className="bg-[#f59e0b]/15 border border-[#f59e0b]/25 text-[#fbbf24] rounded px-1.5 py-0.5 text-xs font-semibold mr-1.5">💡 Correction</span>
+                    <span className="inline-flex items-center gap-1 bg-[#f59e0b]/15 border border-[#f59e0b]/25 text-[#fbbf24] rounded px-1.5 py-0.5 text-xs font-semibold mr-1.5"><Lightbulb className="w-3 h-3" strokeWidth={2} /> Correction</span>
                     Say <span className="font-semibold text-white">&ldquo;My problem is <span className="text-[#34d399] bg-[#10b981]/15 px-1 rounded">that</span> I make…&rdquo;</span> — sounds more natural!
                   </div>
                 </div>
@@ -481,7 +478,7 @@ function HeroSection() {
             className={`absolute -right-4 -bottom-4 ${glass} rounded-2xl px-4 py-3 shadow-xl shadow-black/40`}
           >
             <div className="flex items-center gap-2">
-              <span className="text-2xl">🔥</span>
+              <Flame className="w-6 h-6 text-[#F59E0B]" fill="#F59E0B" strokeWidth={1.5} />
               <div>
                 <div className="text-white font-bold text-sm">7-day streak</div>
                 <div className="text-muted-foreground text-xs">Keep it up!</div>
@@ -496,7 +493,7 @@ function HeroSection() {
             className={`absolute -left-4 top-8 ${glass} rounded-2xl px-4 py-3 shadow-xl shadow-black/40`}
           >
             <div className="flex items-center gap-2">
-              <span className="text-2xl">⚡</span>
+              <Zap className="w-6 h-6 text-[#F59E0B]" fill="#F59E0B" strokeWidth={1.5} />
               <div>
                 <div className="text-white font-bold text-sm">+150 XP</div>
                 <div className="text-muted-foreground text-xs">earned today</div>
@@ -550,10 +547,10 @@ function FeaturesSection() {
                 />
 
                 <div
-                  className="w-13 h-13 rounded-xl flex items-center justify-center text-2xl mb-5 w-12 h-12"
+                  className="rounded-xl flex items-center justify-center mb-5 w-12 h-12"
                   style={{ backgroundColor: `${f.color}20` }}
                 >
-                  {f.emoji}
+                  <f.icon className="w-6 h-6" strokeWidth={1.75} style={{ color: f.color }} />
                 </div>
                 <h3 className="text-lg font-bold text-white mb-2">{f.title}</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">{f.desc}</p>
@@ -605,10 +602,10 @@ function HowItWorksSection() {
                 <div className="flex flex-col items-center text-center">
                   <div className="relative mb-5">
                     <div
-                      className="w-[104px] h-[104px] rounded-3xl flex items-center justify-center text-5xl shadow-2xl"
+                      className="w-[104px] h-[104px] rounded-3xl flex items-center justify-center shadow-2xl"
                       style={{ backgroundColor: `${step.color}15`, border: `1px solid ${step.color}30` }}
                     >
-                      {step.emoji}
+                      <step.icon className="w-11 h-11" strokeWidth={1.5} style={{ color: step.color }} />
                     </div>
                     <div
                       className="absolute -top-2 -right-2 w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-black text-white"
@@ -686,7 +683,7 @@ function TestimonialsSection() {
                   </div>
                   <div>
                     <div className="text-white font-semibold text-sm flex items-center gap-1.5">
-                      {t.name} <span>{t.flag}</span>
+                      {t.name}
                     </div>
                     <div className="text-muted-foreground text-xs">{t.city}</div>
                   </div>
@@ -724,7 +721,7 @@ function CTASection() {
                 transition={{ delay: 0.15 }}
                 className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 text-sm text-white/90 mb-7"
               >
-                🚀 Join 50,000+ learners — it&apos;s free
+                <Sparkles className="w-4 h-4" strokeWidth={1.75} /> Join 50,000+ learners — it&apos;s free
               </motion.div>
 
               <h2 className="text-4xl sm:text-5xl lg:text-[54px] font-black text-white leading-tight mb-5">

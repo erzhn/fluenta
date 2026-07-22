@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { Check, X } from 'lucide-react'
 import { AFFIXES } from '@/lib/word-formation-data'
 
 export default function WordFormationPage() {
@@ -121,7 +122,7 @@ export default function WordFormationPage() {
                   <>
                     <div className={`p-3 rounded-xl mb-3 text-center border ${result ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
                       <p className={`font-semibold ${result ? 'text-green-400' : 'text-red-400'}`}>
-                        {result ? '✓ Правильно!' : `✗ Правильно: ${quizItem.formed}`}
+                        <span className="inline-flex items-center gap-1.5">{result ? <><Check className="w-4 h-4" strokeWidth={2.5} /> Правильно!</> : <><X className="w-4 h-4" strokeWidth={2.5} /> Правильно: {quizItem.formed}</>}</span>
                       </p>
                       <p className="text-muted-foreground text-sm mt-1">{quizItem.translation}</p>
                     </div>

@@ -6,7 +6,6 @@ import type { TutorMode } from "@/types";
 
 interface ModeConfig {
   value: TutorMode;
-  emoji: string;
   icon: React.ElementType;
   label: string;
   labelRu: string;
@@ -17,7 +16,6 @@ interface ModeConfig {
 export const MODES: ModeConfig[] = [
   {
     value: "conversation",
-    emoji: "💬",
     icon: MessageCircle,
     label: "Разговор",
     labelRu: "Свободная беседа",
@@ -26,7 +24,6 @@ export const MODES: ModeConfig[] = [
   },
   {
     value: "grammar",
-    emoji: "📝",
     icon: BookOpen,
     label: "Грамматика",
     labelRu: "Разбор правил",
@@ -35,7 +32,6 @@ export const MODES: ModeConfig[] = [
   },
   {
     value: "vocabulary",
-    emoji: "📚",
     icon: Layers,
     label: "Словарь",
     labelRu: "Новые слова",
@@ -44,7 +40,6 @@ export const MODES: ModeConfig[] = [
   },
   {
     value: "writing",
-    emoji: "✍️",
     icon: PenLine,
     label: "Письмо",
     labelRu: "Улучшение текстов",
@@ -53,7 +48,6 @@ export const MODES: ModeConfig[] = [
   },
   {
     value: "exams",
-    emoji: "🎓",
     icon: GraduationCap,
     label: "Экзамены",
     labelRu: "IELTS / TOEFL",
@@ -62,7 +56,6 @@ export const MODES: ModeConfig[] = [
   },
   {
     value: "business",
-    emoji: "💼",
     icon: Briefcase,
     label: "Бизнес",
     labelRu: "Деловой английский",
@@ -83,6 +76,7 @@ export function ModeSelector({ mode, onModeChange, layout = "sidebar" }: ModeSel
       <div className="grid grid-cols-2 gap-2.5 p-4">
         {MODES.map((m) => {
           const active = mode === m.value;
+          const Icon = m.icon;
           return (
             <motion.button
               key={m.value}
@@ -94,7 +88,7 @@ export function ModeSelector({ mode, onModeChange, layout = "sidebar" }: ModeSel
                   : "border-[#1E293B] bg-background hover:border-border"
               }`}
             >
-              <div className="text-xl mb-1">{m.emoji}</div>
+              <Icon className="w-5 h-5 mb-1.5" strokeWidth={1.75} style={{ color: m.color }} />
               <div className="font-semibold text-white text-sm">{m.label}</div>
               <div className="text-muted-foreground text-xs mt-0.5">{m.desc}</div>
             </motion.button>
@@ -123,13 +117,13 @@ export function ModeSelector({ mode, onModeChange, layout = "sidebar" }: ModeSel
             }`}
           >
             <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-sm"
+              className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
               style={{
                 backgroundColor: active ? `${m.color}25` : "#1E293B",
                 color: active ? m.color : "#64748B",
               }}
             >
-              {m.emoji}
+              <Icon className="w-4 h-4" strokeWidth={1.75} />
             </div>
             <div className="min-w-0 flex-1">
               <div

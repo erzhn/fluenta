@@ -1,4 +1,6 @@
 import type { Lesson } from '@/lib/lessons-data'
+import type { LucideIcon } from 'lucide-react'
+import { Briefcase, GraduationCap, MessagesSquare, Type } from 'lucide-react'
 
 export type ModuleLesson = Lesson & { module: string }
 
@@ -852,7 +854,7 @@ export const ACADEMIC_LESSONS: ModuleLesson[] = [
     id: 'aw-2-10', level: 'C1', module: 'academic', block: 2, blockName: 'IELTS Academic Writing',
     order: 10, title: 'IELTS Writing: полный тест', duration: '60 min',
     theory: {
-      explanation: `Стратегия полного теста IELTS Writing:\n\nОбщая стратегия:\n• Начни с Task 2 — оно стоит больше баллов\n• Task 2: 40 мин → Task 1: 20 мин\n• Оставь 2–3 минуты на проверку каждого задания\n\nTask 2 чеклист:\n☑ Ответил ли я на ВСЕ части вопроса?\n☑ Есть ли чёткий тезис?\n☑ Подкреплён ли каждый аргумент примером?\n☑ Используется ли разнообразная лексика?\n☑ Разнообразны ли структуры предложений?\n☑ Нет ли грамматических ошибок?\n\nЧастые ошибки:\n• Копировать слова из вопроса (нужно перефразировать)\n• Писать общо без конкретных примеров\n• Отклоняться от темы\n• Слишком неформальный язык\n• Не достичь нужного объёма слов`,
+      explanation: `Стратегия полного теста IELTS Writing:\n\nОбщая стратегия:\n• Начни с Task 2 — оно стоит больше баллов\n• Task 2: 40 мин → Task 1: 20 мин\n• Оставь 2–3 минуты на проверку каждого задания\n\nTask 2 чеклист:\n— Ответил ли я на ВСЕ части вопроса?\n— Есть ли чёткий тезис?\n— Подкреплён ли каждый аргумент примером?\n— Используется ли разнообразная лексика?\n— Разнообразны ли структуры предложений?\n— Нет ли грамматических ошибок?\n\nЧастые ошибки:\n• Копировать слова из вопроса (нужно перефразировать)\n• Писать общо без конкретных примеров\n• Отклоняться от темы\n• Слишком неформальный язык\n• Не достичь нужного объёма слов`,
       examples: [
         { english: 'Task 2 strategy: Read the question twice, identify the TYPE, plan 5 minutes, write 35 minutes, check 2 minutes.', russian: 'Стратегия Task 2: прочитай вопрос дважды, определи ТИП, планируй 5 минут, пиши 35 минут, проверяй 2 минуты.' },
         { english: 'Always paraphrase the question topic in your introduction — never copy it verbatim.', russian: 'Всегда перефразируй тему вопроса во введении — никогда не копируй дословно.' },
@@ -1584,7 +1586,7 @@ export const GRAMMAR_LESSONS: ModuleLesson[] = [
     id: 'gd-1-10', level: 'C1', module: 'grammar', block: 1, blockName: 'Грамматика глубоко',
     order: 10, title: 'Причастия и усложнённые конструкции', duration: '25 min',
     theory: {
-      explanation: `Причастия и усложнённые конструкции C1.\n\nPast Participle конструкции:\n• "Written in 1984, the novel remains relevant." (описывает "novel")\n• Пассивное значение: "Surrounded by difficulties, he persevered."\n\nPresent Participle:\n• "Having submitted the report, she relaxed." (= After she had submitted)\n• "Walking home, I noticed something strange." (= While I was walking)\n\nAbsolute constructions:\n• "The report complete, the team left."\n• "Weather permitting, the event will be outdoors."\n\nПридаточные → причастные:\n• "Because she was exhausted, she slept." → Exhausted, she slept.\n• "After he finished, he left." → Having finished, he left.\n\nДанглинг (ОШИБКА):\n✗ "Walking to the station, the rain started."\n✓ "Walking to the station, I got caught in the rain."`,
+      explanation: `Причастия и усложнённые конструкции C1.\n\nPast Participle конструкции:\n• "Written in 1984, the novel remains relevant." (описывает "novel")\n• Пассивное значение: "Surrounded by difficulties, he persevered."\n\nPresent Participle:\n• "Having submitted the report, she relaxed." (= After she had submitted)\n• "Walking home, I noticed something strange." (= While I was walking)\n\nAbsolute constructions:\n• "The report complete, the team left."\n• "Weather permitting, the event will be outdoors."\n\nПридаточные → причастные:\n• "Because she was exhausted, she slept." → Exhausted, she slept.\n• "After he finished, he left." → Having finished, he left.\n\nДанглинг (ОШИБКА):\nНеверно: "Walking to the station, the rain started."\nВерно: "Walking to the station, I got caught in the rain."`,
       examples: [
         { english: '"Founded in 1848, the university has produced many Nobel laureates."', russian: '"Основанный в 1848 году, университет подготовил многих лауреатов Нобелевской премии."' },
         { english: '"Having reviewed all evidence, the jury reached a unanimous verdict."', russian: '"Рассмотрев все доказательства, жюри пришло к единогласному вердикту."' },
@@ -1618,7 +1620,7 @@ export interface ModuleMeta {
   id: ModuleId
   title: string
   description: string
-  icon: string
+  icon: LucideIcon
   levels: string
   lessonCount: number
   lessons: ModuleLesson[]
@@ -1629,7 +1631,7 @@ export const MODULES: ModuleMeta[] = [
     id: 'business',
     title: 'Business English',
     description: 'Деловая коммуникация: переговоры, презентации, отчёты',
-    icon: '💼',
+    icon: Briefcase,
     levels: 'B1–C1',
     lessonCount: BUSINESS_LESSONS.length,
     lessons: BUSINESS_LESSONS,
@@ -1638,7 +1640,7 @@ export const MODULES: ModuleMeta[] = [
     id: 'academic',
     title: 'Academic Writing',
     description: 'IELTS и TOEFL: эссе, Task 1 & 2, академический стиль',
-    icon: '🎓',
+    icon: GraduationCap,
     levels: 'B2–C1',
     lessonCount: ACADEMIC_LESSONS.length,
     lessons: ACADEMIC_LESSONS,
@@ -1647,7 +1649,7 @@ export const MODULES: ModuleMeta[] = [
     id: 'speaking',
     title: 'Speaking Club',
     description: 'Разговорная практика: дискуссии, истории, переговоры',
-    icon: '🗣️',
+    icon: MessagesSquare,
     levels: 'A2–C1',
     lessonCount: SPEAKING_LESSONS.length,
     lessons: SPEAKING_LESSONS,
@@ -1656,7 +1658,7 @@ export const MODULES: ModuleMeta[] = [
     id: 'grammar',
     title: 'Grammar Deep Dive',
     description: 'Глубокое погружение: артикли, времена, условные, инверсия',
-    icon: '🔤',
+    icon: Type,
     levels: 'B1–C1',
     lessonCount: GRAMMAR_LESSONS.length,
     lessons: GRAMMAR_LESSONS,

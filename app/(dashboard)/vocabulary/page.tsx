@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence, useMotionValue, useTransform, useAnimation } from 'framer-motion'
-import { RotateCcw, Volume2, Check, X, Layers, BookOpen, Sparkles, Loader2, PenLine } from 'lucide-react'
+import { RotateCcw, Volume2, Check, X, Layers, BookOpen, Sparkles, Loader2, PenLine, PartyPopper, Link2 } from 'lucide-react'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 import { VOCABULARY, getWordsForLesson, type VocabWord } from '@/lib/vocabulary-data'
 import { speak, stopSpeaking } from '@/lib/speech'
@@ -94,12 +94,12 @@ function SwipeCard({ word, onKnow, onLearn }: {
   return (
     <div className="relative h-64 flex items-center justify-center">
       <motion.div style={{ opacity: bgRight }}
-        className="absolute left-4 top-4 px-3 py-1 bg-green-500/20 border border-green-500/40 rounded-xl text-green-400 text-sm font-bold z-10">
-        ✓ Знаю
+        className="absolute left-4 top-4 px-3 py-1 bg-green-500/20 border border-green-500/40 rounded-xl text-green-400 text-sm font-bold z-10 inline-flex items-center gap-1.5">
+        <Check className="w-4 h-4" strokeWidth={2.5} /> Знаю
       </motion.div>
       <motion.div style={{ opacity: bgLeft }}
-        className="absolute right-4 top-4 px-3 py-1 bg-red-500/20 border border-red-500/40 rounded-xl text-red-400 text-sm font-bold z-10">
-        ✗ Учу
+        className="absolute right-4 top-4 px-3 py-1 bg-red-500/20 border border-red-500/40 rounded-xl text-red-400 text-sm font-bold z-10 inline-flex items-center gap-1.5">
+        <X className="w-4 h-4" strokeWidth={2.5} /> Учу
       </motion.div>
       <motion.div
         drag="x"
@@ -465,7 +465,7 @@ export default function VocabularyPage() {
             </>
           ) : (
             <div className="text-center py-12">
-              <p className="text-3xl mb-3">🎉</p>
+              <PartyPopper className="w-8 h-8 mx-auto mb-3 text-primary" strokeWidth={1.5} />
               <p className="text-white font-semibold mb-1">Все карточки пройдены!</p>
               <p className="text-muted-foreground text-sm mb-4">Слова добавлены в интервальное повторение</p>
               <button onClick={() => { setSwipeIdx(0); setSwipeQueue(shuffle(VOCABULARY).slice(0, 20)) }}
@@ -565,7 +565,7 @@ export default function VocabularyPage() {
             {lessonDone && (
               <motion.div key="lesson-done" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
                 className="text-center py-12 bg-white/[0.04] border border-white/10 rounded-2xl">
-                <div className="text-4xl mb-4">🎉</div>
+                <PartyPopper className="w-10 h-10 mx-auto mb-4 text-primary" strokeWidth={1.5} />
                 <h2 className="text-white font-bold text-xl mb-2">Урок завершён!</h2>
                 <p className="text-muted-foreground mb-6">Ты прошёл {lessonWords.length} слов</p>
                 <button onClick={reshuffleLesson}
@@ -590,7 +590,7 @@ export default function VocabularyPage() {
                       <p className="text-muted-foreground text-xs mb-4">Нажми, чтобы узнать значение</p>
                       <button onClick={e => { e.stopPropagation(); handleListen(lessonCard.word) }}
                         className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#6366f1]/30 border border-[#6366f1]/50 text-[#a5b4fc] hover:bg-[#6366f1]/50 font-semibold text-sm transition-all">
-                        <Volume2 className="w-4 h-4" /> {speaking ? '⏹ Стоп' : '🔊 Скажи вслух!'}
+                        <Volume2 className="w-4 h-4" /> {speaking ? 'Стоп' : 'Скажи вслух!'}
                       </button>
                     </div>
                     <div className="absolute inset-0 bg-white/[0.04] border border-white/10 rounded-2xl flex flex-col items-center justify-start overflow-y-auto p-5"
@@ -624,7 +624,7 @@ export default function VocabularyPage() {
                         ) : (
                           <button onClick={(e) => { e.stopPropagation(); fetchCollocations(lessonCard.word) }}
                             className="text-[11px] text-primary/70 hover:text-primary flex items-center gap-1 mx-auto">
-                            {loadingColloc === lessonCard.word ? <span className="animate-spin inline-block">⟳</span> : '🔗'} Коллокации
+                            {loadingColloc === lessonCard.word ? <Loader2 className="w-3 h-3 animate-spin" /> : <Link2 className="w-3 h-3" strokeWidth={2} />} Коллокации
                           </button>
                         )}
                       </div>
@@ -676,7 +676,7 @@ export default function VocabularyPage() {
             {done && (
               <motion.div key="done" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
                 className="text-center py-12 bg-white/[0.04] border border-white/10 rounded-2xl">
-                <div className="text-4xl mb-4">🎉</div>
+                <PartyPopper className="w-10 h-10 mx-auto mb-4 text-primary" strokeWidth={1.5} />
                 <h2 className="text-white font-bold text-xl mb-2">Сессия завершена!</h2>
                 <p className="text-muted-foreground mb-6">{totalDue > 0 ? `Ты прошёл ${totalDue} карточек` : 'Нет карточек для повторения'}</p>
                 <button onClick={restart}
@@ -710,7 +710,7 @@ export default function VocabularyPage() {
                       <p className="text-muted-foreground text-xs mb-4">Нажми, чтобы узнать значение</p>
                       <button onClick={e => { e.stopPropagation(); handleListen(card.word) }}
                         className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#6366f1]/30 border border-[#6366f1]/50 text-[#a5b4fc] hover:bg-[#6366f1]/50 font-semibold text-sm transition-all">
-                        <Volume2 className="w-4 h-4" /> {speaking ? '⏹ Стоп' : '🔊 Скажи вслух!'}
+                        <Volume2 className="w-4 h-4" /> {speaking ? 'Стоп' : 'Скажи вслух!'}
                       </button>
                     </div>
                     <div className="absolute inset-0 bg-white/[0.04] border border-white/10 rounded-2xl flex flex-col items-center justify-start overflow-y-auto p-5"
@@ -753,7 +753,7 @@ export default function VocabularyPage() {
                         ) : (
                           <button onClick={(e) => { e.stopPropagation(); fetchCollocations(card.word) }}
                             className="text-[11px] text-primary/70 hover:text-primary flex items-center gap-1">
-                            {loadingColloc === card.word ? <span className="animate-spin inline-block">⟳</span> : '🔗'} Коллокации
+                            {loadingColloc === card.word ? <Loader2 className="w-3 h-3 animate-spin" /> : <Link2 className="w-3 h-3" strokeWidth={2} />} Коллокации
                           </button>
                         )}
                       </div>

@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { BookOpen, Lightbulb, BookText, Check, X, ChevronDown, ChevronRight } from 'lucide-react'
 
 interface Exercise {
   exercise: string
@@ -82,7 +83,7 @@ export function GrammarExercise({ topic, level, exercise, onNext, onCorrect, onW
       </div>
 
       {exercise.explanation && !result && (
-        <p className="text-muted-foreground text-sm italic mb-4">📚 {exercise.explanation}</p>
+        <p className="text-muted-foreground text-sm italic mb-4 flex items-start gap-1.5"><BookOpen className="w-4 h-4 shrink-0 mt-0.5" strokeWidth={1.75} /> {exercise.explanation}</p>
       )}
 
       {!result && (
@@ -99,13 +100,13 @@ export function GrammarExercise({ topic, level, exercise, onNext, onCorrect, onW
 
           {exercise.hint && (
             <button onClick={() => setShowHint(!showHint)}
-              className="text-muted-foreground text-xs hover:text-muted-foreground transition-colors mb-3 block">
-              {showHint ? '▼ Скрыть подсказку' : '▶ Показать подсказку'}
+              className="text-muted-foreground text-xs hover:text-muted-foreground transition-colors mb-3 inline-flex items-center gap-1">
+              {showHint ? <><ChevronDown className="w-3.5 h-3.5" /> Скрыть подсказку</> : <><ChevronRight className="w-3.5 h-3.5" /> Показать подсказку</>}
             </button>
           )}
           {showHint && exercise.hint && (
-            <p className="text-muted-foreground text-sm bg-white/[0.03] rounded-lg px-3 py-2 mb-3">
-              💡 {exercise.hint}
+            <p className="text-muted-foreground text-sm bg-white/[0.03] rounded-lg px-3 py-2 mb-3 flex items-start gap-1.5">
+              <Lightbulb className="w-4 h-4 shrink-0 mt-0.5 text-[#F59E0B]" strokeWidth={1.75} /> {exercise.hint}
             </p>
           )}
 
@@ -121,12 +122,12 @@ export function GrammarExercise({ topic, level, exercise, onNext, onCorrect, onW
         <div className={`rounded-xl p-4 mb-4 border ${
           result.isCorrect ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/10 border-red-500/20'
         }`}>
-          <p className={`font-semibold mb-1 ${result.isCorrect ? 'text-green-400' : 'text-red-400'}`}>
-            {result.isCorrect ? '✓ Правильно!' : '✗ Неправильно'}
+          <p className={`font-semibold mb-1 inline-flex items-center gap-1.5 ${result.isCorrect ? 'text-green-400' : 'text-red-400'}`}>
+            {result.isCorrect ? <><Check className="w-4 h-4" strokeWidth={2.5} /> Правильно!</> : <><X className="w-4 h-4" strokeWidth={2.5} /> Неправильно</>}
           </p>
           <p className="text-muted-foreground text-sm">{result.feedback}</p>
           {result.explanation && (
-            <p className="text-muted-foreground text-sm mt-2">📖 {result.explanation}</p>
+            <p className="text-muted-foreground text-sm mt-2 flex items-start gap-1.5"><BookText className="w-4 h-4 shrink-0 mt-0.5" strokeWidth={1.75} /> {result.explanation}</p>
           )}
           {result.betterAnswer && !result.isCorrect && (
             <p className="text-muted-foreground text-sm mt-2">

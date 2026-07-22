@@ -145,7 +145,7 @@ export default function ProfilePage() {
             </div>
             {levelInfo && (
               <p className="text-muted-foreground text-xs mt-0.5">
-                Уровень {levelInfo.level} · {levelInfo.name.replace(/[🌱📖⚡🎯🚀💎🏆👑]/g, "").trim()}
+                Уровень {levelInfo.level} · {levelInfo.name}
               </p>
             )}
           </div>

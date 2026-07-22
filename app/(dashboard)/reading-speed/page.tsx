@@ -1,5 +1,6 @@
 'use client'
 import { useState, useRef } from 'react'
+import { Check, Rocket, ThumbsUp, BookOpen, Turtle } from 'lucide-react'
 
 const TEXTS = [
   {
@@ -120,8 +121,8 @@ export default function ReadingSpeedPage() {
             <p className="text-[#e2e8f0] text-lg leading-8">{text.text}</p>
           </div>
           <button onClick={finishReading}
-            className="w-full py-4 bg-green-500 hover:bg-green-400 text-white font-semibold rounded-2xl text-lg transition-colors">
-            ✓ Прочитал
+            className="w-full py-4 bg-green-500 hover:bg-green-400 text-white font-semibold rounded-2xl text-lg transition-colors inline-flex items-center justify-center gap-2">
+            <Check className="w-5 h-5" strokeWidth={2.5} /> Прочитал
           </button>
         </>
       )}
@@ -150,11 +151,11 @@ export default function ReadingSpeedPage() {
             </div>
 
             <div className="mt-6 p-4 rounded-xl bg-white/[0.03] text-left">
-              <p className="text-white font-semibold mb-1">
-                {percentage >= 120 ? '🚀 Отлично! Ты читаешь быстрее нормы!' :
-                 percentage >= 90 ? '👍 Хороший результат, близко к норме' :
-                 percentage >= 60 ? '📖 Продолжай практиковаться' :
-                 '🐌 Попробуй читать чуть быстрее'}
+              <p className="text-white font-semibold mb-1 inline-flex items-center gap-1.5">
+                {percentage >= 120 ? <><Rocket className="w-4 h-4" strokeWidth={1.75} /> Отлично! Ты читаешь быстрее нормы!</> :
+                 percentage >= 90 ? <><ThumbsUp className="w-4 h-4" strokeWidth={1.75} /> Хороший результат, близко к норме</> :
+                 percentage >= 60 ? <><BookOpen className="w-4 h-4" strokeWidth={1.75} /> Продолжай практиковаться</> :
+                 <><Turtle className="w-4 h-4" strokeWidth={1.75} /> Попробуй читать чуть быстрее</>}
               </p>
               <p className="text-muted-foreground text-sm">
                 Норма для уровня {text.level}: {norm} слов/мин.

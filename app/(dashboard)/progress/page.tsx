@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import {
   Flame, Zap, BookOpen, MessageSquare,
   Lock, Trophy, Calendar, ArrowRight, TrendingUp, Sparkles, Loader2,
+  CheckCircle2, Check, Target, type LucideIcon,
 } from 'lucide-react'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 import Link from 'next/link'
@@ -144,10 +145,10 @@ export default function ProgressPage() {
   const days      = last7Days()
   const maxMins   = Math.max(...weekData.map((d) => d.minutes), 1)
 
-  const achievements = [
+  const achievements: { id: string; icon: LucideIcon; title: string; desc: string; unlocked: boolean; progress: number }[] = [
     {
       id: 'first_conv',
-      emoji: '💬',
+      icon: MessageSquare,
       title: 'First Conversation',
       desc: 'Chat with Zhan at least once',
       unlocked: convCount >= 1,
@@ -155,7 +156,7 @@ export default function ProgressPage() {
     },
     {
       id: 'word_collector',
-      emoji: '📚',
+      icon: BookOpen,
       title: 'Word Collector',
       desc: 'Add 10 words to vocabulary',
       unlocked: vocabCount >= 10,
@@ -163,7 +164,7 @@ export default function ProgressPage() {
     },
     {
       id: 'week_warrior',
-      emoji: '🔥',
+      icon: Flame,
       title: 'Week Warrior',
       desc: '7 day streak',
       unlocked: streak >= 7,
@@ -171,7 +172,7 @@ export default function ProgressPage() {
     },
     {
       id: 'grammar_master',
-      emoji: '✅',
+      icon: CheckCircle2,
       title: 'Grammar Master',
       desc: 'Complete 5 lessons',
       unlocked: lessonsCount >= 5,
@@ -196,7 +197,7 @@ export default function ProgressPage() {
       <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white">My Progress 📈</h1>
+            <h1 className="text-2xl sm:text-3xl font-black text-white">My Progress</h1>
             <p className="text-muted-foreground text-sm mt-1">Track your English learning journey</p>
           </div>
           <div
@@ -289,7 +290,7 @@ export default function ProgressPage() {
                   }}
                 >
                   {l.level}
-                  {reached && !current && <div className="text-[8px] mt-0.5 opacity-60">✓</div>}
+                  {reached && !current && <Check className="w-2.5 h-2.5 mt-0.5 opacity-60" strokeWidth={3} />}
                   {current && <div className="text-[8px] mt-0.5">you</div>}
                 </div>
               )
@@ -417,8 +418,8 @@ export default function ProgressPage() {
                 }`}
               >
                 <div className="flex items-center gap-3 mb-3">
-                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-2xl ${ach.unlocked ? '' : 'grayscale opacity-40'}`}>
-                    {ach.unlocked ? ach.emoji : <Lock className="w-5 h-5 text-[#334155]" />}
+                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${ach.unlocked ? 'bg-primary/15' : 'bg-white/[0.03]'}`}>
+                    {ach.unlocked ? <ach.icon className="w-5 h-5 text-[#a5b4fc]" strokeWidth={1.75} /> : <Lock className="w-5 h-5 text-[#334155]" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className={`text-sm font-bold leading-snug ${ach.unlocked ? 'text-white' : 'text-muted-foreground'}`}>
@@ -428,7 +429,7 @@ export default function ProgressPage() {
                   </div>
                   {ach.unlocked && (
                     <div className="w-6 h-6 rounded-full bg-[#10b981]/20 flex items-center justify-center shrink-0">
-                      <span className="text-[#10b981] text-xs">✓</span>
+                      <Check className="w-3.5 h-3.5 text-[#10b981]" strokeWidth={3} />
                     </div>
                   )}
                 </div>
@@ -467,7 +468,7 @@ export default function ProgressPage() {
 
           {recentConvs.length === 0 ? (
             <div className="py-12 flex flex-col items-center gap-3 text-center px-6">
-              <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-xl">💬</div>
+              <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center"><MessageSquare className="w-5 h-5 text-muted-foreground" strokeWidth={1.75} /></div>
               <p className="text-white font-semibold text-sm">No activity yet</p>
               <p className="text-muted-foreground text-xs">Start your first lesson or chat with Zhan!</p>
               <Link href="/ai-tutor">
@@ -512,7 +513,7 @@ export default function ProgressPage() {
           <div className="space-y-3">
             <p className="text-sm text-white/80">{insight.insight}</p>
             <div className="p-3 bg-[#6366f1]/5 rounded-xl border border-[#6366f1]/10">
-              <p className="text-xs font-medium text-[#818cf8] mb-1">🎯 Следующий фокус:</p>
+              <p className="text-xs font-medium text-[#818cf8] mb-1 flex items-center gap-1.5"><Target className="w-3.5 h-3.5" strokeWidth={2} /> Следующий фокус:</p>
               <p className="text-xs text-white/70">{insight.focus}</p>
             </div>
             <button onClick={()=>setInsight(null)} className="text-xs text-[#64748b] hover:text-white">Обновить</button>

@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { IDIOMS, IDIOM_CATEGORIES } from '@/lib/idioms-data'
-import { Sparkles, Loader2 } from 'lucide-react'
+import { Sparkles, Loader2, Check, Plus, Volume2 } from 'lucide-react'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 
 export default function IdiomsPage() {
@@ -125,17 +125,17 @@ export default function IdiomsPage() {
                 <span className="text-xs text-muted-foreground">{idiom.category} · {idiom.level}</span>
               </div>
               <button onClick={e => { e.stopPropagation(); toggleLearn(idiom.id) }}
-                className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs transition-all ${
+                className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
                   learned.has(idiom.id) ? 'bg-green-500/20 text-green-400' : 'bg-white/[0.06] text-muted-foreground hover:text-white'
                 }`}>
-                {learned.has(idiom.id) ? '✓' : '+'}
+                {learned.has(idiom.id) ? <Check className="w-3.5 h-3.5" strokeWidth={2.5} /> : <Plus className="w-3.5 h-3.5" strokeWidth={2} />}
               </button>
             </div>
 
             <div className="flex items-center gap-2 mb-2">
               <p className="text-white font-bold text-base">{idiom.idiom}</p>
               <button onClick={e => { e.stopPropagation(); speak(idiom.idiom) }}
-                className="text-muted-foreground hover:text-muted-foreground transition-colors text-sm">🔊</button>
+                className="text-muted-foreground hover:text-white transition-colors"><Volume2 className="w-4 h-4" strokeWidth={1.75} /></button>
             </div>
 
             {flipped.has(idiom.id) ? (

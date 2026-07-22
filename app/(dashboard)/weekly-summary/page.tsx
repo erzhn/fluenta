@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Sparkles, Loader2 } from 'lucide-react'
+import { Sparkles, Loader2, Clock, Star, Flame, Target, BookOpen, Lightbulb, type LucideIcon } from 'lucide-react'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 import { supabase } from '@/lib/supabase'
 
@@ -95,13 +95,13 @@ export default function WeeklySummaryPage() {
       </p>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
-        {[
-          { label: 'Минут', value: data.totalMinutes, icon: '⏱️' },
-          { label: 'XP заработано', value: data.totalXP, icon: '⭐' },
-          { label: 'Активных дней', value: data.activeDays, icon: '🔥' },
-        ].map(s => (
+        {([
+          { label: 'Минут', value: data.totalMinutes, icon: Clock, color: '#818cf8' },
+          { label: 'XP заработано', value: data.totalXP, icon: Star, color: '#f59e0b' },
+          { label: 'Активных дней', value: data.activeDays, icon: Flame, color: '#ef4444' },
+        ] as { label: string; value: number; icon: LucideIcon; color: string }[]).map(s => (
           <div key={s.label} className="bg-white/[0.04] border border-white/10 rounded-2xl p-4 text-center">
-            <p className="text-2xl mb-1">{s.icon}</p>
+            <s.icon className="w-6 h-6 mx-auto mb-1.5" strokeWidth={1.75} style={{ color: s.color }} />
             <p className="text-2xl font-bold text-white">{s.value}</p>
             <p className="text-muted-foreground text-xs mt-1">{s.label}</p>
           </div>
@@ -130,10 +130,10 @@ export default function WeeklySummaryPage() {
       </div>
 
       <div className="bg-gradient-to-r from-[#6366f1]/10 to-[#8b5cf6]/10 border border-primary/20 rounded-2xl p-5">
-        <p className="text-white font-semibold mb-2">
+        <p className="text-white font-semibold mb-2 flex items-center gap-1.5">
           {data.totalMinutes > 0
-            ? `🎯 Лучший день недели: ${data.bestDay}`
-            : '📚 Начни заниматься!'}
+            ? <><Target className="w-4 h-4 text-primary" strokeWidth={2} /> Лучший день недели: {data.bestDay}</>
+            : <><BookOpen className="w-4 h-4 text-primary" strokeWidth={1.75} /> Начни заниматься!</>}
         </p>
         <p className="text-muted-foreground text-sm">
           {data.totalMinutes >= 140
@@ -154,9 +154,9 @@ export default function WeeklySummaryPage() {
         </div>
         {aiInsight?(
           <div className="space-y-2">
-            <p className="text-sm text-white/80">{aiInsight.emoji} {aiInsight.analysis}</p>
+            <p className="text-sm text-white/80">{aiInsight.analysis}</p>
             <div className="p-3 bg-[#6366f1]/5 rounded-xl border border-[#6366f1]/10">
-              <p className="text-xs text-white/70">💡 {aiInsight.tip}</p>
+              <p className="text-xs text-white/70 flex items-start gap-1.5"><Lightbulb className="w-3.5 h-3.5 shrink-0 mt-0.5" strokeWidth={2} /> {aiInsight.tip}</p>
             </div>
             <button onClick={()=>setAiInsight(null)} className="text-xs text-[#64748b] hover:text-white">Обновить</button>
           </div>

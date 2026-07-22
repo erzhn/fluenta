@@ -2,12 +2,17 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
+import {
+  Target, BookOpen, GraduationCap, Flame, Trophy, PenLine, Library,
+  Zap, Gem, Crown, Star, Sparkles, Rocket, Medal, Lock, Check,
+  type LucideIcon,
+} from 'lucide-react'
 
 interface Badge {
   id: string
   title: string
   description: string
-  icon: string
+  icon: LucideIcon
   color: string
   unlocked: boolean
   progress?: number
@@ -50,85 +55,85 @@ function buildBadges(s: UserStats): Badge[] {
 
   return [
     {
-      id: 'first-lesson', title: 'Первый шаг', icon: '🎯', color: '#6366f1',
+      id: 'first-lesson', title: 'Первый шаг', icon: Target, color: '#6366f1',
       description: 'Заверши свой первый урок',
       unlocked: s.lessonsCompleted >= 1,
       progress: Math.min(s.lessonsCompleted, 1), total: 1,
     },
     {
-      id: 'lessons-10', title: '10 уроков', icon: '📖', color: '#8b5cf6',
+      id: 'lessons-10', title: '10 уроков', icon: BookOpen, color: '#8b5cf6',
       description: 'Заверши 10 уроков',
       unlocked: s.lessonsCompleted >= 10,
       progress: Math.min(s.lessonsCompleted, 10), total: 10,
     },
     {
-      id: 'lessons-50', title: '50 уроков', icon: '🎓', color: '#6366f1',
+      id: 'lessons-50', title: '50 уроков', icon: GraduationCap, color: '#6366f1',
       description: 'Заверши 50 уроков',
       unlocked: s.lessonsCompleted >= 50,
       progress: Math.min(s.lessonsCompleted, 50), total: 50,
     },
     {
-      id: 'week-streak', title: 'Неделя подряд', icon: '🔥', color: '#f59e0b',
+      id: 'week-streak', title: 'Неделя подряд', icon: Flame, color: '#f59e0b',
       description: '7 дней стрика',
       unlocked: s.streak >= 7,
       progress: Math.min(s.streak, 7), total: 7,
     },
     {
-      id: 'month-streak', title: 'Месяц подряд', icon: '🏆', color: '#f59e0b',
+      id: 'month-streak', title: 'Месяц подряд', icon: Trophy, color: '#f59e0b',
       description: '30 дней стрика',
       unlocked: s.streak >= 30,
       progress: Math.min(s.streak, 30), total: 30,
     },
     {
-      id: 'vocab-10', title: 'Словарный старт', icon: '📝', color: '#10b981',
+      id: 'vocab-10', title: 'Словарный старт', icon: PenLine, color: '#10b981',
       description: 'Добавь 10 слов в словарь',
       unlocked: s.vocabCount >= 10,
       progress: Math.min(s.vocabCount, 10), total: 10,
     },
     {
-      id: 'vocab-50', title: 'Словарный запас', icon: '📚', color: '#8b5cf6',
+      id: 'vocab-50', title: 'Словарный запас', icon: Library, color: '#8b5cf6',
       description: 'Добавь 50 слов в словарь',
       unlocked: s.vocabCount >= 50,
       progress: Math.min(s.vocabCount, 50), total: 50,
     },
     {
-      id: 'xp-500', title: 'Первые 500 XP', icon: '⚡', color: '#6366f1',
+      id: 'xp-500', title: 'Первые 500 XP', icon: Zap, color: '#6366f1',
       description: 'Набери 500 XP',
       unlocked: s.xp >= 500,
       progress: Math.min(s.xp, 500), total: 500,
     },
     {
-      id: 'xp-2000', title: '2000 XP', icon: '💎', color: '#06b6d4',
+      id: 'xp-2000', title: '2000 XP', icon: Gem, color: '#06b6d4',
       description: 'Набери 2000 XP',
       unlocked: s.xp >= 2000,
       progress: Math.min(s.xp, 2000), total: 2000,
     },
     {
-      id: 'xp-5000', title: 'Мастер XP', icon: '👑', color: '#f59e0b',
+      id: 'xp-5000', title: 'Мастер XP', icon: Crown, color: '#f59e0b',
       description: 'Набери 5000 XP',
       unlocked: s.xp >= 5000,
       progress: Math.min(s.xp, 5000), total: 5000,
     },
     {
-      id: 'level-a2', title: 'Elementary', icon: '⭐', color: '#3b82f6',
+      id: 'level-a2', title: 'Elementary', icon: Star, color: '#3b82f6',
       description: 'Достигни уровня A2',
       unlocked: lvlIdx >= 1,
       progress: Math.min(lvlIdx, 1), total: 1,
     },
     {
-      id: 'level-b1', title: 'Intermediate', icon: '🌟', color: '#8b5cf6',
+      id: 'level-b1', title: 'Intermediate', icon: Sparkles, color: '#8b5cf6',
       description: 'Достигни уровня B1',
       unlocked: lvlIdx >= 2,
       progress: Math.min(lvlIdx, 2), total: 2,
     },
     {
-      id: 'level-b2', title: 'Upper-Int', icon: '🚀', color: '#6366f1',
+      id: 'level-b2', title: 'Upper-Int', icon: Rocket, color: '#6366f1',
       description: 'Достигни уровня B2',
       unlocked: lvlIdx >= 3,
       progress: Math.min(lvlIdx, 3), total: 3,
     },
     {
-      id: 'level-c1', title: 'Advanced', icon: '🏅', color: '#ef4444',
+      id: 'level-c1', title: 'Advanced', icon: Medal, color: '#ef4444',
       description: 'Достигни уровня C1',
       unlocked: lvlIdx >= 4,
       progress: Math.min(lvlIdx, 4), total: 4,
@@ -185,7 +190,7 @@ export default function AchievementsPage() {
                 ? 'bg-primary border-primary text-white'
                 : 'bg-white/[0.04] border-white/10 text-muted-foreground hover:text-white'
             }`}>
-            {f === 'all' ? 'Все' : f === 'unlocked' ? '✓ Получены' : '🔒 Заблокированы'}
+            {f === 'all' ? 'Все' : f === 'unlocked' ? 'Получены' : 'Заблокированы'}
           </button>
         ))}
       </div>
@@ -203,13 +208,14 @@ export default function AchievementsPage() {
                 : 'bg-white/[0.02] border-white/[0.06] opacity-60'
             }`}>
 
-            <div className="w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center text-3xl"
+            <div className="w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center"
               style={{
                 background: badge.unlocked ? `${badge.color}20` : 'rgba(255,255,255,0.04)',
                 border: `1.5px solid ${badge.unlocked ? badge.color + '40' : 'rgba(255,255,255,0.08)'}`,
-                filter: badge.unlocked ? 'none' : 'grayscale(1)',
               }}>
-              {badge.unlocked ? badge.icon : '🔒'}
+              {badge.unlocked
+                ? <badge.icon className="w-7 h-7" strokeWidth={1.75} style={{ color: badge.color }} />
+                : <Lock className="w-6 h-6 text-[#334155]" strokeWidth={1.75} />}
             </div>
 
             <p className="text-white text-sm font-semibold mb-1">{badge.title}</p>
@@ -230,8 +236,8 @@ export default function AchievementsPage() {
 
             {badge.unlocked && (
               <div className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-green-500
-                flex items-center justify-center text-xs text-white shadow-lg shadow-green-500/30">
-                ✓
+                flex items-center justify-center text-white shadow-lg shadow-green-500/30">
+                <Check className="w-3.5 h-3.5" strokeWidth={3} />
               </div>
             )}
           </motion.div>

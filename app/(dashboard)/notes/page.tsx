@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { LESSONS } from '@/lib/lessons-data'
-import { Sparkles, Loader2 } from 'lucide-react'
+import { Sparkles, Loader2, StickyNote, X, Lightbulb } from 'lucide-react'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 
 export default function NotesPage() {
@@ -45,10 +45,10 @@ export default function NotesPage() {
 
       {notes.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-4xl mb-4">📝</p>
+          <StickyNote className="w-10 h-10 mx-auto mb-4 text-muted-foreground" strokeWidth={1.5} />
           <p className="text-foreground font-semibold mb-2">Заметок пока нет</p>
-          <p className="text-muted-foreground text-sm mb-6">
-            Открой любой урок и нажми на иконку 📝 внизу справа
+          <p className="text-muted-foreground text-sm mb-6 inline-flex items-center gap-1.5 flex-wrap justify-center">
+            Открой любой урок и нажми на иконку <StickyNote className="w-3.5 h-3.5 inline" strokeWidth={1.75} /> внизу справа
           </p>
           <Link href="/lessons"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:opacity-90 transition-opacity">
@@ -65,8 +65,8 @@ export default function NotesPage() {
                   {note.title}
                 </Link>
                 <button onClick={() => deleteNote(note.lessonId)}
-                  className="text-muted-foreground hover:text-red-400 transition-colors text-sm ml-2 shrink-0">
-                  ✕
+                  className="text-muted-foreground hover:text-red-400 transition-colors ml-2 shrink-0">
+                  <X className="w-4 h-4" />
                 </button>
               </div>
               <p className="text-muted-foreground text-sm whitespace-pre-wrap leading-relaxed">
@@ -78,7 +78,7 @@ export default function NotesPage() {
                     <p className="text-xs text-white/70 mb-1">{aiSummaries[note.lessonId].summary}</p>
                     <div className="flex flex-wrap gap-1">
                       {aiSummaries[note.lessonId].takeaways.map((t,i)=>(
-                        <span key={i} className="text-xs bg-[#6366f1]/10 text-[#818cf8] px-2 py-0.5 rounded-full">💡 {t}</span>
+                        <span key={i} className="inline-flex items-center gap-1 text-xs bg-[#6366f1]/10 text-[#818cf8] px-2 py-0.5 rounded-full"><Lightbulb className="w-3 h-3" strokeWidth={2} /> {t}</span>
                       ))}
                     </div>
                   </div>

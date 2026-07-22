@@ -5,7 +5,7 @@ import Link from "next/link";
 import {
   Brain, BookOpen, Layers, Mic, PenLine,
   ChevronRight, Flame, Zap, ArrowRight,
-  Sparkles, Loader2,
+  Sparkles, Loader2, Bot,
 } from "lucide-react";
 import { useAIGenerate } from '@/hooks/useAIGenerate';
 import { supabase } from "@/lib/supabase";
@@ -81,7 +81,7 @@ export default function DashboardPage() {
 
       {/* Heading */}
       <div className="anim-up">
-        <p className="text-sm text-muted-foreground mb-1">{greeting} 👋</p>
+        <p className="text-sm text-muted-foreground mb-1">{greeting}</p>
         <h1 className="text-3xl font-bold tracking-tight text-foreground leading-tight">
           {firstName
             ? `Привет, ${firstName}. Продолжим?`
@@ -129,7 +129,7 @@ export default function DashboardPage() {
         <Link href="/vocabulary" className="anim-up delay-2 block">
           <div className="card-clean p-4 flex items-center gap-4 hover:shadow-md transition-shadow"
                style={{ borderLeft: "3px solid var(--primary)" }}>
-            <span className="text-2xl">📚</span>
+            <span className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-primary/10"><BookOpen className="w-5 h-5 text-primary" strokeWidth={1.75} /></span>
             <div className="flex-1">
               <p className="text-[15px] font-semibold text-foreground">Пора повторить слова</p>
               <p className="text-sm text-muted-foreground">{vocabDue} слов ждут</p>
@@ -174,7 +174,7 @@ export default function DashboardPage() {
       {/* AI совет дня */}
       <div className="card-clean p-5">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-sm font-semibold text-foreground flex items-center gap-2">🤖 AI совет дня</p>
+          <p className="text-sm font-semibold text-foreground flex items-center gap-2"><Bot className="w-4 h-4 text-primary" strokeWidth={1.75} /> AI совет дня</p>
           <button onClick={getTip} disabled={tipLoading}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-primary/10 hover:bg-primary/20 border border-primary/20 text-primary rounded-xl min-h-[36px] disabled:opacity-50">
             {tipLoading?<Loader2 className="w-3 h-3 animate-spin"/>:<Sparkles className="w-3 h-3"/>}
@@ -183,7 +183,7 @@ export default function DashboardPage() {
         </div>
         {dailyTip?(
           <div>
-            <p className="text-sm text-foreground/80">{dailyTip.emoji} {dailyTip.tip}</p>
+            <p className="text-sm text-foreground/80">{dailyTip.tip}</p>
             {dailyTip.example&&<p className="text-xs text-muted-foreground italic border-l-2 border-primary/30 pl-3 mt-2">{dailyTip.example}</p>}
           </div>
         ):<p className="text-sm text-muted-foreground">Получи персональный совет по изучению английского</p>}

@@ -1,15 +1,21 @@
+import type { LucideIcon } from "lucide-react";
+import {
+  Sprout, Flame, MessageCircle, BookOpen, Star, Target,
+  Rocket, Mic, PenLine, Trophy, GraduationCap, Crown,
+} from "lucide-react";
+
 // ─── XP / Level System ────────────────────────────────────────────────────────
 export const XP_LEVELS = [0, 500, 1200, 2200, 3500, 5000, 7000, 10000] as const;
 
 export const LEVEL_NAMES = [
-  "Новичок 🌱",
-  "Начинающий 📖",
-  "Элементарный ⚡",
-  "Средний 🎯",
-  "Выше среднего 🚀",
-  "Продвинутый 💎",
-  "Эксперт 🏆",
-  "Мастер 👑",
+  "Новичок",
+  "Начинающий",
+  "Элементарный",
+  "Средний",
+  "Выше среднего",
+  "Продвинутый",
+  "Эксперт",
+  "Мастер",
 ] as const;
 
 export const XP_REWARDS = {
@@ -74,7 +80,7 @@ export function getNextMilestone(xp: number): number {
 // ─── Achievements ─────────────────────────────────────────────────────────────
 export interface AchievementDef {
   id: string;
-  icon: string;
+  icon: LucideIcon;
   title: string;
   desc: string;
   condition_type: string;
@@ -89,18 +95,18 @@ export interface AchievementWithStatus extends AchievementDef {
 }
 
 export const ACHIEVEMENTS: AchievementDef[] = [
-  { id: "first_step",   icon: "🌱", title: "Первый шаг",      desc: "Заверши первый урок",              condition_type: "lessons_completed",     condition_value: 1,  xp_reward: 50  },
-  { id: "on_fire",      icon: "🔥", title: "В огне",           desc: "7 дней подряд",                    condition_type: "streak_days",            condition_value: 7,  xp_reward: 150 },
-  { id: "chatterbox",   icon: "💬", title: "Болтун",           desc: "50 сообщений с AI",                condition_type: "ai_messages",            condition_value: 50, xp_reward: 100 },
-  { id: "bookworm",     icon: "📚", title: "Книжный червь",    desc: "10 уроков завершено",              condition_type: "lessons_completed",     condition_value: 10, xp_reward: 200 },
-  { id: "perfect",      icon: "⭐", title: "Перфекционист",    desc: "5 идеальных результатов подряд",   condition_type: "perfect_scores",         condition_value: 5,  xp_reward: 150 },
-  { id: "focused",      icon: "🎯", title: "Сфокусированный",  desc: "7 дней выполнял дневную цель",     condition_type: "goal_days",              condition_value: 7,  xp_reward: 200 },
-  { id: "rocket",       icon: "🚀", title: "Ракета",           desc: "Достиг уровня B1",                 condition_type: "cefr_b1",                condition_value: 1,  xp_reward: 300 },
-  { id: "speaker",      icon: "🗣️", title: "Оратор",           desc: "10 упражнений на произношение",    condition_type: "pronunciation_exercises",condition_value: 10, xp_reward: 150 },
-  { id: "writer",       icon: "✍️", title: "Писатель",         desc: "5 письменных работ с AI",          condition_type: "writing_sessions",       condition_value: 5,  xp_reward: 100 },
-  { id: "champion",     icon: "🏆", title: "Чемпион",          desc: "30 дней подряд",                   condition_type: "streak_days",            condition_value: 30, xp_reward: 500 },
-  { id: "graduate",     icon: "🎓", title: "Выпускник",        desc: "Все уроки одного уровня пройдены", condition_type: "level_complete",         condition_value: 1,  xp_reward: 400 },
-  { id: "master",       icon: "👑", title: "Мастер",           desc: "Достиг уровня C1",                 condition_type: "cefr_c1",                condition_value: 1,  xp_reward: 1000},
+  { id: "first_step",   icon: Sprout,         title: "Первый шаг",      desc: "Заверши первый урок",              condition_type: "lessons_completed",     condition_value: 1,  xp_reward: 50  },
+  { id: "on_fire",      icon: Flame,          title: "В огне",           desc: "7 дней подряд",                    condition_type: "streak_days",            condition_value: 7,  xp_reward: 150 },
+  { id: "chatterbox",   icon: MessageCircle,  title: "Болтун",           desc: "50 сообщений с AI",                condition_type: "ai_messages",            condition_value: 50, xp_reward: 100 },
+  { id: "bookworm",     icon: BookOpen,       title: "Книжный червь",    desc: "10 уроков завершено",              condition_type: "lessons_completed",     condition_value: 10, xp_reward: 200 },
+  { id: "perfect",      icon: Star,           title: "Перфекционист",    desc: "5 идеальных результатов подряд",   condition_type: "perfect_scores",         condition_value: 5,  xp_reward: 150 },
+  { id: "focused",      icon: Target,         title: "Сфокусированный",  desc: "7 дней выполнял дневную цель",     condition_type: "goal_days",              condition_value: 7,  xp_reward: 200 },
+  { id: "rocket",       icon: Rocket,         title: "Ракета",           desc: "Достиг уровня B1",                 condition_type: "cefr_b1",                condition_value: 1,  xp_reward: 300 },
+  { id: "speaker",      icon: Mic,            title: "Оратор",           desc: "10 упражнений на произношение",    condition_type: "pronunciation_exercises",condition_value: 10, xp_reward: 150 },
+  { id: "writer",       icon: PenLine,        title: "Писатель",         desc: "5 письменных работ с AI",          condition_type: "writing_sessions",       condition_value: 5,  xp_reward: 100 },
+  { id: "champion",     icon: Trophy,         title: "Чемпион",          desc: "30 дней подряд",                   condition_type: "streak_days",            condition_value: 30, xp_reward: 500 },
+  { id: "graduate",     icon: GraduationCap,  title: "Выпускник",        desc: "Все уроки одного уровня пройдены", condition_type: "level_complete",         condition_value: 1,  xp_reward: 400 },
+  { id: "master",       icon: Crown,          title: "Мастер",           desc: "Достиг уровня C1",                 condition_type: "cefr_c1",                condition_value: 1,  xp_reward: 1000},
 ];
 
 interface UserStats {

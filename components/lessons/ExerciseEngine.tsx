@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle, XCircle, ChevronRight } from "lucide-react";
+import { CheckCircle, XCircle, ChevronRight, Lightbulb, Check, Bot } from "lucide-react";
 import type { ExerciseItem } from "@/lib/lessons-data";
 import { useAIGenerate } from "@/hooks/useAIGenerate";
 
@@ -57,7 +57,7 @@ function FillBlank({ exercise, onResult }: {
           </span>
         ))}
       </div>
-      {exercise.hint && <p className="text-muted-foreground text-xs">💡 {exercise.hint}</p>}
+      {exercise.hint && <p className="text-muted-foreground text-xs flex items-start gap-1.5"><Lightbulb className="w-3.5 h-3.5 shrink-0 mt-0.5 text-[#F59E0B]" strokeWidth={1.75} /> {exercise.hint}</p>}
       {!checked && (
         <button onClick={handleCheck} disabled={!value.trim()}
           className="px-6 py-2.5 rounded-xl bg-primary hover:bg-[#5558E3] disabled:bg-card disabled:text-[#334155] text-white text-sm font-semibold transition-all">
@@ -70,7 +70,7 @@ function FillBlank({ exercise, onResult }: {
             isCorrect ? "bg-[#10B981]/10 border border-[#10B981]/30 text-[#10B981]"
               : "bg-[#EF4444]/10 border border-[#EF4444]/30 text-[#EF4444]"
           }`}>
-          {isCorrect ? "Верно! ✓" : `Правильный ответ: "${exercise.answer}"`}
+          {isCorrect ? <span className="inline-flex items-center gap-1.5">Верно! <Check className="w-4 h-4" strokeWidth={2.5} /></span> : `Правильный ответ: "${exercise.answer}"`}
         </motion.div>
       )}
     </div>
@@ -169,7 +169,7 @@ function BuildSentence({ exercise, onResult }: {
             isCorrect ? "bg-[#10B981]/10 border border-[#10B981]/30 text-[#10B981]"
               : "bg-[#EF4444]/10 border border-[#EF4444]/30 text-[#EF4444]"
           }`}>
-          {isCorrect ? "Верно! ✓" : `Правильный порядок: "${exercise.answer}"`}
+          {isCorrect ? <span className="inline-flex items-center gap-1.5">Верно! <Check className="w-4 h-4" strokeWidth={2.5} /></span> : `Правильный порядок: "${exercise.answer}"`}
         </motion.div>
       )}
     </div>
@@ -258,7 +258,7 @@ export function ExerciseEngine({ exercise, exerciseNumber, total, onCorrect, onW
               <div>
                 {showExplanation && aiExplanation && (
                   <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 text-sm text-foreground/80">
-                    <span className="font-semibold text-primary">🤖 AI объясняет: </span>
+                    <span className="inline-flex items-center gap-1.5 font-semibold text-primary"><Bot className="w-4 h-4" strokeWidth={1.75} /> AI объясняет: </span>
                     {aiExplanation}
                   </div>
                 )}
@@ -268,7 +268,7 @@ export function ExerciseEngine({ exercise, exerciseNumber, total, onCorrect, onW
                 {!showExplanation && (
                   <button onClick={getAIExplanation} disabled={aiLoading}
                     className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 text-primary text-xs font-medium hover:bg-primary/20 transition-colors disabled:opacity-50">
-                    🤖 AI объясняет
+                    <Bot className="w-4 h-4" strokeWidth={1.75} /> AI объясняет
                   </button>
                 )}
               </div>

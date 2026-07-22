@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { MINI_STORIES, MiniStory } from '@/lib/mini-stories-data'
-import { Sparkles, Loader2 } from 'lucide-react'
+import { Sparkles, Loader2, Volume2, BookOpen, HelpCircle, ChevronUp, ChevronDown, Check, Plus } from 'lucide-react'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 import { awardXP, XP_REWARDS } from '@/lib/xp'
 
@@ -79,8 +79,8 @@ export default function MiniStoriesPage() {
       <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 mb-4">
         <div className="flex justify-end mb-4">
           <button onClick={() => speak(selected.text)}
-            className="px-4 py-2 bg-white/[0.06] hover:bg-white/10 text-muted-foreground text-sm rounded-xl border border-white/10 transition-colors">
-            🔊 Прослушать
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white/[0.06] hover:bg-white/10 text-muted-foreground text-sm rounded-xl border border-white/10 transition-colors">
+            <Volume2 className="w-4 h-4" strokeWidth={1.75} /> Прослушать
           </button>
         </div>
         <p className="text-[#e2e8f0] text-lg leading-8"
@@ -91,8 +91,8 @@ export default function MiniStoriesPage() {
       <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5 mb-4">
         <button onClick={() => setShowVocab(!showVocab)}
           className="w-full flex items-center justify-between text-white font-semibold">
-          <span>📚 Словарь ({selected.vocabWords.length} слов)</span>
-          <span className="text-muted-foreground">{showVocab ? '▲' : '▼'}</span>
+          <span className="inline-flex items-center gap-2"><BookOpen className="w-4 h-4" strokeWidth={1.75} /> Словарь ({selected.vocabWords.length} слов)</span>
+          {showVocab ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
         </button>
         {showVocab && (
           <>
@@ -110,7 +110,7 @@ export default function MiniStoriesPage() {
                   ? 'bg-green-500/10 border-green-500/20 text-green-400'
                   : 'bg-primary/10 border-primary/20 text-primary hover:bg-primary/20'
               }`}>
-              {addedCount > 0 ? `✓ ${addedCount} слов добавлено в повторение` : '+ Добавить все слова в повторение (SR)'}
+              <span className="inline-flex items-center justify-center gap-1.5">{addedCount > 0 ? <><Check className="w-4 h-4" strokeWidth={2.5} /> {addedCount} слов добавлено в повторение</> : <><Plus className="w-4 h-4" strokeWidth={2} /> Добавить все слова в повторение (SR)</>}</span>
             </button>
           </>
         )}
@@ -120,8 +120,8 @@ export default function MiniStoriesPage() {
       <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5">
         <button onClick={() => setShowQuestions(!showQuestions)}
           className="w-full flex items-center justify-between text-white font-semibold">
-          <span>❓ Вопросы к тексту</span>
-          <span className="text-muted-foreground">{showQuestions ? '▲' : '▼'}</span>
+          <span className="inline-flex items-center gap-2"><HelpCircle className="w-4 h-4" strokeWidth={1.75} /> Вопросы к тексту</span>
+          {showQuestions ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
         </button>
         {showQuestions && (
           <div className="mt-4 space-y-4">
@@ -171,7 +171,7 @@ export default function MiniStoriesPage() {
         <button onClick={generateStory} disabled={aiLoading}
           className="flex items-center gap-1.5 px-4 py-2 bg-[#6366f1]/10 hover:bg-[#6366f1]/20 border border-[#6366f1]/20 text-[#818cf8] rounded-xl text-sm font-medium min-h-[44px] disabled:opacity-50">
           {aiLoading?<Loader2 className="w-4 h-4 animate-spin"/>:<Sparkles className="w-4 h-4"/>}
-          {aiLoading?'Генерирую...':'✨ AI история'}
+          {aiLoading?'Генерирую...':'AI история'}
         </button>
       </div>
 

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useTheme } from 'next-themes'
 import { useRouter } from 'next/navigation'
+import { Moon, Sun, Check } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 type Goal = 'travel' | 'business' | 'exam' | 'general' | 'work'
@@ -98,11 +99,11 @@ export default function SettingsPage() {
         <h2 className="text-white font-semibold mb-4">Цель обучения</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {([
-            { id: 'general', label: '🌍 Общий английский', desc: 'Для повседневного общения' },
-            { id: 'travel', label: '✈️ Путешествия', desc: 'Аэропорты, отели, туризм' },
-            { id: 'business', label: '💼 Бизнес', desc: 'Переговоры, переписка, встречи' },
-            { id: 'exam', label: '📝 Экзамен IELTS/TOEFL', desc: 'Подготовка к тестированию' },
-            { id: 'work', label: '💻 Работа в IT', desc: 'Технический английский' },
+            { id: 'general', label: 'Общий английский', desc: 'Для повседневного общения' },
+            { id: 'travel', label: 'Путешествия', desc: 'Аэропорты, отели, туризм' },
+            { id: 'business', label: 'Бизнес', desc: 'Переговоры, переписка, встречи' },
+            { id: 'exam', label: 'Экзамен IELTS/TOEFL', desc: 'Подготовка к тестированию' },
+            { id: 'work', label: 'Работа в IT', desc: 'Технический английский' },
           ] as const).map(g => (
             <button key={g.id} onClick={() => setSettings(s => ({ ...s, goal: g.id }))}
               className={`text-left p-4 rounded-xl border transition-all ${
@@ -148,9 +149,9 @@ export default function SettingsPage() {
             className={`relative w-14 h-7 rounded-full transition-all duration-300 border ${
               currentTheme === 'light' ? 'bg-primary border-primary' : 'bg-white/[0.06] border-white/10'
             }`}>
-            <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-all duration-300 flex items-center justify-center text-xs
+            <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-all duration-300 flex items-center justify-center
               ${currentTheme === 'light' ? 'left-7' : 'left-0.5'}`}>
-              {currentTheme === 'dark' ? '🌙' : '☀️'}
+              {currentTheme === 'dark' ? <Moon className="w-3.5 h-3.5 text-[#334155]" strokeWidth={2} /> : <Sun className="w-3.5 h-3.5 text-[#F59E0B]" strokeWidth={2} />}
             </span>
           </button>
         </div>
@@ -159,7 +160,7 @@ export default function SettingsPage() {
       <div className="flex gap-3 mt-6">
         <button onClick={saveSettings}
           className="flex-1 py-3 bg-primary hover:bg-[#5558e8] text-white font-semibold rounded-xl transition-colors">
-          {saved ? '✓ Сохранено!' : 'Сохранить'}
+          {saved ? <span className="inline-flex items-center gap-1.5"><Check className="w-4 h-4" strokeWidth={2.5} /> Сохранено!</span> : 'Сохранить'}
         </button>
         <button onClick={handleSignOut}
           className="px-6 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-medium rounded-xl transition-colors border border-red-500/20">

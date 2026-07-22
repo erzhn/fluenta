@@ -1,6 +1,6 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
-import { Sparkles, Loader2 } from 'lucide-react'
+import { Sparkles, Loader2, PartyPopper, ThumbsUp, Dumbbell, Volume2, Check, X, Turtle } from 'lucide-react'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 import { awardXP, XP_REWARDS } from '@/lib/xp'
 
@@ -169,10 +169,10 @@ export default function DictationPage() {
             style={{ color: score >= 8 ? '#10b981' : score >= 5 ? '#f59e0b' : '#ef4444' }}>
             {score}/{sessionWords.length}
           </div>
-          <p className="text-muted-foreground">
-            {score >= 8 ? '🎉 Отлично! Ты великолепно справился!' :
-             score >= 5 ? '👍 Хороший результат, продолжай практиковаться!' :
-             '💪 Не сдавайся, повтори эти слова ещё раз!'}
+          <p className="text-muted-foreground inline-flex items-center gap-1.5">
+            {score >= 8 ? <><PartyPopper className="w-4 h-4" strokeWidth={1.75} /> Отлично! Ты великолепно справился!</> :
+             score >= 5 ? <><ThumbsUp className="w-4 h-4" strokeWidth={1.75} /> Хороший результат, продолжай практиковаться!</> :
+             <><Dumbbell className="w-4 h-4" strokeWidth={1.75} /> Не сдавайся, повтори эти слова ещё раз!</>}
           </p>
         </div>
 
@@ -186,8 +186,8 @@ export default function DictationPage() {
                 {!r.correct && (
                   <span className="text-red-400 text-sm line-through">{r.userAnswer || '(пусто)'}</span>
                 )}
-                <span className={r.correct ? 'text-green-400' : 'text-muted-foreground'}>
-                  {r.correct ? '✓' : r.word}
+                <span className={r.correct ? 'text-green-400 inline-flex' : 'text-muted-foreground'}>
+                  {r.correct ? <Check className="w-4 h-4" strokeWidth={2.5} /> : r.word}
                 </span>
               </div>
             </div>
@@ -235,10 +235,10 @@ export default function DictationPage() {
         <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 mb-6">
           <h3 className="text-white font-semibold mb-3">Как это работает</h3>
           <div className="space-y-2 text-muted-foreground text-sm">
-            <p>🔊 Нажми &quot;Воспроизвести&quot; — AI произнесёт слово</p>
-            <p>✍️ Напиши что услышал в поле ввода</p>
-            <p>✓ Нажми &quot;Проверить&quot; для проверки</p>
-            <p>🐢 Можно прослушать медленно если не расслышал</p>
+            <p className="flex items-center gap-2"><Volume2 className="w-4 h-4 shrink-0" strokeWidth={1.75} /> Нажми &quot;Воспроизвести&quot; — AI произнесёт слово</p>
+            <p className="flex items-center gap-2"><Check className="w-4 h-4 shrink-0" strokeWidth={2} /> Напиши что услышал в поле ввода</p>
+            <p className="flex items-center gap-2"><Check className="w-4 h-4 shrink-0" strokeWidth={2} /> Нажми &quot;Проверить&quot; для проверки</p>
+            <p className="flex items-center gap-2"><Turtle className="w-4 h-4 shrink-0" strokeWidth={1.75} /> Можно прослушать медленно если не расслышал</p>
           </div>
         </div>
 
@@ -250,7 +250,7 @@ export default function DictationPage() {
 
         <div className="mb-4 p-3 bg-[#6366f1]/5 border border-[#6366f1]/20 rounded-xl">
           <p className="text-xs text-[#818cf8] font-medium mb-2 flex items-center gap-1">
-            <Sparkles className="w-3 h-3"/>AI слова {usingAI && `· ${aiWordList.length} слов ✓`}
+            <Sparkles className="w-3 h-3"/>AI слова {usingAI && `· ${aiWordList.length} слов`}
             {aiLoading && <Loader2 className="w-3 h-3 animate-spin ml-1" />}
           </p>
           {aiLoading && (
@@ -263,7 +263,7 @@ export default function DictationPage() {
             <button onClick={() => { setCurrentTopic(aiTopic || currentTopic); generateWords() }} disabled={aiLoading} className="px-3 py-2 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-50 text-white rounded-lg text-xs min-h-[44px]">
               {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin"/> : <Sparkles className="w-3.5 h-3.5"/>}
             </button>
-            {usingAI && <button onClick={() => {setUsingAI(false); setAiWordList([])}} className="px-2 py-2 text-[#64748b] text-xs min-h-[44px]">✕</button>}
+            {usingAI && <button onClick={() => {setUsingAI(false); setAiWordList([])}} className="px-2 py-2 text-[#64748b] min-h-[44px]"><X className="w-4 h-4" /></button>}
           </div>
         </div>
 
@@ -297,13 +297,13 @@ export default function DictationPage() {
                 <span className="w-1 h-4 bg-white rounded animate-bounce" style={{animationDelay:'150ms'}}/>
                 <span className="w-1 h-4 bg-white rounded animate-bounce" style={{animationDelay:'300ms'}}/>
               </span>
-            ) : '🔊'}
+            ) : <Volume2 className="w-4 h-4" strokeWidth={1.75} />}
             Воспроизвести
             {playCount > 0 && <span className="text-white/60 text-xs">×{playCount}</span>}
           </button>
           <button onClick={handlePlaySlow} disabled={isPlaying}
             className="flex items-center gap-2 px-4 py-3 bg-white/[0.06] hover:bg-white/10 text-muted-foreground font-medium rounded-xl transition-all border border-white/10">
-            🐢 Медленно
+            <Turtle className="w-4 h-4" strokeWidth={1.75} /> Медленно
           </button>
         </div>
 
@@ -328,10 +328,10 @@ export default function DictationPage() {
         {showAnswer && (
           <div className="mt-4">
             {results[results.length-1]?.correct ? (
-              <p className="text-green-400 font-semibold text-lg">✓ Правильно!</p>
+              <p className="text-green-400 font-semibold text-lg inline-flex items-center gap-1.5"><Check className="w-5 h-5" strokeWidth={2.5} /> Правильно!</p>
             ) : (
               <div>
-                <p className="text-red-400 font-semibold text-lg mb-1">✗ Неправильно</p>
+                <p className="text-red-400 font-semibold text-lg mb-1 inline-flex items-center gap-1.5"><X className="w-5 h-5" strokeWidth={2.5} /> Неправильно</p>
                 <p className="text-white text-lg">Правильно: <span className="text-primary font-bold">{current.word}</span></p>
               </div>
             )}
@@ -354,9 +354,9 @@ export default function DictationPage() {
       {results.length > 0 && (
         <div className="flex gap-1.5 mt-4 justify-center flex-wrap">
           {results.map((r, i) => (
-            <div key={i} className={`w-6 h-6 rounded-full flex items-center justify-center text-xs
+            <div key={i} className={`w-6 h-6 rounded-full flex items-center justify-center
               ${r.correct ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-              {r.correct ? '✓' : '✗'}
+              {r.correct ? <Check className="w-3.5 h-3.5" strokeWidth={2.5} /> : <X className="w-3.5 h-3.5" strokeWidth={2.5} />}
             </div>
           ))}
           {Array.from({ length: sessionWords.length - results.length }).map((_, i) => (

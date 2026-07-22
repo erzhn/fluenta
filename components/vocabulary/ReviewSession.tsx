@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, RotateCcw, Home, Plus } from "lucide-react";
+import { ArrowLeft, RotateCcw, Home, Plus, Frown, Meh, Smile, Zap, PartyPopper, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { FlashCard } from "./FlashCard";
 import { ratingToWordUpdate } from "@/lib/srs";
@@ -16,11 +16,11 @@ interface ReviewSessionProps {
   onExit: () => void;
 }
 
-const RATINGS: { rating: Rating; emoji: string; label: string; color: string; bg: string; key: string }[] = [
-  { rating: 1, emoji: "😵", label: "Забыл",  color: "#EF4444", bg: "#EF444415", key: "1" },
-  { rating: 2, emoji: "😰", label: "Сложно", color: "#F97316", bg: "#F9731615", key: "2" },
-  { rating: 3, emoji: "😊", label: "Хорошо", color: "#6366F1", bg: "#6366F115", key: "3" },
-  { rating: 4, emoji: "🚀", label: "Легко",  color: "#10B981", bg: "#10B98115", key: "4" },
+const RATINGS: { rating: Rating; icon: LucideIcon; label: string; color: string; bg: string; key: string }[] = [
+  { rating: 1, icon: Frown, label: "Забыл",  color: "#EF4444", bg: "#EF444415", key: "1" },
+  { rating: 2, icon: Meh,   label: "Сложно", color: "#F97316", bg: "#F9731615", key: "2" },
+  { rating: 3, icon: Smile, label: "Хорошо", color: "#6366F1", bg: "#6366F115", key: "3" },
+  { rating: 4, icon: Zap,   label: "Легко",  color: "#10B981", bg: "#10B98115", key: "4" },
 ];
 
 // ─── Session Complete ─────────────────────────────────────────────────────────
@@ -41,9 +41,9 @@ function SessionComplete({
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
-        className="text-6xl mb-4"
+        className="mb-4 w-20 h-20 rounded-3xl flex items-center justify-center bg-gradient-to-br from-[#6366F1]/20 to-[#8B5CF6]/20 border border-primary/30"
       >
-        🎉
+        <PartyPopper className="w-10 h-10 text-[#a5b4fc]" strokeWidth={1.5} />
       </motion.div>
 
       <h2 className="text-2xl font-extrabold text-white mb-1">Отличная работа!</h2>
@@ -73,7 +73,7 @@ function SessionComplete({
             >
               {ratingCounts[r.rating] || 0}
             </div>
-            <span className="text-[10px] text-[#334155]">{r.emoji}</span>
+            <r.icon className="w-3 h-3 text-[#334155]" strokeWidth={2} />
           </div>
         ))}
       </div>
@@ -240,7 +240,7 @@ export function ReviewSession({ words, onComplete, onExit }: ReviewSessionProps)
                       color: r.color,
                     }}
                   >
-                    <span className="text-xl">{r.emoji}</span>
+                    <r.icon className="w-5 h-5" strokeWidth={1.75} />
                     <span className="text-xs">{r.label}</span>
                     <span className="text-[10px] opacity-50">[{r.key}]</span>
                   </motion.button>

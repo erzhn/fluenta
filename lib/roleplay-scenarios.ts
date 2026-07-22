@@ -1,7 +1,10 @@
+import type { LucideIcon } from 'lucide-react'
+import { Plane, Utensils, Briefcase, Stethoscope, Hotel, ShoppingBag, BarChart3, Coffee } from 'lucide-react'
+
 export interface Scenario {
   id: string
   title: string
-  emoji: string
+  icon: LucideIcon
   description: string
   level: string
   systemPrompt: string
@@ -12,7 +15,7 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'airport',
     title: 'В аэропорту',
-    emoji: '✈️',
+    icon: Plane,
     description: 'Регистрация, таможня, поиск выхода',
     level: 'A2',
     systemPrompt: `You are an airport staff member at check-in. The student is a traveler checking in for their flight.
@@ -23,7 +26,7 @@ After 6-8 exchanges, wrap up with "Great job! You handled the airport check-in w
   {
     id: 'restaurant',
     title: 'В ресторане',
-    emoji: '🍽️',
+    icon: Utensils,
     description: 'Заказ еды, вопросы о меню, оплата',
     level: 'A2',
     systemPrompt: `You are a friendly waiter at an English restaurant. The student is a customer ordering food.
@@ -33,7 +36,7 @@ Keep responses natural and brief. Gently correct errors. After 8 exchanges end w
   {
     id: 'job-interview',
     title: 'Собеседование',
-    emoji: '💼',
+    icon: Briefcase,
     description: 'Вопросы HR, рассказ о себе, навыки',
     level: 'B1',
     systemPrompt: `You are an HR interviewer for a tech company. The student is applying for a position.
@@ -43,7 +46,7 @@ Ask standard interview questions one at a time. Give encouraging feedback. After
   {
     id: 'doctor',
     title: 'У врача',
-    emoji: '🏥',
+    icon: Stethoscope,
     description: 'Описание симптомов, вопросы о здоровье',
     level: 'A2',
     systemPrompt: `You are a friendly doctor. The student is a patient describing their symptoms.
@@ -53,7 +56,7 @@ Ask follow-up questions. Use medical terms but explain them. After the consultat
   {
     id: 'hotel',
     title: 'В отеле',
-    emoji: '🏨',
+    icon: Hotel,
     description: 'Заселение, запросы, решение проблем',
     level: 'A2',
     systemPrompt: `You are a hotel receptionist. The student is a guest checking in or making a request.
@@ -63,7 +66,7 @@ Be professional and helpful. Handle complaints gracefully. Give language feedbac
   {
     id: 'shopping',
     title: 'В магазине',
-    emoji: '🛍️',
+    icon: ShoppingBag,
     description: 'Покупки, возврат товара, размеры',
     level: 'A1',
     systemPrompt: `You are a shop assistant in a clothing store. The student is a customer shopping.
@@ -73,7 +76,7 @@ Help them find items, suggest sizes, handle returns. Keep it simple for A1 level
   {
     id: 'business-meeting',
     title: 'Деловая встреча',
-    emoji: '📊',
+    icon: BarChart3,
     description: 'Презентация, переговоры, обсуждение',
     level: 'B2',
     systemPrompt: `You are a business client in a meeting. The student is presenting their proposal.
@@ -83,7 +86,7 @@ Ask tough but fair questions. Use business English. After 10 exchanges give deta
   {
     id: 'small-talk',
     title: 'Светская беседа',
-    emoji: '☕',
+    icon: Coffee,
     description: 'Знакомство, погода, хобби, планы',
     level: 'A2',
     systemPrompt: `You are a friendly coworker having casual small talk with the student at a coffee machine.

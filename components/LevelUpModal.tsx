@@ -1,6 +1,7 @@
 'use client'
 import { useEffect } from 'react'
 import confetti from 'canvas-confetti'
+import { Star, Sparkles, Sparkle, Crown, PartyPopper, type LucideIcon } from 'lucide-react'
 
 interface LevelUpModalProps {
   fromLevel: string
@@ -15,8 +16,8 @@ const LEVEL_DESCRIPTIONS: Record<string, string> = {
   C1: 'Ты владеешь языком на продвинутом уровне!',
 }
 
-const LEVEL_EMOJI: Record<string, string> = {
-  A2: '⭐', B1: '🌟', B2: '💫', C1: '👑'
+const LEVEL_ICON: Record<string, LucideIcon> = {
+  A2: Star, B1: Sparkles, B2: Sparkle, C1: Crown
 }
 
 export function LevelUpModal({ fromLevel, toLevel, onClose }: LevelUpModalProps) {
@@ -34,9 +35,9 @@ export function LevelUpModal({ fromLevel, toLevel, onClose }: LevelUpModalProps)
       <div className="bg-background border border-primary/30 rounded-3xl p-8 sm:p-12 max-w-md w-full mx-4 text-center
         shadow-2xl shadow-[#6366f1]/20 animate-[scaleIn_0.5s_cubic-bezier(0.22,1,0.36,1)]">
 
-        <div className="w-24 h-24 rounded-3xl mx-auto mb-6 flex items-center justify-center text-5xl
+        <div className="w-24 h-24 rounded-3xl mx-auto mb-6 flex items-center justify-center
           bg-gradient-to-br from-[#6366f1]/20 to-[#8b5cf6]/20 border border-primary/30">
-          {LEVEL_EMOJI[toLevel] ?? '🎉'}
+          {(() => { const Icon = LEVEL_ICON[toLevel] ?? PartyPopper; return <Icon className="w-12 h-12 text-[#a5b4fc]" strokeWidth={1.5} /> })()}
         </div>
 
         <p className="text-primary text-sm font-semibold uppercase tracking-widest mb-2">Поздравляем!</p>
@@ -63,7 +64,7 @@ export function LevelUpModal({ fromLevel, toLevel, onClose }: LevelUpModalProps)
         <button onClick={onClose}
           className="w-full py-4 bg-primary hover:bg-[#5558e8] text-white font-bold rounded-2xl text-lg
             transition-all hover:scale-[1.02] active:scale-[0.98]">
-          Продолжить обучение 🚀
+          Продолжить обучение
         </button>
       </div>
     </div>

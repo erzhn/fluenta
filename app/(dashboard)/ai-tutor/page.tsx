@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, RotateCcw, Mic, MicOff } from 'lucide-react'
+import { Send, RotateCcw, Mic, MicOff, X, GraduationCap, MessageCircle, Drama, PenLine, BookOpen, type LucideIcon } from 'lucide-react'
 import { ChatMessage } from '@/components/ai-tutor/ChatMessage'
 import type { Message } from '@/types'
 import { createRecognition, isSpeechRecognitionSupported } from '@/lib/speech'
@@ -16,12 +16,12 @@ type ChatMode = 'tutor' | 'conversation' | 'roleplay'
 
 const STARTERS: Record<string, string[]> = {
   tutor: [
-    "Hey! I'm Zhan, your personal English tutor 👋 What would you like to practice today? We can work on conversation, grammar, vocabulary, pronunciation tips, or anything else!",
-    "Hi there! I'm Zhan 😊 Ready to improve your English? Tell me what you'd like to focus on today!",
+    "Hey! I'm Zhan, your personal English tutor. What would you like to practice today? We can work on conversation, grammar, vocabulary, pronunciation tips, or anything else!",
+    "Hi there! I'm Zhan. Ready to improve your English? Tell me what you'd like to focus on today!",
     "Hello! I'm Zhan, your AI English coach. What shall we work on — speaking, grammar, or vocabulary?",
   ],
   conversation: [
-    "Hey! I'm Zhan 😊 Let's just chat — what's been happening in your life lately?",
+    "Hey! I'm Zhan. Let's just chat — what's been happening in your life lately?",
     "Hello! Have you watched any good films or series recently?",
     "Hey! What are your plans for the weekend?",
     "Hi there! What's your favourite way to relax after a busy day?",
@@ -40,11 +40,11 @@ function randomStarter(mode: string): Message {
 
 const WELCOME: Message = randomStarter('tutor')
 
-const QUICK_STARTS = [
-  { emoji: '💬', text: "Let's have a conversation" },
-  { emoji: '📝', text: 'Check my grammar' },
-  { emoji: '📚', text: 'Teach me new vocabulary' },
-  { emoji: '🎤', text: 'Pronunciation tips' },
+const QUICK_STARTS: { icon: LucideIcon; text: string }[] = [
+  { icon: MessageCircle, text: "Let's have a conversation" },
+  { icon: PenLine, text: 'Check my grammar' },
+  { icon: BookOpen, text: 'Teach me new vocabulary' },
+  { icon: Mic, text: 'Pronunciation tips' },
 ]
 
 export default function AITutorPage() {
@@ -146,7 +146,7 @@ export default function AITutorPage() {
           {
             id: `ai-${Date.now()}`,
             role: 'assistant',
-            content: "Sorry, I couldn't connect right now. Please try again! 🙏",
+            content: "Sorry, I couldn't connect right now. Please try again!",
             timestamp: new Date().toISOString(),
           },
         ])
@@ -209,8 +209,8 @@ export default function AITutorPage() {
       <div className="shrink-0 flex items-center justify-between px-4 sm:px-6 py-3.5 bg-[#0A1628] border-b border-[#1E293B]">
         <div className="flex items-center gap-3">
           <div className="relative">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center text-xl shadow-lg shadow-indigo-500/25">
-              👨‍🏫
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center text-white shadow-lg shadow-indigo-500/25">
+              <GraduationCap className="w-5 h-5" strokeWidth={1.75} />
             </div>
             <span className="absolute bottom-0 right-0 w-3 h-3 bg-[#10B981] border-2 border-[#0A1628] rounded-full" />
           </div>
@@ -234,7 +234,7 @@ export default function AITutorPage() {
                   : 'text-muted-foreground hover:text-muted-foreground'
               }`}
             >
-              📚 Учёба
+              <span className="inline-flex items-center gap-1.5"><GraduationCap className="w-3.5 h-3.5" /> Учёба</span>
             </button>
             <button
               onClick={() => toggleMode('conversation')}
@@ -244,7 +244,7 @@ export default function AITutorPage() {
                   : 'text-muted-foreground hover:text-muted-foreground'
               }`}
             >
-              💬 Разговор
+              <span className="inline-flex items-center gap-1.5"><MessageCircle className="w-3.5 h-3.5" /> Разговор</span>
             </button>
             <button
               onClick={() => toggleMode('roleplay')}
@@ -254,16 +254,16 @@ export default function AITutorPage() {
                   : 'text-muted-foreground hover:text-muted-foreground'
               }`}
             >
-              🎭 Ролевая игра
+              <span className="inline-flex items-center gap-1.5"><Drama className="w-3.5 h-3.5" /> Ролевая игра</span>
             </button>
           </div>
 
           {/* Active scenario badge */}
           {activeScenario && (
             <div className="flex items-center gap-2 ml-1">
-              <span className="text-sm">{activeScenario.emoji}</span>
+              <activeScenario.icon className="w-4 h-4 text-primary" strokeWidth={1.75} />
               <span className="text-white text-xs font-medium">{activeScenario.title}</span>
-              <button onClick={() => { setActiveScenario(null) }} className="text-muted-foreground text-xs hover:text-white">✕</button>
+              <button onClick={() => { setActiveScenario(null) }} className="text-muted-foreground hover:text-white"><X className="w-3.5 h-3.5" /></button>
             </div>
           )}
 
@@ -301,7 +301,9 @@ export default function AITutorPage() {
                 }}
                 className="p-4 bg-white/[0.04] border border-white/10 rounded-2xl text-left
                   hover:border-primary/40 hover:bg-white/[0.06] transition-all">
-                <span className="text-3xl block mb-2">{s.emoji}</span>
+                <span className="mb-2.5 w-11 h-11 rounded-xl flex items-center justify-center bg-gradient-to-br from-indigo-500/20 to-violet-500/20 border border-white/10">
+                  <s.icon className="w-5 h-5 text-indigo-300" strokeWidth={1.75} />
+                </span>
                 <p className="text-white text-sm font-medium">{s.title}</p>
                 <p className="text-muted-foreground text-xs mt-1">{s.description}</p>
                 <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
@@ -327,13 +329,13 @@ export default function AITutorPage() {
               transition={{ delay: 0.25 }}
               className="grid grid-cols-2 gap-2 max-w-sm"
             >
-              {QUICK_STARTS.map(({ emoji, text }) => (
+              {QUICK_STARTS.map(({ icon: Icon, text }) => (
                 <button
                   key={text}
                   onClick={() => sendMessage(text)}
                   className="group text-left px-3.5 py-3 rounded-xl bg-card border border-border hover:border-primary/40 hover:bg-primary/5 transition-all"
                 >
-                  <span className="text-lg block mb-0.5">{emoji}</span>
+                  <Icon className="w-4 h-4 mb-1 text-indigo-300" strokeWidth={1.75} />
                   <span className="text-muted-foreground text-xs group-hover:text-white transition-colors leading-snug">
                     {text}
                   </span>
@@ -360,8 +362,8 @@ export default function AITutorPage() {
               transition={{ duration: 0.2 }}
               className="flex gap-3"
             >
-              <div className="w-8 h-8 rounded-full bg-card border border-border flex items-center justify-center text-sm shrink-0">
-                👨‍🏫
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#6366F1]/20 to-[#8B5CF6]/20 border border-primary/30 text-primary flex items-center justify-center shrink-0">
+                <GraduationCap className="w-4 h-4" strokeWidth={1.75} />
               </div>
               <div className="bg-card border border-border rounded-2xl rounded-tl-sm px-4 py-3.5">
                 <div className="flex gap-1.5 items-center h-4">

@@ -18,9 +18,9 @@ function renderMarkdown(content: string): string {
     .replace(/`(.+?)`/g, '<code class="bg-background text-primary px-1.5 py-0.5 rounded text-sm font-mono">$1</code>')
     .replace(/^- (.+)$/gm, '<li class="text-muted-foreground ml-4 list-disc">$1</li>')
     .replace(/^(\d+)\. (.+)$/gm, '<li class="text-muted-foreground ml-4 list-decimal">$2</li>')
-    .replace(/^✅ (.+)$/gm, '<p class="flex gap-2"><span>✅</span><span>$1</span></p>')
-    .replace(/^❌ (.+)$/gm, '<p class="flex gap-2"><span>❌</span><span>$1</span></p>')
-    .replace(/^❓ (.+)$/gm, '<p class="flex gap-2"><span>❓</span><span>$1</span></p>')
+    .replace(/^✅ (.+)$/gm, '<p class="flex gap-2 items-start"><svg class="w-4 h-4 shrink-0 mt-1 text-[#10B981]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>$1</span></p>')
+    .replace(/^❌ (.+)$/gm, '<p class="flex gap-2 items-start"><svg class="w-4 h-4 shrink-0 mt-1 text-[#EF4444]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span>$1</span></p>')
+    .replace(/^❓ (.+)$/gm, '<p class="flex gap-2 items-start"><svg class="w-4 h-4 shrink-0 mt-1 text-[#F59E0B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span>$1</span></p>')
     .replace(/\n\n/g, '</p><p class="text-muted-foreground leading-relaxed">')
     .replace(/^(?!<)(.+)$/gm, '<p class="text-muted-foreground leading-relaxed">$1</p>');
 }

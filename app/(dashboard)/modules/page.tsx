@@ -77,7 +77,9 @@ export default function ModulesPage() {
                   <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5 hover:bg-white/[0.07] hover:border-white/20 transition-all group cursor-pointer">
                     <div className="flex items-start gap-4">
                       {/* Icon */}
-                      <div className="text-4xl shrink-0 mt-0.5">{module.icon}</div>
+                      <div className="shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center bg-gradient-to-br from-indigo-500/20 to-violet-500/20 border border-white/10">
+                        <module.icon className="w-6 h-6 text-indigo-300" strokeWidth={1.75} />
+                      </div>
 
                       {/* Content */}
                       <div className="flex-1 min-w-0">

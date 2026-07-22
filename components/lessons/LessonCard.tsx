@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Clock, Zap, Lock, BookOpen } from "lucide-react";
+import { Clock, Zap, Lock, BookOpen, Check, ArrowRight } from "lucide-react";
 import type { Lesson } from "@/lib/lessons-data";
 import { LEVEL_COLORS } from "@/lib/lessons-data";
 
@@ -39,7 +39,7 @@ export function LessonCard({ lesson, locked, progress }: LessonCardProps) {
             {lesson.level}
           </div>
           <div className="flex items-center gap-2">
-            {completed && <span className="text-xs text-[#10B981] font-medium">✓ Пройдено</span>}
+            {completed && <span className="inline-flex items-center gap-1 text-xs text-[#10B981] font-medium"><Check className="w-3 h-3" strokeWidth={2.5} /> Пройдено</span>}
             <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${color}15` }}>
               {locked ? <Lock className="w-3.5 h-3.5" style={{ color }} /> : <BookOpen className="w-3.5 h-3.5" style={{ color }} />}
             </div>
@@ -67,7 +67,10 @@ export function LessonCard({ lesson, locked, progress }: LessonCardProps) {
             }`}
             style={locked || completed ? {} : { background: `linear-gradient(135deg, ${color}dd, ${color}99)` }}
           >
-            {locked ? "🔒 Недоступно" : completed ? "Повторить урок" : "Начать →"}
+            {locked
+              ? <span className="inline-flex items-center justify-center gap-1"><Lock className="w-3 h-3" strokeWidth={2} /> Недоступно</span>
+              : completed ? "Повторить урок"
+              : <span className="inline-flex items-center justify-center gap-1">Начать <ArrowRight className="w-3.5 h-3.5" strokeWidth={2} /></span>}
           </div>
         </div>
       </div>

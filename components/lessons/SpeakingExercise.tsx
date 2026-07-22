@@ -1,7 +1,7 @@
 'use client'
 import { useState, useRef } from 'react'
 import { createRecognition, speak, isSpeechRecognitionSupported } from '@/lib/speech'
-import { Mic, MicOff, Volume2, CheckCircle } from 'lucide-react'
+import { Mic, MicOff, Volume2, CheckCircle, MessageSquare, AlertTriangle } from 'lucide-react'
 
 interface Props {
   prompt: string
@@ -50,7 +50,7 @@ export default function SpeakingExercise({ prompt, sampleAnswer, onComplete }: P
   return (
     <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 space-y-4">
       <div className="bg-primary/10 border border-primary/30 rounded-xl p-4">
-        <p className="text-white text-sm font-medium mb-1">🗣️ Говори на тему:</p>
+        <p className="text-white text-sm font-medium mb-1 flex items-center gap-1.5"><MessageSquare className="w-4 h-4" strokeWidth={1.75} /> Говори на тему:</p>
         <p className="text-[#a5b4fc] text-base">{prompt}</p>
       </div>
 
@@ -99,7 +99,7 @@ export default function SpeakingExercise({ prompt, sampleAnswer, onComplete }: P
       </div>
 
       {!supported && (
-        <p className="text-yellow-400 text-xs">⚠️ Микрофон работает только в Chrome</p>
+        <p className="text-yellow-400 text-xs flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5" strokeWidth={2} /> Микрофон работает только в Chrome</p>
       )}
 
       {phase === 'done' && wordCount > 0 && (

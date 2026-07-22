@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { GrammarExercise } from '@/components/GrammarExercise'
-import { Sparkles, Loader2 } from 'lucide-react'
+import { Sparkles, Loader2, Flame, Dices } from 'lucide-react'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 import { awardXP, XP_REWARDS } from '@/lib/xp'
 
@@ -97,11 +97,11 @@ export default function GrammarExercisesPage() {
       <div className="mb-5 p-4 bg-[#6366f1]/5 border border-[#6366f1]/20 rounded-2xl">
         <div className="flex items-center justify-between mb-3">
           <p className="text-sm font-semibold text-white flex items-center gap-2"><Sparkles className="w-4 h-4 text-[#818cf8]"/>AI упражнение
-            {streak > 1 && <span className="text-xs text-orange-400 font-bold">🔥 {streak} подряд</span>}
+            {streak > 1 && <span className="inline-flex items-center gap-1 text-xs text-orange-400 font-bold"><Flame className="w-3.5 h-3.5" strokeWidth={2} /> {streak} подряд</span>}
           </p>
           <div className="flex gap-2">
-            <button onClick={pickRandomTopic} className="px-3 py-2 bg-white/[0.06] hover:bg-white/10 text-muted-foreground rounded-xl text-xs font-medium min-h-[36px] border border-white/10">
-              🎲 Случайная
+            <button onClick={pickRandomTopic} className="inline-flex items-center gap-1.5 px-3 py-2 bg-white/[0.06] hover:bg-white/10 text-muted-foreground rounded-xl text-xs font-medium min-h-[36px] border border-white/10">
+              <Dices className="w-3.5 h-3.5" strokeWidth={1.75} /> Случайная
             </button>
             <button onClick={generateExercise} disabled={aiLoading}
               className="flex items-center gap-1.5 px-3 py-2 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-50 text-white rounded-xl text-xs font-medium min-h-[36px]">

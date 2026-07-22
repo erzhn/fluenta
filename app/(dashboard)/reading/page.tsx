@@ -225,10 +225,10 @@ export default function ReadingPage() {
       <AnimatePresence mode="wait">
         <motion.div key={entry.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-4">
           {/* Article */}
-          <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 relative">
+          <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 relative overflow-hidden">
             <div className="flex items-start justify-between mb-4 gap-3 flex-wrap">
-              <div>
-                <h2 className="text-white font-bold text-xl">{entry.title}</h2>
+              <div className="min-w-0">
+                <h2 className="text-white font-bold text-xl break-words">{entry.title}</h2>
                 <span className="text-xs font-bold px-2 py-0.5 rounded-lg mt-1 inline-block"
                   style={{ backgroundColor: `${color}20`, color }}>
                   {entry.level}
@@ -276,7 +276,7 @@ export default function ReadingPage() {
             </AnimatePresence>
 
             {/* Text */}
-            <p className="text-[#cbd5e1] leading-relaxed text-base">
+            <p className="text-[#cbd5e1] leading-relaxed text-base break-words [overflow-wrap:anywhere] whitespace-pre-line">
               {renderText(entry.text, entry.vocabulary, handleWordClick)}
             </p>
 
@@ -302,8 +302,8 @@ export default function ReadingPage() {
               <h3 className="text-white font-semibold">Вопросы к тексту</h3>
               {entry.questions.map((q, qi) => (
                 <div key={qi}>
-                  <p className="text-muted-foreground text-sm mb-2">{qi + 1}. {q.question}</p>
-                  <div className="grid grid-cols-2 gap-2">
+                  <p className="text-muted-foreground text-sm mb-2 break-words">{qi + 1}. {q.question}</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {q.options.map(opt => {
                       let cls = 'border-white/10 bg-white/[0.04] text-muted-foreground hover:border-primary/50 hover:text-white'
                       if (checked) {
@@ -316,7 +316,7 @@ export default function ReadingPage() {
                       return (
                         <button key={opt} disabled={checked}
                           onClick={() => setAnswers(a => ({ ...a, [qi]: opt }))}
-                          className={`text-left px-3 py-2 rounded-xl border text-sm transition-all ${cls}`}>
+                          className={`text-left px-3 py-2 rounded-xl border text-sm transition-all break-words ${cls}`}>
                           {opt}
                         </button>
                       )
@@ -333,7 +333,7 @@ export default function ReadingPage() {
               ) : (
                 <div className="space-y-3">
                   <div className={`px-4 py-3 rounded-xl text-sm font-semibold text-center ${correctCount === entry.questions.length ? 'bg-[#10b981]/10 text-[#10b981] border border-[#10b981]/20' : 'bg-[#f59e0b]/10 text-[#f59e0b] border border-[#f59e0b]/20'}`}>
-                    {correctCount === entry.questions.length ? '🎉 Все ответы правильные!' : `${correctCount} из ${entry.questions.length} правильно`}
+                    {correctCount === entry.questions.length ? 'Все ответы правильные!' : `${correctCount} из ${entry.questions.length} правильно`}
                   </div>
                   {savedWords.size > 0 && (
                     <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20 text-sm text-[#a5b4fc]">

@@ -1,6 +1,6 @@
 'use client'
 import { useState, useRef } from 'react'
-import { Sparkles, Loader2 } from 'lucide-react'
+import { Sparkles, Loader2, Volume2, Mic, Square, PartyPopper, ThumbsUp, Megaphone, RotateCcw, X } from 'lucide-react'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 
 const PHRASES: Record<string, string[]> = {
@@ -169,7 +169,7 @@ export default function PronunciationPracticePage() {
         <button onClick={speak}
           className="px-6 py-2.5 bg-white/[0.06] hover:bg-white/10 border border-white/10 text-muted-foreground
             hover:text-white rounded-xl text-sm font-medium transition-all inline-flex items-center gap-2">
-          🔊 Послушать произношение
+          <Volume2 className="w-4 h-4" strokeWidth={1.75} /> Послушать произношение
         </button>
       </div>
 
@@ -181,7 +181,7 @@ export default function PronunciationPracticePage() {
               ? 'bg-red-500 shadow-red-500/30 scale-110 animate-pulse'
               : 'bg-primary shadow-[#6366f1]/30 hover:scale-105'
           }`}>
-          {isListening ? '⏹' : '🎤'}
+          {isListening ? <Square className="w-7 h-7 text-white" fill="currentColor" /> : <Mic className="w-8 h-8 text-white" strokeWidth={1.75} />}
         </button>
       </div>
       <p className="text-center text-muted-foreground text-sm mb-6">
@@ -203,23 +203,23 @@ export default function PronunciationPracticePage() {
           </div>
           <p className="text-muted-foreground text-sm mb-1">Я услышал:</p>
           <p className="text-muted-foreground italic mb-3">&ldquo;{heard}&rdquo;</p>
-          <p className="text-muted-foreground text-sm">
-            {score >= 90 ? '🎉 Превосходное произношение!' :
-             score >= 70 ? '👍 Хорошо! Попробуй ещё раз для совершенства.' :
-             score >= 50 ? '📢 Неплохо! Говори чётче и медленнее.' :
-             '🔄 Попробуй ещё раз. Послушай образец и повтори.'}
+          <p className="text-muted-foreground text-sm inline-flex items-center gap-1.5">
+            {score >= 90 ? <><PartyPopper className="w-4 h-4 shrink-0" strokeWidth={1.75} /> Превосходное произношение!</> :
+             score >= 70 ? <><ThumbsUp className="w-4 h-4 shrink-0" strokeWidth={1.75} /> Хорошо! Попробуй ещё раз для совершенства.</> :
+             score >= 50 ? <><Megaphone className="w-4 h-4 shrink-0" strokeWidth={1.75} /> Неплохо! Говори чётче и медленнее.</> :
+             <><RotateCcw className="w-4 h-4 shrink-0" strokeWidth={1.75} /> Попробуй ещё раз. Послушай образец и повтори.</>}
           </p>
         </div>
       )}
 
       <div className="p-3 bg-[#6366f1]/5 border border-[#6366f1]/20 rounded-xl mb-3">
-        <p className="text-xs text-[#818cf8] font-medium mb-2 flex items-center gap-1"><Sparkles className="w-3 h-3"/>AI фразы {usingAI&&'· AI режим ✓'}</p>
+        <p className="text-xs text-[#818cf8] font-medium mb-2 flex items-center gap-1"><Sparkles className="w-3 h-3"/>AI фразы {usingAI&&'· AI режим'}</p>
         <div className="flex gap-2">
           <input value={aiTopic} onChange={e=>setAiTopic(e.target.value)} placeholder="hotel, airport, shopping..." className="flex-1 bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#475569] outline-none min-h-[44px]"/>
           <button onClick={generatePhrases} disabled={aiLoading} className="px-3 py-2 bg-[#6366f1] hover:bg-[#5558e8] disabled:opacity-50 text-white rounded-lg text-xs min-h-[44px]">
             {aiLoading?<Loader2 className="w-3.5 h-3.5 animate-spin"/>:<Sparkles className="w-3.5 h-3.5"/>}
           </button>
-          {usingAI&&<button onClick={()=>{setUsingAI(false);setAiPhrases([])}} className="px-3 py-2 bg-white/[0.06] border border-white/10 text-[#64748b] rounded-lg text-xs min-h-[44px]">✕</button>}
+          {usingAI&&<button onClick={()=>{setUsingAI(false);setAiPhrases([])}} className="px-3 py-2 bg-white/[0.06] border border-white/10 text-[#64748b] rounded-lg min-h-[44px]"><X className="w-4 h-4" /></button>}
         </div>
       </div>
 

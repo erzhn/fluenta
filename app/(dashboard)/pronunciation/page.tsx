@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Mic, MicOff, Volume2, ChevronRight, RefreshCw, Play } from 'lucide-react'
+import { Mic, MicOff, Volume2, ChevronRight, RefreshCw, Play, Check, X, Turtle, Rabbit, Footprints, Target, BarChart3, Lightbulb, Flame, Drama, BookOpen, Users, Waves, AlertTriangle } from 'lucide-react'
 
 interface SpeechRecAlt     { transcript: string; confidence: number }
 interface SpeechRecResult  { [i: number]: SpeechRecAlt; length: number; isFinal: boolean }
@@ -302,8 +302,8 @@ function ShadowingTab({ supported }: { supported: boolean }) {
           {words.map((w, i) => (
             <div key={i} className="flex flex-col items-center gap-0.5">
               {score !== null && diff[i] && (
-                <span className="text-sm font-bold" style={{ color: diff[i].ok ? '#10b981' : '#ef4444' }}>
-                  {diff[i].ok ? '✅' : '❌'}
+                <span style={{ color: diff[i].ok ? '#10b981' : '#ef4444' }}>
+                  {diff[i].ok ? <Check className="w-4 h-4" strokeWidth={2.5} /> : <X className="w-4 h-4" strokeWidth={2.5} />}
                 </span>
               )}
               <span className="text-white/80 text-sm font-medium">{w}</span>
@@ -317,23 +317,23 @@ function ShadowingTab({ supported }: { supported: boolean }) {
       <div className="flex flex-wrap items-center justify-center gap-2">
         <button onClick={() => playPhrase(1)}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-primary/40 text-[#818cf8] hover:bg-primary/10 transition-all text-sm font-semibold">
-          <Volume2 className="w-4 h-4" /> 🔊 Слушай
+          <Volume2 className="w-4 h-4" /> Слушай
         </button>
         <button onClick={() => playPhrase(0.6)}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-primary/30 text-[#818cf8] hover:bg-primary/10 transition-all text-sm font-semibold">
-          🐢 Медленно
+          <Turtle className="w-4 h-4" strokeWidth={1.75} /> Медленно
         </button>
         <button onClick={recording ? stopRec : startRec} disabled={!supported}
           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all disabled:opacity-40 ${
             recording ? 'bg-red-500/20 border border-red-500/60 text-red-400' : 'bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white shadow-lg shadow-indigo-500/20'
           }`}>
           {recording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-          {recording ? 'Стоп' : '🎤 Повторяй'}
+          {recording ? 'Стоп' : 'Повторяй'}
         </button>
         {playbackUrl && (
           <button onClick={playMyRecording}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 text-muted-foreground hover:text-white text-sm font-semibold transition-all">
-            <Play className="w-4 h-4" /> ▶️ Моя запись
+            <Play className="w-4 h-4" /> Моя запись
           </button>
         )}
       </div>
@@ -434,7 +434,7 @@ function ReadAloudTab({ supported }: { supported: boolean }) {
                       : 'bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white shadow-xl shadow-indigo-500/25 hover:scale-[1.03]'
           }`}>
           {recording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-          {recording ? 'Остановить' : '🎤 Начать'}
+          {recording ? 'Остановить' : 'Начать'}
         </button>
       </div>
 
@@ -536,7 +536,7 @@ function FreeSpeechTab({ supported }: { supported: boolean }) {
                       : 'bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white shadow-xl shadow-indigo-500/25 hover:scale-[1.03]'
           }`}>
           {recording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-          {recording ? 'Закончить' : '🎤 Начать говорить'}
+          {recording ? 'Закончить' : 'Начать говорить'}
         </button>
       </div>
       {done && transcript && (
@@ -636,8 +636,8 @@ function MinimalPairsTab({ supported }: { supported: boolean }) {
       {phase === 'listen' && (
         <div className="space-y-3">
           <p className="text-center text-muted-foreground text-sm">Нажми на слова чтобы услышать разницу, потом:</p>
-          <button onClick={startGuess} className="w-full py-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white font-bold text-sm">
-            🎯 Угадай какое слово!
+          <button onClick={startGuess} className="w-full py-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white font-bold text-sm inline-flex items-center justify-center gap-2">
+            <Target className="w-4 h-4" strokeWidth={2} /> Угадай какое слово!
           </button>
         </div>
       )}
@@ -656,8 +656,8 @@ function MinimalPairsTab({ supported }: { supported: boolean }) {
             ))}
           </div>
           {correct !== null && (
-            <p className={`text-center font-bold ${correct ? 'text-emerald-400' : 'text-red-400'}`}>
-              {correct ? '✅ Правильно!' : `❌ Нет, прозвучало "${target === 1 ? pair.word1 : pair.word2}"`}
+            <p className={`text-center font-bold inline-flex items-center justify-center gap-1.5 w-full ${correct ? 'text-emerald-400' : 'text-red-400'}`}>
+              {correct ? <><Check className="w-4 h-4" strokeWidth={2.5} /> Правильно!</> : <><X className="w-4 h-4" strokeWidth={2.5} /> Нет, прозвучало &quot;{target === 1 ? pair.word1 : pair.word2}&quot;</>}
             </p>
           )}
         </div>
@@ -665,8 +665,8 @@ function MinimalPairsTab({ supported }: { supported: boolean }) {
       {phase === 'speak' && (
         <div className="space-y-3">
           <p className="text-center text-white font-bold">Теперь произнеси: <span className="text-[#818cf8]">{target === 1 ? pair.word1 : pair.word2}</span></p>
-          <button onClick={startSpeak} disabled={!supported} className="w-full py-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white font-bold text-sm disabled:opacity-40">
-            🎤 Произнести
+          <button onClick={startSpeak} disabled={!supported} className="w-full py-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white font-bold text-sm disabled:opacity-40 inline-flex items-center justify-center gap-2">
+            <Mic className="w-4 h-4" strokeWidth={1.75} /> Произнести
           </button>
         </div>
       )}
@@ -726,7 +726,9 @@ function TongueTwistersTab({ supported }: { supported: boolean }) {
             className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${
               speed === s ? 'bg-primary border-primary text-white' : 'bg-white/[0.03] border-white/10 text-muted-foreground hover:text-white'
             }`}>
-            {s === 'slow' ? '🐢 Медленно' : s === 'normal' ? '🚶 Нормально' : '🏃 Быстро'}
+            <span className="inline-flex items-center gap-1.5">
+              {s === 'slow' ? <><Turtle className="w-4 h-4" strokeWidth={1.75} /> Медленно</> : s === 'normal' ? <><Footprints className="w-4 h-4" strokeWidth={1.75} /> Нормально</> : <><Rabbit className="w-4 h-4" strokeWidth={1.75} /> Быстро</>}
+            </span>
             {scores[s] !== undefined && <span className="ml-1 text-xs opacity-70">{scores[s]}%</span>}
           </button>
         ))}
@@ -734,7 +736,7 @@ function TongueTwistersTab({ supported }: { supported: boolean }) {
       <div className="flex gap-3 justify-center">
         <button onClick={() => speak(tt, rateMap[speed])}
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-primary/40 text-[#818cf8] hover:bg-primary/10 text-sm font-semibold transition-all">
-          <Volume2 className="w-4 h-4"/> 🔊 Послушай
+          <Volume2 className="w-4 h-4"/> Послушай
         </button>
         <button onClick={recording ? () => recRef.current?.stop() : startRec} disabled={!supported}
           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all disabled:opacity-40 ${
@@ -742,7 +744,7 @@ function TongueTwistersTab({ supported }: { supported: boolean }) {
                       : 'bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white shadow-lg'
           }`}>
           {recording ? <MicOff className="w-4 h-4"/> : <Mic className="w-4 h-4"/>}
-          {recording ? 'Слушаю...' : '🎤 Попробуй'}
+          {recording ? 'Слушаю...' : 'Попробуй'}
         </button>
       </div>
       <Waveform active={recording} />
@@ -750,7 +752,7 @@ function TongueTwistersTab({ supported }: { supported: boolean }) {
         <div className="grid grid-cols-3 gap-2">
           {(['slow','normal','fast'] as const).map((s) => scores[s] !== undefined && (
             <div key={s} className="text-center p-3 bg-white/[0.03] rounded-xl border border-white/[0.06]">
-              <p className="text-muted-foreground text-xs mb-1">{s === 'slow' ? '🐢' : s === 'normal' ? '🚶' : '🏃'}</p>
+              <p className="text-muted-foreground mb-1 flex justify-center">{s === 'slow' ? <Turtle className="w-4 h-4" strokeWidth={1.75} /> : s === 'normal' ? <Footprints className="w-4 h-4" strokeWidth={1.75} /> : <Rabbit className="w-4 h-4" strokeWidth={1.75} />}</p>
               <p className="font-black text-lg" style={{ color: colorFor(scores[s]) }}>{scores[s]}%</p>
             </div>
           ))}
@@ -772,7 +774,7 @@ function ProgressPanel() {
     .slice(0, 3)
   return (
     <div className={`${glass} rounded-2xl p-5 space-y-4`}>
-      <h3 className="text-white font-bold">📊 Прогресс</h3>
+      <h3 className="text-white font-bold flex items-center gap-2"><BarChart3 className="w-4 h-4" strokeWidth={1.75} /> Прогресс</h3>
       <div className="grid grid-cols-3 gap-2 text-center">
         <div className="bg-white/[0.03] rounded-xl p-3 border border-white/[0.06]">
           <p className="text-2xl font-black text-[#818cf8]">{data.attempts}</p>
@@ -783,7 +785,7 @@ function ProgressPanel() {
           <p className="text-muted-foreground text-xs">средний балл</p>
         </div>
         <div className="bg-white/[0.03] rounded-xl p-3 border border-white/[0.06]">
-          <p className="text-2xl font-black text-orange-400">{data.streak}🔥</p>
+          <p className="text-2xl font-black text-orange-400 inline-flex items-center gap-1">{data.streak}<Flame className="w-5 h-5" strokeWidth={2} /></p>
           <p className="text-muted-foreground text-xs">дней подряд</p>
         </div>
       </div>
@@ -796,7 +798,7 @@ function ProgressPanel() {
               <span className="text-red-400 font-bold text-sm">{x.avg}%</span>
             </div>
           ))}
-          <p className="text-muted-foreground text-xs">💡 Тренируй эти звуки в «Минимальных парах»</p>
+          <p className="text-muted-foreground text-xs flex items-start gap-1.5"><Lightbulb className="w-3.5 h-3.5 shrink-0 mt-0.5" strokeWidth={1.75} /> Тренируй эти звуки в «Минимальных парах»</p>
         </div>
       )}
     </div>
@@ -805,12 +807,12 @@ function ProgressPanel() {
 
 // ── Main Page ──────────────────────────────────────────────────────────────────
 type Mode = 'shadow'|'read'|'free'|'pairs'|'twister'
-const MODES: { id: Mode; label: string }[] = [
-  { id: 'shadow',  label: '🎭 Повторяй за мной' },
-  { id: 'read',    label: '📖 Читай вслух'       },
-  { id: 'free',    label: '⏱ 30 секунд'          },
-  { id: 'pairs',   label: '👥 Минимальные пары'  },
-  { id: 'twister', label: '🌀 Скороговорки'       },
+const MODES: { id: Mode; label: string; icon: typeof Drama }[] = [
+  { id: 'shadow',  label: 'Повторяй за мной', icon: Drama },
+  { id: 'read',    label: 'Читай вслух',      icon: BookOpen },
+  { id: 'free',    label: '30 секунд',        icon: Target },
+  { id: 'pairs',   label: 'Минимальные пары', icon: Users },
+  { id: 'twister', label: 'Скороговорки',     icon: Waves },
 ]
 
 export default function PronunciationPage() {
@@ -827,13 +829,13 @@ export default function PronunciationPage() {
     <div className="min-h-screen bg-[#0f0f1a] p-4 sm:p-6 lg:p-8">
       <div className="max-w-4xl mx-auto space-y-6">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white">🎤 Тренажёр речи</h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-white inline-flex items-center gap-2"><Mic className="w-7 h-7 text-primary" strokeWidth={1.75} /> Тренажёр речи</h1>
           <p className="text-muted-foreground mt-1">Улучши произношение с помощью AI-анализа</p>
         </div>
 
         {!supported && (
-          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 text-yellow-400 text-sm">
-            ⚠️ Тренажёр речи работает только в Chrome. Открой сайт в Google Chrome.
+          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 text-yellow-400 text-sm flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 shrink-0" strokeWidth={2} /> Тренажёр речи работает только в Chrome. Открой сайт в Google Chrome.
           </div>
         )}
 
@@ -846,7 +848,7 @@ export default function PronunciationPage() {
                   ? 'bg-primary border-primary text-white shadow-lg shadow-indigo-500/20'
                   : 'bg-white/[0.03] border-white/[0.06] text-muted-foreground hover:text-white hover:border-white/20'
               }`}>
-              {m.label}
+              <span className="inline-flex items-center gap-1.5"><m.icon className="w-4 h-4" strokeWidth={1.75} /> {m.label}</span>
             </button>
           ))}
         </div>

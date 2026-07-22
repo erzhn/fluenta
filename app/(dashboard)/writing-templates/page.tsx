@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { Sparkles, Loader2 } from 'lucide-react'
+import { Sparkles, Loader2, Lightbulb } from 'lucide-react'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 
 interface Template {
@@ -252,7 +252,7 @@ export default function WritingTemplatesPage() {
 
       {/* Советы */}
       <div className="bg-[#f59e0b]/5 border border-[#f59e0b]/20 rounded-2xl p-4 mb-6">
-        <p className="text-[#f59e0b] font-semibold text-sm mb-2">💡 Советы</p>
+        <p className="text-[#f59e0b] font-semibold text-sm mb-2 flex items-center gap-1.5"><Lightbulb className="w-4 h-4" strokeWidth={1.75} /> Советы</p>
         <ul className="space-y-1">
           {selected.tips.map((tip, i) => (
             <li key={i} className="text-muted-foreground text-sm flex gap-2">
@@ -286,7 +286,7 @@ export default function WritingTemplatesPage() {
 
       <button onClick={generateWithAI} disabled={generating}
         className="w-full py-4 bg-primary hover:bg-[#5558e8] disabled:opacity-50 text-white font-semibold rounded-2xl transition-colors mb-4">
-        {generating ? '⏳ AI анализирует...' : '✨ Получить AI-обратную связь'}
+        <span className="inline-flex items-center justify-center gap-2">{generating ? <><Loader2 className="w-4 h-4 animate-spin" /> AI анализирует...</> : <><Sparkles className="w-4 h-4" strokeWidth={1.75} /> Получить AI-обратную связь</>}</span>
       </button>
 
       {aiSuggestion && (

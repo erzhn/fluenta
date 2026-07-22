@@ -2,16 +2,17 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { Plane, Briefcase, PenLine, Sparkles, Target, type LucideIcon } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 
 type Goal = 'tourist' | 'business' | 'exam' | 'general'
 type Level = 'A1-A2' | 'B1-B2' | 'C1'
 
-const GOALS = [
-  { id: 'tourist' as Goal, emoji: '✈️', title: 'Туристический', desc: 'Путешествия и общение за рубежом' },
-  { id: 'business' as Goal, emoji: '💼', title: 'Бизнес', desc: 'Профессиональное общение и переговоры' },
-  { id: 'exam' as Goal, emoji: '📝', title: 'Экзамен', desc: 'Подготовка к IELTS, TOEFL, ЕГЭ' },
-  { id: 'general' as Goal, emoji: '🌟', title: 'Общее развитие', desc: 'Комплексное изучение языка' },
+const GOALS: { id: Goal; icon: LucideIcon; title: string; desc: string }[] = [
+  { id: 'tourist', icon: Plane, title: 'Туристический', desc: 'Путешествия и общение за рубежом' },
+  { id: 'business', icon: Briefcase, title: 'Бизнес', desc: 'Профессиональное общение и переговоры' },
+  { id: 'exam', icon: PenLine, title: 'Экзамен', desc: 'Подготовка к IELTS, TOEFL, ЕГЭ' },
+  { id: 'general', icon: Sparkles, title: 'Общее развитие', desc: 'Комплексное изучение языка' },
 ]
 
 const LEVELS = [
@@ -117,7 +118,7 @@ export function OnboardingWizard({ userId, onComplete }: OnboardingWizardProps) 
               className="space-y-6"
             >
               <div className="text-center space-y-2">
-                <h1 className="text-2xl font-bold text-foreground">Добро пожаловать в Fluenta! 👋</h1>
+                <h1 className="text-2xl font-bold text-foreground">Добро пожаловать в Fluenta!</h1>
                 <p className="text-muted-foreground">Какова ваша главная цель изучения английского?</p>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -131,7 +132,9 @@ export function OnboardingWizard({ userId, onComplete }: OnboardingWizardProps) 
                         : 'border-border bg-card hover:border-primary/40 hover:bg-card/80'
                     }`}
                   >
-                    <div className="text-3xl mb-2">{g.emoji}</div>
+                    <div className="w-10 h-10 rounded-xl mb-2 flex items-center justify-center bg-primary/15 border border-primary/20">
+                      <g.icon className="w-5 h-5 text-primary" strokeWidth={1.75} />
+                    </div>
                     <div className="font-semibold text-foreground text-sm">{g.title}</div>
                     <div className="text-xs text-muted-foreground mt-0.5">{g.desc}</div>
                   </button>
@@ -212,7 +215,9 @@ export function OnboardingWizard({ userId, onComplete }: OnboardingWizardProps) 
               className="space-y-6"
             >
               <div className="text-center space-y-2">
-                <div className="text-4xl mb-2">🎯</div>
+                <div className="w-14 h-14 mx-auto mb-2 rounded-2xl flex items-center justify-center bg-primary/15 border border-primary/20">
+                  <Target className="w-7 h-7 text-primary" strokeWidth={1.75} />
+                </div>
                 <h1 className="text-2xl font-bold text-foreground">{rec.title}</h1>
                 <p className="text-muted-foreground text-sm">{rec.description}</p>
               </div>
@@ -241,7 +246,7 @@ export function OnboardingWizard({ userId, onComplete }: OnboardingWizardProps) 
                   disabled={saving}
                   className="flex-1 py-3 rounded-2xl bg-primary text-white font-semibold disabled:opacity-60 transition-all hover:bg-primary/90"
                 >
-                  {saving ? 'Сохраняем...' : 'Начать обучение 🚀'}
+                  {saving ? 'Сохраняем...' : 'Начать обучение'}
                 </button>
               </div>
             </motion.div>

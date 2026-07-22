@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { PartyPopper, X, Check } from 'lucide-react'
 import { SRCard, sm2, getDueCards, loadSRCards, saveSRCards } from '@/lib/spaced-repetition'
 
 export function DailyReview() {
@@ -39,7 +40,7 @@ export function DailyReview() {
   if (done) {
     return (
       <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-5 text-center">
-        <p className="text-2xl mb-2">🎉</p>
+        <PartyPopper className="w-7 h-7 mx-auto mb-2 text-green-400" strokeWidth={1.5} />
         <p className="text-white font-semibold">Повторение завершено!</p>
         <p className="text-muted-foreground text-sm">{todayCount} карточек повторено сегодня</p>
       </div>
@@ -76,16 +77,16 @@ export function DailyReview() {
       {showAnswer && (
         <div className="grid grid-cols-3 gap-2">
           <button onClick={() => handleAnswer(1)}
-            className="py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium hover:bg-red-500/20 transition-colors">
-            ✗ Не знаю
+            className="inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium hover:bg-red-500/20 transition-colors">
+            <X className="w-4 h-4" strokeWidth={2.5} /> Не знаю
           </button>
           <button onClick={() => handleAnswer(3)}
             className="py-2.5 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-sm font-medium hover:bg-yellow-500/20 transition-colors">
             ~ Сомневаюсь
           </button>
           <button onClick={() => handleAnswer(5)}
-            className="py-2.5 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-sm font-medium hover:bg-green-500/20 transition-colors">
-            ✓ Знаю
+            className="inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-sm font-medium hover:bg-green-500/20 transition-colors">
+            <Check className="w-4 h-4" strokeWidth={2.5} /> Знаю
           </button>
         </div>
       )}

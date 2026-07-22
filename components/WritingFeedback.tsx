@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Check, PenLine, AlertTriangle, BookOpen, ChevronUp, ChevronDown } from 'lucide-react'
 
 interface WritingError {
   original: string
@@ -46,7 +47,7 @@ function renderHighlightedText(
             {part.text}
           </span>
           <span className="absolute bottom-full left-0 mb-1 hidden group-hover:block z-10 w-64 bg-card border border-border rounded-xl p-3 text-xs shadow-xl">
-            <span className="block font-semibold text-primary mb-1">✓ {part.error.corrected}</span>
+            <span className="flex items-center gap-1 font-semibold text-primary mb-1"><Check className="w-3.5 h-3.5" strokeWidth={2.5} /> {part.error.corrected}</span>
             <span className="text-muted-foreground">{part.error.explanation}</span>
           </span>
         </span>
@@ -81,8 +82,8 @@ export function WritingFeedback({ data, originalText }: { data: FeedbackData; or
             onClick={() => setShowHighlight(v => !v)}
             className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-white hover:bg-white/[0.04] transition-colors"
           >
-            <span>🖊 Разбор ошибок в тексте</span>
-            <span className="text-muted-foreground text-xs">{showHighlight ? '▲ Свернуть' : '▼ Развернуть'}</span>
+            <span className="inline-flex items-center gap-1.5"><PenLine className="w-4 h-4" strokeWidth={1.75} /> Разбор ошибок в тексте</span>
+            <span className="inline-flex items-center gap-1 text-muted-foreground text-xs">{showHighlight ? <><ChevronUp className="w-3.5 h-3.5" /> Свернуть</> : <><ChevronDown className="w-3.5 h-3.5" /> Развернуть</>}</span>
           </button>
           {showHighlight && (
             <div className="px-4 pb-4 text-sm leading-loose">
@@ -99,7 +100,7 @@ export function WritingFeedback({ data, originalText }: { data: FeedbackData; or
       {/* Паттерны ошибок */}
       {data.patterns?.length > 0 && (
         <div className="p-4 bg-red-500/5 border border-red-500/20 rounded-2xl">
-          <p className="text-red-400 font-semibold text-sm mb-2">⚠️ Частые ошибки</p>
+          <p className="text-red-400 font-semibold text-sm mb-2 flex items-center gap-1.5"><AlertTriangle className="w-4 h-4" strokeWidth={2} /> Частые ошибки</p>
           {data.patterns.map((p, i) => <p key={i} className="text-muted-foreground text-sm">· {p}</p>)}
         </div>
       )}
@@ -107,7 +108,7 @@ export function WritingFeedback({ data, originalText }: { data: FeedbackData; or
       {/* Что хорошо */}
       {data.positives?.length > 0 && (
         <div className="p-4 bg-green-500/5 border border-green-500/20 rounded-2xl">
-          <p className="text-green-400 font-semibold text-sm mb-2">✓ Что хорошо</p>
+          <p className="text-green-400 font-semibold text-sm mb-2 flex items-center gap-1.5"><Check className="w-4 h-4" strokeWidth={2.5} /> Что хорошо</p>
           {data.positives.map((p, i) => <p key={i} className="text-muted-foreground text-sm">· {p}</p>)}
         </div>
       )}
@@ -135,7 +136,7 @@ export function WritingFeedback({ data, originalText }: { data: FeedbackData; or
       {/* Рекомендация */}
       {data.recommendation && (
         <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl">
-          <p className="text-primary font-semibold text-sm mb-1">📚 Рекомендация</p>
+          <p className="text-primary font-semibold text-sm mb-1 flex items-center gap-1.5"><BookOpen className="w-4 h-4" strokeWidth={1.75} /> Рекомендация</p>
           <p className="text-muted-foreground text-sm">{data.recommendation}</p>
         </div>
       )}

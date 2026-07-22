@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { COLLOCATIONS, COLLOCATION_CATEGORIES } from '@/lib/collocations-data'
-import { Sparkles, Loader2 } from 'lucide-react'
+import { Sparkles, Loader2, Volume2, Check, Plus, AlertTriangle } from 'lucide-react'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 
 export default function CollocationsPage() {
@@ -96,12 +96,12 @@ export default function CollocationsPage() {
               </div>
               <div className="flex gap-1.5">
                 <button onClick={() => speak(col.collocation)}
-                  className="w-7 h-7 rounded-lg bg-white/[0.06] hover:bg-white/10 flex items-center justify-center text-xs">🔊</button>
+                  className="w-7 h-7 rounded-lg bg-white/[0.06] hover:bg-white/10 flex items-center justify-center text-muted-foreground"><Volume2 className="w-3.5 h-3.5" strokeWidth={1.75} /></button>
                 <button onClick={() => toggleLearn(col.id)}
-                  className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs transition-all ${
+                  className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
                     learned.has(col.id) ? 'bg-green-500/20 text-green-400' : 'bg-white/[0.06] text-muted-foreground hover:text-white'
                   }`}>
-                  {learned.has(col.id) ? '✓' : '+'}
+                  {learned.has(col.id) ? <Check className="w-3.5 h-3.5" strokeWidth={2.5} /> : <Plus className="w-3.5 h-3.5" strokeWidth={2} />}
                 </button>
               </div>
             </div>
@@ -115,7 +115,7 @@ export default function CollocationsPage() {
                 className="text-xs text-muted-foreground hover:text-muted-foreground transition-colors">
                 {showWrong.has(col.id) ? (
                   <span className="text-red-400/80">{col.wrongExample}</span>
-                ) : '⚠️ Показать частую ошибку'}
+                ) : <span className="inline-flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5" strokeWidth={2} /> Показать частую ошибку</span>}
               </button>
             )}
           </div>

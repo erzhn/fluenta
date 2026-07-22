@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { BookmarkPlus, Check } from "lucide-react";
+import { BookmarkPlus, Check, GraduationCap, Lightbulb, Mic } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { Message } from "@/types";
 
@@ -12,9 +12,9 @@ interface ChatMessageProps {
   streaming?: boolean;
 }
 
-// Parse 💡 vocab patterns: 💡 'word' = 'translation' — description
+// Parse vocab patterns: VOCAB: 'word' = 'translation' — description
 function extractVocab(text: string): Array<{ word: string; translation: string }> {
-  const regex = /💡\s*['"]([^'"]+)['"]\s*=\s*['"]([^'"]+)['"]/g;
+  const regex = /VOCAB:\s*['"]([^'"]+)['"]\s*=\s*['"]([^'"]+)['"]/gi;
   const items: Array<{ word: string; translation: string }> = [];
   let match;
   while ((match = regex.exec(text)) !== null) {
@@ -30,36 +30,38 @@ function MessageText({ text }: { text: string }) {
     <div className="space-y-1.5">
       {lines.map((line, i) => {
         // Russian explanation line
-        if (line.startsWith("🇷🇺:")) {
+        if (line.startsWith("RU:")) {
           return (
             <div
               key={i}
               className="flex items-start gap-1.5 bg-white/5 rounded-lg px-2.5 py-1.5 text-muted-foreground text-xs italic"
             >
-              <span>🇷🇺</span>
+              <span className="font-semibold not-italic text-[#818CF8]">RU</span>
               <span>{line.slice(3).trim()}</span>
             </div>
           );
         }
         // Vocabulary highlight line
-        if (line.includes("💡")) {
+        if (/^VOCAB:/i.test(line.trim())) {
           return (
             <div
               key={i}
-              className="bg-[#F59E0B]/10 border border-[#F59E0B]/25 rounded-lg px-2.5 py-1.5 text-sm"
+              className="flex items-start gap-1.5 bg-[#F59E0B]/10 border border-[#F59E0B]/25 rounded-lg px-2.5 py-1.5 text-sm"
             >
-              {line}
+              <Lightbulb className="w-4 h-4 shrink-0 mt-0.5 text-[#F59E0B]" strokeWidth={1.75} />
+              <span>{line.replace(/^\s*VOCAB:\s*/i, "")}</span>
             </div>
           );
         }
         // Pronunciation tip
-        if (line.includes("🎤")) {
+        if (/^PRON:/i.test(line.trim())) {
           return (
             <div
               key={i}
-              className="bg-primary/10 border border-primary/25 rounded-lg px-2.5 py-1.5 text-sm"
+              className="flex items-start gap-1.5 bg-primary/10 border border-primary/25 rounded-lg px-2.5 py-1.5 text-sm"
             >
-              {line}
+              <Mic className="w-4 h-4 shrink-0 mt-0.5 text-primary" strokeWidth={1.75} />
+              <span>{line.replace(/^\s*PRON:\s*/i, "")}</span>
             </div>
           );
         }
@@ -115,10 +117,10 @@ export function ChatMessage({ message, userId, streaming }: ChatMessageProps) {
         className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-sm font-bold select-none ${
           isUser
             ? "bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] text-white"
-            : "bg-card border border-border text-lg"
+            : "bg-gradient-to-br from-[#6366F1]/20 to-[#8B5CF6]/20 border border-primary/30 text-primary"
         }`}
       >
-        {isUser ? "Вы" : "👨‍🏫"}
+        {isUser ? "Вы" : <GraduationCap className="w-4 h-4" strokeWidth={1.75} />}
       </div>
 
       <div className={`max-w-[78%] flex flex-col gap-1 ${isUser ? "items-end" : "items-start"}`}>

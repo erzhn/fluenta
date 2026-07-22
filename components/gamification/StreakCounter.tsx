@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
+import { Flame, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 interface StreakCounterProps {
   streak: number;
@@ -15,9 +16,9 @@ export function StreakCounter({ streak, hasActivityToday = true, compact = false
         <motion.span
           animate={streak > 0 ? { scale: [1, 1.2, 1] } : {}}
           transition={{ duration: 1.4, repeat: Infinity, repeatDelay: 3 }}
-          className="text-lg"
+          className="inline-flex"
         >
-          🔥
+          <Flame className="w-5 h-5 text-[#F59E0B]" fill="#F59E0B" strokeWidth={1.5} />
         </motion.span>
         <span className="font-bold text-white text-sm">{streak}</span>
         <span className="text-muted-foreground text-xs">дн.</span>
@@ -30,9 +31,9 @@ export function StreakCounter({ streak, hasActivityToday = true, compact = false
       <motion.div
         animate={streak > 0 ? { scale: [1, 1.15, 1] } : {}}
         transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }}
-        className="text-5xl mb-2"
+        className="mb-2"
       >
-        🔥
+        <Flame className="w-12 h-12 text-[#F59E0B]" fill="#F59E0B" strokeWidth={1.25} />
       </motion.div>
 
       <motion.div
@@ -55,7 +56,7 @@ export function StreakCounter({ streak, hasActivityToday = true, compact = false
             exit={{ opacity: 0, y: -4 }}
             className="mt-3 flex items-center gap-1.5 bg-[#F59E0B]/10 border border-[#F59E0B]/30 rounded-xl px-3 py-1.5"
           >
-            <span className="text-sm">⚠️</span>
+            <AlertTriangle className="w-3.5 h-3.5 text-[#F59E0B]" strokeWidth={2} />
             <span className="text-[#F59E0B] text-xs font-medium">Не забудь позаниматься сегодня!</span>
           </motion.div>
         )}
@@ -74,7 +75,7 @@ export function StreakCounter({ streak, hasActivityToday = true, compact = false
             animate={{ opacity: 1, scale: 1 }}
             className="mt-3 flex items-center gap-1.5 bg-[#10B981]/10 border border-[#10B981]/30 rounded-xl px-3 py-1.5"
           >
-            <span className="text-sm">✅</span>
+            <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981]" strokeWidth={2} />
             <span className="text-[#10B981] text-xs font-medium">Цель сегодня выполнена!</span>
           </motion.div>
         )}

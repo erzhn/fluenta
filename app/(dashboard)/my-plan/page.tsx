@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { Loader2, Sparkles, Check } from 'lucide-react'
 
 interface Plan {
   week: number
@@ -55,12 +56,12 @@ export default function MyPlanPage() {
           <label className="text-muted-foreground text-sm block mb-2">Цель</label>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {[
-              { id: 'general', label: '🌍 Общий' },
-              { id: 'travel', label: '✈️ Путешествия' },
-              { id: 'business', label: '💼 Бизнес' },
-              { id: 'ielts', label: '📝 IELTS' },
-              { id: 'it', label: '💻 IT / Tech' },
-              { id: 'conversation', label: '💬 Разговорный' },
+              { id: 'general', label: 'Общий' },
+              { id: 'travel', label: 'Путешествия' },
+              { id: 'business', label: 'Бизнес' },
+              { id: 'ielts', label: 'IELTS' },
+              { id: 'it', label: 'IT / Tech' },
+              { id: 'conversation', label: 'Разговорный' },
             ].map(g => (
               <button key={g.id} onClick={() => setGoal(g.id)}
                 className={`py-2 px-3 rounded-xl text-sm transition-all border ${
@@ -76,7 +77,7 @@ export default function MyPlanPage() {
         </div>
         <button onClick={generatePlan} disabled={loading}
           className="w-full py-3 bg-primary hover:bg-[#5558e8] disabled:opacity-50 text-white font-semibold rounded-xl transition-colors">
-          {loading ? '⏳ Создаю план...' : '✨ Создать план с AI'}
+          <span className="inline-flex items-center justify-center gap-2">{loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Создаю план...</> : <><Sparkles className="w-4 h-4" strokeWidth={1.75} /> Создать план с AI</>}</span>
         </button>
       </div>
 
@@ -101,7 +102,7 @@ export default function MyPlanPage() {
                 </div>
                 <div className="sm:col-span-2">
                   <p className="text-muted-foreground text-xs mb-1">Цель недели</p>
-                  <p className="text-primary">✓ {week.goal}</p>
+                  <p className="text-primary flex items-start gap-1.5"><Check className="w-4 h-4 shrink-0 mt-0.5" strokeWidth={2.5} /> {week.goal}</p>
                 </div>
               </div>
             </div>

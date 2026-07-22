@@ -1,5 +1,6 @@
 'use client'
 import { useMemo } from 'react'
+import { Crown, Lightbulb } from 'lucide-react'
 
 interface ProgressPredictionProps {
   completedLessons: number
@@ -32,7 +33,7 @@ export function ProgressPrediction({ completedLessons, currentLevel, dailyAvgMin
 
   if (!prediction) return (
     <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5 text-center">
-      <p className="text-2xl mb-2">👑</p>
+      <Crown className="w-7 h-7 mx-auto mb-2 text-[#F59E0B]" strokeWidth={1.5} />
       <p className="text-white font-semibold">Уровень C1 достигнут!</p>
     </div>
   )
@@ -73,8 +74,8 @@ export function ProgressPrediction({ completedLessons, currentLevel, dailyAvgMin
       </div>
 
       {dailyAvgMinutes < 20 && (
-        <p className="text-[#f59e0b] text-xs">
-          💡 Занимайся 20 мин/день — и достигнешь цели на {Math.ceil((1 - dailyAvgMinutes/20) * prediction.daysToNextLevel)} дней раньше
+        <p className="text-[#f59e0b] text-xs flex items-start gap-1.5">
+          <Lightbulb className="w-3.5 h-3.5 shrink-0 mt-0.5" strokeWidth={1.75} /> Занимайся 20 мин/день — и достигнешь цели на {Math.ceil((1 - dailyAvgMinutes/20) * prediction.daysToNextLevel)} дней раньше
         </p>
       )}
     </div>

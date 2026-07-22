@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, CheckCircle, Lock, Zap, RotateCcw, BookOpen, FlipHorizontal, Volume2, VolumeX } from 'lucide-react'
+import { ChevronLeft, CheckCircle, Lock, Zap, RotateCcw, BookOpen, FlipHorizontal, Volume2, VolumeX, Lightbulb, Check, X, PartyPopper, Dumbbell } from 'lucide-react'
 import { LESSONS } from '@/lib/lessons-data'
 import type { Lesson } from '@/lib/lessons-data'
 import { MODULES } from '@/lib/modules-data'
@@ -190,7 +190,7 @@ function ExamplesStep({ lesson, onNext }: { lesson: Lesson; onNext: () => void }
         {!seen.has(cur) && (
           <button onClick={markSeen}
             className="w-full py-3 rounded-2xl border border-white/10 text-white/60 hover:text-white hover:border-white/20 text-sm font-medium transition-all">
-            Понятно ✓
+            Понятно
           </button>
         )}
         {allSeen && (
@@ -289,7 +289,7 @@ function ExercisesStep({ lesson, onNext, module: mod }: { lesson: Lesson; onNext
                     </span>
                   ))}
                 </div>
-                {ex.hint && !answered && <p className="text-muted-foreground text-xs">💡 {ex.hint}</p>}
+                {ex.hint && !answered && <p className="text-muted-foreground text-xs flex items-start gap-1.5"><Lightbulb className="w-3.5 h-3.5 shrink-0 mt-0.5 text-[#F59E0B]" strokeWidth={1.75} /> {ex.hint}</p>}
               </div>
             )}
 
@@ -347,7 +347,7 @@ function ExercisesStep({ lesson, onNext, module: mod }: { lesson: Lesson; onNext
           className={`mt-3 px-4 py-3 rounded-xl text-sm font-medium ${
             correct ? 'bg-[#10b981]/10 border border-[#10b981]/30 text-[#10b981]' : 'bg-[#ef4444]/10 border border-[#ef4444]/30 text-[#ef4444]'
           }`}>
-          {correct ? '✅ Правильно!' : `❌ Правильный ответ: ${ex.answer}`}
+          <span className="inline-flex items-center gap-1.5">{correct ? <><Check className="w-4 h-4" strokeWidth={2.5} /> Правильно!</> : <><X className="w-4 h-4" strokeWidth={2.5} /> Правильный ответ: {ex.answer}</>}</span>
         </motion.div>
       )}
 
@@ -399,7 +399,7 @@ function QuizStep({ lesson, onFinish }: { lesson: Lesson; onFinish: (score: numb
     const pass = finalScore / lesson.quiz.length >= PASS_THRESHOLD
     return (
       <div className="flex flex-col items-center justify-center h-full text-center px-4">
-        <div className="text-6xl mb-4">{pass ? '🎉' : '💪'}</div>
+        <div className="mb-4">{pass ? <PartyPopper className="w-14 h-14 text-[#10b981]" strokeWidth={1.25} /> : <Dumbbell className="w-14 h-14 text-[#f59e0b]" strokeWidth={1.25} />}</div>
         <h3 className="text-white font-black text-xl mb-2">{pass ? 'Урок завершён!' : 'Попробуй снова'}</h3>
         <p className="text-muted-foreground text-sm mb-2">{finalScore} из {lesson.quiz.length} правильно</p>
         {pass && (
@@ -576,11 +576,11 @@ function isModuleLessonUnlocked(lesson: ModuleLesson, allModuleLessons: ModuleLe
 }
 
 const MODULE_TABS = [
-  { id: null,         label: '📚 Основной курс' },
-  { id: 'business',  label: '💼 Деловой' },
-  { id: 'academic',  label: '🎓 Академическое' },
-  { id: 'speaking',  label: '🗣️ Разговорный' },
-  { id: 'grammar',   label: '📖 Грамматика' },
+  { id: null,         label: 'Основной курс' },
+  { id: 'business',  label: 'Деловой' },
+  { id: 'academic',  label: 'Академическое' },
+  { id: 'speaking',  label: 'Разговорный' },
+  { id: 'grammar',   label: 'Грамматика' },
 ] as const
 
 // в"Ђв"Ђв"Ђ Main Page в"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђв"Ђ
@@ -678,7 +678,7 @@ export default function LessonsPage() {
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-2xl font-black text-white"><span className="gradient-text">Уроки</span> 📚</h1>
+                <h1 className="text-2xl font-black text-white"><span className="gradient-text">Уроки</span></h1>
                 <p className="text-muted-foreground text-sm mt-0.5">
                   {activeModule
                     ? `${currentModuleMeta?.title ?? ''} · ${moduleLessons.filter(l => progress.completedLessons[l.id]).length}/${moduleLessons.length} уроков`
@@ -814,7 +814,7 @@ export default function LessonsPage() {
             <motion.div initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }}
               onClick={e => e.stopPropagation()}
               className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl">
-              <div className="text-5xl mb-4">🔒</div>
+              <Lock className="w-12 h-12 mx-auto mb-4 text-primary" strokeWidth={1.5} />
               <h2 className="text-white font-bold text-xl mb-2">Зарегистрируйся бесплатно</h2>
               <p className="text-muted-foreground text-sm mb-6">Чтобы продолжить обучение, создай бесплатный аккаунт и получи доступ ко всем 95 урокам</p>
               <div className="flex flex-col gap-3">

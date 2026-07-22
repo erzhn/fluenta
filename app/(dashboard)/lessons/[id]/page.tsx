@@ -5,7 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Clock, Zap, CheckCircle, ChevronRight,
-  BookOpen, MessageSquare, X, Send, Loader2
+  BookOpen, MessageSquare, X, Send, Loader2,
+  Trophy, PartyPopper, Dumbbell, GraduationCap, PenLine
 } from "lucide-react";
 import Link from "next/link";
 import { ExerciseEngine } from "@/components/lessons/ExerciseEngine";
@@ -55,8 +56,8 @@ function CelebrationScreen({ score, total, xpEarned, nextLessonId, onRetry }: {
       <Confetti />
       <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", damping: 12, stiffness: 200, delay: 0.3 }}
-        className="relative z-10 text-7xl mb-5">
-        {perfect ? "🏆" : score >= Math.ceil(total * 0.6) ? "🎉" : "💪"}
+        className="relative z-10 mb-5">
+        {perfect ? <Trophy className="w-16 h-16 text-[#f59e0b]" strokeWidth={1.25} /> : score >= Math.ceil(total * 0.6) ? <PartyPopper className="w-16 h-16 text-[#10b981]" strokeWidth={1.25} /> : <Dumbbell className="w-16 h-16 text-[#818cf8]" strokeWidth={1.25} />}
       </motion.div>
       <motion.h2 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
         className="relative z-10 text-2xl font-extrabold text-white mb-2">
@@ -113,7 +114,7 @@ function CelebrationScreen({ score, total, xpEarned, nextLessonId, onRetry }: {
 function AlexChat({ lessonTitle, onClose }: { lessonTitle: string; onClose: () => void }) {
   const [messages, setMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([{
     role: "assistant",
-    content: `Привет! Я готов ответить на вопросы по теме **"${lessonTitle}"**.\n\nЧто непонятно? Спрашивай! 😊`,
+    content: `Привет! Я готов ответить на вопросы по теме **"${lessonTitle}"**.\n\nЧто непонятно? Спрашивай!`,
   }]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -177,9 +178,9 @@ function AlexChat({ lessonTitle, onClose }: { lessonTitle: string; onClose: () =
       className="fixed right-0 top-0 bottom-0 w-full sm:w-96 bg-[#0A1628] border-l border-[#1E293B] z-50 flex flex-col shadow-2xl">
       <div className="flex items-center justify-between px-5 py-4 border-b border-[#1E293B] shrink-0">
         <div className="flex items-center gap-2.5">
-          <span className="text-2xl">👨‍🏫</span>
+          <span className="w-9 h-9 rounded-full bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center text-white"><GraduationCap className="w-5 h-5" strokeWidth={1.75} /></span>
           <div>
-            <div className="text-white font-bold text-sm">Alex</div>
+            <div className="text-white font-bold text-sm">Zhan</div>
             <div className="text-muted-foreground text-xs">Спроси про урок</div>
           </div>
         </div>
@@ -192,7 +193,7 @@ function AlexChat({ lessonTitle, onClose }: { lessonTitle: string; onClose: () =
         {messages.map((msg, i) => (
           <div key={i} className={`flex gap-2 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
             {msg.role === "assistant" && (
-              <div className="w-7 h-7 rounded-full bg-card border border-border flex items-center justify-center text-sm shrink-0">👨‍🏫</div>
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#6366F1]/20 to-[#8B5CF6]/20 border border-primary/30 text-primary flex items-center justify-center shrink-0"><GraduationCap className="w-4 h-4" strokeWidth={1.75} /></div>
             )}
             <div className={`max-w-[80%] px-3 py-2.5 rounded-2xl text-sm leading-relaxed ${
               msg.role === "user" ? "bg-primary text-white rounded-tr-sm" : "bg-card border border-border text-[#E2E8F0] rounded-tl-sm"
@@ -203,7 +204,7 @@ function AlexChat({ lessonTitle, onClose }: { lessonTitle: string; onClose: () =
         ))}
         {loading && !streamRef.current && (
           <div className="flex gap-2">
-            <div className="w-7 h-7 rounded-full bg-card border border-border flex items-center justify-center text-sm shrink-0">👨‍🏫</div>
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#6366F1]/20 to-[#8B5CF6]/20 border border-primary/30 text-primary flex items-center justify-center shrink-0"><GraduationCap className="w-4 h-4" strokeWidth={1.75} /></div>
             <div className="bg-card border border-border rounded-2xl rounded-tl-sm px-3 py-2.5">
               <div className="flex gap-1.5">
                 {[0, 1, 2].map(i => (
@@ -266,7 +267,7 @@ export default function LessonPlayerPage() {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
-          <div className="text-4xl mb-3">📚</div>
+          <BookOpen className="w-10 h-10 mx-auto mb-3 text-muted-foreground" strokeWidth={1.5} />
           <div className="text-white font-bold mb-2">Урок не найден</div>
           <Link href="/lessons" className="text-primary hover:underline text-sm">← Вернуться к урокам</Link>
         </div>
@@ -357,7 +358,7 @@ export default function LessonPlayerPage() {
 
                   <button onClick={() => setAlexOpen(true)}
                     className="flex items-center gap-2 w-full py-3 px-4 rounded-xl bg-primary/10 border border-primary/25 text-[#818CF8] text-sm font-medium hover:bg-primary/20 transition-all">
-                    <MessageSquare className="w-4 h-4" />Ask Alex про эту тему 🤖
+                    <MessageSquare className="w-4 h-4" />Спроси Zhan про эту тему
                   </button>
                 </div>
 
@@ -366,7 +367,7 @@ export default function LessonPlayerPage() {
                   {phase === "reading" ? (
                     <div className="flex flex-col items-center justify-center h-full text-center px-4">
                       <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-                        transition={{ type: "spring" }} className="text-6xl mb-5">📝</motion.div>
+                        transition={{ type: "spring" }} className="mb-5"><PenLine className="w-14 h-14 text-primary" strokeWidth={1.25} /></motion.div>
                       <h2 className="text-white font-extrabold text-lg mb-2">Готов к упражнениям?</h2>
                       <p className="text-muted-foreground text-sm mb-6 max-w-xs">
                         {lesson.exercises.length} упражнений по теме «{lesson.title}»

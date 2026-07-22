@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Mic, MicOff, Volume2, ChevronRight, RotateCcw, Loader2, CheckCircle } from 'lucide-react'
+import { Mic, MicOff, Volume2, ChevronRight, RotateCcw, Loader2, CheckCircle, GraduationCap, PartyPopper } from 'lucide-react'
 import { speak, stopSpeaking, createRecognition, isSpeechRecognitionSupported } from '@/lib/speech'
 import { supabase } from '@/lib/supabase'
 import { awardXP, XP_REWARDS } from '@/lib/xp'
@@ -294,7 +294,7 @@ export default function IELTSSpeakingPage() {
             <motion.div key="start" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }}
               className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 space-y-5">
               <div className="text-center space-y-3">
-                <div className="text-5xl">🎓</div>
+                <GraduationCap className="w-12 h-12 mx-auto text-primary" strokeWidth={1.5} />
                 <h2 className="text-white font-bold text-xl">Готовы к экзамену?</h2>
                 <p className="text-muted-foreground text-sm leading-relaxed">
                   Симуляция IELTS Speaking состоит из 3 частей. Говорите чётко по-английски — ИИ оценит вас по официальным критериям.
@@ -473,7 +473,7 @@ export default function IELTSSpeakingPage() {
               className="space-y-4">
               {!feedback && !feedbackLoading && (
                 <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 text-center space-y-4">
-                  <div className="text-5xl">🎉</div>
+                  <PartyPopper className="w-12 h-12 mx-auto text-primary" strokeWidth={1.5} />
                   <h2 className="text-white font-bold text-xl">Экзамен завершён!</h2>
                   <p className="text-muted-foreground text-sm">Нажмите кнопку ниже, чтобы получить оценку IELTS от ИИ-экзаменатора.</p>
                   <button onClick={getFeedback}

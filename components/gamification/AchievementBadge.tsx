@@ -67,9 +67,9 @@ function UnlockCelebration({ achievement, onClose }: { achievement: AchievementW
         <motion.div
           animate={{ scale: [1, 1.15, 1], rotate: [0, -5, 5, 0] }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="text-7xl mb-5"
+          className="mx-auto mb-5 w-20 h-20 rounded-3xl flex items-center justify-center bg-gradient-to-br from-[#6366F1]/25 to-[#8B5CF6]/25 border border-primary/30"
         >
-          {achievement.icon}
+          <achievement.icon className="w-10 h-10 text-[#a5b4fc]" strokeWidth={1.75} />
         </motion.div>
 
         <h3 className="text-white font-extrabold text-xl mb-2">{achievement.title}</h3>
@@ -86,7 +86,7 @@ function UnlockCelebration({ achievement, onClose }: { achievement: AchievementW
           onClick={onClose}
           className="w-full py-3 rounded-xl bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white font-bold text-sm"
         >
-          Отлично! 🎉
+          Отлично!
         </motion.button>
       </motion.div>
     </motion.div>
@@ -136,9 +136,9 @@ export function AchievementBadge({ achievement, showCelebration = false, size = 
           style={{ backgroundColor: achievement.unlocked ? "#6366F120" : "#1E293B" }}
         >
           {achievement.unlocked ? (
-            <span>{achievement.icon}</span>
+            <achievement.icon className="w-1/2 h-1/2 text-[#a5b4fc]" strokeWidth={1.75} />
           ) : (
-            <span className="opacity-30 grayscale">{achievement.icon}</span>
+            <achievement.icon className="w-1/2 h-1/2 text-[#334155] opacity-40" strokeWidth={1.75} />
           )}
         </div>
 

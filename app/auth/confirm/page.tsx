@@ -41,7 +41,7 @@ export default function AuthConfirmPage() {
 
   return (
     <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'#0f0f23', color:'white', fontFamily:'sans-serif', flexDirection:'column', gap:'16px' }}>
-      <div style={{ fontSize:'48px' }}>✨</div>
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v3m0 12v3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1M3 12h3m12 0h3M5.6 18.4l2.1-2.1m8.6-8.6 2.1-2.1"/></svg>
       <p style={{ fontSize:'18px' }}>{status}</p>
       {status.includes('Не удалось') && (
         <a href="/auth/login" style={{ color:'#6366f1', textDecoration:'underline' }}>← Попробовать снова</a>
