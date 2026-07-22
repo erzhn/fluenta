@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence, useMotionValue, useTransform, useAnimation } from 'framer-motion'
-import { RotateCcw, Volume2, Check, X, Layers, BookOpen, Sparkles, Loader2 } from 'lucide-react'
+import { RotateCcw, Volume2, Check, X, Layers, BookOpen, Sparkles, Loader2, PenLine } from 'lucide-react'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 import { VOCABULARY, getWordsForLesson, type VocabWord } from '@/lib/vocabulary-data'
 import { speak, stopSpeaking } from '@/lib/speech'
@@ -11,6 +11,7 @@ import { supabase } from '@/lib/supabase'
 import { awardXP, XP_REWARDS } from '@/lib/xp'
 
 const STORAGE_KEY = 'fluenta_vocab_srs'
+const OWN_EXAMPLES_KEY = 'fluenta_vocab_own_examples'
 
 interface CardState {
   id: string
@@ -141,6 +142,17 @@ const LESSON_NAMES: Record<string, string> = {
   'a1-3-13': 'Время',
   'a1-3-14': 'Глаголы действия',
   'a1-3-15': 'Present Continuous',
+  // B1 Thematic Vocabulary (English Vocabulary in Use)
+  'b1-vocab-learning': 'B1 · Учёба и словарь',
+  'b1-vocab-appearance': 'B1 · Внешность',
+  'b1-vocab-character': 'B1 · Характер',
+  'b1-vocab-feelings': 'B1 · Чувства и эмоции',
+  'b1-vocab-family': 'B1 · Семья и отношения',
+  'b1-vocab-home': 'B1 · Дом и жильё',
+  'b1-vocab-weather': 'B1 · Погода',
+  'b1-vocab-world': 'B1 · Физический мир',
+  'b1-vocab-animals': 'B1 · Животные',
+  'b1-vocab-body': 'B1 · Тело и движение',
 }
 
 const LESSON_IDS = Object.keys(LESSON_NAMES)
@@ -170,6 +182,8 @@ export default function VocabularyPage() {
   const xpAwardedRef = useRef(false)
 
   const [speaking, setSpeaking] = useState(false)
+  const [ownExamples, setOwnExamples] = useState<Record<string, string>>({})
+  const [showFiveMinHint, setShowFiveMinHint] = useState(false)
   const { generate, loading: aiLoading } = useAIGenerate()
   const [aiExamples, setAiExamples] = useState<string[]>([])
   async function getExamples(word: string) {
@@ -226,6 +240,11 @@ export default function VocabularyPage() {
       setHydrated(true)
     })
     loadUserWords()
+    // Load own examples (principle 5: contextual anchoring)
+    try {
+      const raw = localStorage.getItem(OWN_EXAMPLES_KEY)
+      if (raw) setOwnExamples(JSON.parse(raw))
+    } catch { /* ignore */ }
   }, [])
 
   const card = queue[qIdx]
@@ -558,26 +577,41 @@ export default function VocabularyPage() {
 
             {!lessonDone && lessonCard && (
               <motion.div key={`lesson-${lessonCard.id}`} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }}>
-                <div className="relative h-56 cursor-pointer" onClick={() => setLessonFlipped(v => !v)}
+                <div className="relative h-64 cursor-pointer" onClick={() => setLessonFlipped(v => !v)}
                   style={{ perspective: '1000px' }}>
                   <motion.div className="absolute inset-0 w-full h-full" style={{ transformStyle: 'preserve-3d' }}
                     animate={{ rotateY: lessonFlipped ? 180 : 0 }} transition={{ duration: 0.4 }}>
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#6366f1]/20 to-[#8b5cf6]/20 border border-primary/30 rounded-2xl flex flex-col items-center justify-center"
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#6366f1]/20 to-[#8b5cf6]/20 border border-primary/30 rounded-2xl flex flex-col items-center justify-center px-4"
                       style={{ backfaceVisibility: 'hidden' }}>
-                      <p className="text-white text-3xl font-bold mb-3">{lessonCard.word}</p>
-                      <p className="text-muted-foreground text-sm">Нажми, чтобы увидеть перевод</p>
+                      {lessonCard.partOfSpeech && (
+                        <span className="text-[10px] font-semibold uppercase tracking-widest text-[#818cf8]/80 bg-[#818cf8]/10 px-2.5 py-0.5 rounded-full mb-3">{lessonCard.partOfSpeech}</span>
+                      )}
+                      <p className="text-white text-3xl font-bold mb-2">{lessonCard.word}</p>
+                      <p className="text-muted-foreground text-xs mb-4">Нажми, чтобы узнать значение</p>
                       <button onClick={e => { e.stopPropagation(); handleListen(lessonCard.word) }}
-                        className="mt-4 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 text-muted-foreground hover:text-white text-sm transition-colors">
-                        <Volume2 className="w-4 h-4" /> Послушать
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#6366f1]/30 border border-[#6366f1]/50 text-[#a5b4fc] hover:bg-[#6366f1]/50 font-semibold text-sm transition-all">
+                        <Volume2 className="w-4 h-4" /> {speaking ? '⏹ Стоп' : '🔊 Скажи вслух!'}
                       </button>
                     </div>
-                    <div className="absolute inset-0 bg-white/[0.04] border border-white/10 rounded-2xl flex flex-col items-center justify-center p-6"
+                    <div className="absolute inset-0 bg-white/[0.04] border border-white/10 rounded-2xl flex flex-col items-center justify-start overflow-y-auto p-5"
                       style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
-                      <p className="text-muted-foreground text-sm mb-1">Перевод</p>
-                      <p className="text-white text-2xl font-bold mb-4">{lessonCard.translation}</p>
-                      <p className="text-muted-foreground text-sm text-center italic">"{lessonCard.example}"</p>
-                      <p className="text-muted-foreground text-xs text-center mt-1">{lessonCard.exampleTranslation}</p>
-                      <div className="mt-3 pt-3 border-t border-white/10 w-full text-center">
+                      <p className="text-muted-foreground text-xs mb-0.5">Перевод</p>
+                      <p className="text-white text-2xl font-bold mb-1">{lessonCard.translation}</p>
+                      {lessonCard.definition && (
+                        <p className="text-[#a5b4fc]/80 text-xs text-center italic mb-2 px-2">{lessonCard.definition}</p>
+                      )}
+                      <p className="text-muted-foreground text-sm text-center italic mb-1">"{lessonCard.example}"</p>
+                      {(lessonCard.synonyms?.length || lessonCard.antonym) && (
+                        <div className="flex flex-wrap gap-1.5 justify-center mb-1">
+                          {lessonCard.synonyms?.map((s, si) => (
+                            <span key={si} className="text-[11px] bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-2 py-0.5 text-emerald-300/80">= {s}</span>
+                          ))}
+                          {lessonCard.antonym && (
+                            <span className="text-[11px] bg-rose-500/10 border border-rose-500/20 rounded-lg px-2 py-0.5 text-rose-300/80">↔ {lessonCard.antonym}</span>
+                          )}
+                        </div>
+                      )}
+                      <div className="mt-2 pt-2 border-t border-white/10 w-full text-center">
                         {collocMap.has(lessonCard.word) ? (
                           <div>
                             <p className="text-[10px] uppercase tracking-wider text-white/40 mb-1">Коллокации</p>
@@ -663,36 +697,50 @@ export default function VocabularyPage() {
 
             {!done && card && (
               <motion.div key={card.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }}>
-                <div className="relative h-56 cursor-pointer" onClick={() => setFlipped(v => !v)}
+                <div className="relative h-64 cursor-pointer" onClick={() => setFlipped(v => !v)}
                   style={{ perspective: '1000px' }}>
                   <motion.div className="absolute inset-0 w-full h-full" style={{ transformStyle: 'preserve-3d' }}
                     animate={{ rotateY: flipped ? 180 : 0 }} transition={{ duration: 0.4 }}>
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#6366f1]/20 to-[#8b5cf6]/20 border border-primary/30 rounded-2xl flex flex-col items-center justify-center"
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#6366f1]/20 to-[#8b5cf6]/20 border border-primary/30 rounded-2xl flex flex-col items-center justify-center px-4"
                       style={{ backfaceVisibility: 'hidden' }}>
-                      <p className="text-white text-3xl font-bold mb-3">{card.word}</p>
-                      <p className="text-muted-foreground text-sm">Нажми, чтобы увидеть перевод</p>
+                      {card.partOfSpeech && (
+                        <span className="text-[10px] font-semibold uppercase tracking-widest text-[#818cf8]/80 bg-[#818cf8]/10 px-2.5 py-0.5 rounded-full mb-3">{card.partOfSpeech}</span>
+                      )}
+                      <p className="text-white text-3xl font-bold mb-2">{card.word}</p>
+                      <p className="text-muted-foreground text-xs mb-4">Нажми, чтобы узнать значение</p>
                       <button onClick={e => { e.stopPropagation(); handleListen(card.word) }}
-                        className="mt-4 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 text-muted-foreground hover:text-white text-sm transition-colors">
-                        <Volume2 className="w-4 h-4" /> {speaking ? '⏹ Стоп' : 'Послушать'}
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#6366f1]/30 border border-[#6366f1]/50 text-[#a5b4fc] hover:bg-[#6366f1]/50 font-semibold text-sm transition-all">
+                        <Volume2 className="w-4 h-4" /> {speaking ? '⏹ Стоп' : '🔊 Скажи вслух!'}
                       </button>
                     </div>
-                    <div className="absolute inset-0 bg-white/[0.04] border border-white/10 rounded-2xl flex flex-col items-center justify-center p-6"
+                    <div className="absolute inset-0 bg-white/[0.04] border border-white/10 rounded-2xl flex flex-col items-center justify-start overflow-y-auto p-5"
                       style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
-                      <p className="text-muted-foreground text-sm mb-1">Перевод</p>
-                      <p className="text-white text-2xl font-bold mb-4">{card.translation}</p>
-                      <p className="text-muted-foreground text-sm text-center italic">"{card.example}"</p>
-                      <p className="text-muted-foreground text-xs text-center mt-1">{card.exampleTranslation}</p>
+                      <p className="text-muted-foreground text-xs mb-0.5">Перевод</p>
+                      <p className="text-white text-2xl font-bold mb-1">{card.translation}</p>
+                      {card.definition && (
+                        <p className="text-[#a5b4fc]/80 text-xs text-center italic mb-2 px-2">{card.definition}</p>
+                      )}
+                      <p className="text-muted-foreground text-sm text-center italic mb-1">"{card.example}"</p>
+                      {(card.synonyms?.length || card.antonym) && (
+                        <div className="flex flex-wrap gap-1.5 justify-center mb-1">
+                          {card.synonyms?.map((s, si) => (
+                            <span key={si} className="text-[11px] bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-2 py-0.5 text-emerald-300/80">= {s}</span>
+                          ))}
+                          {card.antonym && (
+                            <span className="text-[11px] bg-rose-500/10 border border-rose-500/20 rounded-lg px-2 py-0.5 text-rose-300/80">↔ {card.antonym}</span>
+                          )}
+                        </div>
+                      )}
                       <button onClick={e=>{e.stopPropagation();getExamples(card.word)}} disabled={aiLoading}
-                        className="flex items-center gap-1 text-xs text-[#818cf8] hover:text-white disabled:opacity-50 mt-2 min-h-[36px]">
+                        className="flex items-center gap-1 text-xs text-[#818cf8] hover:text-white disabled:opacity-50 mt-1">
                         {aiLoading?<><Loader2 className="w-3 h-3 animate-spin"/>AI примеры...</>:<><Sparkles className="w-3 h-3"/>AI примеры</>}
                       </button>
                       {aiExamples.length>0&&(
-                        <div className="mt-2 space-y-1 text-left w-full">
+                        <div className="mt-1 space-y-1 text-left w-full">
                           {aiExamples.map((ex,i)=><p key={i} className="text-xs text-[#64748b] italic">&quot;{ex}&quot;</p>)}
                         </div>
                       )}
-                      {/* Collocations */}
-                      <div className="mt-3 pt-3 border-t border-white/10 w-full text-left">
+                      <div className="mt-2 pt-2 border-t border-white/10 w-full text-left">
                         {collocMap.has(card.word) ? (
                           <div>
                             <p className="text-[10px] uppercase tracking-wider text-white/40 mb-1">Коллокации</p>
@@ -727,15 +775,53 @@ export default function VocabularyPage() {
                 <AnimatePresence>
                   {flipped && (
                     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                      className="flex gap-4 mt-4">
-                      <button onClick={() => handleAnswer(false)}
-                        className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-[#ef4444]/15 border border-[#ef4444]/30 text-[#f87171] font-semibold hover:bg-[#ef4444]/25 transition-colors">
-                        <X className="w-5 h-5" /> Не знаю
-                      </button>
-                      <button onClick={() => handleAnswer(true)}
-                        className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-[#10b981]/15 border border-[#10b981]/30 text-[#10b981] font-semibold hover:bg-[#10b981]/25 transition-colors">
-                        <Check className="w-5 h-5" /> Знаю
-                      </button>
+                      className="space-y-3 mt-4">
+                      {/* Principle 5: Own example — contextual anchoring */}
+                      <div className="relative">
+                        <PenLine className="absolute left-3 top-2.5 w-3.5 h-3.5 text-white/25 pointer-events-none" />
+                        <textarea
+                          value={ownExamples[card.id] ?? ''}
+                          onChange={e => {
+                            const val = e.target.value
+                            setOwnExamples(prev => {
+                              const next = { ...prev, [card.id]: val }
+                              try { localStorage.setItem(OWN_EXAMPLES_KEY, JSON.stringify(next)) } catch { /* ignore */ }
+                              return next
+                            })
+                          }}
+                          onClick={e => e.stopPropagation()}
+                          placeholder="Составь своё предложение с этим словом…"
+                          rows={2}
+                          className="w-full bg-white/[0.04] border border-white/10 rounded-xl pl-8 pr-3 pt-2 pb-2 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-primary/40 resize-none"
+                        />
+                      </div>
+                      {/* Principle 6: 5-minute rule — shown after "Не знаю" */}
+                      {showFiveMinHint ? (
+                        <div className="space-y-2">
+                          <div className="flex gap-2 items-start bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-xs text-amber-200/80">
+                            <span className="text-sm leading-none mt-0.5">⏱</span>
+                            <div>
+                              <p className="font-semibold mb-0.5">5-минутное правило</p>
+                              <p>Произнеси слово вслух, перечитай определение и составь своё предложение — только потом иди дальше.</p>
+                            </div>
+                          </div>
+                          <button onClick={() => { setShowFiveMinHint(false); handleAnswer(false) }}
+                            className="w-full py-3 rounded-2xl bg-white/[0.06] border border-white/10 text-muted-foreground hover:text-white font-medium text-sm transition-colors">
+                            Понял, запомню → идём дальше
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex gap-4">
+                          <button onClick={() => setShowFiveMinHint(true)}
+                            className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-[#ef4444]/15 border border-[#ef4444]/30 text-[#f87171] font-semibold hover:bg-[#ef4444]/25 transition-colors">
+                            <X className="w-5 h-5" /> Не знаю
+                          </button>
+                          <button onClick={() => handleAnswer(true)}
+                            className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-[#10b981]/15 border border-[#10b981]/30 text-[#10b981] font-semibold hover:bg-[#10b981]/25 transition-colors">
+                            <Check className="w-5 h-5" /> Знаю
+                          </button>
+                        </div>
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>
