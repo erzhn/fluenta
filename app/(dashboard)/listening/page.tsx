@@ -8,6 +8,7 @@ import { getListeningTexts, type ListeningText } from '@/lib/listening-data'
 import { supabase } from '@/lib/supabase'
 import { toast } from '@/components/ui/Toast'
 import { SkeletonCard } from '@/components/ui/Skeleton'
+import { awardXP, XP_REWARDS } from '@/lib/xp'
 
 const LEVEL_COLORS: Record<string, string> = {
   A1: '#10b981', A2: '#3b82f6', B1: '#8b5cf6', B2: '#f59e0b', C1: '#ef4444',
@@ -251,7 +252,7 @@ export default function ListeningPage() {
                 ))}
 
                 {!checked ? (
-                  <button disabled={!allAnswered} onClick={() => setChecked(true)}
+                  <button disabled={!allAnswered} onClick={() => { setChecked(true); awardXP(XP_REWARDS.FLASHCARD_SESSION).catch(() => {}) }}
                     className="w-full py-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white font-semibold disabled:opacity-40 hover:opacity-90 transition-opacity">
                     Проверить
                   </button>

@@ -8,6 +8,7 @@ import { getReadingTexts, type ReadingText } from '@/lib/reading-data'
 import { supabase } from '@/lib/supabase'
 import { toast } from '@/components/ui/Toast'
 import { SkeletonCard } from '@/components/ui/Skeleton'
+import { awardXP, XP_REWARDS } from '@/lib/xp'
 
 interface VocabItem {
   word: string
@@ -325,7 +326,7 @@ export default function ReadingPage() {
               ))}
 
               {!checked ? (
-                <button disabled={!allAnswered} onClick={() => setChecked(true)}
+                <button disabled={!allAnswered} onClick={() => { setChecked(true); awardXP(XP_REWARDS.FLASHCARD_SESSION).catch(() => {}) }}
                   className="w-full py-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white font-semibold disabled:opacity-40 hover:opacity-90 transition-opacity">
                   Проверить ответы
                 </button>

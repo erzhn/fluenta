@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Mic, MicOff, Volume2, ChevronRight, RotateCcw, Loader2, CheckCircle } from 'lucide-react'
 import { speak, stopSpeaking, createRecognition, isSpeechRecognitionSupported } from '@/lib/speech'
 import { supabase } from '@/lib/supabase'
+import { awardXP, XP_REWARDS } from '@/lib/xp'
 
 // ─── Data ──────────────────────────────────────────────────────────────
 const TOPICS = {
@@ -246,6 +247,7 @@ export default function IELTSSpeakingPage() {
       })
       const data = await res.json()
       setFeedback(data)
+      awardXP(XP_REWARDS.AI_CONVERSATION).catch(() => {})
     } catch {
       setFeedback(null)
     } finally {

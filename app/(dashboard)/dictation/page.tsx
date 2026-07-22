@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Sparkles, Loader2 } from 'lucide-react'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
+import { awardXP, XP_REWARDS } from '@/lib/xp'
 
 const TOPICS_BY_LEVEL: Record<string, string[]> = {
   A1: ['daily life', 'food', 'colors', 'numbers', 'family', 'weather', 'animals', 'body'],
@@ -121,6 +122,7 @@ export default function DictationPage() {
   function handleNext() {
     if (currentIndex + 1 >= sessionWords.length) {
       setFinished(true)
+      awardXP(XP_REWARDS.FLASHCARD_SESSION).catch(() => {})
     } else {
       setCurrentIndex(i => i + 1)
       setUserInput('')

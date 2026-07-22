@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { GrammarExercise } from '@/components/GrammarExercise'
 import { Sparkles, Loader2 } from 'lucide-react'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
+import { awardXP, XP_REWARDS } from '@/lib/xp'
 
 const GRAMMAR_TOPICS = [
   { id: 'present-simple',     label: 'Present Simple',     level: 'A1' },
@@ -120,6 +121,7 @@ export default function GrammarExercisesPage() {
                   const correct = opt === aiEx.answer
                   if (correct) {
                     setStreak(s => s + 1)
+                    awardXP(XP_REWARDS.FLASHCARD_SESSION).catch(() => {})
                     setTimeout(() => generateExercise(), 1500)
                   } else {
                     setStreak(0)

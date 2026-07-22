@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { MINI_STORIES, MiniStory } from '@/lib/mini-stories-data'
 import { Sparkles, Loader2 } from 'lucide-react'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
+import { awardXP, XP_REWARDS } from '@/lib/xp'
 
 function addWordsToSR(words: MiniStory['vocabWords']) {
   const cards = JSON.parse(localStorage.getItem('fluenta_sr_cards') ?? '[]')
@@ -144,7 +145,7 @@ export default function MiniStoriesPage() {
               </div>
             ))}
             {!checked && (
-              <button onClick={() => setChecked(true)}
+              <button onClick={() => { setChecked(true); awardXP(XP_REWARDS.FLASHCARD_SESSION).catch(() => {}) }}
                 className="w-full py-3 bg-primary hover:bg-[#5558e8] text-white font-medium rounded-xl transition-colors">
                 Показать ответы
               </button>
