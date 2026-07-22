@@ -2,64 +2,86 @@
 import { useEffect, useState } from 'react'
 import { Sparkles, Loader2 } from 'lucide-react'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
+import { supabase } from '@/lib/supabase'
 
 interface DayData {
   date: string
   label: string
   minutes: number
-  lessons: number
-  words: number
+  xp: number
 }
 
 interface WeekData {
   days: DayData[]
   totalMinutes: number
-  totalLessons: number
-  totalWords: number
-  streakDays: number
+  totalXP: number
+  activeDays: number
   bestDay: string
-}
-
-function getWeekData(): WeekData {
-  const days: DayData[] = []
-  const dayLabels = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
-  let totalMinutes = 0, totalLessons = 0, totalWords = 0, streakDays = 0, bestDay = ''
-  let maxMinutes = 0
-
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date()
-    d.setDate(d.getDate() - i)
-    const iso = d.toISOString().slice(0, 10)
-    const activity = JSON.parse(localStorage.getItem(`fluenta_activity_${iso}`) ?? '{}')
-    const minutes = activity.minutes ?? 0
-    const lessons = activity.lessons ?? 0
-    const words = activity.words ?? 0
-
-    totalMinutes += minutes
-    totalLessons += lessons
-    totalWords += words
-    if (minutes > 0) streakDays++
-    if (minutes > maxMinutes) { maxMinutes = minutes; bestDay = dayLabels[d.getDay()] }
-
-    days.push({ date: iso, label: dayLabels[d.getDay()], minutes, lessons, words })
-  }
-
-  return { days, totalMinutes, totalLessons, totalWords, streakDays, bestDay: bestDay || 'Нет данных' }
 }
 
 export default function WeeklySummaryPage() {
   const [data, setData] = useState<WeekData | null>(null)
+  const [loading, setLoading] = useState(true)
   const { generate, loading: aiLoading } = useAIGenerate()
   const [aiInsight, setAiInsight] = useState<{analysis:string,tip:string,emoji:string}|null>(null)
+
   async function getInsight() {
     if (!data) return
-    const ctx = `minutes:${data.totalMinutes},lessons:${data.totalLessons},words:${data.totalWords},streak:${data.streakDays},bestDay:${data.bestDay}`
+    const ctx = `minutes:${data.totalMinutes},xp:${data.totalXP},activeDays:${data.activeDays},bestDay:${data.bestDay}`
     const result = await generate<typeof aiInsight>('weekly_analysis', ctx)
     setAiInsight(result)
   }
 
-  useEffect(() => { setData(getWeekData()) }, [])
+  useEffect(() => {
+    ;(async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      const dayLabels = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
 
+      // Build the 7-day date array
+      const dateMap: Record<string, DayData> = {}
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date()
+        d.setDate(d.getDate() - i)
+        const iso = d.toISOString().slice(0, 10)
+        dateMap[iso] = { date: iso, label: dayLabels[d.getDay()], minutes: 0, xp: 0 }
+      }
+
+      if (session?.user) {
+        const weekAgo = new Date()
+        weekAgo.setDate(weekAgo.getDate() - 6)
+        const { data: rows } = await supabase
+          .from('daily_activity')
+          .select('date,minutes,xp_earned')
+          .eq('user_id', session.user.id)
+          .gte('date', weekAgo.toISOString().slice(0, 10))
+
+        rows?.forEach(row => {
+          if (dateMap[row.date]) {
+            dateMap[row.date].minutes = row.minutes ?? 0
+            dateMap[row.date].xp = row.xp_earned ?? 0
+          }
+        })
+      }
+
+      const days = Object.values(dateMap)
+      let totalMinutes = 0, totalXP = 0, activeDays = 0, bestDay = '', maxMinutes = 0
+      days.forEach(d => {
+        totalMinutes += d.minutes
+        totalXP += d.xp
+        if (d.minutes > 0) activeDays++
+        if (d.minutes > maxMinutes) { maxMinutes = d.minutes; bestDay = d.label }
+      })
+
+      setData({ days, totalMinutes, totalXP, activeDays, bestDay: bestDay || 'Нет данных' })
+      setLoading(false)
+    })()
+  }, [])
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-64">
+      <Loader2 className="w-6 h-6 animate-spin text-[#818cf8]" />
+    </div>
+  )
   if (!data) return null
 
   const maxMin = Math.max(...data.days.map(d => d.minutes), 1)
@@ -72,12 +94,11 @@ export default function WeeklySummaryPage() {
         {new Date(data.days[6].date).toLocaleDateString('ru', { day: 'numeric', month: 'long', year: 'numeric' })}
       </p>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
         {[
           { label: 'Минут', value: data.totalMinutes, icon: '⏱️' },
-          { label: 'Уроков', value: data.totalLessons, icon: '📚' },
-          { label: 'Слов', value: data.totalWords, icon: '💬' },
-          { label: 'Дней подряд', value: data.streakDays, icon: '🔥' },
+          { label: 'XP заработано', value: data.totalXP, icon: '⭐' },
+          { label: 'Активных дней', value: data.activeDays, icon: '🔥' },
         ].map(s => (
           <div key={s.label} className="bg-white/[0.04] border border-white/10 rounded-2xl p-4 text-center">
             <p className="text-2xl mb-1">{s.icon}</p>
@@ -99,7 +120,7 @@ export default function WeeklySummaryPage() {
                     height: `${Math.max(4, (day.minutes / maxMin) * 96)}px`,
                     background: day.minutes > 0 ? '#6366f1' : 'rgba(255,255,255,0.06)',
                   }}
-                  title={`${day.minutes} мин`}
+                  title={`${day.minutes} мин · ${day.xp} XP`}
                 />
               </div>
               <span className="text-muted-foreground text-xs">{day.label}</span>
