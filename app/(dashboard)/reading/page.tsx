@@ -207,8 +207,6 @@ export default function ReadingPage() {
         ))}
       </div>
 
-      {generatingAI && <SkeletonCard />}
-
       {/* Level tabs */}
       <div className="flex gap-2 flex-wrap">
         {LEVELS.map(l => (
@@ -222,6 +220,7 @@ export default function ReadingPage() {
         ))}
       </div>
 
+      {generatingAI ? <SkeletonCard /> : (
       <AnimatePresence mode="wait">
         <motion.div key={entry.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-4">
           {/* Article */}
@@ -347,6 +346,7 @@ export default function ReadingPage() {
           )}
         </motion.div>
       </AnimatePresence>
+      )}
     </div>
   );
 }
