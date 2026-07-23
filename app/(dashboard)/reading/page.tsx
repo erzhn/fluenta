@@ -198,10 +198,10 @@ export default function ReadingPage() {
       </div>
 
       {/* Topic chips */}
-      <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+      <div className="flex flex-wrap gap-2">
         {READING_TOPICS.map(t => (
           <button key={t} onClick={() => setSelectedTopic(t)}
-            className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+            className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
               selectedTopic === t ? 'bg-primary text-white border-primary' : 'border-white/10 text-muted-foreground hover:border-white/20'
             }`}>{t}</button>
         ))}
