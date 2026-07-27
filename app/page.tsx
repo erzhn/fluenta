@@ -1,32 +1,27 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { motion, useInView, AnimatePresence } from 'framer-motion'
+import { motion, useInView, useReducedMotion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowRight, Star, Check, Menu, X, ChevronDown, Bot, BookOpen, TrendingUp, Mail, MessageCircle, Rocket, Flame, Zap, Lightbulb, Sparkles, type LucideIcon } from 'lucide-react'
+import {
+  ArrowRight, Check, Menu, X, ChevronDown, Bot, BookOpen, TrendingUp,
+  Mail, MessageCircle, Rocket, Lightbulb, Sparkles, Briefcase, Plane,
+  type LucideIcon,
+} from 'lucide-react'
 
 // ── Animation helpers ──────────────────────────────────────────────────────────
 const EASE = [0.22, 1, 0.36, 1] as [number, number, number, number]
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 32 },
-  visible: (i = 0) => ({
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, delay: i * 0.1, ease: EASE },
-  }),
-}
-
 function FadeUp({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-60px' })
+  const reduce = useReducedMotion()
   return (
     <motion.div
       ref={ref}
-      initial="hidden"
-      animate={inView ? 'visible' : 'hidden'}
-      custom={delay / 0.1}
-      variants={fadeUp}
+      initial={reduce ? false : { opacity: 0, y: 28 }}
+      animate={inView || reduce ? { opacity: 1, y: 0 } : { opacity: 0, y: 28 }}
+      transition={{ duration: 0.6, delay, ease: EASE }}
       className={className}
     >
       {children}
@@ -38,21 +33,21 @@ function FadeUp({ children, delay = 0, className = '' }: { children: React.React
 const FEATURES: { icon: LucideIcon; title: string; desc: string; color: string }[] = [
   {
     icon: Bot,
-    title: 'AI Tutor Zhan',
-    desc: 'Natural conversations, instant feedback, personalized learning. Zhan adapts to your level and corrects mistakes gently.',
-    color: '#6366f1',
+    title: 'AI-репетитор Zhan',
+    desc: 'Живой диалог голосом и текстом. Zhan подстраивается под твой уровень и мягко исправляет ошибки прямо по ходу разговора.',
+    color: '#818cf8',
   },
   {
     icon: BookOpen,
-    title: 'Smart Lessons',
-    desc: 'Structured curriculum from A1 to C2, at your own pace. Grammar, vocabulary, reading — all in one place.',
-    color: '#8b5cf6',
+    title: 'Умные уроки',
+    desc: 'Структурированная программа от A1 до C2: грамматика, лексика, чтение и аудирование — в удобном темпе.',
+    color: '#a78bfa',
   },
   {
     icon: TrendingUp,
-    title: 'Track Progress',
-    desc: 'See your improvement with detailed stats and streaks. Stay motivated with XP, badges, and daily goals.',
-    color: '#06b6d4',
+    title: 'Твой прогресс',
+    desc: 'Стрик, XP и ежедневные цели помогают заниматься регулярно и видеть, как растёт твой уровень.',
+    color: '#22d3ee',
   },
 ]
 
@@ -60,68 +55,79 @@ const STEPS: { n: string; icon: LucideIcon; title: string; desc: string; color: 
   {
     n: '01',
     icon: Mail,
-    title: 'Sign up instantly',
-    desc: 'Create your account with just your email — no password needed, no credit card.',
-    color: '#6366f1',
+    title: 'Войди по email',
+    desc: 'Без пароля — приходит короткий код на почту. Регистрация занимает минуту.',
+    color: '#818cf8',
   },
   {
     n: '02',
     icon: MessageCircle,
-    title: 'Chat with Zhan',
-    desc: "Start a conversation with your AI tutor. Ask anything, practice topics you care about.",
-    color: '#8b5cf6',
+    title: 'Начни диалог с Zhan',
+    desc: 'Говори на темы, которые важны тебе: работа, путешествия или повседневное общение.',
+    color: '#a78bfa',
   },
   {
     n: '03',
     icon: Rocket,
-    title: 'Improve every day',
-    desc: "Get personalized practice, track your streak, and watch your English get better fast.",
-    color: '#10b981',
+    title: 'Занимайся каждый день',
+    desc: 'Персональная практика, исправления и стрик — и твой английский становится увереннее.',
+    color: '#34d399',
   },
 ]
 
-const TESTIMONIALS = [
-  {
-    name: 'Aizat M.',
-    city: 'Almaty',
-    avatar: 'A',
-    gradient: 'from-[#6366f1] to-[#8b5cf6]',
-    quote:
-      "I was terrified of speaking English at work. After 2 months with Zhan, I'm leading meetings confidently. The instant corrections changed everything.",
-    badge: 'A2 → B2',
-  },
-  {
-    name: 'Mikhail D.',
-    city: 'Moscow',
-    avatar: 'M',
-    gradient: 'from-[#8b5cf6] to-[#06b6d4]',
-    quote:
-      "I tried Duolingo, apps, YouTube — nothing worked long-term. Fluenta feels like an actual tutor who knows me. Passed IELTS 7.0 after 5 months.",
-    badge: 'IELTS 7.0',
-  },
-  {
-    name: 'Dilnoza K.',
-    city: 'Tashkent',
-    avatar: 'D',
-    gradient: 'from-[#10b981] to-[#6366f1]',
-    quote:
-      "Zhan is incredibly patient and encouraging. I practice every morning for 20 minutes and my vocabulary has tripled. It genuinely feels like a friend teaching me.",
-    badge: 'A1 → B1',
-  },
-]
+// ── Interactive Zhan demo — переключатели реально меняют диалог ──────────────────
+type Scenario = 'work' | 'travel' | 'daily'
 
-// ── Chat bubble demo data ──────────────────────────────────────────────────────
-const CHAT = [
-  { role: 'user', text: 'I want to improve my English speaking' },
-  {
-    role: 'ai',
-    text: "Great goal! Let's start with what matters to you most — work, travel, or everyday conversation?",
+const SCENARIOS: Record<Scenario, {
+  label: string
+  icon: LucideIcon
+  user: string
+  correction: { before: string; after: string }
+  tip: string
+}> = {
+  work: {
+    label: 'Работа',
+    icon: Briefcase,
+    user: 'I responsible for the new project.',
+    correction: { before: 'I responsible', after: "I'm responsible" },
+    tip: 'Не теряй глагол «to be»: I’m responsible for the new project.',
   },
-  { role: 'user', text: 'My problem is I make grammar mistakes' },
+  travel: {
+    label: 'Путешествия',
+    icon: Plane,
+    user: 'Where is the near station?',
+    correction: { before: 'the near station', after: 'the nearest station' },
+    tip: 'Нужна превосходная форма: Where is the nearest station?',
+  },
+  daily: {
+    label: 'Общение',
+    icon: MessageCircle,
+    user: 'I very like this song.',
+    correction: { before: 'I very like', after: 'I really like' },
+    tip: '«Very» не ставят перед глаголом — скажи: I really like this song.',
+  },
+}
+
+const SCENARIO_ORDER: Scenario[] = ['work', 'travel', 'daily']
+
+const USE_CASES: { icon: LucideIcon; title: string; desc: string; example: string }[] = [
   {
-    role: 'ai',
-    text: 'Small correction: say "My problem is that I make…" — adding \'that\' sounds more natural. What kind of mistakes? Tenses?',
-    highlight: true,
+    icon: Briefcase,
+    title: 'Для работы',
+    desc: 'Уверенно вести встречи, писать письма и презентовать идеи на английском.',
+    example: '“Let’s move this deadline to next Friday.”',
+  },
+  {
+    icon: Plane,
+    title: 'Для путешествий',
+    desc: 'Заказать кофе, спросить дорогу и общаться в отеле без языкового барьера.',
+    example: '“Could you tell me how to get to the station?”',
+  },
+  {
+    icon: MessageCircle,
+    title: 'Для общения',
+    desc: 'Свободно говорить в быту, знакомиться и обсуждать то, что тебе интересно.',
+    example: '“I really enjoyed that movie — what did you think?”',
   },
 ]
 
@@ -131,92 +137,52 @@ const glass = 'bg-white/[0.04] backdrop-blur-xl border border-white/10'
 // ─────────────────────────────────────────────────────────────────────────────
 export default function LandingPage() {
   return (
-    <div
-      className="min-h-screen text-white overflow-x-hidden"
-      style={{ background: '#0f0f23' }}
-    >
+    <div className="min-h-screen text-white overflow-x-hidden" style={{ background: '#0f0f23' }}>
       <style>{`
-        /* Star field */
-        @keyframes twinkle { 0%,100%{opacity:.15} 50%{opacity:.7} }
-        .star { position:absolute; border-radius:50%; background:#fff; animation:twinkle var(--d,3s) ease-in-out infinite; animation-delay:var(--delay,0s); }
-
-        /* Blob drift */
-        @keyframes blobDrift {
+        .lp-glow { filter: blur(80px); will-change: transform; }
+        @keyframes lpDrift {
           0%,100%{transform:translate(0,0) scale(1);}
-          33%{transform:translate(50px,-70px) scale(1.08);}
-          66%{transform:translate(-40px,40px) scale(.94);}
+          50%{transform:translate(30px,-40px) scale(1.06);}
         }
-        .blob{animation:blobDrift var(--dur,16s) ease-in-out infinite;animation-delay:var(--delay,0s);will-change:transform;}
+        .lp-drift{animation:lpDrift var(--dur,20s) ease-in-out infinite;animation-delay:var(--delay,0s);}
 
-        /* Chat message pop */
-        @keyframes msgPop { from{opacity:0;transform:translateY(10px) scale(.97)} to{opacity:1;transform:none} }
-        .msg-1{animation:msgPop .4s ease 0.8s both;}
-        .msg-2{animation:msgPop .4s ease 2.0s both;}
-        .msg-3{animation:msgPop .4s ease 3.3s both;}
-        .msg-4{animation:msgPop .4s ease 4.7s both;}
-
-        /* Cursor blink */
         @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
         .cursor{animation:blink 1s step-end infinite;}
 
-        /* Gradient text shimmer */
         .gradient-text {
-          background: linear-gradient(135deg, #818cf8 0%, #a78bfa 40%, #c084fc 70%, #818cf8 100%);
-          background-size: 200% auto;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          animation: shimmerText 4s linear infinite;
+          background: linear-gradient(135deg, #818cf8 0%, #a78bfa 45%, #c084fc 100%);
+          -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
-        @keyframes shimmerText { from{background-position:0% center} to{background-position:200% center} }
 
-        /* Scroll bar */
-        ::-webkit-scrollbar{width:5px}
+        section[id]{ scroll-margin-top: 88px; }
+
+        ::-webkit-scrollbar{width:6px}
         ::-webkit-scrollbar-track{background:#0f0f23}
         ::-webkit-scrollbar-thumb{background:#2d2d4e;border-radius:4px}
+
+        .lp-root a:focus-visible,
+        .lp-root button:focus-visible {
+          outline: 2px solid #a5b4fc;
+          outline-offset: 3px;
+          border-radius: 12px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .lp-drift, .cursor { animation: none !important; }
+          html { scroll-behavior: auto !important; }
+        }
       `}</style>
 
-      <StarField />
-      <Navbar />
-      <HeroSection />
-      <FeaturesSection />
-      <HowItWorksSection />
-      <TestimonialsSection />
-      <CTASection />
-      <Footer />
-    </div>
-  )
-}
-
-// ── Star field ─────────────────────────────────────────────────────────────────
-function StarField() {
-  const stars = Array.from({ length: 80 }, (_, i) => ({
-    id: i,
-    top: `${Math.random() * 100}%`,
-    left: `${Math.random() * 100}%`,
-    size: Math.random() * 2 + 1,
-    dur: `${2.5 + Math.random() * 4}s`,
-    delay: `${Math.random() * 4}s`,
-  }))
-
-  return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-      {stars.map((s) => (
-        <div
-          key={s.id}
-          className="star"
-          style={
-            {
-              top: s.top,
-              left: s.left,
-              width: s.size,
-              height: s.size,
-              '--d': s.dur,
-              '--delay': s.delay,
-            } as React.CSSProperties
-          }
-        />
-      ))}
+      <div className="lp-root">
+        <Navbar />
+        <HeroSection />
+        <FeaturesSection />
+        <HowItWorksSection />
+        <ScenariosSection />
+        <FreeBanner />
+        <CTASection />
+        <Footer />
+      </div>
     </div>
   )
 }
@@ -232,54 +198,53 @@ function Navbar() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  const links: [string, string][] = [
+    ['Возможности', '#features'],
+    ['Как это работает', '#how'],
+    ['Сценарии', '#scenarios'],
+  ]
+
   return (
     <nav
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        scrolled ? 'bg-[#0f0f23]/90 backdrop-blur-xl border-b border-white/8 shadow-lg shadow-black/30' : 'bg-transparent'
+        scrolled ? 'bg-[#0f0f23]/90 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/30' : 'bg-transparent'
       }`}
     >
       <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 shrink-0">
+        <Link href="/" className="flex items-center gap-2.5 shrink-0" aria-label="Fluenta — на главную">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] flex items-center justify-center font-black text-sm shadow-lg shadow-indigo-500/30">
             F
           </div>
           <span className="font-black text-xl gradient-text">Fluenta</span>
         </Link>
 
-        {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-7 text-sm text-muted-foreground font-medium">
-          {[['Features', '#features'], ['How it works', '#how'], ['Testimonials', '#testimonials']].map(([label, href]) => (
-            <a key={label} href={href} className="hover:text-white transition-colors">{label}</a>
+        <div className="hidden md:flex items-center gap-7 text-sm text-slate-300 font-medium">
+          {links.map(([label, href]) => (
+            <a key={label} href={href} className="hover:text-white transition-colors py-2">{label}</a>
           ))}
         </div>
 
         <div className="hidden md:flex items-center gap-3">
-          <Link href="/auth/login" className="text-sm text-muted-foreground hover:text-white transition-colors font-medium px-4 py-2">
-            Log in
+          <Link href="/auth/login" className="flex items-center text-sm text-slate-300 hover:text-white transition-colors font-medium px-4">
+            Войти
           </Link>
           <Link href="/auth/login">
-            <button className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] hover:from-[#5558e3] hover:to-[#7c3aed] transition-all shadow-lg shadow-indigo-500/25 hover:scale-105 hover:shadow-indigo-500/40">
-              Start for free
+            <button className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] hover:from-[#5558e3] hover:to-[#7c3aed] transition-all shadow-lg shadow-indigo-500/25 hover:scale-105">
+              Начать бесплатно
             </button>
           </Link>
         </div>
 
-        {/* Mobile hamburger */}
         <button
           onClick={() => setOpen(!open)}
-          className="md:hidden p-2 rounded-xl text-muted-foreground hover:text-white hover:bg-white/5 transition-all"
+          className="md:hidden inline-flex items-center justify-center w-11 h-11 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition-all"
+          aria-label={open ? 'Закрыть меню' : 'Открыть меню'}
+          aria-expanded={open}
         >
-          <AnimatePresence mode="wait" initial={false}>
-            {open
-              ? <motion.div key="x" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}><X className="w-5 h-5" /></motion.div>
-              : <motion.div key="m" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}><Menu className="w-5 h-5" /></motion.div>
-            }
-          </AnimatePresence>
+          {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </div>
 
-      {/* Mobile menu */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -287,21 +252,21 @@ function Navbar() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="md:hidden overflow-hidden bg-[#0f0f23]/98 backdrop-blur-xl border-b border-white/8"
+            className="md:hidden overflow-hidden bg-[#0f0f23]/98 backdrop-blur-xl border-b border-white/10"
           >
             <div className="px-5 py-4 space-y-1">
-              {[['Features', '#features'], ['How it works', '#how'], ['Testimonials', '#testimonials']].map(([label, href]) => (
+              {links.map(([label, href]) => (
                 <a key={label} href={href} onClick={() => setOpen(false)}
-                  className="block px-4 py-3 rounded-xl text-sm text-muted-foreground hover:text-white hover:bg-white/5 transition-all font-medium">
+                  className="flex items-center px-4 py-3 rounded-xl text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-all font-medium">
                   {label}
                 </a>
               ))}
               <div className="pt-3 space-y-2">
                 <Link href="/auth/login" onClick={() => setOpen(false)}>
-                  <button className="w-full py-3 rounded-xl text-sm font-medium text-muted-foreground border border-white/10 hover:text-white hover:bg-white/5 transition-all">Log in</button>
+                  <button className="w-full py-3 rounded-xl text-sm font-medium text-slate-300 border border-white/10 hover:text-white hover:bg-white/5 transition-all">Войти</button>
                 </Link>
                 <Link href="/auth/login" onClick={() => setOpen(false)}>
-                  <button className="w-full py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-[#6366f1] to-[#8b5cf6]">Start for free</button>
+                  <button className="w-full py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-[#6366f1] to-[#8b5cf6]">Начать бесплатно</button>
                 </Link>
               </div>
             </div>
@@ -314,195 +279,193 @@ function Navbar() {
 
 // ── Hero ───────────────────────────────────────────────────────────────────────
 function HeroSection() {
+  const reduce = useReducedMotion()
   return (
-    <section className="relative min-h-screen flex items-center pt-16 pb-12 overflow-hidden">
-      {/* Blobs */}
+    <section className="relative min-h-screen flex items-center pt-24 pb-16 overflow-hidden">
+      {/* Soft glows (мягкие свечения — сильная сторона) */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="blob absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full opacity-[0.12]"
-          style={{ background: 'radial-gradient(circle, #6366f1, #4338ca, transparent 70%)', filter: 'blur(80px)', '--dur': '18s' } as React.CSSProperties} />
-        <div className="blob absolute top-20 -right-40 w-[500px] h-[500px] rounded-full opacity-[0.1]"
-          style={{ background: 'radial-gradient(circle, #8b5cf6, #6d28d9, transparent 70%)', filter: 'blur(80px)', '--dur': '22s', '--delay': '-6s' } as React.CSSProperties} />
-        <div className="blob absolute -bottom-32 left-1/3 w-[400px] h-[400px] rounded-full opacity-[0.08]"
-          style={{ background: 'radial-gradient(circle, #06b6d4, #0369a1, transparent 70%)', filter: 'blur(80px)', '--dur': '26s', '--delay': '-12s' } as React.CSSProperties} />
+        <div className="lp-glow lp-drift absolute -top-32 -left-32 w-[560px] h-[560px] rounded-full opacity-[0.14]"
+          style={{ background: 'radial-gradient(circle, #6366f1, transparent 70%)', '--dur': '22s' } as React.CSSProperties} />
+        <div className="lp-glow lp-drift absolute top-16 -right-40 w-[480px] h-[480px] rounded-full opacity-[0.12]"
+          style={{ background: 'radial-gradient(circle, #8b5cf6, transparent 70%)', '--dur': '26s', '--delay': '-8s' } as React.CSSProperties} />
       </div>
 
-      <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-16 items-center">
+      <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 lg:gap-16 items-center">
         {/* Left */}
         <div>
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={reduce ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
+            transition={{ duration: 0.6, delay: 0.05 }}
           >
             <div className={`inline-flex items-center gap-2 ${glass} rounded-full px-4 py-2 text-sm text-[#a5b4fc] mb-7`}>
-              <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse" />
-              <span className="font-medium">AI-powered · completely free</span>
+              <span className="w-2 h-2 rounded-full bg-[#34d399]" />
+              <span className="font-medium">AI-репетитор · полностью бесплатно</span>
             </div>
           </motion.div>
 
           <motion.h1
-            initial={{ opacity: 0, y: 24 }}
+            initial={reduce ? false : { opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            className="text-5xl sm:text-6xl lg:text-[64px] font-black leading-[1.06] tracking-tight mb-6"
+            transition={{ duration: 0.7, delay: 0.15 }}
+            className="text-[42px] sm:text-6xl lg:text-[62px] font-black leading-[1.05] tracking-tight mb-6"
           >
-            Speak English
+            Говори по-английски
             <br />
-            <span className="gradient-text">with confidence</span>
+            <span className="gradient-text">уверенно</span>
           </motion.h1>
 
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
+            initial={reduce ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.35 }}
-            className="text-lg sm:text-xl text-muted-foreground leading-relaxed mb-9 max-w-lg"
+            transition={{ duration: 0.6, delay: 0.28 }}
+            className="text-lg sm:text-xl text-slate-300 leading-relaxed mb-9 max-w-lg"
           >
-            Meet <strong className="text-white">Zhan</strong>, your personal AI English tutor.
-            Available 24/7, completely free. Real conversations, instant corrections.
+            Познакомься с <strong className="text-white">Zhan</strong> — личным AI-репетитором.
+            Живые диалоги, мгновенные исправления и практика в удобном темпе.
           </motion.p>
 
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
+            initial={reduce ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.48 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
             className="flex flex-col sm:flex-row gap-3 mb-9"
           >
             <Link href="/auth/login">
-              <button className="group flex items-center justify-center gap-2 px-7 py-4 rounded-xl text-base font-bold bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] hover:from-[#5558e3] hover:to-[#7c3aed] transition-all shadow-2xl shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-[1.03]">
-                Start for free →
+              <button className="group w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-4 rounded-xl text-base font-bold bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] hover:from-[#5558e3] hover:to-[#7c3aed] transition-all shadow-2xl shadow-indigo-500/30 hover:scale-[1.03]">
+                Начать бесплатно
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </button>
             </Link>
-            <a href="#how">
-              <button className="flex items-center justify-center gap-2 px-7 py-4 rounded-xl text-base font-semibold text-white border border-white/15 hover:bg-white/5 hover:border-white/25 transition-all">
-                See how it works
+            <a href="#scenarios" className="w-full sm:w-auto">
+              <button className="w-full flex items-center justify-center gap-2 px-7 py-4 rounded-xl text-base font-semibold text-white border border-white/15 hover:bg-white/5 hover:border-white/25 transition-all">
+                Попробовать Zhan
                 <ChevronDown className="w-4 h-4" />
               </button>
             </a>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0 }}
+            initial={reduce ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.65 }}
-            className="flex flex-wrap gap-5"
+            transition={{ duration: 0.6, delay: 0.55 }}
+            className="flex flex-wrap gap-x-5 gap-y-2"
           >
-            {['No credit card required', 'Cancel anytime', 'Free forever'].map((t) => (
-              <div key={t} className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <Check className="w-3.5 h-3.5 text-[#10b981]" />
+            {['Полностью бесплатно', 'Уровни A1–C2', 'Zhan на связи в любое время'].map((t) => (
+              <div key={t} className="flex items-center gap-1.5 text-sm text-slate-400">
+                <Check className="w-3.5 h-3.5 text-[#34d399]" />
                 {t}
               </div>
             ))}
           </motion.div>
         </div>
 
-        {/* Right: animated chat */}
+        {/* Right: interactive Zhan demo */}
         <motion.div
-          initial={{ opacity: 0, x: 40 }}
+          initial={reduce ? false : { opacity: 0, x: 40 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.9, delay: 0.3, ease: EASE }}
+          transition={{ duration: 0.9, delay: 0.2, ease: EASE }}
           className="relative"
         >
-          {/* Glow */}
           <div className="absolute inset-0 bg-gradient-to-br from-[#6366f1]/20 to-[#8b5cf6]/15 rounded-3xl blur-3xl scale-95 translate-y-6" />
-
-          <div className={`relative ${glass} rounded-3xl overflow-hidden shadow-2xl shadow-black/50`}>
-            {/* Chat header */}
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-white/8 bg-white/[0.02]">
-              <div className="relative">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] flex items-center justify-center font-black text-sm shadow-lg shadow-indigo-500/30">
-                  Z
-                </div>
-                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#10b981] rounded-full border-2 border-[#0f0f23]" />
-              </div>
-              <div>
-                <div className="text-white font-bold text-sm">Zhan</div>
-                <div className="text-[#10b981] text-xs font-medium">Online · your AI tutor</div>
-              </div>
-              <div className="ml-auto flex gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-[#ef4444]/70" />
-                <div className="w-3 h-3 rounded-full bg-[#f59e0b]/70" />
-                <div className="w-3 h-3 rounded-full bg-[#10b981]/70" />
-              </div>
-            </div>
-
-            {/* Messages */}
-            <div className="p-5 space-y-3.5 min-h-[280px]">
-              <div className="msg-1 flex justify-end">
-                <div className="max-w-[80%]">
-                  <div className="bg-primary rounded-2xl rounded-tr-sm px-4 py-3 text-sm text-white">
-                    {CHAT[0].text}
-                  </div>
-                  <div className="text-[10px] text-muted-foreground text-right mt-1">You · just now</div>
-                </div>
-              </div>
-
-              <div className="msg-2 flex items-end gap-2.5">
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] flex items-center justify-center font-black text-[10px] shrink-0">Z</div>
-                <div className={`${glass} rounded-2xl rounded-tl-sm px-4 py-3 text-sm max-w-[82%] text-[#e2e8f0]`}>
-                  {CHAT[1].text}
-                </div>
-              </div>
-
-              <div className="msg-3 flex justify-end">
-                <div className="max-w-[78%]">
-                  <div className="bg-primary rounded-2xl rounded-tr-sm px-4 py-3 text-sm text-white">
-                    {CHAT[2].text}
-                  </div>
-                </div>
-              </div>
-
-              <div className="msg-4 flex items-end gap-2.5">
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] flex items-center justify-center font-black text-[10px] shrink-0">Z</div>
-                <div className="max-w-[82%]">
-                  <div className={`${glass} rounded-2xl rounded-tl-sm px-4 py-3 text-sm text-[#e2e8f0]`}>
-                    <span className="inline-flex items-center gap-1 bg-[#f59e0b]/15 border border-[#f59e0b]/25 text-[#fbbf24] rounded px-1.5 py-0.5 text-xs font-semibold mr-1.5"><Lightbulb className="w-3 h-3" strokeWidth={2} /> Correction</span>
-                    Say <span className="font-semibold text-white">&ldquo;My problem is <span className="text-[#34d399] bg-[#10b981]/15 px-1 rounded">that</span> I make…&rdquo;</span> — sounds more natural!
-                  </div>
-                </div>
-              </div>
-
-              {/* Input mock */}
-              <div className={`${glass} rounded-xl px-4 py-3 flex items-center gap-2 text-sm text-muted-foreground`}>
-                <span>Type your message…</span>
-                <span className="cursor text-primary font-bold">|</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Floating badges */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: 16 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ delay: 2.0, duration: 0.5, type: 'spring' }}
-            className={`absolute -right-4 -bottom-4 ${glass} rounded-2xl px-4 py-3 shadow-xl shadow-black/40`}
-          >
-            <div className="flex items-center gap-2">
-              <Flame className="w-6 h-6 text-[#F59E0B]" fill="#F59E0B" strokeWidth={1.5} />
-              <div>
-                <div className="text-white font-bold text-sm">7-day streak</div>
-                <div className="text-muted-foreground text-xs">Keep it up!</div>
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: -16 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ delay: 2.4, duration: 0.5, type: 'spring' }}
-            className={`absolute -left-4 top-8 ${glass} rounded-2xl px-4 py-3 shadow-xl shadow-black/40`}
-          >
-            <div className="flex items-center gap-2">
-              <Zap className="w-6 h-6 text-[#F59E0B]" fill="#F59E0B" strokeWidth={1.5} />
-              <div>
-                <div className="text-white font-bold text-sm">+150 XP</div>
-                <div className="text-muted-foreground text-xs">earned today</div>
-              </div>
-            </div>
-          </motion.div>
+          <ZhanDemo />
         </motion.div>
       </div>
     </section>
+  )
+}
+
+// ── Interactive demo card ───────────────────────────────────────────────────────
+function ZhanDemo() {
+  const [scenario, setScenario] = useState<Scenario>('work')
+  const reduce = useReducedMotion()
+  const data = SCENARIOS[scenario]
+
+  return (
+    <div className={`relative ${glass} rounded-3xl overflow-hidden shadow-2xl shadow-black/50`}>
+      {/* Header */}
+      <div className="flex items-center gap-3 px-5 py-4 border-b border-white/10 bg-white/[0.02]">
+        <div className="relative">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] flex items-center justify-center font-black text-sm shadow-lg shadow-indigo-500/30">
+            Z
+          </div>
+          <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#34d399] rounded-full border-2 border-[#141428]" />
+        </div>
+        <div>
+          <div className="text-white font-bold text-sm">Zhan</div>
+          <div className="text-[#34d399] text-xs font-medium">На связи · твой AI-репетитор</div>
+        </div>
+      </div>
+
+      {/* Scenario switch — реально меняет содержимое */}
+      <div className="px-4 pt-4">
+        <p className="text-xs text-slate-400 mb-2">Выбери тему — Zhan покажет пример исправления:</p>
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Тема диалога">
+          {SCENARIO_ORDER.map((key) => {
+            const s = SCENARIOS[key]
+            const active = key === scenario
+            return (
+              <button
+                key={key}
+                onClick={() => setScenario(key)}
+                aria-pressed={active}
+                className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
+                  active
+                    ? 'bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white shadow-lg shadow-indigo-500/25'
+                    : 'bg-white/[0.05] text-slate-300 border border-white/10 hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                <s.icon className="w-3.5 h-3.5" strokeWidth={2} />
+                {s.label}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Messages */}
+      <div className="p-4 sm:p-5 space-y-3.5 min-h-[248px]">
+          <motion.div
+            key={scenario}
+            initial={reduce ? false : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.28, ease: 'easeOut' }}
+            className="space-y-3.5"
+          >
+            {/* User */}
+            <div className="flex justify-end">
+              <div className="max-w-[82%]">
+                <div className="bg-gradient-to-r from-[#6366f1] to-[#7c6df2] rounded-2xl rounded-tr-sm px-4 py-3 text-sm text-white">
+                  {data.user}
+                </div>
+                <div className="text-[10px] text-slate-500 text-right mt-1">Ты · только что</div>
+              </div>
+            </div>
+
+            {/* Zhan correction */}
+            <div className="flex items-end gap-2.5">
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] flex items-center justify-center font-black text-[10px] shrink-0">Z</div>
+              <div className={`${glass} rounded-2xl rounded-tl-sm px-4 py-3 text-sm text-[#e2e8f0] max-w-[86%]`}>
+                <span className="inline-flex items-center gap-1 bg-[#f59e0b]/15 border border-[#f59e0b]/25 text-[#fbbf24] rounded px-1.5 py-0.5 text-xs font-semibold mb-2">
+                  <Lightbulb className="w-3 h-3" strokeWidth={2} /> Исправление
+                </span>
+                <p className="leading-relaxed">
+                  <span className="line-through text-slate-500">{data.correction.before}</span>{' '}
+                  <ArrowRight className="inline w-3 h-3 text-slate-400 mx-0.5" />{' '}
+                  <span className="font-semibold text-[#34d399] bg-[#10b981]/15 px-1 rounded">{data.correction.after}</span>
+                </p>
+                <p className="text-slate-300 mt-2 text-[13px]">{data.tip}</p>
+              </div>
+            </div>
+          </motion.div>
+
+        {/* Input mock */}
+        <div className={`${glass} rounded-xl px-4 py-3 flex items-center gap-2 text-sm text-slate-400`}>
+          <span>Напиши сообщение…</span>
+          <span className="cursor text-[#818cf8] font-bold">|</span>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -513,17 +476,17 @@ function FeaturesSection() {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-14">
           <FadeUp>
-            <p className="text-primary font-semibold text-xs uppercase tracking-widest mb-3">Features</p>
+            <p className="text-[#a5b4fc] font-semibold text-xs uppercase tracking-widest mb-3">Возможности</p>
           </FadeUp>
           <FadeUp delay={0.08}>
-            <h2 className="text-4xl sm:text-5xl font-black mb-4">
-              Everything you need to{' '}
-              <span className="gradient-text">learn faster</span>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black mb-4">
+              Всё, что нужно, чтобы{' '}
+              <span className="gradient-text">заговорить</span>
             </h2>
           </FadeUp>
           <FadeUp delay={0.16}>
-            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-              One platform, all the tools — no extras to buy, no subscriptions to manage.
+            <p className="text-slate-300 text-lg max-w-xl mx-auto">
+              Одна платформа и живой AI-репетитор — без лишних инструментов и сложных настроек.
             </p>
           </FadeUp>
         </div>
@@ -531,30 +494,17 @@ function FeaturesSection() {
         <div className="grid sm:grid-cols-3 gap-5">
           {FEATURES.map((f, i) => (
             <FadeUp key={f.title} delay={i * 0.1}>
-              <motion.div
-                whileHover={{ y: -8, scale: 1.02 }}
-                transition={{ type: 'spring', stiffness: 280, damping: 18 }}
-                className={`group relative ${glass} rounded-2xl p-7 h-full overflow-hidden cursor-default`}
-              >
-                {/* Hover glow */}
+              <div className={`group relative ${glass} rounded-2xl p-7 h-full overflow-hidden transition-transform duration-300 hover:-translate-y-1.5`}>
                 <div
                   className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-2xl"
                   style={{ background: `radial-gradient(circle at 50% 0%, ${f.color}18 0%, transparent 65%)` }}
                 />
-                <div
-                  className="absolute top-0 left-0 right-0 h-[1px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                  style={{ background: `linear-gradient(90deg, transparent, ${f.color}70, transparent)` }}
-                />
-
-                <div
-                  className="rounded-xl flex items-center justify-center mb-5 w-12 h-12"
-                  style={{ backgroundColor: `${f.color}20` }}
-                >
+                <div className="rounded-xl flex items-center justify-center mb-5 w-12 h-12" style={{ backgroundColor: `${f.color}20` }}>
                   <f.icon className="w-6 h-6" strokeWidth={1.75} style={{ color: f.color }} />
                 </div>
                 <h3 className="text-lg font-bold text-white mb-2">{f.title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">{f.desc}</p>
-              </motion.div>
+                <p className="text-slate-400 text-sm leading-relaxed">{f.desc}</p>
+              </div>
             </FadeUp>
           ))}
         </div>
@@ -567,24 +517,22 @@ function FeaturesSection() {
 function HowItWorksSection() {
   return (
     <section id="how" className="relative py-24 px-5 sm:px-8">
-      {/* Section glow */}
       <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 70% 50% at 50% 50%, rgba(99,102,241,0.06) 0%, transparent 70%)' }} />
 
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-14">
           <FadeUp>
-            <p className="text-primary font-semibold text-xs uppercase tracking-widest mb-3">How it works</p>
+            <p className="text-[#a5b4fc] font-semibold text-xs uppercase tracking-widest mb-3">Как это работает</p>
           </FadeUp>
           <FadeUp delay={0.08}>
-            <h2 className="text-4xl sm:text-5xl font-black">
-              Start speaking in{' '}
-              <span className="gradient-text">3 simple steps</span>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black">
+              Три простых{' '}
+              <span className="gradient-text">шага</span>
             </h2>
           </FadeUp>
         </div>
 
         <div className="relative">
-          {/* Connector line desktop */}
           <div className="hidden sm:block absolute top-[52px] left-[calc(16.66%+20px)] right-[calc(16.66%+20px)] h-[2px] overflow-hidden">
             <motion.div
               initial={{ scaleX: 0 }}
@@ -615,7 +563,7 @@ function HowItWorksSection() {
                     </div>
                   </div>
                   <h3 className="text-lg font-bold text-white mb-2">{step.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed max-w-[220px]">{step.desc}</p>
+                  <p className="text-slate-400 text-sm leading-relaxed max-w-[240px]">{step.desc}</p>
                 </div>
               </FadeUp>
             ))}
@@ -624,8 +572,9 @@ function HowItWorksSection() {
 
         <FadeUp delay={0.3} className="text-center mt-12">
           <Link href="/auth/login">
-            <button className="px-8 py-4 rounded-xl font-bold text-white bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] hover:from-[#5558e3] hover:to-[#7c3aed] transition-all shadow-xl shadow-indigo-500/25 hover:scale-[1.03]">
-              Get started free →
+            <button className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-white bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] hover:from-[#5558e3] hover:to-[#7c3aed] transition-all shadow-xl shadow-indigo-500/25 hover:scale-[1.03]">
+              Начать бесплатно
+              <ArrowRight className="w-4 h-4" />
             </button>
           </Link>
         </FadeUp>
@@ -634,67 +583,66 @@ function HowItWorksSection() {
   )
 }
 
-// ── Testimonials ───────────────────────────────────────────────────────────────
-function TestimonialsSection() {
+// ── Scenarios (вместо отзывов) ──────────────────────────────────────────────────
+function ScenariosSection() {
   return (
-    <section id="testimonials" className="relative py-24 px-5 sm:px-8">
+    <section id="scenarios" className="relative py-24 px-5 sm:px-8">
       <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(139,92,246,0.05) 0%, transparent 70%)' }} />
 
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-14">
           <FadeUp>
-            <p className="text-primary font-semibold text-xs uppercase tracking-widest mb-3">Testimonials</p>
+            <p className="text-[#a5b4fc] font-semibold text-xs uppercase tracking-widest mb-3">Сценарии</p>
           </FadeUp>
           <FadeUp delay={0.08}>
-            <h2 className="text-4xl sm:text-5xl font-black mb-4">
-              Students who{' '}
-              <span className="gradient-text">transformed</span>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black mb-4">
+              Английский для{' '}
+              <span className="gradient-text">твоих задач</span>
             </h2>
           </FadeUp>
           <FadeUp delay={0.16}>
-            <div className="flex items-center justify-center gap-1 text-[#f59e0b]">
-              {Array.from({ length: 5 }).map((_, i) => <Star key={i} className="w-5 h-5 fill-current" />)}
-              <span className="text-white font-bold ml-2">4.9</span>
-              <span className="text-muted-foreground text-sm ml-1.5">from 50,000+ learners</span>
-            </div>
+            <p className="text-slate-300 text-lg max-w-xl mx-auto">
+              Практикуй именно то, что пригодится в жизни. Zhan подстроит диалог под любую ситуацию.
+            </p>
           </FadeUp>
         </div>
 
         <div className="grid sm:grid-cols-3 gap-5">
-          {TESTIMONIALS.map((t, i) => (
-            <FadeUp key={t.name} delay={i * 0.12}>
-              <motion.div
-                whileHover={{ y: -6 }}
-                transition={{ type: 'spring', stiffness: 280, damping: 18 }}
-                className={`${glass} rounded-3xl p-7 relative overflow-hidden h-full flex flex-col`}
-              >
-                <div className={`absolute inset-0 opacity-[0.04] bg-gradient-to-br ${t.gradient} pointer-events-none`} />
-
-                {/* Stars */}
-                <div className="flex gap-0.5 mb-4">
-                  {Array.from({ length: 5 }).map((_, j) => <Star key={j} className="w-3.5 h-3.5 text-[#f59e0b] fill-current" />)}
+          {USE_CASES.map((c, i) => (
+            <FadeUp key={c.title} delay={i * 0.12}>
+              <div className={`${glass} rounded-3xl p-7 h-full flex flex-col transition-transform duration-300 hover:-translate-y-1.5`}>
+                <div className="rounded-xl flex items-center justify-center mb-5 w-12 h-12 bg-white/[0.06]">
+                  <c.icon className="w-6 h-6 text-[#a5b4fc]" strokeWidth={1.75} />
                 </div>
-
-                <p className="text-[#cbd5e1] text-sm leading-relaxed mb-6 flex-1">&ldquo;{t.quote}&rdquo;</p>
-
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${t.gradient} flex items-center justify-center font-black text-sm shrink-0`}>
-                    {t.avatar}
-                  </div>
-                  <div>
-                    <div className="text-white font-semibold text-sm flex items-center gap-1.5">
-                      {t.name}
-                    </div>
-                    <div className="text-muted-foreground text-xs">{t.city}</div>
-                  </div>
-                  <div className={`ml-auto px-2.5 py-1 rounded-lg text-xs font-bold bg-gradient-to-r ${t.gradient} text-white shrink-0`}>
-                    {t.badge}
-                  </div>
-                </div>
-              </motion.div>
+                <h3 className="text-lg font-bold text-white mb-2">{c.title}</h3>
+                <p className="text-slate-400 text-sm leading-relaxed mb-5 flex-1">{c.desc}</p>
+                <p className="text-sm text-[#c4b5fd] italic border-l-2 border-[#8b5cf6]/40 pl-3">{c.example}</p>
+              </div>
             </FadeUp>
           ))}
         </div>
+      </div>
+    </section>
+  )
+}
+
+// ── Honest free-access message ──────────────────────────────────────────────────
+function FreeBanner() {
+  return (
+    <section className="px-5 sm:px-8 pb-4">
+      <div className="max-w-4xl mx-auto">
+        <FadeUp>
+          <div className={`${glass} rounded-3xl px-7 py-8 sm:px-10 sm:py-9 text-center`}>
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[#34d399]/15 mb-4">
+              <Sparkles className="w-6 h-6 text-[#34d399]" strokeWidth={1.75} />
+            </div>
+            <h3 className="text-2xl sm:text-3xl font-black mb-3">Fluenta полностью бесплатна</h3>
+            <p className="text-slate-300 max-w-xl mx-auto leading-relaxed">
+              Без платных тарифов, подписок и скрытых условий. Просто открытый доступ к обучению
+              и AI-репетитору — заходи и занимайся столько, сколько нужно.
+            </p>
+          </div>
+        </FadeUp>
       </div>
     </section>
   )
@@ -707,44 +655,31 @@ function CTASection() {
       <div className="max-w-4xl mx-auto">
         <FadeUp>
           <div className="relative rounded-3xl overflow-hidden">
-            {/* Background */}
             <div className="absolute inset-0 bg-gradient-to-br from-[#6366f1] via-[#7c3aed] to-[#4338ca]" />
             <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.07) 1px, transparent 0)', backgroundSize: '28px 28px' }} />
-            <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full opacity-20" style={{ background: 'radial-gradient(circle, #a78bfa, transparent 70%)' }} />
-            <div className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full opacity-20" style={{ background: 'radial-gradient(circle, #818cf8, transparent 70%)' }} />
 
             <div className="relative z-10 text-center py-16 px-6">
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                whileInView={{ scale: 1, opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.15 }}
-                className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 text-sm text-white/90 mb-7"
-              >
-                <Sparkles className="w-4 h-4" strokeWidth={1.75} /> Join 50,000+ learners — it&apos;s free
-              </motion.div>
-
-              <h2 className="text-4xl sm:text-5xl lg:text-[54px] font-black text-white leading-tight mb-5">
-                Ready to speak English
-                <br />fluently?
+              <h2 className="text-3xl sm:text-4xl lg:text-[50px] font-black text-white leading-tight mb-5">
+                Готов заговорить
+                <br />по-английски?
               </h2>
-              <p className="text-indigo-200 text-lg mb-9 max-w-md mx-auto">
-                Start learning for free today. No credit card, no commitment.
+              <p className="text-indigo-100 text-lg mb-9 max-w-md mx-auto">
+                Начни заниматься с Zhan сегодня — спокойно, в своём темпе и бесплатно.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <div className="flex justify-center">
                 <Link href="/auth/login">
-                  <button className="group flex items-center justify-center gap-2 px-9 py-4 rounded-xl text-base font-bold text-primary bg-white hover:bg-white/95 transition-all hover:scale-[1.04] shadow-2xl shadow-black/20">
-                    Start learning for free
+                  <button className="group inline-flex items-center justify-center gap-2 px-9 py-4 rounded-xl text-base font-bold text-[#4338ca] bg-white hover:bg-white/95 transition-all hover:scale-[1.04] shadow-2xl shadow-black/20">
+                    Начать бесплатно
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                   </button>
                 </Link>
               </div>
 
-              <div className="flex flex-wrap items-center justify-center gap-6 mt-7 text-sm text-indigo-200">
-                {['No credit card', 'Free forever', 'Cancel anytime'].map((t) => (
+              <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-7 text-sm text-indigo-100">
+                {['Полностью бесплатно', 'Уровни A1–C2', 'Вход по коду на email'].map((t) => (
                   <div key={t} className="flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-indigo-300" /> {t}
+                    <Check className="w-3.5 h-3.5 text-indigo-200" /> {t}
                   </div>
                 ))}
               </div>
@@ -759,7 +694,7 @@ function CTASection() {
 // ── Footer ─────────────────────────────────────────────────────────────────────
 function Footer() {
   return (
-    <footer className="border-t border-white/[0.06] py-10 px-5 sm:px-8">
+    <footer className="border-t border-white/[0.08] py-10 px-5 sm:px-8">
       <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] flex items-center justify-center font-black text-xs">
@@ -767,10 +702,10 @@ function Footer() {
           </div>
           <span className="font-black gradient-text">Fluenta</span>
         </div>
-        <p className="text-[#334155] text-sm text-center">Fluenta © 2026 — Free AI English Academy</p>
-        <div className="flex items-center gap-5 text-sm text-muted-foreground">
-          <a href="#features" className="hover:text-white transition-colors">Features</a>
-          <Link href="/auth/login" className="hover:text-white transition-colors">Login</Link>
+        <p className="text-slate-500 text-sm text-center">Fluenta © 2026 — бесплатная AI-платформа для английского</p>
+        <div className="flex items-center gap-5 text-sm text-slate-400">
+          <a href="#features" className="hover:text-white transition-colors py-2">Возможности</a>
+          <Link href="/auth/login" className="hover:text-white transition-colors py-2">Войти</Link>
         </div>
       </div>
     </footer>
