@@ -1,6 +1,7 @@
 'use client'
 import { useState, useRef } from 'react'
 import { Check, Rocket, ThumbsUp, BookOpen, Turtle } from 'lucide-react'
+import { PageHero } from '@/components/ui/PageHero'
 
 const TEXTS = [
   {
@@ -79,8 +80,8 @@ export default function ReadingSpeedPage() {
 
   return (
     <div className="p-4 sm:p-8 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold text-white mb-2"><span className="gradient-text">Скорость чтения</span></h1>
-      <p className="text-muted-foreground mb-6">Читай текст и нажми &quot;Готово&quot; когда закончишь</p>
+      <PageHero title="Скорость чтения" icon={Rocket} accent="#eab308" motif="lines"
+        subtitle={<>Читай текст и нажми &quot;Готово&quot; когда закончишь</>} />
 
       {phase === 'intro' && (
         <>

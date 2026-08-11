@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
-import { Sparkles, Loader2, Lightbulb } from 'lucide-react'
+import { Sparkles, Loader2, Lightbulb, FileText } from 'lucide-react'
+import { PageHero } from '@/components/ui/PageHero'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 
 interface Template {
@@ -300,8 +301,8 @@ export default function WritingTemplatesPage() {
 
   return (
     <div className="p-4 sm:p-8 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-white mb-2">Шаблоны для письма</h1>
-      <p className="text-muted-foreground text-sm mb-6">IELTS · деловые письма · жалобы · эссе</p>
+      <PageHero title="Шаблоны для письма" icon={FileText} accent="#a855f7" motif="lines"
+        subtitle="IELTS · деловые письма · жалобы · эссе" />
 
       <div className="flex gap-2 mb-6">
         {types.map(t => (

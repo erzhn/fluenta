@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { GrammarExercise } from '@/components/GrammarExercise'
 import { Sparkles, Loader2, Flame, Dices } from 'lucide-react'
+import { PageHero } from '@/components/ui/PageHero'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 import { awardXP, XP_REWARDS } from '@/lib/xp'
 
@@ -82,12 +83,8 @@ export default function GrammarExercisesPage() {
   return (
     <div className="p-4 sm:p-8 max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white">
-            <span className="gradient-text">Упражнения</span> по грамматике
-          </h1>
-          <p className="text-muted-foreground text-sm mt-1">AI проверяет твои ответы</p>
-        </div>
+        <PageHero className="flex-1" title="Упражнения по грамматике" icon={Dices} accent="#6366f1" motif="grid"
+          subtitle="AI проверяет твои ответы" />
         <div className="text-right">
           <p className="text-white font-semibold">{score.correct}/{score.total}</p>
           <p className="text-muted-foreground text-xs">правильно</p>

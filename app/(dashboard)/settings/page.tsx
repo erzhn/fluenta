@@ -2,7 +2,8 @@
 import { useState, useEffect } from 'react'
 import { useTheme } from 'next-themes'
 import { useRouter } from 'next/navigation'
-import { Moon, Sun, Check } from 'lucide-react'
+import { Moon, Sun, Check, Settings as SettingsIcon } from 'lucide-react'
+import { PageHero } from '@/components/ui/PageHero'
 import { supabase } from '@/lib/supabase'
 
 type Goal = 'travel' | 'business' | 'exam' | 'general' | 'work'
@@ -69,7 +70,8 @@ export default function SettingsPage() {
 
   return (
     <div className="p-4 sm:p-8 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold text-white mb-8">Настройки</h1>
+      <PageHero title="Настройки" icon={SettingsIcon} accent="#94a3b8" motif="sparkle"
+        subtitle="Тема, цель обучения, профиль и аккаунт" />
 
       {/* Профиль */}
       <section className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 mb-4">

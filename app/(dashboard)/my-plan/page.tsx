@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
-import { Loader2, Sparkles, Check } from 'lucide-react'
+import { Loader2, Sparkles, Check, Calendar } from 'lucide-react'
+import { PageHero } from '@/components/ui/PageHero'
 
 interface Plan {
   week: number
@@ -37,8 +38,8 @@ export default function MyPlanPage() {
 
   return (
     <div className="p-4 sm:p-8 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold text-white mb-2">Мой план обучения</h1>
-      <p className="text-muted-foreground text-sm mb-6">AI создаст персональный план на месяц</p>
+      <PageHero title="Мой план обучения" icon={Calendar} accent="#0ea5e9" motif="bars"
+        subtitle="AI создаст персональный план на месяц" />
 
       <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5 mb-6 space-y-4">
         <div>

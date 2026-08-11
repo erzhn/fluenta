@@ -21,6 +21,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { PageHero } from "@/components/ui/PageHero";
 import { supabase } from "@/lib/supabase";
 import { getLevelFromXP } from "@/lib/gamification";
 import type { Profile } from "@/types";
@@ -117,7 +118,8 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-5 pb-24 md:pb-8">
-      <h1 className="text-2xl font-bold text-white">Профиль</h1>
+      <PageHero title="Профиль" icon={User} accent="#6366f1" motif="sparkle"
+        subtitle="Твой аккаунт, уровень и цель обучения" />
 
       {/* User card */}
       <motion.div

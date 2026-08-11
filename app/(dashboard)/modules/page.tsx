@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Trophy, BookOpen, ChevronRight, CheckCircle, Lock } from 'lucide-react'
+import { PageHero } from '@/components/ui/PageHero'
 import { MODULES } from '@/lib/modules-data'
 import type { ModuleMeta } from '@/lib/modules-data'
 
@@ -49,13 +50,8 @@ export default function ModulesPage() {
           className="mb-8"
         >
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
-              <Trophy className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-white">Специальные модули</h1>
-              <p className="text-muted-foreground text-sm">Business English, IELTS/TOEFL, Speaking Club, Grammar</p>
-            </div>
+            <PageHero className="flex-1" title="Специальные модули" icon={Trophy} accent="#8b5cf6" motif="bars"
+              subtitle="Business English, IELTS/TOEFL, Speaking Club, Grammar" />
           </div>
         </motion.div>
 

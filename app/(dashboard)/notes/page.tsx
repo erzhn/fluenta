@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { LESSONS } from '@/lib/lessons-data'
 import { Sparkles, Loader2, StickyNote, X, Lightbulb } from 'lucide-react'
+import { PageHero } from '@/components/ui/PageHero'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 
 export default function NotesPage() {
@@ -40,8 +41,8 @@ export default function NotesPage() {
 
   return (
     <div className="p-4 sm:p-8 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold text-foreground mb-2">Мои заметки</h1>
-      <p className="text-muted-foreground text-sm mb-6">{notes.length} заметок из уроков</p>
+      <PageHero title="Мои заметки" icon={StickyNote} accent="#38bdf8" motif="lines"
+        subtitle={<>{notes.length} заметок из уроков</>} />
 
       {notes.length === 0 ? (
         <div className="text-center py-16">

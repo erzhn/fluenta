@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { Sparkles, Loader2, Clock, Star, Flame, Target, BookOpen, Lightbulb, type LucideIcon } from 'lucide-react'
+import { PageHero } from '@/components/ui/PageHero'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 import { supabase } from '@/lib/supabase'
 
@@ -88,11 +89,11 @@ export default function WeeklySummaryPage() {
 
   return (
     <div className="p-4 sm:p-8 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold text-white mb-2"><span className="gradient-text">Итоги недели</span></h1>
-      <p className="text-muted-foreground mb-8">
-        {new Date(data.days[0].date).toLocaleDateString('ru', { day: 'numeric', month: 'long' })} —{' '}
-        {new Date(data.days[6].date).toLocaleDateString('ru', { day: 'numeric', month: 'long', year: 'numeric' })}
-      </p>
+      <PageHero title="Итоги недели" icon={Star} accent="#06b6d4" motif="bars"
+        subtitle={<>
+          {new Date(data.days[0].date).toLocaleDateString('ru', { day: 'numeric', month: 'long' })} —{' '}
+          {new Date(data.days[6].date).toLocaleDateString('ru', { day: 'numeric', month: 'long', year: 'numeric' })}
+        </>} />
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
         {([

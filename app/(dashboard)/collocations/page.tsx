@@ -1,7 +1,8 @@
 'use client'
 import { useState } from 'react'
 import { COLLOCATIONS, COLLOCATION_CATEGORIES } from '@/lib/collocations-data'
-import { Sparkles, Loader2, Volume2, Check, Plus, AlertTriangle } from 'lucide-react'
+import { Sparkles, Loader2, Volume2, Check, Plus, AlertTriangle, Link2 } from 'lucide-react'
+import { PageHero } from '@/components/ui/PageHero'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 
 export default function CollocationsPage() {
@@ -37,10 +38,8 @@ export default function CollocationsPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white">Коллокации</h1>
-        <p className="text-muted-foreground text-sm mt-1">Слова которые «ходят вместе» · {COLLOCATIONS.length} коллокаций · {learned.size} изучено</p>
-      </div>
+      <PageHero title="Коллокации" icon={Link2} accent="#22d3ee" motif="letters"
+        subtitle={<>Слова которые «ходят вместе» · {COLLOCATIONS.length} коллокаций · {learned.size} изучено</>} />
 
       <input type="text" value={search} onChange={e => setSearch(e.target.value)}
         placeholder="Поиск: make, decision, решение..."

@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Volume2, Plus, X, Check, RefreshCw, Sparkles } from 'lucide-react'
+import { Volume2, Plus, X, Check, RefreshCw, Sparkles, FileText } from 'lucide-react'
+import { PageHero } from '@/components/ui/PageHero'
 import { speak, stopSpeaking } from '@/lib/speech'
 import { getReadingTexts, type ReadingText } from '@/lib/reading-data'
 import { supabase } from '@/lib/supabase'
@@ -192,10 +193,10 @@ export default function ReadingPage() {
 
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white"><span className="gradient-text">Чтение</span></h1>
-        <p className="text-muted-foreground text-sm">Читай, учи слова, отвечай на вопросы</p>
-      </div>
+      <PageHero
+        title="Чтение" icon={FileText} accent="#22c55e" motif="lines"
+        subtitle="Читай, учи слова, отвечай на вопросы"
+      />
 
       {/* Topic chips */}
       <div className="flex flex-wrap gap-2">

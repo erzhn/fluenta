@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
-import { Check, X } from 'lucide-react'
+import { Check, X, Layers } from 'lucide-react'
+import { PageHero } from '@/components/ui/PageHero'
 import { AFFIXES } from '@/lib/word-formation-data'
 
 export default function WordFormationPage() {
@@ -31,8 +32,8 @@ export default function WordFormationPage() {
 
   return (
     <div className="p-4 sm:p-8 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-white mb-2">Словообразование</h1>
-      <p className="text-muted-foreground text-sm mb-6">Префиксы и суффиксы английского языка</p>
+      <PageHero title="Словообразование" icon={Layers} accent="#84cc16" motif="letters"
+        subtitle="Префиксы и суффиксы английского языка" />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Левая панель — список аффиксов */}

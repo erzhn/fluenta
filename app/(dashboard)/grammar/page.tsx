@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { Search, ChevronDown, ChevronUp, Volume2, Sparkles, Lightbulb, BookOpen, PenLine, Check, X } from 'lucide-react'
+import { PageHero } from '@/components/ui/PageHero'
 import { speak } from '@/lib/speech'
 import { supabase } from '@/lib/supabase'
 import { toast } from '@/components/ui/Toast'
@@ -356,10 +357,8 @@ export default function GrammarPage() {
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-white"><span className="gradient-text">Грамматический справочник</span></h1>
-        <p className="text-muted-foreground text-sm">25 ключевых правил от A1 до C1 + AI-объяснения</p>
-      </div>
+      <PageHero title="Грамматический справочник" icon={BookOpen} accent="#3b82f6" motif="grid"
+        subtitle="25 ключевых правил от A1 до C1 + AI-объяснения" />
 
       {/* Search + filter */}
       <div className="flex flex-col sm:flex-row gap-3">

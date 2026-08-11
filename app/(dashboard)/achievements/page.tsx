@@ -7,6 +7,7 @@ import {
   Zap, Gem, Crown, Star, Sparkles, Rocket, Medal, Lock, Check,
   type LucideIcon,
 } from 'lucide-react'
+import { PageHero } from '@/components/ui/PageHero'
 
 interface Badge {
   id: string
@@ -169,8 +170,8 @@ export default function AchievementsPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">Достижения</h1>
-        <p className="text-muted-foreground">{unlocked} из {badges.length} получено</p>
+        <PageHero title="Достижения" icon={Trophy} accent="#eab308" motif="bars"
+          subtitle={<>{unlocked} из {badges.length} получено</>} />
         <div className="mt-3 h-2 bg-white/[0.06] rounded-full overflow-hidden">
           <motion.div
             initial={{ width: 0 }}

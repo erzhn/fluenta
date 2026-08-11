@@ -1,6 +1,7 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
 import { Sparkles, Loader2, PartyPopper, ThumbsUp, Dumbbell, Volume2, Check, X, Turtle } from 'lucide-react'
+import { PageHero } from '@/components/ui/PageHero'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 import { awardXP, XP_REWARDS } from '@/lib/xp'
 
@@ -216,8 +217,8 @@ export default function DictationPage() {
   if (!started) {
     return (
       <div className="p-4 sm:p-8 max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold text-white mb-2"><span className="gradient-text">Диктант</span></h1>
-        <p className="text-muted-foreground mb-8">Прослушай слово и напиши его правильно</p>
+        <PageHero title="Диктант" icon={Volume2} accent="#ef4444" motif="waveform"
+          subtitle="Прослушай слово и напиши его правильно" />
 
         <div className="grid grid-cols-5 gap-2 mb-8">
           {(['A1','A2','B1','B2','C1'] as Level[]).map(l => (

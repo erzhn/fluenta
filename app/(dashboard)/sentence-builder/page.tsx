@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { Sparkles, Loader2, CheckCircle2, Check, X } from 'lucide-react'
+import { Sparkles, Loader2, CheckCircle2, Check, X, AlignLeft } from 'lucide-react'
+import { PageHero } from '@/components/ui/PageHero'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 
 interface Sentence {
@@ -119,10 +120,8 @@ export default function SentenceBuilderPage() {
   return (
     <div className="p-4 sm:p-8 max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white"><span className="gradient-text">Собери предложение</span></h1>
-          <p className="text-muted-foreground text-sm mt-1">Нажимай на слова в правильном порядке</p>
-        </div>
+        <PageHero className="flex-1" title="Собери предложение" icon={AlignLeft} accent="#7c3aed" motif="grid"
+          subtitle="Нажимай на слова в правильном порядке" />
         <div className="text-right">
           <p className="text-white font-semibold">{score.correct}/{score.total}</p>
           <p className="text-muted-foreground text-xs">правильно</p>

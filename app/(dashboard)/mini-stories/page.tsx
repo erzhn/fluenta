@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { MINI_STORIES, MiniStory } from '@/lib/mini-stories-data'
 import { Sparkles, Loader2, Volume2, BookOpen, HelpCircle, ChevronUp, ChevronDown, Check, Plus } from 'lucide-react'
+import { PageHero } from '@/components/ui/PageHero'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 import { awardXP, XP_REWARDS } from '@/lib/xp'
 
@@ -158,8 +159,8 @@ export default function MiniStoriesPage() {
 
   return (
     <div className="p-4 sm:p-8 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-white mb-2">Мини-истории</h1>
-      <p className="text-muted-foreground text-sm mb-6">Читай историю · учи слова · отвечай на вопросы</p>
+      <PageHero title="Мини-истории" icon={BookOpen} accent="#f59e0b" motif="lines"
+        subtitle="Читай историю · учи слова · отвечай на вопросы" />
 
       <div className="flex items-center gap-2 mb-6 flex-wrap">
         {['A1','A2','B1','B2','C1'].map(l => (

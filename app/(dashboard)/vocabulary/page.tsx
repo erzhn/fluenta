@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence, useMotionValue, useTransform, useAnimation } from 'framer-motion'
 import { RotateCcw, Volume2, Check, X, Layers, BookOpen, Sparkles, Loader2, PenLine, PartyPopper, Link2 } from 'lucide-react'
+import { PageHero } from '@/components/ui/PageHero'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 import { VOCABULARY, getWordsForLesson, type VocabWord } from '@/lib/vocabulary-data'
 import { speak, stopSpeaking } from '@/lib/speech'
@@ -375,10 +376,8 @@ export default function VocabularyPage() {
     <div className="max-w-2xl mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-bold text-white"><span className="gradient-text">Словарь</span></h1>
-          <p className="text-muted-foreground text-sm">{VOCABULARY.length} слов • Метод Leitner</p>
-        </div>
+        <PageHero className="flex-1" title="Словарь" icon={Layers} accent="#10b981" motif="letters"
+          subtitle={<>{VOCABULARY.length} слов • Метод Leitner</>} />
         <div className="flex flex-wrap items-center gap-2 justify-end">
           <button onClick={() => setMode('study')}
             className={`px-3 py-1.5 rounded-xl text-sm border transition-all ${mode === 'study' ? 'border-primary bg-primary/20 text-white' : 'border-white/10 text-muted-foreground'}`}>

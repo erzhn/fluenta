@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Play, Square, Eye, EyeOff, Volume2, RefreshCw, Sparkles } from 'lucide-react'
+import { Play, Square, Eye, EyeOff, Volume2, RefreshCw, Sparkles, Headphones } from 'lucide-react'
+import { PageHero } from '@/components/ui/PageHero'
 import { speak, stopSpeaking } from '@/lib/speech'
 import { getListeningTexts, type ListeningText } from '@/lib/listening-data'
 import { supabase } from '@/lib/supabase'
@@ -121,10 +122,10 @@ export default function ListeningPage() {
 
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white"><span className="gradient-text">Аудирование</span></h1>
-        <p className="text-muted-foreground text-sm">Слушай тексты и отвечай на вопросы</p>
-      </div>
+      <PageHero
+        title="Аудирование" icon={Headphones} accent="#f97316" motif="waveform"
+        subtitle="Слушай тексты и отвечай на вопросы"
+      />
 
       {/* Level tabs */}
       <div className="flex gap-2 flex-wrap">

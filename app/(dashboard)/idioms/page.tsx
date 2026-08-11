@@ -1,7 +1,8 @@
 'use client'
 import { useState } from 'react'
 import { IDIOMS, IDIOM_CATEGORIES } from '@/lib/idioms-data'
-import { Sparkles, Loader2, Check, Plus, Volume2 } from 'lucide-react'
+import { Sparkles, Loader2, Check, Plus, Volume2, MessageSquare } from 'lucide-react'
+import { PageHero } from '@/components/ui/PageHero'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 
 export default function IdiomsPage() {
@@ -63,12 +64,10 @@ export default function IdiomsPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white"><span className="gradient-text">Идиомы</span></h1>
-          <p className="text-muted-foreground text-sm mt-1">{IDIOMS.length} идиом · {learned.size} изучено</p>
-        </div>
-      </div>
+      <PageHero
+        title="Идиомы" icon={MessageSquare} accent="#f59e0b" motif="letters"
+        subtitle={<>{IDIOMS.length} идиом · {learned.size} изучено</>}
+      />
 
       <input type="text" value={search} onChange={e => setSearch(e.target.value)}
         placeholder="Поиск идиомы..."

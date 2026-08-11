@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Mic, MicOff, Volume2, ChevronRight, RotateCcw, Loader2, CheckCircle, GraduationCap, PartyPopper } from 'lucide-react'
+import { PageHero } from '@/components/ui/PageHero'
 import { speak, stopSpeaking, createRecognition, isSpeechRecognitionSupported } from '@/lib/speech'
 import { supabase } from '@/lib/supabase'
 import { awardXP, XP_REWARDS } from '@/lib/xp'
@@ -273,10 +274,8 @@ export default function IELTSSpeakingPage() {
 
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-white font-black text-2xl">IELTS Speaking</h1>
-            <p className="text-muted-foreground text-sm mt-0.5">Симуляция экзамена с ИИ-оценкой</p>
-          </div>
+          <PageHero className="flex-1" title="IELTS Speaking" icon={GraduationCap} accent="#f43f5e" motif="pulse"
+            subtitle="Симуляция экзамена с ИИ-оценкой" />
           {part > 0 && part < 4 && (
             <div className="flex gap-1.5">
               {[1, 2, 3].map(p => (

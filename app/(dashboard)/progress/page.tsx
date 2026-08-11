@@ -7,6 +7,7 @@ import {
   Lock, Trophy, Calendar, ArrowRight, TrendingUp, Sparkles, Loader2,
   CheckCircle2, Check, Target, type LucideIcon,
 } from 'lucide-react'
+import { PageHero } from '@/components/ui/PageHero'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
@@ -196,10 +197,8 @@ export default function ProgressPage() {
       {/* ── 1. Header ──────────────────────────────────────────────────────── */}
       <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white">My Progress</h1>
-            <p className="text-muted-foreground text-sm mt-1">Track your English learning journey</p>
-          </div>
+          <PageHero className="flex-1" title="Мой прогресс" icon={TrendingUp} accent="#10b981" motif="bars"
+            subtitle="Отслеживай свой путь в изучении английского" />
           <div
             className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-black shrink-0 self-start sm:self-auto"
             style={{ backgroundColor: lvlInfo.bg, color: lvlInfo.color, border: `1px solid ${lvlInfo.color}40` }}

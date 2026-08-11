@@ -493,3 +493,81 @@ nav.mobile-nav {
   .q-orbit-ring { animation: none; }
   .q-btn-primary, .q-play, .q-card.q-hoverable, .q-bar i { transition: none; }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   PAGE HERO — индивидуальный анимированный заголовок страницы.
+   Цвет задаётся через --accent на .ph-hero (per-page).
+   ═══════════════════════════════════════════════════════════ */
+.ph-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  padding: 20px 24px;
+  margin-bottom: 22px;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  background:
+    radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 60%),
+    linear-gradient(120deg, color-mix(in srgb, var(--accent) 12%, #14152a), #131426 72%);
+}
+.ph-inner { position: relative; z-index: 3; display: flex; align-items: center; gap: 16px; }
+.ph-icon {
+  width: 48px; height: 48px; border-radius: 15px; flex-shrink: 0;
+  display: grid; place-items: center;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent);
+  box-shadow: 0 0 26px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.ph-title {
+  font: 700 clamp(21px, 2.6vw, 29px)/1.12 var(--font-display), "Space Grotesk", sans-serif;
+  letter-spacing: -.03em; color: #fff; margin: 0;
+}
+.ph-sub { color: #9aa0bd; font-size: 13px; line-height: 1.4; margin: 4px 0 0; }
+.ph-action { margin-left: auto; flex-shrink: 0; }
+
+/* Motif layer */
+.ph-hero > [aria-hidden] { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+
+/* waveform */
+.ph-waveform { display: flex; align-items: center; justify-content: flex-end; gap: 5px; padding-right: 26px; }
+.ph-waveform i { width: 5px; height: 20px; border-radius: 3px; background: var(--accent); opacity: .32; animation: phWave 1.1s ease-in-out infinite; }
+@keyframes phWave { 0%, 100% { height: 16px; } 50% { height: 54px; } }
+
+/* bars */
+.ph-bars { display: flex; align-items: flex-end; justify-content: flex-end; gap: 7px; padding-right: 26px; padding-bottom: 0; height: 100%; }
+.ph-bars i { width: 11px; height: 22px; border-radius: 4px 4px 0 0; background: var(--accent); opacity: .3; animation: phBar 2.4s ease-in-out infinite; }
+@keyframes phBar { 0%, 100% { height: 20px; } 50% { height: 62px; } }
+
+/* letters */
+.ph-letters span { position: absolute; color: var(--accent); opacity: .22; font-family: var(--font-display), "Space Grotesk", sans-serif; font-weight: 700; animation: phFloat 6s ease-in-out infinite; }
+@keyframes phFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+
+/* orbit */
+.ph-orbit { }
+.ph-orbit .ph-orbit-core { position: absolute; right: 44px; top: 50%; width: 34px; height: 34px; margin-top: -17px; border-radius: 50%; background: var(--accent); opacity: .5; box-shadow: 0 0 30px color-mix(in srgb, var(--accent) 60%, transparent); }
+.ph-orbit .ph-orbit-ring { position: absolute; right: 20px; top: 50%; width: 96px; height: 96px; margin-top: -48px; border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); border-radius: 50%; animation: phSpin 14s linear infinite; }
+.ph-orbit .ph-orbit-ring em { position: absolute; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+.ph-orbit .ph-orbit-ring em:first-child { top: -4px; left: 44px; }
+.ph-orbit .ph-orbit-ring em:last-child { bottom: -4px; right: 40px; opacity: .6; }
+@keyframes phSpin { to { transform: rotate(360deg); } }
+
+/* grid */
+.ph-grid { background-image: radial-gradient(color-mix(in srgb, var(--accent) 55%, transparent) 1px, transparent 0); background-size: 22px 22px; opacity: .18; animation: phGrid 7s linear infinite; }
+@keyframes phGrid { to { background-position: 22px 22px; } }
+
+/* pulse */
+.ph-pulse span { position: absolute; right: 48px; top: 50%; border: 2px solid var(--accent); border-radius: 50%; opacity: 0; animation: phPulse 3s ease-out infinite; }
+@keyframes phPulse { 0% { width: 16px; height: 16px; margin: -8px -8px 0 0; opacity: .6; } 100% { width: 170px; height: 170px; margin: -85px -85px 0 0; opacity: 0; } }
+
+/* lines */
+.ph-lines i { position: absolute; right: 26px; height: 6px; border-radius: 4px; background: var(--accent); opacity: .2; animation: phLine 3s ease-in-out infinite; }
+@keyframes phLine { 0%, 100% { transform: scaleX(.7); opacity: .12; } 50% { transform: scaleX(1); opacity: .28; } }
+
+/* sparkle */
+.ph-sparkle i { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); opacity: .25; animation: phTwinkle 2.6s ease-in-out infinite; }
+@keyframes phTwinkle { 0%, 100% { opacity: .1; transform: scale(.5); } 50% { opacity: .5; transform: scale(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ph-waveform i, .ph-bars i, .ph-letters span, .ph-orbit-ring,
+  .ph-grid, .ph-pulse span, .ph-lines i, .ph-sparkle i { animation: none !important; }
+}

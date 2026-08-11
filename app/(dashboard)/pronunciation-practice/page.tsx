@@ -1,6 +1,7 @@
 'use client'
 import { useState, useRef } from 'react'
 import { Sparkles, Loader2, Volume2, Mic, Square, PartyPopper, ThumbsUp, Megaphone, RotateCcw, X } from 'lucide-react'
+import { PageHero } from '@/components/ui/PageHero'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 
 const PHRASES: Record<string, string[]> = {
@@ -138,10 +139,8 @@ export default function PronunciationPracticePage() {
   return (
     <div className="p-4 sm:p-8 max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white"><span className="gradient-text">Произношение</span></h1>
-          <p className="text-muted-foreground text-sm mt-1">Послушай и повтори фразу</p>
-        </div>
+        <PageHero className="flex-1" title="Произношение" icon={Mic} accent="#fb7185" motif="waveform"
+          subtitle="Послушай и повтори фразу" />
         {avgScore !== null && (
           <div className="text-right">
             <p className="text-white font-semibold text-lg">{avgScore}%</p>

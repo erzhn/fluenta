@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react'
 import { PHRASAL_VERBS_DATA, searchPhrasalVerbs, getAllPhrasalVerbs } from '@/lib/phrasal-verbs-data'
 import { addCardToSR } from '@/lib/spaced-repetition'
 import { Sparkles, Loader2, Home, Users, Briefcase, Plane, Heart, BookOpen, Zap, Check, Search, X, type LucideIcon } from 'lucide-react'
+import { PageHero } from '@/components/ui/PageHero'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
@@ -69,10 +70,8 @@ export default function PhrasalVerbsPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1"><span className="gradient-text">Фразовые глаголы</span></h1>
-        <p className="text-muted-foreground text-sm">{total} фразовых глаголов по 5 темам</p>
-      </div>
+      <PageHero title="Фразовые глаголы" icon={Zap} accent="#14b8a6" motif="letters"
+        subtitle={<>{total} фразовых глаголов по 5 темам</>} />
 
       {/* Stats bar */}
       <div className="flex gap-3 mb-6 flex-wrap">

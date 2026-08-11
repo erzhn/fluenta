@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, RefreshCw } from 'lucide-react'
+import { Send, RefreshCw, PenLine } from 'lucide-react'
+import { PageHero } from '@/components/ui/PageHero'
 import { WritingFeedback } from '@/components/WritingFeedback'
 import { supabase } from '@/lib/supabase'
 import { toast } from '@/components/ui/Toast'
@@ -97,10 +98,8 @@ export default function WritingPage() {
 
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white">Практика письма</h1>
-        <p className="text-muted-foreground text-sm">Выбери уровень и тему, напиши текст — ИИ проверит и даст рекомендации</p>
-      </div>
+      <PageHero title="Практика письма" icon={PenLine} accent="#d946ef" motif="lines"
+        subtitle="Выбери уровень и тему, напиши текст — ИИ проверит и даст рекомендации" />
 
       {!result && (
         <>
