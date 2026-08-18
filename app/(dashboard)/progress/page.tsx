@@ -8,6 +8,7 @@ import {
   CheckCircle2, Check, Target, type LucideIcon,
 } from 'lucide-react'
 import { PageHero } from '@/components/ui/PageHero'
+import { CountUp } from '@/components/ui/CountUp'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
@@ -212,10 +213,10 @@ export default function ProgressPage() {
       {/* ── 2. Stats row ───────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
-          { icon: Flame,          label: 'Current Streak', value: streak,     unit: streak === 1 ? 'day' : 'days', color: '#f97316', bg: '#f9731620' },
-          { icon: Zap,            label: 'Total XP',       value: xp,         unit: 'xp',                          color: '#a855f7', bg: '#a855f720' },
-          { icon: BookOpen,       label: 'Words Learned',  value: vocabCount, unit: 'words',                       color: '#06b6d4', bg: '#06b6d420' },
-          { icon: MessageSquare,  label: 'Conversations',  value: convCount,  unit: 'chats',                       color: '#10b981', bg: '#10b98120' },
+          { icon: Flame,          label: 'Стрик',        value: streak,     unit: streak === 1 ? 'день' : 'дней', color: '#f97316', bg: '#f9731620' },
+          { icon: Zap,            label: 'Всего XP',     value: xp,         unit: 'xp',                           color: '#a855f7', bg: '#a855f720' },
+          { icon: BookOpen,       label: 'Выучено слов', value: vocabCount, unit: 'слов',                         color: '#06b6d4', bg: '#06b6d420' },
+          { icon: MessageSquare,  label: 'Диалогов',     value: convCount,  unit: 'чатов',                        color: '#10b981', bg: '#10b98120' },
         ].map((s, i) => (
           <motion.div key={s.label} custom={i + 1} variants={fadeUp} initial="hidden" animate="visible">
             <div className={`${glass} rounded-2xl p-4 sm:p-5`}>
@@ -225,7 +226,7 @@ export default function ProgressPage() {
                 </div>
                 <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{s.unit}</span>
               </div>
-              <div className="text-3xl font-black text-white leading-none mb-1">{s.value.toLocaleString()}</div>
+              <div className="text-3xl font-black text-white leading-none mb-1"><CountUp value={s.value} /></div>
               <div className="text-xs text-muted-foreground">{s.label}</div>
             </div>
           </motion.div>
@@ -237,11 +238,11 @@ export default function ProgressPage() {
         <div className={`${glass} rounded-2xl p-5 sm:p-6`}>
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="text-white font-bold text-sm">Level Progress</h2>
+              <h2 className="text-white font-bold text-sm">Прогресс уровня</h2>
               <p className="text-muted-foreground text-xs mt-0.5">
                 {nextLvl
-                  ? `${lvlProg.needed - lvlProg.earned} XP to reach ${nextLvl.level}`
-                  : 'Maximum level reached!'}
+                  ? `${(lvlProg.needed - lvlProg.earned).toLocaleString()} XP до уровня ${nextLvl.level}`
+                  : 'Достигнут максимальный уровень!'}
               </p>
             </div>
             <div
@@ -303,12 +304,12 @@ export default function ProgressPage() {
         <div className={`${glass} rounded-2xl p-5 sm:p-6`}>
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="text-white font-bold text-sm">Weekly Activity</h2>
-              <p className="text-muted-foreground text-xs mt-0.5">Minutes studied per day</p>
+              <h2 className="text-white font-bold text-sm">Активность за неделю</h2>
+              <p className="text-muted-foreground text-xs mt-0.5">Минуты занятий по дням</p>
             </div>
             <div className={`flex items-center gap-1.5 text-xs text-muted-foreground px-3 py-1.5 rounded-lg bg-white/[0.03]`}>
               <Calendar className="w-3.5 h-3.5" />
-              Last 7 days
+              7 дней
             </div>
           </div>
 

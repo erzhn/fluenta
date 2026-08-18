@@ -620,3 +620,49 @@ nav.mobile-nav {
   .rise-in { animation: none !important; }
   .card-clean, .btn-violet { transition: none !important; }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   ОЖИВЛЕНИЕ «СЫРЫХ» КАРТОЧЕК — bg-white/[0.04|0.03] + rounded-*
+   реагируют на наведение свечением по текущему --primary.
+   Только hover-устройства, без сдвига layout, безопасно.
+   ═══════════════════════════════════════════════════════════ */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  main [class~="bg-white/[0.04]"][class*="rounded-"],
+  main [class~="bg-white/[0.03]"][class*="rounded-"],
+  main [class~="bg-white/[0.05]"][class*="rounded-"] {
+    transition: border-color .28s ease, box-shadow .28s ease;
+  }
+  main [class~="bg-white/[0.04]"][class*="rounded-"]:hover,
+  main [class~="bg-white/[0.03]"][class*="rounded-"]:hover,
+  main [class~="bg-white/[0.05]"][class*="rounded-"]:hover {
+    border-color: color-mix(in srgb, var(--primary) 38%, rgba(255,255,255,0.08));
+    box-shadow: 0 10px 30px rgba(0,0,0,0.32), 0 0 22px color-mix(in srgb, var(--primary) 14%, transparent);
+  }
+}
+
+/* Единые focus-visible кольца на контенте (доступность) */
+main :is(a, button, input, textarea, select, [role="button"], [tabindex]):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+/* Живая карточка — единый «премиум»-стиль для новых блоков */
+.card-live {
+  position: relative;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background:
+    radial-gradient(130% 120% at 100% 0%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 55%),
+    linear-gradient(150deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  transition: transform .28s cubic-bezier(.22,1,.36,1), box-shadow .28s ease, border-color .28s ease;
+}
+@media (hover: hover) {
+  .card-live:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in srgb, var(--primary) 45%, rgba(255,255,255,0.08));
+    box-shadow: 0 14px 34px rgba(0,0,0,0.4), 0 0 26px color-mix(in srgb, var(--primary) 16%, transparent);
+  }
+}
+@media (prefers-reduced-motion: reduce) { .card-live { transition: none !important; } }
