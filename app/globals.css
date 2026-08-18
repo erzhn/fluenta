@@ -666,3 +666,29 @@ main :is(a, button, input, textarea, select, [role="button"], [tabindex]):focus-
   }
 }
 @media (prefers-reduced-motion: reduce) { .card-live { transition: none !important; } }
+
+/* ═══════════════════════════════════════════════════════════
+   ГЛОБАЛЬНОЕ ПОЯВЛЕНИЕ — секции каждой страницы всплывают
+   каскадом при заходе на экран (слой перемонтируется по роуту).
+   Целимся в прямых потомков корневого контейнера страницы.
+   ═══════════════════════════════════════════════════════════ */
+.page-stagger > * > * {
+  animation: pageRise .5s cubic-bezier(.22, 1, .36, 1) both;
+}
+@keyframes pageRise {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: none; }
+}
+.page-stagger > * > *:nth-child(1) { animation-delay: .03s; }
+.page-stagger > * > *:nth-child(2) { animation-delay: .09s; }
+.page-stagger > * > *:nth-child(3) { animation-delay: .15s; }
+.page-stagger > * > *:nth-child(4) { animation-delay: .21s; }
+.page-stagger > * > *:nth-child(5) { animation-delay: .27s; }
+.page-stagger > * > *:nth-child(6) { animation-delay: .33s; }
+.page-stagger > * > *:nth-child(7) { animation-delay: .39s; }
+.page-stagger > * > *:nth-child(8) { animation-delay: .45s; }
+.page-stagger > * > *:nth-child(n+9) { animation-delay: .5s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .page-stagger > * > * { animation: none !important; }
+}
