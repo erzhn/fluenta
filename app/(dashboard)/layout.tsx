@@ -79,7 +79,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="flex h-screen bg-background overflow-hidden relative">
+      <div className="app-aurora" aria-hidden>
+        <span className="a1" /><span className="a2" /><span className="a3" />
+      </div>
       {showOnboarding && userId && (
         <OnboardingWizard userId={userId} onComplete={() => setShowOnboarding(false)} />
       )}
@@ -88,7 +91,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         onMobileClose={() => setMobileDrawerOpen(false)}
       />
 
-      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0 relative z-10">
         <TopBar onMenuClick={() => setMobileDrawerOpen(true)} />
 
         <main className="flex-1 overflow-y-auto pb-20 md:pb-0 p-4 sm:p-6">

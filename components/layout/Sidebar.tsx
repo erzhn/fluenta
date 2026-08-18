@@ -215,7 +215,7 @@ export function Sidebar({ vocabDueCount = 0, mobileOpen = false, onMobileClose }
   return (
     <>
       {/* Desktop */}
-      <aside className="hidden md:block w-60 h-full shrink-0 border-r border-sidebar-border overflow-y-auto no-scrollbar">
+      <aside className="hidden md:block w-60 h-full shrink-0 border-r border-sidebar-border overflow-y-auto no-scrollbar relative z-10">
         <NavContent
           pathname={pathname} vocabDueCount={vocabDueCount}
           profile={profile} onLogout={handleLogout}

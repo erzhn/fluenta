@@ -173,10 +173,19 @@
     @apply bg-card rounded-2xl;
     box-shadow: 0 1px 4px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.04);
     border: 1px solid rgba(0,0,0,0.06);
+    transition: transform .28s cubic-bezier(.22,1,.36,1), box-shadow .28s ease, border-color .28s ease;
+  }
+  .card-clean:hover {
+    border-color: color-mix(in srgb, var(--primary) 40%, rgba(0,0,0,0.06));
+    box-shadow: 0 6px 22px rgba(0,0,0,0.08), 0 0 0 1px color-mix(in srgb, var(--primary) 14%, transparent);
   }
   .dark .card-clean {
     box-shadow: 0 1px 4px rgba(0,0,0,0.3);
     border: 1px solid rgba(255,255,255,0.06);
+  }
+  .dark .card-clean:hover {
+    border-color: color-mix(in srgb, var(--primary) 45%, rgba(255,255,255,0.06));
+    box-shadow: 0 12px 30px rgba(0,0,0,0.4), 0 0 24px color-mix(in srgb, var(--primary) 16%, transparent);
   }
 
   /* Лавандовый бейдж */
@@ -195,9 +204,14 @@
     @apply inline-flex items-center justify-center gap-2 font-semibold transition-all
            rounded-full px-5 py-2.5 text-sm cursor-pointer select-none text-white;
     background: var(--primary);
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--primary) 32%, transparent);
   }
-  .btn-violet:hover { filter: brightness(1.07); }
-  .btn-violet:active { transform: scale(0.98); }
+  .btn-violet:hover {
+    filter: brightness(1.07);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 26px color-mix(in srgb, var(--primary) 48%, transparent);
+  }
+  .btn-violet:active { transform: translateY(0) scale(0.98); }
 
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 font-semibold transition-all
@@ -570,4 +584,39 @@ nav.mobile-nav {
 @media (prefers-reduced-motion: reduce) {
   .ph-waveform i, .ph-bars i, .ph-letters span, .ph-orbit-ring,
   .ph-grid, .ph-pulse span, .ph-lines i, .ph-sparkle i { animation: none !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   APP AURORA — тонкий живой фон под контентом дашборда.
+   ═══════════════════════════════════════════════════════════ */
+.app-aurora { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.app-aurora span {
+  position: absolute; border-radius: 50%; filter: blur(90px);
+  opacity: .12; will-change: transform;
+}
+.dark .app-aurora span { opacity: .16; }
+.app-aurora .a1 { width: 620px; height: 620px; background: color-mix(in srgb, var(--primary) 80%, #6366f1); top: -220px; left: -120px; animation: appDrift 26s ease-in-out infinite; }
+.app-aurora .a2 { width: 520px; height: 520px; background: #8b5cf6; bottom: -240px; right: -100px; animation: appDrift 32s ease-in-out infinite reverse; }
+.app-aurora .a3 { width: 440px; height: 440px; background: #06b6d4; top: 42%; left: 52%; animation: appDrift2 38s ease-in-out infinite; }
+@keyframes appDrift  { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(70px,-56px) scale(1.08); } }
+@keyframes appDrift2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-60px,44px) scale(1.06); } }
+
+/* Живой прогресс-бар: мягкий блик */
+.progress-fill { position: relative; overflow: hidden; }
+.progress-fill::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(100deg, transparent 20%, rgba(255,255,255,.35) 50%, transparent 80%);
+  transform: translateX(-100%); animation: progShimmer 2.6s ease-in-out infinite;
+}
+
+/* Плавное появление карточек-секций */
+.rise-in { animation: riseIn .5s cubic-bezier(.22,1,.36,1) both; }
+@keyframes riseIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes progShimmer { to { transform: translateX(100%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .app-aurora span { animation: none !important; }
+  .progress-fill::after { animation: none !important; opacity: 0; }
+  .rise-in { animation: none !important; }
+  .card-clean, .btn-violet { transition: none !important; }
 }
