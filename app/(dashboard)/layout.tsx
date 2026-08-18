@@ -11,6 +11,16 @@ import { ToastContainer } from "@/components/ui/Toast";
 import { supabase } from "@/lib/supabase";
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 
+// Ключевые страницы с «глубоким» индивидуальным акцентом: переопределяем
+// --primary/--ring/--accent, и вся интерактивная палитра страницы (табы, чипы,
+// кнопки, прогресс, фокус) перекрашивается в её фирменный цвет.
+const PAGE_ACCENT: Record<string, string> = {
+  "/vocabulary": "#10b981",
+  "/grammar":    "#3b82f6",
+  "/listening":  "#f97316",
+  "/ai-tutor":   "#8b5cf6",
+};
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -90,6 +100,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               exit={{ opacity: 0, y: -4 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
               className="h-full"
+              style={
+                PAGE_ACCENT[pathname]
+                  ? ({
+                      ["--primary"]: PAGE_ACCENT[pathname],
+                      ["--ring"]: PAGE_ACCENT[pathname],
+                      ["--accent"]: PAGE_ACCENT[pathname],
+                    } as React.CSSProperties)
+                  : undefined
+              }
             >
               {children}
             </motion.div>
