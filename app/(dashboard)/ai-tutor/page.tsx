@@ -273,7 +273,7 @@ export default function AITutorPage() {
             className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-muted-foreground transition-colors px-2.5 py-1.5 rounded-lg hover:bg-white/5"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">New chat</span>
+            <span className="hidden sm:inline">Новый чат</span>
           </button>
         </div>
       </div>

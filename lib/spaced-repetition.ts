@@ -1,3 +1,5 @@
+import { localDate } from './date'
+
 export interface SRCard {
   wordId: string
   word: string
@@ -28,11 +30,11 @@ export function sm2(card: SRCard, quality: 0|1|2|3|4|5): SRCard {
   const due = new Date()
   due.setDate(due.getDate() + interval)
 
-  return { ...card, easeFactor, interval, repetitions, dueDate: due.toISOString().slice(0, 10) }
+  return { ...card, easeFactor, interval, repetitions, dueDate: localDate(due) }
 }
 
 export function isDue(card: SRCard): boolean {
-  const today = new Date().toISOString().slice(0, 10)
+  const today = localDate()
   return card.dueDate <= today
 }
 
@@ -56,7 +58,7 @@ export function getNewWordsForToday(
       easeFactor: 2.5,
       interval: 1,
       repetitions: 0,
-      dueDate: new Date().toISOString().slice(0, 10),
+      dueDate: localDate(),
     }))
 }
 
@@ -80,7 +82,7 @@ export function addCardToSR(entry: { wordId: string; word: string; translation: 
     easeFactor: 2.5,
     interval: 1,
     repetitions: 0,
-    dueDate: new Date().toISOString().slice(0, 10),
+    dueDate: localDate(),
   }
   saveSRCards([...cards, newCard])
 }

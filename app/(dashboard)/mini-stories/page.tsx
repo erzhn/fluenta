@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { MINI_STORIES, MiniStory } from '@/lib/mini-stories-data'
 import { Sparkles, Loader2, Volume2, BookOpen, HelpCircle, ChevronUp, ChevronDown, Check, Plus } from 'lucide-react'
 import { PageHero } from '@/components/ui/PageHero'
+import { localDate } from '@/lib/date'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 import { awardXP, XP_REWARDS } from '@/lib/xp'
 
@@ -15,7 +16,7 @@ function addWordsToSR(words: MiniStory['vocabWords']) {
         wordId: `story_${w.word}`,
         word: w.word, translation: w.translation,
         easeFactor: 2.5, interval: 1, repetitions: 0,
-        dueDate: new Date().toISOString().slice(0, 10),
+        dueDate: localDate(),
       })
       added++
     }

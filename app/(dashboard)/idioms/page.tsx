@@ -4,6 +4,7 @@ import { IDIOMS, IDIOM_CATEGORIES } from '@/lib/idioms-data'
 import { Sparkles, Loader2, Check, Plus, Volume2, MessageSquare } from 'lucide-react'
 import { PageHero } from '@/components/ui/PageHero'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
+import { localDate } from '@/lib/date'
 
 export default function IdiomsPage() {
   const [search, setSearch] = useState('')
@@ -45,7 +46,7 @@ export default function IdiomsPage() {
               translation: idiom.meaning,
               example: idiom.example,
               easeFactor: 2.5, interval: 1, repetitions: 0,
-              dueDate: new Date().toISOString().slice(0, 10),
+              dueDate: localDate(),
             })
             localStorage.setItem('fluenta_sr_cards', JSON.stringify(cards))
           }

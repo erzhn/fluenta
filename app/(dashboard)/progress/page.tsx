@@ -152,32 +152,32 @@ export default function ProgressPage() {
     {
       id: 'first_conv',
       icon: MessageSquare,
-      title: 'First Conversation',
-      desc: 'Chat with Zhan at least once',
+      title: 'Первый диалог',
+      desc: 'Поговори с Zhan хотя бы раз',
       unlocked: convCount >= 1,
       progress: Math.min(100, convCount * 100),
     },
     {
       id: 'word_collector',
       icon: BookOpen,
-      title: 'Word Collector',
-      desc: 'Add 10 words to vocabulary',
+      title: 'Коллекционер слов',
+      desc: 'Добавь 10 слов в словарь',
       unlocked: vocabCount >= 10,
       progress: Math.min(100, Math.round((vocabCount / 10) * 100)),
     },
     {
       id: 'week_warrior',
       icon: Flame,
-      title: 'Week Warrior',
-      desc: '7 day streak',
+      title: 'Неделя подряд',
+      desc: 'Стрик 7 дней',
       unlocked: streak >= 7,
       progress: Math.min(100, Math.round((streak / 7) * 100)),
     },
     {
       id: 'grammar_master',
       icon: CheckCircle2,
-      title: 'Grammar Master',
-      desc: 'Complete 5 lessons',
+      title: 'Мастер грамматики',
+      desc: 'Пройди 5 уроков',
       unlocked: lessonsCount >= 5,
       progress: Math.min(100, Math.round((lessonsCount / 5) * 100)),
     },
@@ -206,7 +206,7 @@ export default function ProgressPage() {
             style={{ backgroundColor: lvlInfo.bg, color: lvlInfo.color, border: `1px solid ${lvlInfo.color}40` }}
           >
             <TrendingUp className="w-4 h-4" />
-            Level {cefrLevel}
+Уровень {cefrLevel}
           </div>
         </div>
       </motion.div>
@@ -398,9 +398,9 @@ export default function ProgressPage() {
         <div className={`${glass} rounded-2xl p-5 sm:p-6`}>
           <div className="flex items-center gap-2 mb-5">
             <Trophy className="w-4 h-4 text-[#f59e0b]" />
-            <h2 className="text-white font-bold text-sm">Achievements</h2>
+            <h2 className="text-white font-bold text-sm">Достижения</h2>
             <span className="text-xs text-muted-foreground ml-auto">
-              {achievements.filter((a) => a.unlocked).length}/{achievements.length} unlocked
+              {achievements.filter((a) => a.unlocked).length}/{achievements.length} получено
             </span>
           </div>
 
@@ -459,10 +459,10 @@ export default function ProgressPage() {
       <motion.div custom={8} variants={fadeUp} initial="hidden" animate="visible">
         <div className={`${glass} rounded-2xl overflow-hidden`}>
           <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
-            <h2 className="text-white font-bold text-sm">Recent Activity</h2>
+            <h2 className="text-white font-bold text-sm">Недавняя активность</h2>
             {recentConvs.length > 0 && (
               <Link href="/ai-tutor" className="text-xs text-primary hover:text-[#818cf8] transition-colors font-medium flex items-center gap-1">
-                View all <ArrowRight className="w-3 h-3" />
+                Все <ArrowRight className="w-3 h-3" />
               </Link>
             )}
           </div>
@@ -470,12 +470,12 @@ export default function ProgressPage() {
           {recentConvs.length === 0 ? (
             <div className="py-12 flex flex-col items-center gap-3 text-center px-6">
               <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center"><MessageSquare className="w-5 h-5 text-muted-foreground" strokeWidth={1.75} /></div>
-              <p className="text-white font-semibold text-sm">No activity yet</p>
-              <p className="text-muted-foreground text-xs">Start your first lesson or chat with Zhan!</p>
+              <p className="text-white font-semibold text-sm">Пока нет активности</p>
+              <p className="text-muted-foreground text-xs">Начни первый урок или поговори с Zhan!</p>
               <Link href="/ai-tutor">
                 <button className="mt-1 flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white text-sm font-bold hover:scale-[1.03] transition-transform shadow-lg shadow-indigo-500/20">
                   <MessageSquare className="w-4 h-4" />
-                  Chat with Zhan
+                  Поговорить с Zhan
                 </button>
               </Link>
             </div>

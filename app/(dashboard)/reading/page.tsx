@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase'
 import { toast } from '@/components/ui/Toast'
 import { SkeletonCard } from '@/components/ui/Skeleton'
 import { awardXP, XP_REWARDS } from '@/lib/xp'
+import { localDate } from '@/lib/date'
 
 interface VocabItem {
   word: string
@@ -33,7 +34,7 @@ function addWordToSRS(word: string) {
     if (!srs[id]) {
       const tomorrow = new Date()
       tomorrow.setDate(tomorrow.getDate() + 1)
-      srs[id] = { box: 0, nextReview: tomorrow.toISOString().slice(0, 10), lastResult: null }
+      srs[id] = { box: 0, nextReview: localDate(tomorrow), lastResult: null }
     }
     localStorage.setItem(SRS_KEY, JSON.stringify(srs))
   } catch { /* ignore */ }

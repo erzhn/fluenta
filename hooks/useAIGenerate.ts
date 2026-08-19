@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { toast } from '@/components/ui/Toast'
 
 export function useAIGenerate() {
   const [loading, setLoading] = useState(false)
@@ -20,9 +21,13 @@ export function useAIGenerate() {
         },
         body: JSON.stringify({ type, context, level }),
       })
-      if (!res.ok) return null
+      if (!res.ok) {
+        toast('Не удалось сгенерировать. Попробуй ещё раз.', 'error')
+        return null
+      }
       return await res.json()
     } catch {
+      toast('Ошибка сети. Проверь соединение и попробуй снова.', 'error')
       return null
     } finally {
       setLoading(false)

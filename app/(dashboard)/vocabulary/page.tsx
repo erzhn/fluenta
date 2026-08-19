@@ -6,6 +6,7 @@ import { RotateCcw, Volume2, Check, X, Layers, BookOpen, Sparkles, Loader2, PenL
 import { PageHero } from '@/components/ui/PageHero'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 import { VOCABULARY, getWordsForLesson, type VocabWord } from '@/lib/vocabulary-data'
+import { localDate } from '@/lib/date'
 import { speak, stopSpeaking } from '@/lib/speech'
 import { addCardToSR } from '@/lib/spaced-repetition'
 import { supabase } from '@/lib/supabase'
@@ -24,7 +25,7 @@ interface CardState {
 type SRSState = Record<string, CardState>
 
 function todayISO() {
-  return new Date().toISOString().slice(0, 10)
+  return localDate()
 }
 
 function nextReviewDate(box: number): string {
@@ -32,7 +33,7 @@ function nextReviewDate(box: number): string {
   const days = intervals[Math.min(box, intervals.length - 1)]
   const d = new Date()
   d.setDate(d.getDate() + days)
-  return d.toISOString().slice(0, 10)
+  return localDate(d)
 }
 
 function loadSRS(): SRSState {
@@ -308,7 +309,7 @@ export default function VocabularyPage() {
         merged[vocabWord.id] = {
           id: vocabWord.id,
           box: box >= 0 ? box : row.repetitions ?? 0,
-          nextReview: row.next_review ? new Date(row.next_review).toISOString().slice(0, 10) : todayISO(),
+          nextReview: row.next_review ? localDate(new Date(row.next_review)) : todayISO(),
         }
       }
     })
