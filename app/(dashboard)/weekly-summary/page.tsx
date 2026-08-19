@@ -4,6 +4,7 @@ import { Sparkles, Loader2, Clock, Star, Flame, Target, BookOpen, Lightbulb, typ
 import { PageHero } from '@/components/ui/PageHero'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 import { supabase } from '@/lib/supabase'
+import { localDate } from '@/lib/date'
 
 interface DayData {
   date: string
@@ -43,7 +44,7 @@ export default function WeeklySummaryPage() {
       for (let i = 6; i >= 0; i--) {
         const d = new Date()
         d.setDate(d.getDate() - i)
-        const iso = d.toISOString().slice(0, 10)
+        const iso = localDate(d)
         dateMap[iso] = { date: iso, label: dayLabels[d.getDay()], minutes: 0, xp: 0 }
       }
 
@@ -54,7 +55,7 @@ export default function WeeklySummaryPage() {
           .from('daily_activity')
           .select('date,minutes,xp_earned')
           .eq('user_id', session.user.id)
-          .gte('date', weekAgo.toISOString().slice(0, 10))
+          .gte('date', localDate(weekAgo))
 
         rows?.forEach(row => {
           if (dateMap[row.date]) {

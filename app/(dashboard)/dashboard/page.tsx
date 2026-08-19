@@ -9,6 +9,7 @@ import {
 import { useAIGenerate } from '@/hooks/useAIGenerate';
 import { supabase } from "@/lib/supabase";
 import { getLevelFromXP } from "@/lib/gamification";
+import { localDate } from "@/lib/date";
 import { WordOfDay } from "@/components/WordOfDay";
 import type { Profile } from "@/types";
 
@@ -45,13 +46,13 @@ export default function DashboardPage() {
       const monday = new Date(now);
       monday.setDate(now.getDate() - dayIdx);
       monday.setHours(0, 0, 0, 0);
-      const mondayStr = monday.toISOString().slice(0, 10);
+      const mondayStr = localDate(monday);
       const weekDates = Array.from({ length: 7 }, (_, i) => {
         const d = new Date(monday);
         d.setDate(monday.getDate() + i);
-        return d.toISOString().slice(0, 10);
+        return localDate(d);
       });
-      const todayStr = new Date().toISOString().slice(0, 10);
+      const todayStr = localDate();
 
       const [{ data: p }, { count: today }, { count: due }, { data: activity }] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", user.id).single(),

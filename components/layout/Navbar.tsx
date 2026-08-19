@@ -20,7 +20,7 @@ export function Navbar() {
               Sign in
             </Button>
           </Link>
-          <Link href="/auth/register">
+          <Link href="/auth/login">
             <Button className="bg-primary hover:bg-[#5558E3] text-white">
               Get started free
             </Button>

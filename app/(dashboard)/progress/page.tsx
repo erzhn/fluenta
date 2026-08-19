@@ -12,6 +12,7 @@ import { CountUp } from '@/components/ui/CountUp'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { localDate } from '@/lib/date'
 import { StreakCalendar } from '@/components/StreakCalendar'
 import { SkillsRadar } from '@/components/SkillsRadar'
 import { ProgressPrediction } from '@/components/ProgressPrediction'
@@ -52,8 +53,8 @@ function last7Days(): { date: string; label: string }[] {
     const d = new Date()
     d.setDate(d.getDate() - (6 - i))
     return {
-      date: d.toISOString().split('T')[0],
-      label: d.toLocaleDateString('en-US', { weekday: 'short' }),
+      date: localDate(d),
+      label: d.toLocaleDateString('ru-RU', { weekday: 'short' }),
     }
   })
 }
@@ -118,7 +119,7 @@ export default function ProgressPage() {
         supabase.from('vocabulary').select('id', { count: 'exact', head: true }).eq('user_id', uid),
         supabase.from('ai_conversations').select('id,title,updated_at').eq('user_id', uid).order('updated_at', { ascending: false }).limit(10),
         supabase.from('lessons_progress').select('id', { count: 'exact', head: true }).eq('user_id', uid).eq('completed', true),
-        supabase.from('daily_activity').select('date,minutes,xp_earned').eq('user_id', uid).gte('date', weekAgo.toISOString().split('T')[0]).order('date'),
+        supabase.from('daily_activity').select('date,minutes,xp_earned').eq('user_id', uid).gte('date', localDate(weekAgo)).order('date'),
       ])
 
       if (profRes.status === 'fulfilled' && profRes.value.data) {

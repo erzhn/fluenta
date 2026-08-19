@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { localDate, localDateOffset } from './date'
 
 export const XP_REWARDS = {
   LESSON_COMPLETE: 50,
@@ -35,12 +36,12 @@ export async function awardXP(amount: number, minutes = 10): Promise<number> {
   const currentStreak: number = (profile?.streak as number) ?? 0
   const lastActive: string | null = (profile?.last_active as string) ?? null
 
-  const today = new Date().toISOString().slice(0, 10)
+  const today = localDate()
   const isNewDay = lastActive !== today
   const streakBonus = isNewDay ? XP_REWARDS.DAILY_STREAK : 0
   const totalXP = currentXP + amount + streakBonus
 
-  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+  const yesterday = localDateOffset(-1)
   const newStreak = isNewDay
     ? (lastActive === yesterday ? currentStreak + 1 : 1)
     : currentStreak

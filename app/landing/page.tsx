@@ -148,7 +148,7 @@ const PLANS = [
     desc: "Попробуй без риска",
     popular: false,
     cta: "Начать бесплатно",
-    href: "/auth/register",
+    href: "/auth/login",
     features: [
       "10 уроков в день",
       "Базовый AI-чат",
@@ -164,7 +164,7 @@ const PLANS = [
     desc: "Для серьёзного прогресса",
     popular: true,
     cta: "Начать с Про",
-    href: "/auth/register",
+    href: "/auth/login",
     features: [
       "Безлимит уроков",
       "Полный AI-репетитор",
@@ -181,7 +181,7 @@ const PLANS = [
     desc: "Для компаний и групп",
     popular: false,
     cta: "Связаться с нами",
-    href: "/auth/register",
+    href: "/auth/login",
     features: [
       "До 10 человек",
       "Корпоративная аналитика",
@@ -323,7 +323,7 @@ function Navbar() {
           >
             Войти
           </Link>
-          <Link href="/auth/register">
+          <Link href="/auth/login">
             <button className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] hover:from-[#5558E3] hover:to-[#7C3AED] transition-all duration-200 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-105">
               Начать бесплатно
             </button>
@@ -380,7 +380,7 @@ function Navbar() {
                     Войти
                   </button>
                 </Link>
-                <Link href="/auth/register" onClick={() => setOpen(false)}>
+                <Link href="/auth/login" onClick={() => setOpen(false)}>
                   <button className="w-full px-4 py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-[#6366F1] to-[#8B5CF6]">
                     Начать бесплатно
                   </button>
@@ -446,7 +446,7 @@ function HeroSection() {
           </motion.p>
 
           <motion.div custom={3} variants={fadeUp} initial="hidden" animate="visible" className="flex flex-col sm:flex-row gap-3 mb-10">
-            <Link href="/auth/register">
+            <Link href="/auth/login">
               <button className="group flex items-center justify-center gap-2 px-7 py-4 rounded-xl text-base font-semibold text-white bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] hover:from-[#5558E3] hover:to-[#7C3AED] transition-all duration-200 shadow-xl shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-105">
                 Начать бесплатно
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
@@ -763,7 +763,7 @@ function HowItWorksSection() {
           transition={{ delay: 0.4 }}
           className="text-center mt-12"
         >
-          <Link href="/auth/register">
+          <Link href="/auth/login">
             <button className="px-8 py-4 rounded-xl font-semibold text-white bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] hover:from-[#5558E3] hover:to-[#7C3AED] transition-all shadow-xl shadow-indigo-500/25 hover:scale-105">
               Пройти тест сейчас →
             </button>
@@ -1118,7 +1118,7 @@ function CTASection() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/auth/register">
+              <Link href="/auth/login">
                 <button className="group flex items-center justify-center gap-2 px-9 py-4 rounded-xl text-base font-bold text-primary bg-white hover:bg-white/95 transition-all hover:scale-105 shadow-2xl shadow-black/20">
                   Начать бесплатно
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
