@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { Sparkles, Loader2, CheckCircle2, Check, X, AlignLeft } from 'lucide-react'
 import { PageHero } from '@/components/ui/PageHero'
+import { awardXP, XP_REWARDS } from '@/lib/xp'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
 
 interface Sentence {
@@ -100,6 +101,7 @@ export default function SentenceBuilderPage() {
     const correct = answer === current.words.join(' ')
     setChecked(correct)
     setScore(s => ({ correct: s.correct + (correct ? 1 : 0), total: s.total + 1 }))
+    if (correct) awardXP(XP_REWARDS.EXERCISE_CORRECT, 1).catch(() => {})
   }
 
   function handleNext() { setCurrentIdx(i => i + 1) }

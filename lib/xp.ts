@@ -9,9 +9,18 @@ export const XP_REWARDS = {
   PRONUNCIATION: 20,
   DAILY_GOAL: 30,
   WRITING_CHECK: 15,
+  EXERCISE_CORRECT: 5,
 } as const
 
-export async function awardXP(amount: number): Promise<number> {
+/**
+ * Начисляет XP, обновляет стрик и логирует активность за день.
+ * @param amount  сколько XP добавить
+ * @param minutes сколько минут засчитать в daily_activity (по умолчанию 10 —
+ *                для «крупных» действий: урок, сессия. Для мелких пунктов
+ *                (одно упражнение, одна попытка) передавай 1–3, чтобы не
+ *                раздувать статистику минут.)
+ */
+export async function awardXP(amount: number, minutes = 10): Promise<number> {
   const { data: { session } } = await supabase.auth.getSession()
   if (!session?.user) return 0
 
@@ -62,7 +71,7 @@ export async function awardXP(amount: number): Promise<number> {
         user_id: session.user.id,
         date: today,
         xp_earned: (existing?.xp_earned ?? 0) + amount + (isNewDay ? streakBonus : 0),
-        minutes: (existing?.minutes ?? 0) + 10,
+        minutes: (existing?.minutes ?? 0) + minutes,
       }, { onConflict: 'user_id,date' })
     } catch { /* non-critical */ }
   })()

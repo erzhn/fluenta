@@ -2,6 +2,7 @@
 import { useState, useRef } from 'react'
 import { Check, Rocket, ThumbsUp, BookOpen, Turtle } from 'lucide-react'
 import { PageHero } from '@/components/ui/PageHero'
+import { awardXP, XP_REWARDS } from '@/lib/xp'
 
 const TEXTS = [
   {
@@ -66,6 +67,7 @@ export default function ReadingSpeedPage() {
     const minutes = (Date.now() - startTime) / 60000
     setWpm(Math.round(text.wordCount / minutes))
     setPhase('result')
+    awardXP(XP_REWARDS.FLASHCARD_SESSION, 3).catch(() => {})
   }
 
   function nextText() {

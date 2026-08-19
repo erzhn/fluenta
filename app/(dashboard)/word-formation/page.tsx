@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { Check, X, Layers } from 'lucide-react'
 import { PageHero } from '@/components/ui/PageHero'
+import { awardXP, XP_REWARDS } from '@/lib/xp'
 import { AFFIXES } from '@/lib/word-formation-data'
 
 export default function WordFormationPage() {
@@ -22,6 +23,7 @@ export default function WordFormationPage() {
     const correct = answer.trim().toLowerCase() === quizItem.formed.toLowerCase()
     setResult(correct)
     setScore(s => ({ correct: s.correct + (correct ? 1 : 0), total: s.total + 1 }))
+    if (correct) awardXP(XP_REWARDS.EXERCISE_CORRECT, 1).catch(() => {})
   }
 
   function nextQuiz() {

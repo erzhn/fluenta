@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Mic, MicOff, Volume2, ChevronRight, RefreshCw, Play, Check, X, Turtle, Rabbit, Footprints, Target, BarChart3, Lightbulb, Flame, Drama, BookOpen, Users, Waves, AlertTriangle } from 'lucide-react'
+import { awardXP, XP_REWARDS } from '@/lib/xp'
 
 interface SpeechRecAlt     { transcript: string; confidence: number }
 interface SpeechRecResult  { [i: number]: SpeechRecAlt; length: number; isFinal: boolean }
@@ -124,6 +125,8 @@ function saveScore(mode: string, score: number, sound?: string) {
     d.lastDate = today
   }
   localStorage.setItem('fluenta_pronunciation_scores', JSON.stringify(d))
+  // Начисляем XP за удачную попытку произношения (единый пункт для всех режимов)
+  if (score >= 80) awardXP(XP_REWARDS.PRONUNCIATION, 1).catch(() => {})
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────

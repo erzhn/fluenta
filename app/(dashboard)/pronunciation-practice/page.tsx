@@ -3,6 +3,7 @@ import { useState, useRef } from 'react'
 import { Sparkles, Loader2, Volume2, Mic, Square, PartyPopper, ThumbsUp, Megaphone, RotateCcw, X } from 'lucide-react'
 import { PageHero } from '@/components/ui/PageHero'
 import { useAIGenerate } from '@/hooks/useAIGenerate'
+import { awardXP, XP_REWARDS } from '@/lib/xp'
 
 const PHRASES: Record<string, string[]> = {
   A1: [
@@ -68,6 +69,8 @@ export default function PronunciationPracticePage() {
   const [attempts, setAttempts] = useState<Attempt[]>([])
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null)
+  // Фразы, за которые XP уже начислен — защита от фарма при повторных попытках
+  const rewardedRef = useRef<Set<string>>(new Set())
 
   const currentPhrases = usingAI && aiPhrases.length > 0 ? aiPhrases : (PHRASES[level] ?? [])
   const phrase = currentPhrases[phraseIdx % Math.max(1, currentPhrases.length)]
@@ -115,6 +118,11 @@ export default function PronunciationPracticePage() {
       const s = calculateScore(phrase, transcript)
       setScore(s)
       setAttempts(a => [...a, { phrase, heard: transcript, score: s }])
+      // XP за удачное произношение фразы — один раз на фразу
+      if (s >= 80 && !rewardedRef.current.has(phrase)) {
+        rewardedRef.current.add(phrase)
+        awardXP(XP_REWARDS.PRONUNCIATION, 1).catch(() => {})
+      }
     }
 
     recognitionRef.current = recognition
