@@ -8,7 +8,8 @@ export function useAIGenerate() {
   async function generate<T = Record<string, unknown>>(
     type: string,
     context: string,
-    level = 'B1'
+    level = 'B1',
+    opts: { silent?: boolean } = {}
   ): Promise<T | null> {
     setLoading(true)
     try {
@@ -22,12 +23,12 @@ export function useAIGenerate() {
         body: JSON.stringify({ type, context, level }),
       })
       if (!res.ok) {
-        toast('Не удалось сгенерировать. Попробуй ещё раз.', 'error')
+        if (!opts.silent) toast('Не удалось сгенерировать. Попробуй ещё раз.', 'error')
         return null
       }
       return await res.json()
     } catch {
-      toast('Ошибка сети. Проверь соединение и попробуй снова.', 'error')
+      if (!opts.silent) toast('Ошибка сети. Проверь соединение и попробуй снова.', 'error')
       return null
     } finally {
       setLoading(false)

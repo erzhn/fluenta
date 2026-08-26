@@ -13,6 +13,13 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  if (!process.env.GROQ_API_KEY) {
+    return NextResponse.json(
+      { error: 'AI temporarily unavailable (GROQ_API_KEY is not configured)' },
+      { status: 503 },
+    )
+  }
+
   const { type, context = '', level = 'B1' } = await request.json()
 
   const PROMPTS: Record<string, string> = {

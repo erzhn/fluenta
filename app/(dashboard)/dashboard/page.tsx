@@ -28,8 +28,8 @@ export default function DashboardPage() {
   const { generate, loading: tipLoading } = useAIGenerate();
   const [dailyTip, setDailyTip] = useState<{ tip: string; example: string; emoji: string } | null>(null);
 
-  async function getTip() {
-    const data = await generate<typeof dailyTip>('daily_tip', 'learning English', 'B1');
+  async function getTip(silent = false) {
+    const data = await generate<typeof dailyTip>('daily_tip', 'learning English', 'B1', { silent });
     setDailyTip(data);
   }
 
@@ -89,7 +89,7 @@ export default function DashboardPage() {
       }
     }
     load();
-    getTip();
+    getTip(true); // авто-загрузка совета — без тоста об ошибке
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -269,7 +269,7 @@ export default function DashboardPage() {
             <p className="text-sm font-semibold flex items-center gap-2">
               <Bot className="w-4 h-4" style={{ color: "var(--q-lav)" }} strokeWidth={1.75} /> AI совет дня
             </p>
-            <button onClick={getTip} disabled={tipLoading}
+            <button onClick={() => getTip()} disabled={tipLoading}
               className="q-btn-primary" style={{ padding: "8px 14px", fontSize: 12 }}>
               {tipLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
               {tipLoading ? '...' : 'Обновить'}
