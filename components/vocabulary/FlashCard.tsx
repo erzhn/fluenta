@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Volume2, RotateCcw } from "lucide-react";
 import type { VocabWord } from "@/types";
@@ -28,11 +28,14 @@ function HighlightedContext({ context, word }: { context: string; word: string }
 }
 
 export function FlashCard({ word, onFlip, forceFlipped }: FlashCardProps) {
-  const [flipped, setFlipped] = useState(false);
-
-  useEffect(() => {
-    if (forceFlipped !== undefined) setFlipped(forceFlipped);
-  }, [forceFlipped]);
+  const [flipped, setFlipped] = useState(forceFlipped ?? false);
+  // Sync to a controlled `forceFlipped` during render (React-recommended pattern —
+  // avoids a setState-in-effect pass while keeping local flips between prop changes).
+  const [prevForce, setPrevForce] = useState(forceFlipped);
+  if (forceFlipped !== undefined && forceFlipped !== prevForce) {
+    setPrevForce(forceFlipped);
+    setFlipped(forceFlipped);
+  }
 
   const handleFlip = () => {
     const next = !flipped;

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { groqKeyMissing } from "@/lib/ai-guard"
 
 export async function POST(req: NextRequest) {
+  const _g = groqKeyMissing(); if (_g) return _g
   const { topic, userAnswer, exercise, correctAnswer } = await req.json()
 
   try {

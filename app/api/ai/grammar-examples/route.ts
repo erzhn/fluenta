@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server'
+import { groqKeyMissing } from "@/lib/ai-guard"
 import { createClient } from '@supabase/supabase-js'
 
 const VALID_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1']
 const VALID_TYPES = ['explain', 'examples', 'exercise']
 
 export async function POST(req: Request) {
+  const _g = groqKeyMissing(); if (_g) return _g
   const authHeader = req.headers.get('Authorization')
   const token = authHeader?.replace('Bearer ', '')
   if (!token) {

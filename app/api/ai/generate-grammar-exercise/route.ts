@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { groqKeyMissing } from "@/lib/ai-guard"
 
 const TYPE_DESCRIPTIONS: Record<string, string> = {
   'fill-in': 'Fill in the blank sentence with the correct form',
@@ -8,6 +9,7 @@ const TYPE_DESCRIPTIONS: Record<string, string> = {
 }
 
 export async function POST(req: NextRequest) {
+  const _g = groqKeyMissing(); if (_g) return _g
   const { topic, level, exerciseType = 'fill-in' } = await req.json()
   const typeDesc = TYPE_DESCRIPTIONS[exerciseType] ?? TYPE_DESCRIPTIONS['fill-in']
 

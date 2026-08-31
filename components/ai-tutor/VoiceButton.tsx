@@ -39,7 +39,7 @@ export function VoiceButton({ onTranscript, disabled }: VoiceButtonProps) {
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const SpeechAPI =
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
