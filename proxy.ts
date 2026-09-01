@@ -15,7 +15,7 @@ function rateLimit(ip: string, limit: number, windowMs: number): boolean {
   return true
 }
 
-const PUBLIC_PATHS = ['/', '/auth', '/landing', '/api', '/_next', '/favicon', '/sw.js', '/manifest', '/offline', '/icons']
+const PUBLIC_PATHS = ['/', '/auth', '/api', '/_next', '/favicon', '/sw.js', '/manifest', '/offline', '/icons']
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl

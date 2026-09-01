@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Brain, BookOpen, Layers, Mic, TrendingUp, User,
   Settings, LogOut, Flame, Zap, X, BarChart2, PenLine, Headphones,
   FileText, GraduationCap, Trophy, Link2, Award, AlignLeft, Volume2,
-  MessageSquare, BarChart, Calendar, StickyNote, ChevronRight,
+  MessageSquare, BarChart, Calendar, StickyNote,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getLevelFromXP } from "@/lib/gamification";

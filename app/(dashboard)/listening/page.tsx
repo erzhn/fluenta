@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Play, Square, Eye, EyeOff, Volume2, RefreshCw, Sparkles, Headphones } from 'lucide-react'
+import { Square, Eye, EyeOff, Volume2, RefreshCw, Sparkles, Headphones } from 'lucide-react'
 import { PageHero } from '@/components/ui/PageHero'
 import { speak, stopSpeaking } from '@/lib/speech'
 import { getListeningTexts, type ListeningText } from '@/lib/listening-data'

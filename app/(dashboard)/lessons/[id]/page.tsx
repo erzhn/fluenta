@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft, Clock, Zap, CheckCircle, ChevronRight,
+  ArrowLeft, Clock, Zap, ChevronRight,
   BookOpen, MessageSquare, X, Send, Loader2,
   Trophy, PartyPopper, Dumbbell, GraduationCap, PenLine
 } from "lucide-react";

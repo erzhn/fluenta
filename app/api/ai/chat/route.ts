@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { groqKeyMissing } from "@/lib/ai-guard"
 import { createClient } from '@supabase/supabase-js'
 
-const VALID_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1']
 
 export async function POST(request: Request) {
   const _g = groqKeyMissing(); if (_g) return _g

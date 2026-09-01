@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { Trophy, BookOpen, ChevronRight, CheckCircle, Lock } from 'lucide-react'
+import { Trophy, BookOpen, ChevronRight, CheckCircle } from 'lucide-react'
 import { PageHero } from '@/components/ui/PageHero'
 import { MODULES } from '@/lib/modules-data'
 import type { ModuleMeta } from '@/lib/modules-data'

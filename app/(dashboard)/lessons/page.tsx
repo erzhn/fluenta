@@ -10,7 +10,7 @@ import { MODULES } from '@/lib/modules-data'
 import type { ModuleLesson, ModuleId } from '@/lib/modules-data'
 import SpeakingExercise from '@/components/lessons/SpeakingExercise'
 import { supabase } from '@/lib/supabase'
-import { awardXP, XP_REWARDS } from '@/lib/xp'
+import { awardXP } from '@/lib/xp'
 import { triggerConfetti } from '@/components/ui/Confetti'
 import { speak, stopSpeaking } from '@/lib/speech'
 

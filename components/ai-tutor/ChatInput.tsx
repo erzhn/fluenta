@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Send, Mic } from "lucide-react";
+import { Send } from "lucide-react";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
